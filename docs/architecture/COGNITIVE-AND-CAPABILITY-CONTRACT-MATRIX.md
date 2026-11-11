@@ -145,7 +145,7 @@ These builder findings compare the cognitive/Android contracts against the propo
 This matrix is IN PROGRESS until:
 1. Every row in Sections 2 and 3 maps to an authoritative implementation owner, schema, command/query/event and canonical test.
 2. CCM-01, CCM-02, CCM-03, CCM-05, CCM-06 and CCM-07 now have proposed design-level corrections in Section 26.5.2 of the source specification or the cognitive architecture; CCM-04 remains open. All seven require executable verification.
-3. Domain payload schemas and shared fixtures are machine-readable and validated by the C++/Python contract toolchain. Initial envelope/capability schema files exist under `schemas/`, but do not close CCM-04 until full coverage and toolchain validation are complete.
+3. Domain payload schemas and shared fixtures are machine-readable and validated by the C++/Python contract toolchain. Initial envelope, capability and partial domain-payload schemas exist under `schemas/`, but do not close CCM-04 until full coverage and toolchain validation are complete.
 4. Every schema change has a proposed migration and a tested migration path before implementation use.
 5. The matrix is consistent with the owner decision register, no-hardcoding invariant, product definition and canonical roadmap.
 6. The no-hardcoding regression family NHC-001…NHC-008 is mapped to implementation fixtures and code-review evidence.
