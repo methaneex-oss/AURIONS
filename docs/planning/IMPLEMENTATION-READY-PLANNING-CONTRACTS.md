@@ -64,18 +64,22 @@ The receiver validates identity, version, size, schema, ownership, classificatio
 |---|---|---|---|
 | Experience | Raw observation metadata, source/provenance, capture lifecycle | Platform adapters, representation | Directly execute tools or set beliefs |
 | Representation | Typed modality-neutral representations and confidence/provenance | Experience, modality adapters | Decide authority or mutate governance |
+| Environment/discovery | Environment observations, discovery provenance, versioned capability descriptors and lifecycle | Platform adapters, capability provider contracts, governance queries | Treat discovery as permission, invent unavailable interfaces or execute operations |
 | Context | Context assembly and relevance metadata | Representation, memory query interfaces | Persist foreign-domain records directly |
 | Memory | Episodic/semantic/working-memory persistence contracts and retrieval | Storage abstraction, provenance | Authorize actions or silently rewrite evidence |
 | Knowledge/beliefs | Claims, evidence links, confidence, revision history | Memory, evidence evaluation | Treat model output as verified fact |
 | Prediction | Prediction records, horizons, expected outcomes and uncertainty | Beliefs, context | Execute actions |
-| Appraisal/attention | Salience, resource allocation and prioritization outputs | Context, goals, prediction | Hardcode stimulus-to-emotion/action conclusions |
+| Outcome evaluation | Prediction/plan comparison, observed postconditions, attribution hypotheses and evaluation evidence | Prediction, action receipts, experience, context | Rewrite original predictions or equate provider success with verified effects |
+| Appraisal/attention | Contextual appraisal estimates, salience and adaptive resource allocation | Context, goals, prediction, learning evidence | Hardcode stimulus-to-emotion/action conclusions or suppress governance checks |
 | Reasoning | Inference traces and candidate explanations | Context, knowledge, inference interface | Grant permissions or write protected state |
 | Goals/planning | Goal state, plan graph, dependencies, budgets and checkpoints | Reasoning, scheduler, capability descriptions | Assume tool capability implies permission |
 | Decision | Candidate selection and rationale | Goals, plans, risk estimates | Bypass policy enforcement |
 | Governance | Identity, policies, permissions, approvals, audit | Secure key/identity provider, governance DB | Trust model-provided identity or self-grant |
 | Action gateway | Operation validation, dispatch, receipts and verification | Governance, capability adapters, event store | Execute without a fresh policy decision |
 | Scheduler | Durable task runs, triggers, deadlines, budgets and cancellation | Goals/plans, operation store | Expand authority beyond task grant |
-| Learning/evaluation | Experiment provenance, datasets, metrics, candidate results | Memory export interfaces, isolated workers | Activate candidate or modify protected runtime state |
+| Learning/evaluation | Experience-dependent mechanism/capability updates, experiment provenance, datasets, metrics and candidate results | Outcome evaluation, memory/knowledge interfaces, isolated workers | Treat storage as learning, activate candidate or modify protected runtime state |
+| Self-model | Evidence-backed capability, limitation, confidence, resource and performance estimates | Discovery, outcomes, benchmarks, learning | Self-authorize or claim unverified capability |
+| Evolution | Isolated change proposals, impact analysis, candidate comparison, approval and rollback records | Self-model, learning, governance | Self-approve or mutate protected authority |
 | Inference adapter | Model/provider request/response normalization | Local/remote provider clients | Treat generated content as trusted instruction |
 | Python worker supervisor | Process lifecycle, schema validation, quotas and artifact intake | Worker protocol, artifact registry | Import worker state into live cognition without validation |
 | Sync | Authenticated change exchange, cursors, tombstones and receipts | Domain export/import APIs, device identity | Replicate SQLite files or bypass local policy |
@@ -99,12 +103,14 @@ Required fields: `command_id`, `command_version`, `owner_id`, `actor_identity`, 
 
 Initial command families:
 - `experience.submit`
+- `environment.observe`, `capability.discover`, `capability.verify`, `capability.invalidate`
 - `memory.retrieve`
 - `goal.create`, `goal.cancel`
 - `plan.propose`, `plan.checkpoint`
 - `operation.propose`, `operation.cancel`, `operation.reconcile`
 - `approval.request`, `approval.revoke`
-- `learning.experiment.submit`, `learning.candidate.evaluate`
+- `outcome.evaluate`, `learning.update.propose`, `learning.experiment.submit`, `learning.candidate.evaluate`
+- `self_model.update.propose`, `evolution.change.propose`, `evolution.candidate.evaluate`
 - `device.pair`, `device.revoke` (future multi-device phase)
 
 A command response is one of: `accepted`, `rejected`, `pending`, `conflict`, `unsupported_version`. Accepted means durably accepted for processing, not completed.
@@ -112,20 +118,23 @@ A command response is one of: `accepted`, `rejected`, `pending`, `conflict`, `un
 ### 4.2 Query contract
 Queries are read-only, scoped to an authenticated owner/device context, bounded by timeout and result size, and carry a consistency indicator (`snapshot`, `eventual`, or `local_committed`). Queries MUST NOT trigger hidden side effects.
 
-Initial query families: `memory.search`, `goal.get`, `task.status`, `operation.status`, `permission.inspect`, `audit.lookup`, `device.capabilities`.
+Initial query families: `environment.inspect`, `capability.search`, `capability.inspect`, `context.get`, `memory.search`, `belief.inspect`, `prediction.inspect`, `goal.get`, `task.status`, `operation.status`, `permission.inspect`, `audit.lookup`, `device.capabilities`. Query families are versioned interface namespaces, not a closed list of system behaviours.
 
 ### 4.3 Event catalogue
 Every event includes the common envelope and an immutable event body. Initial event names:
 - `experience.observed.v1`
 - `representation.created.v1`
 - `context.assembled.v1`
+- `environment.observed.v1`, `capability.discovered.v1`, `capability.verified.v1`, `capability.invalidated.v1`, `capability.revoked.v1`
 - `memory.recorded.v1`, `memory.retrieved.v1`
 - `belief.proposed.v1`, `belief.revised.v1`
 - `prediction.created.v1`, `prediction.evaluated.v1`
+- `appraisal.updated.v1`, `attention.allocated.v1`, `reasoning.hypothesis.proposed.v1`, `outcome.evaluated.v1`
 - `goal.created.v1`, `plan.proposed.v1`, `plan.checkpointed.v1`
 - `permission.evaluated.v1`, `approval.requested.v1`, `approval.decided.v1`
 - `operation.accepted.v1`, `operation.started.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.uncertain.v1`, `operation.reconciled.v1`
-- `outcome.observed.v1`, `learning.experiment.completed.v1`, `candidate.activated.v1`, `candidate.rolled_back.v1`
+- `outcome.observed.v1`, `learning.update.proposed.v1`, `learning.update.accepted.v1`, `learning.experiment.completed.v1`
+- `self_model.updated.v1`, `evolution.proposed.v1`, `candidate.activated.v1`, `candidate.rolled_back.v1`
 - `sync.change.exported.v1`, `sync.change.applied.v1`, `sync.tombstone.applied.v1`
 
 Events are append-only facts. Corrections are new compensating events with causation links; do not rewrite history to conceal a prior outcome.
@@ -329,6 +338,8 @@ Every test has stable ID, requirement link, fixture/version, preconditions, exac
 - CT-007: dependency graph contains no forbidden cycles.
 
 ### 10.2 Cognitive-cycle integration tests
+- CM-001 through CM-020: execute the cognitive mechanism and interaction scenarios defined in [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). Preserve the exact scenario IDs, fixtures and negative controls.
+- AD-001 through AD-015: execute the Android environment/capability discovery scenarios defined in [Android Environment and Capability Architecture](../architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md). These test general mechanisms, not a fixed operation catalogue.
 - CG-001: observation is stored with provenance and source.
 - CG-002: representation/context link to source experience.
 - CG-003: retrieval returns provenance and respects owner/data scope.
