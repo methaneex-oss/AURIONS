@@ -70,8 +70,8 @@ These are the main-builder's responsibilities, not owner testing or independent-
 
 ### B-02 — Complete the cognitive mechanism contracts
 - A new [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) maps all 17 cognitive domains and the Android discovery/execution responsibilities to ownership, persistence, contract families, work packages and tests.
-The canonical matrix is the single mechanism-to-component/persistence/event/test crosswalk; the dedicated architecture document links to it rather than duplicating it. Remaining: reconcile the canonical payload definitions with each mechanism's exact input/output/error/state transitions, settle causal/version concurrency semantics, and ensure every CM-* case has a concrete fixture and assertion.
-- Specify data/state transitions, provenance, uncertainty and temporal relationships.
+The canonical matrix is the single mechanism-to-component/persistence/event/test crosswalk; the dedicated architecture document links to it rather than duplicating it. Remaining: reconcile the canonical payload definitions with each mechanism's exact input/output/error/state transitions, map the newly specified causal/version concurrency rules to command/query/event schemas and DDL, and ensure every CM-* case has a concrete fixture and assertion.
+- Data/state transitions, provenance, uncertainty and temporal relationships are described in the mechanism contracts. §6.2 now defines expected-revision checks, dependency-version validation, per-store ordering, optimistic concurrency, domain-specific conflict handling and cancellation/dispatch races. Remaining: bind these rules to each exact command/query/event schema and proposed DDL, then create executable conflict/replay/cancellation fixtures.
 - Define iterative, concurrent, interruptible and feedback interactions; do not turn the cycle into a rigid pipeline.
 - Specify how prediction/outcome evaluation changes memory, beliefs, strategies and later decisions.
 - Specify testable experience-dependent change without hardcoded stimulus-to-behaviour mappings.
