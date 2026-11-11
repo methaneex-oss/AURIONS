@@ -126,6 +126,8 @@ Initial query families: `environment.inspect`, `capability.search`, `capability.
 
 ### 4.2.1 Initial command payload registry
 
+The machine-readable [command/query registry](../../schemas/command-query-registry.v1.json), governed by `schemas/command-query-registry.v1.schema.json`, is the canonical versioned inventory. It records 43 request-schema mappings, two device commands deferred to the later multi-device phase, and 21 typed queries. Every entry is explicitly non-dispatchable while any required handler binding is unresolved. The tables below remain the human-readable payload crosswalk; they do not authorize runtime registration.
+
 The following table binds the initial command families to request-body schemas. The registry is extensible; it is not a closed list of behaviours or Android capabilities. Command handlers MUST validate the body against the registered schema version before state mutation. The event emitted after a successful command remains a separate immutable event and must use the event-body mapping in Section 4.3.
 
 | Command type | Request payload schema |
@@ -169,7 +171,7 @@ The schema bindings above define payload shape only. Each handler still requires
 
 ### 4.2.2 Initial query input and result registry
 
-All query types use the generic `domainQuery` input schema except memory retrieval, which uses `memoryRetrievalQuery`. Results are wrapped in `queryResponse`; `query_type + query_version` resolves the domain-specific result schema. Query handlers remain read-only and must enforce the owner/device scope and sensitivity policy before returning records.
+The same machine-readable registry is authoritative for query type/version, input schema, result-item schema, owner and persistence mapping. All entries remain non-dispatchable until authorization, redaction, consistency, ordering, limits, freshness and read-only evidence are bound and tested. All query types use the generic `domainQuery` input schema except memory retrieval, which uses `memoryRetrievalQuery`. Results are wrapped in `queryResponse`; `query_type + query_version` resolves the domain-specific result schema. Query handlers remain read-only and must enforce the owner/device scope and sensitivity policy before returning records.
 
 | Query type | Input schema | Result item schema |
 |---|---|---|
@@ -409,7 +411,7 @@ For every `command_type + command_version`, the registry MUST bind: request sche
 
 For every `query_type + query_version`, the registry MUST bind: filter/input schema; result schema; owner/device scope; data classification and field-level redaction; authorization rule; consistency mode; deterministic ordering/cursor semantics; timeout/result/byte limits; cache/freshness rules; and proof that execution is read-only.
 
-A registry entry missing any applicable binding is **not registered for production dispatch**. The current command/query family names and generic envelopes remain interface proposals until their individual entries and payload schemas exist. This gate prevents a generic envelope or open namespace from being mistaken for a complete application API.
+A registry entry missing any applicable binding is **not registered for production dispatch**. The current registry now records the individual family names, payload-schema references, owner/persistence mappings and unresolved semantic bindings. It is a design inventory only; every command/query remains non-dispatchable until all applicable fields and fixtures are completed and verified. This gate prevents a generic envelope or open namespace from being mistaken for a complete application API.
 
 ## 5. C++ / Python worker protocol
 
