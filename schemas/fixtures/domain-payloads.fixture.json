@@ -1220,7 +1220,8 @@
     ],
     "created_at": "2026-11-11T08:00:00Z",
     "updated_at": "2026-11-11T08:10:00Z",
-    "failure_ref": null
+    "failure_ref": null,
+    "revision": 2
   },
   "contextInvalidationRequest": {
     "context_id": "31000000-0000-4000-8000-000000000001",
@@ -1291,5 +1292,21 @@
     "approval_ref": null,
     "rollback_ref": null,
     "requested_at": "2026-11-11T08:11:00Z"
+  },
+  "taskRunTransition": {
+    "task_run_id": "33000000-0000-4000-8000-000000000001",
+    "task_definition_ref": "task:definition:1",
+    "from_state": "running",
+    "to_state": "paused",
+    "previous_revision": 1,
+    "revision": 2,
+    "cause_type": "task_control",
+    "cause_ref": "command:task-pause:1",
+    "actor_ref": "owner:primary",
+    "control_request_ref": "command:task-pause:1",
+    "checkpoint_ref": "checkpoint:1",
+    "failure_ref": null,
+    "reconciliation_ref": null,
+    "occurred_at": "2026-11-11T08:10:00Z"
   }
 }
