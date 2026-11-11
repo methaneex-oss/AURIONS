@@ -483,6 +483,7 @@ Every test has stable ID, requirement link, fixture/version, preconditions, exac
 - CT-006: query API performs no writes.
 - CT-007: dependency graph contains no forbidden cycles.
 - CT-008: canonical JSON Schema files parse and validate all positive/negative shared fixtures; C++ and Python consumers use the same versioned fixture corpus.
+- EV-001 through EV-004: verify store-local monotonic event sequence, duplicate message identity/digest handling, atomic consumer checkpoint advancement and causal ordering without relying on timestamps or inventing global cross-device order.
 
 ### 10.1.1 No-hardcoding regression tests
 These tests protect the governing architecture rule: mechanisms are engineered; behaviour and capability knowledge are acquired through experience. They do not prohibit explicit safety, schema, protocol or permission invariants.
