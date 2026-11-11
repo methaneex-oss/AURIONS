@@ -2023,21 +2023,25 @@
         },
         "state": {
           "enum": [
-            "accepted",
-            "prepared",
+            "proposed",
+            "validating",
+            "awaiting_approval",
+            "ready",
             "dispatched",
             "running",
             "succeeded",
             "failed",
             "rejected",
+            "expired",
+            "revoked",
+            "cancel_requested",
+            "cancelled",
             "uncertain",
             "reconciling",
-            "reconciled",
             "compensation_required",
             "compensating",
             "compensated",
-            "manual_intervention",
-            "cancelled"
+            "manual_intervention"
           ]
         },
         "occurred_at": {
@@ -2093,8 +2097,60 @@
               "type": "null"
             }
           ]
+        },
+        "attempt_state": {
+          "oneOf": [
+            {
+              "enum": [
+                "prepared",
+                "dispatched",
+                "running",
+                "succeeded",
+                "failed",
+                "uncertain",
+                "reconciling",
+                "compensation_required",
+                "compensating",
+                "compensated",
+                "manual_intervention",
+                "cancelled"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attempt_number": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "attempt_state": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            },
+            "required": [
+              "attempt_state"
+            ]
+          },
+          "then": {
+            "required": [
+              "attempt_id",
+              "attempt_number"
+            ]
+          }
+        }
+      ]
     },
     "evidenceItem": {
       "type": "object",
