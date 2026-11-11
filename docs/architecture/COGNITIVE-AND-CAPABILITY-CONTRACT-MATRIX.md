@@ -53,7 +53,7 @@
 
 ## 4. Minimum domain payload contracts
 
-The common envelope in the implementation-ready contract remains mandatory. The following body fields are minimum semantic requirements; the exact machine-readable JSON Schema or equivalent C++ type definitions must be versioned and generated/validated from one canonical source before implementation.
+The common envelope in the implementation-ready contract remains mandatory. The following body fields are minimum semantic requirements. Canonical JSON Schema definitions now exist for the payloads listed here; they remain planning artifacts until full Draft 2020-12 validation, generated C++/Python type conformance and CI enforcement are established.
 
 ### 4.1 Experience observation
 
@@ -63,9 +63,9 @@ Rules: source assertion, direct observation, provider receipt and model interpre
 
 ### 4.2 Representation
 
-Required: `representation_id`, `experience_id`, `representation_type`, `method_id/version`, `content`, `uncertainty`, `created_at`, `source_spans_or_refs`.
+Created payload required: `representation_id`, `experience_id`, `representation_type`, `method_id`, `method_version`, `content`, `uncertainty`, `source_refs[]`, `created_at`. Revised payload additionally requires `revision_number` and `supersedes_revision_id`.
 
-Rules: one experience may yield multiple representations; a representation never overwrites the observation. Model/algorithm provenance is retained.
+Rules: one experience may yield multiple representations; a representation never overwrites the observation. Revisions are immutable and preserve supersession lineage. Model/algorithm provenance is retained.
 
 ### 4.3 Context snapshot
 
@@ -81,9 +81,9 @@ Rules: prior revisions remain queryable; contradictory evidence is not discarded
 
 ### 4.5 Prediction
 
-Required: `prediction_id`, `subject_ref`, `expected_outcome`, `evaluation_criteria`, `conditions`, `horizon`, optional `confidence`, `evidence_refs[]`, `created_at`, `status`.
+Created payload required: `prediction_id`, `subject_ref`, `expected_outcome`, `evaluation_criteria`, `conditions`, `horizon`, `evidence_refs[]`, `created_at`; `confidence` is optional. Evaluation is a separate `predictionEvaluation` payload with `evaluation_id`, `prediction_id`, `observed_outcome_ref`, `result`, `evaluated_at` and `evidence_refs[]`.
 
-Rules: the prospective prediction and criteria are immutable after creation. Evaluation appends observed outcome and evaluator evidence; it never edits the original expectation.
+Rules: the prospective prediction and criteria are immutable after creation. Evaluation appends observed outcome and evaluator evidence; it never edits the original expectation or smuggles mutable lifecycle status into the prediction record.
 
 ### 4.6 Capability descriptor
 
@@ -93,15 +93,15 @@ Rules: descriptor is data describing an observed interface, not code, permission
 
 ### 4.7 Plan step
 
-Required: `step_id`, `plan_id/version`, `sequence`, `step_role` and role-schema version, `intent`, `capability_ref` containing capability ID and descriptor version when a capability is applicable, `input_binding`, `preconditions`, `expected_effects`, `resource_budget`, `dependencies[]`, `verification_ref`, `stop_conditions`, `status`.
+Required: `step_id`, `plan_id`, `plan_version`, `sequence`, `step_role`, `role_schema_version`, `intent`, `input_binding`, `preconditions`, `expected_effects`, `resource_budget`, `dependencies[]`, `verification_contract`, `stop_conditions` and `status`. `capability_ref` is optional for steps that invoke a discovered capability and must bind the exact capability ID/descriptor version.
 
 Rules: steps may represent reasoning, observation, waiting, clarification or action; not every step invokes a capability. A capability reference is never authorization. The plan must retain alternatives and uncertainty where material.
 
 ### 4.8 Operation proposal and receipt
 
-Proposal required: `operation_id`, `goal_ref`, `plan_ref`, `step_ref`, `capability_id/version`, `target`, `canonical_parameters_artifact_ref` (encrypted/governed), `parameter_digest`, `expected_effects`, `data_categories`, `risk_class`, `policy_version`, `deadline`, `budget`, `idempotency_key`.
+Proposal required: `operation_id`, `owner_id`, `actor_identity`, `device_id`, `capability_id`, `descriptor_version`, `target_ref`, `canonical_parameters_artifact_id`, `parameter_digest`, `expected_effects_ref`, `sensitivity`, `data_categories`, `risk_class`, `policy_version_ref`, `deadline`, `resource_budget`, `idempotency_key`, `canonicalization_version`, `created_at`; goal/plan/step lineage and `approval_request_id` are optional references.
 
-Receipt required: `operation_id`, `attempt_id`, `dispatch_state`, `provider_receipt_ref`, `started_at`, optional `finished_at`, `reported_effects`, `error_ref`, `uncertainty`.
+Attempt receipt required: `attempt_id`, `operation_id`, `attempt_number`, `state`, `idempotency_key`; dispatch/finish times, provider receipt, reported effects, verification evidence, error, uncertainty reason and reconciliation time are optional evidence fields.
 
 Rules: the gateway revalidates descriptor version, parameters, current OS permission and AURIONS policy immediately before dispatch. A timeout after possible dispatch is uncertain, not failed. Provider receipt is not independent postcondition verification.
 
@@ -113,9 +113,9 @@ Rules: preserve expected and observed evidence separately. Attribution remains a
 
 ### 4.10 Learning update
 
-Required: `learning_update_id`, `target_mechanism`, `update_kind`, `hypothesis`, `scope`, `evidence_refs[]`, `frozen_baseline_ref`, `candidate_ref`, `evaluation_protocol_ref`, `metrics`, `regression_results`, `approval_ref` where required, `state`, `rollback_ref`, timestamps.
+Required: `learning_update_id`, `target_mechanism`, `update_kind`, `hypothesis`, `scope`, `evidence_refs[]`, `state` and `created_at`. Optional evaluation/activation references are `baseline_artifact_ref`, `candidate_artifact_ref`, `evaluation_protocol_ref`, `metrics_ref`, `regression_results_ref`, `approval_ref` and `rollback_ref`.
 
-Rules: distinguish episodic acquisition, belief revision, capability knowledge, strategy/mechanism learning, model training and architecture evolution. Candidate updates remain isolated until acceptance criteria and approval are met.
+Rules: distinguish episodic acquisition, belief revision, capability knowledge, strategy/mechanism learning, model training and architecture evolution. A proposal may omit candidate/evaluation references; an accepted update must satisfy the learning-evidence policy and required artifact lineage. Candidate updates remain isolated until acceptance criteria and approval are met.
 
 ## 5. State ownership and write protocol
 
@@ -135,8 +135,8 @@ These builder findings compare the cognitive/Android contracts against the propo
 | CCM-01 | HIGH | The original `plan_steps` row lacked the typed execution contract required by the plan architecture. | **SPECIFIED:** proposed memory migration v3 adds `plan_step_contracts` with extensible step role/schema version, versioned capability reference, input binding, preconditions, expected effects, resource budget, verification, stop conditions and stale-input digest. DDL execution and application validation remain open. |
 | CCM-02 | HIGH | The original operation-state CHECK constraint did not represent the full documented lifecycle. | **SPECIFIED:** proposed base DDL now enumerates the documented approval, dispatch, uncertainty, reconciliation, compensation and manual-intervention states. The transition graph remains application-enforced and requires transition/fault fixtures; SQL CHECK constraints alone do not enforce legal transitions. |
 | CCM-03 | HIGH | The operation header did not persist the exact operation payload, principal/device lineage and per-attempt receipt/verification evidence required by the execution contract. | **SPECIFIED:** proposed events migration v2 adds owner/actor/device and originating-step binding in `operation_details`, plus `operation_attempts`; cross-store capability/approval validation and executable recovery tests remain open. |
-| CCM-04 | MEDIUM | The command/event catalogue does not yet provide machine-readable body schemas and shared fixtures for every domain. | **PARTIALLY SPECIFIED:** `schemas/message-envelope.v1.schema.json`, `schemas/capability-descriptor-body.v1.schema.json` and `schemas/domain-payloads.v1.schema.json` define the common envelope, extensible capability descriptor and core cognitive/operation payloads. Generic descriptor and domain-payload fixtures now exist. The current positive fixture set covers 33 domain payload definitions, including the descriptor identity record bound to its extensible body schema; five negative fixtures were rejected by a custom structural subset check (not a full JSON Schema validator). Remaining: complete provider-specific error, worker lifecycle, artifact manifest, external disclosure, retention/deletion, sync conflict/tombstone and event-transition payload details; expand negative coverage; select a full validator/generator; prove C++/Python conformance and enforce in CI. |
-| CCM-05 | MEDIUM | `learning_updates` alone did not express the evidence and candidate manifest needed for a learning claim. | **SPECIFIED:** proposed memory migration v3 adds `learning_update_details` with update kind, hypothesis, scope, evidence, baseline/candidate/protocol/metrics/regression artifact references, rollback and approval references. Machine-readable artifact manifests and evaluation fixtures remain open. |
+| CCM-04 | MEDIUM | The command/event catalogue did not provide machine-readable body schemas and shared fixtures for every domain. | **PARTIALLY SPECIFIED:** the common envelope, extensible capability descriptor and 47 domain/operational payload definitions now have generic positive fixtures; an explicit event-family-to-payload binding table covers the current 66 event types (with the operation lifecycle family bound to `operationLifecycleEvent`). Ten negative fixtures are included. A custom structural subset check passed all 47 positive payload fixtures plus the separate descriptor, envelope and decision fixtures, and rejected all 10 negative fixtures. This is not full JSON Schema Draft 2020-12 validation. Remaining: semantic review of each event binding, stable error/compatibility payloads, full validator/generator selection, C++/Python conformance and CI enforcement. |
+| CCM-05 | MEDIUM | `learning_updates` alone did not express the evidence and candidate manifest needed for a learning claim. | **SPECIFIED:** proposed memory migration v3 adds `learning_update_details` with update kind, hypothesis, scope, evidence, baseline/candidate/protocol/metrics/regression artifact references, rollback and approval references. Machine-readable artifact-manifest and experiment-completion payloads/fixtures now exist; persistence lineage, migration execution and evaluation fixtures remain open. |
 | CCM-06 | MEDIUM | The cognitive architecture defines plan interruption, stale context, revalidation and checkpoint semantics, but the original checkpoint record did not bind to exact plan/context/capability/dependency versions. | **SPECIFIED:** proposed event/recovery migration v2 adds `task_checkpoint_details` with plan/version, context reference, capability epoch digest, dependency-state digest, pending steps, resume conditions and invalidation reason. Executable stale-checkpoint/replan tests remain open. |
 | CCM-07 | MEDIUM | Attention is intentionally runtime state, but its event durability and restart reconstruction policy were underspecified. | **SPECIFIED:** cognitive architecture §6.1 now defines when allocations are persisted, why old allocations are historical only, and how current attention is recomputed after restart. CM-021 and DB-017 cover the required behaviour; executable fixtures remain open. |
 
@@ -144,8 +144,8 @@ These builder findings compare the cognitive/Android contracts against the propo
 
 This matrix is IN PROGRESS until:
 1. Every row in Sections 2 and 3 maps to an authoritative implementation owner, schema, command/query/event and canonical test.
-2. CCM-01, CCM-02, CCM-03, CCM-05, CCM-06 and CCM-07 now have proposed design-level corrections in Section 26.5.2 of the source specification or the cognitive architecture; CCM-04 remains open. All seven require executable verification.
-3. Domain payload schemas and shared fixtures are machine-readable and validated by the C++/Python contract toolchain. Initial envelope, capability and partial domain-payload schemas exist under `schemas/`, but do not close CCM-04 until full coverage and toolchain validation are complete.
+2. CCM-01, CCM-02, CCM-03, CCM-05, CCM-06 and CCM-07 have proposed design-level corrections in Section 26.5.2 of the source specification or the cognitive architecture. CCM-04 has an expanded schema/fixture and event-binding proposal, but semantic coverage and toolchain validation remain open. All seven require executable verification.
+3. Domain payload schemas and shared fixtures are machine-readable and validated by the C++/Python contract toolchain. The envelope, capability descriptor and expanded domain/operational payload schemas exist under `schemas/`, but do not close CCM-04 until full event/body coverage and toolchain validation are complete.
 4. Every schema change has a proposed migration and a tested migration path before implementation use.
 5. The matrix is consistent with the owner decision register, no-hardcoding invariant, product definition and canonical roadmap.
 6. The no-hardcoding regression family NHC-001…NHC-008 is mapped to implementation fixtures and code-review evidence.
