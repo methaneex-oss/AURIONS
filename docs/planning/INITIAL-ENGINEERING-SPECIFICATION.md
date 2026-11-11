@@ -396,6 +396,9 @@ Chat history alone is not sufficient evidence of memory or learning.
 
 ## 18. Implementation work packages — planning baseline
 
+**Historical planning table:** This original WP-00…WP-16 breakdown is retained for decision history. It is superseded by `docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md`, which reconciles the later detailed contracts and the owner's concurrent cloud/offline-mobile first-release decision. Do not use the historical numbering as the current implementation sequence.
+
+
 | Work package | Scope |
 | --- | --- |
 | WP-00 | Foundation and build system |
@@ -1593,29 +1596,12 @@ Security acceptance requires threat-model review, authorization bypass and repla
 
 Residual risks: Termux cannot guarantee background execution; no local model is guaranteed accurate; removing training influence may require retraining/unlearning; external providers add availability/data risks; an unlocked compromised device may expose data despite encryption.
 
-## 38. Work-package deliverables and exit gates
+## 38. Work-package deliverables and exit gates — superseded
 
-| WP | Deliverables | Exit gate |
-| --- | --- | --- |
-| WP-00 Foundation | Reproducible build, repo layout, CI, dependency inventory | Clean documented build; baseline tests pass |
-| WP-01 Contracts | IDs, time, errors, envelope, schemas, fixtures | C++/Python agree on valid/invalid fixture corpus |
-| WP-02 Persistence | Three DBs, migrations, artifact registry, outbox, backup/restore, deletion | Restart/migration/crash/restore tests pass |
-| WP-03 Runtime | Lifecycle, scheduler, budgets, cancellation, telemetry, supervision | Pause/resume and resource degradation demonstrated |
-| WP-04 Inference | Model adapter, provider registry, capability metadata | Swap backend without cognitive-module changes |
-| WP-05 Experience | Observation, provenance, representation interfaces | Experience stored and traced to source |
-| WP-06 Memory | Durable memory, retrieval, retention/deletion | Retrieve after restart with provenance; deletion excludes it |
-| WP-07 Knowledge | Evidence, provisional beliefs, revision/consolidation | Contradictory evidence creates traceable revision |
-| WP-08 Cognition | Context, prediction, appraisal/attention, reasoning | Integrated cycle emits inspectable traces |
-| WP-09 Goals | Goal revisions, plans, dependencies, budgets | Goal change cannot mutate historical plan |
-| WP-10 Action | Tool registry, policy gate, execution, verification | Denied action never executes; allowed outcome recorded |
-| WP-11 Learning | Outcome feedback, mechanism updates, evaluation | Held-out improvement and regression report |
-| WP-12 Self-model | Capability, limitation, confidence, resource/performance | Estimates calibrated against outcomes |
-| WP-13 Evolution | Isolation, comparison, approval, rollout, rollback | Candidate cannot self-approve; regression rolls back |
-| WP-14 Python workers | Supervisor, typed IPC, dataset/training/eval jobs | Crash/retry/cancel safe; outputs validated |
-| WP-15 Hardening | Security, fault injection, performance, recovery | Risk-based acceptance suite passes |
-| WP-16 Expansion | Android, voice, external compute, multi-device | Separately approved after single-device acceptance |
+The table previously in this section is retained in repository history and is no longer the active work-package baseline. It deferred Android integration to expansion, which conflicts with the owner's later decision that offline-capable mobile and cloud operation are concurrent first-release targets.
 
-Critical path: WP-00 → WP-01 → WP-02/WP-03 → WP-04/WP-05 → WP-06/WP-07 → WP-08 → WP-09/WP-10 → WP-11 → WP-12/WP-13 → WP-15. WP-14 follows stable contracts and artifact APIs but need not block the first local cycle. WP-16 is deferred.
+Use [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md) for the current proposed WP-00…WP-16 sequence, dependencies, first-release platform work and exit criteria. This roadmap remains subject to planning review and owner approval; it does not authorize implementation.
+
 
 ## 39. First milestone acceptance protocol
 
