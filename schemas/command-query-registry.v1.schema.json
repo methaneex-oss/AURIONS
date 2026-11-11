@@ -1,0 +1,342 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "command-query-registry.v1.schema.json",
+  "title": "AURIONS command and query registry",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "registry_id": {
+      "const": "aurions.command-query-registry"
+    },
+    "registry_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "const": "design_baseline_not_dispatchable"
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "request_schema_source": {
+      "const": "schemas/domain-payloads.v1.schema.json"
+    },
+    "command_response_schema": {
+      "type": "string"
+    },
+    "query_response_schema": {
+      "type": "string"
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 45,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "command_type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)+$"
+          },
+          "command_version": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+\\.[0-9]+$"
+          },
+          "request_schema": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "response_schema": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "owning_component": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aggregate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "persistence_stores": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "aurion_memory.db",
+                "aurion_events.db",
+                "aurion_governance.db"
+              ]
+            }
+          },
+          "expected_revision_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "authorization_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "idempotency_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deadline_cancellation_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "side_effect_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error_code_bindings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "emitted_event_bindings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fixture_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dispatch_status": {
+            "enum": [
+              "design_only_not_dispatchable",
+              "deferred_by_scope"
+            ]
+          },
+          "unresolved_bindings": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "command_type",
+          "command_version",
+          "request_schema",
+          "response_schema",
+          "owning_component",
+          "aggregate",
+          "persistence_stores",
+          "expected_revision_contract",
+          "authorization_contract",
+          "idempotency_contract",
+          "deadline_cancellation_contract",
+          "side_effect_contract",
+          "error_code_bindings",
+          "emitted_event_bindings",
+          "fixture_refs",
+          "dispatch_status",
+          "unresolved_bindings"
+        ]
+      }
+    },
+    "queries": {
+      "type": "array",
+      "minItems": 21,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "query_type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)+$"
+          },
+          "query_version": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+$"
+          },
+          "input_schema": {
+            "type": "string",
+            "minLength": 1
+          },
+          "response_schema": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result_item_schema": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owning_component": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aggregate": {
+            "type": "string",
+            "minLength": 1
+          },
+          "persistence_stores": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "aurion_memory.db",
+                "aurion_events.db",
+                "aurion_governance.db"
+              ]
+            }
+          },
+          "read_only": {
+            "const": true
+          },
+          "authorization_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "data_classification": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "redaction_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "consistency_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ordering_cursor_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "limits_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "freshness_cache_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fixture_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dispatch_status": {
+            "const": "design_only_not_dispatchable"
+          },
+          "unresolved_bindings": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "query_type",
+          "query_version",
+          "input_schema",
+          "response_schema",
+          "result_item_schema",
+          "owning_component",
+          "aggregate",
+          "persistence_stores",
+          "read_only",
+          "authorization_contract",
+          "data_classification",
+          "redaction_contract",
+          "consistency_contract",
+          "ordering_cursor_contract",
+          "limits_contract",
+          "freshness_cache_contract",
+          "fixture_refs",
+          "dispatch_status",
+          "unresolved_bindings"
+        ]
+      }
+    },
+    "dispatch_invariant": {
+      "type": "string",
+      "minLength": 1
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mapped_command_types": {
+          "const": 43
+        },
+        "deferred_command_types": {
+          "const": 2
+        },
+        "query_types": {
+          "const": 21
+        }
+      },
+      "required": [
+        "mapped_command_types",
+        "deferred_command_types",
+        "query_types"
+      ]
+    }
+  },
+  "required": [
+    "registry_id",
+    "registry_version",
+    "status",
+    "source_refs",
+    "request_schema_source",
+    "command_response_schema",
+    "query_response_schema",
+    "commands",
+    "queries",
+    "dispatch_invariant",
+    "counts"
+  ]
+}
