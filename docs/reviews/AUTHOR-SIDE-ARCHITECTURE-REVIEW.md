@@ -97,35 +97,21 @@ The revised documents preserve these established constraints:
 - Vector search, large-scale orchestration and microservices are not made mandatory without evidence.
 - No owner decision has been made here about the first UI, exact first permitted action, or numeric device performance thresholds.
 
-## 4. Remaining planning work — not defects silently resolved by this review
+## 4. Follow-up planning work and disposition
 
-The six author-review findings above have been incorporated into the proposal. This does **not** mean the full initial planning stage is complete. The source specification's outstanding work still requires separate deliverables and evidence, including:
+The six findings F-01 through F-06 are corrected. The additional design-level omissions originally listed here have now been specified in `docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md`. Their disposition and limits are recorded in Section 6. They are not being handed to the independent reviewer as known unaddressed gaps.
 
-1. Versioned API, event, command/query and C++/Python worker contracts.
-2. Component dependency/ownership matrix and cycle prevention.
-3. Concrete authorization policy and test cases.
-4. Operation state machine, crash/failure catalogue, reconciliation and compensation.
-5. Complete deletion, synchronization, offline-device and backup/restore semantics.
-6. Test catalogue with fixtures, steps, expected outcomes and measurable criteria.
-7. Dependency/licensing review for ARM64, Termux, offline operation and Android roadmap.
-8. SQL DDL review, execution, indexes, migrations, transaction and fault testing.
-9. Platform/interface validation and actual target-device measurements.
-10. Threat model, key lifecycle, residual-risk register and security validation.
-11. Implementation roadmap with dependencies, deliverables and exit criteria.
-12. Independent review and explicit owner approval.
-
-These are not marked complete by writing this review record.
+The remaining work is evidence, owner decisions, implementation validation and independent challenge. See Section 7 for the exact gates. This review does not claim those gates have passed.
 
 ## 5. Review conclusion
 
-**Author-side verdict: REVISE BEFORE INDEPENDENT REVIEW; NOT APPROVED FOR IMPLEMENTATION.**
+**Author-side verdict: DESIGN-LEVEL AUTHOR WORK COMPLETE; READY FOR INDEPENDENT REVIEW; NOT APPROVED FOR IMPLEMENTATION.**
 
-The revised proposal is more explicit about its scope, first-release workflows, learning evidence, governance constraints, autonomy requirements and unresolved product choices. The six identified author-side findings have documented corrections.
+The author-side consistency pass has addressed the six identified architecture findings and specified the additional planning contracts, recovery, governance, synchronization, test, security and roadmap deliverables. The latest PR diff has been checked against the planning supplement and reviewer brief.
 
-This conclusion is limited to the review method and material inspected. It is not independent confirmation that the architecture is technically optimal, complete, secure, feasible or correct. The independent reviewer must challenge the architecture from the source requirements and may reject or materially revise it.
+This is not independent confirmation that the architecture is technically optimal, complete, secure, feasible or correct. The independent reviewer must challenge the entire proposal from the original owner requirements and may identify additional defects or reject it.
 
-**Merge/implementation status:** PR #2 remains a draft proposal. PR #1 remains separate and unmerged. No application implementation, schema execution, device configuration or production dependency change is authorized by this review.
-
+**Merge/implementation status:** PR #2 remains a draft proposal. PR #1 remains separate, open and unmerged. No application implementation, schema execution, device configuration or production dependency change is authorized by this review.
 
 ## 6. Follow-up planning work completed after the initial six findings
 
