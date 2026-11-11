@@ -886,7 +886,8 @@
       "scope": "local"
     },
     "data_classification": "internal",
-    "approval_reference": null
+    "approval_reference": null,
+    "command_type": "capability.discover"
   },
   "queryEnvelope": {
     "query_id": "b0700000-0000-4000-8000-000000000001",
@@ -902,7 +903,8 @@
     "query_payload": {
       "kind": "capability_search"
     },
-    "max_results": 50
+    "max_results": 50,
+    "query_type": "capability.search"
   },
   "commandResponse": {
     "command_id": "b0600000-0000-4000-8000-000000000001",
@@ -910,7 +912,9 @@
     "responded_at": "2026-11-11T08:08:01Z",
     "operation_id": "70000000-0000-4000-8000-000000000001",
     "reason_ref": null,
-    "accepted_for_processing": true
+    "accepted_for_processing": true,
+    "command_type": "capability.discover",
+    "command_version": "1.0"
   },
   "contractError": {
     "error_id": "b0800000-0000-4000-8000-000000000001",
