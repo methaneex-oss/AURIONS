@@ -370,6 +370,32 @@ On restart, AURIONS MUST NOT blindly restore an old allocation as current truth.
 If required current inputs are unavailable, the scheduler enters a safe deferred/blocked state rather than treating stale priority as valid. Replay is idempotent and preserves the original event as history.
 
 
+### 6.2 Causal lineage, versioned snapshots and concurrent commits
+
+AURIONS does not assume a single global event order across the three SQLite stores or across cloud and mobile runtimes. Ordering is defined only within an explicitly named store/runtime stream. Cross-store and cross-runtime relationships use stable IDs, causal references and versioned domain state.
+
+Every state-changing command that depends on previously read state must identify:
+- The authoritative aggregate/domain identity being changed.
+- The expected revision (or explicit absence for creation).
+- The versions of context, goal, plan, capability descriptor, permission/grant and other dependencies that materially informed the proposed change.
+- The causal parent event/command and correlation/task/operation identity where applicable.
+- The idempotency key for retryable command submission.
+
+A handler validates those expected revisions and dependency versions at the owning state boundary. If the authoritative revision has advanced, the handler must not silently overwrite newer state. It returns a typed conflict/stale-input result containing the current revision reference and the dependency that failed validation. The caller may retrieve current state, recompute its proposal and submit a new command with a new causal link. A stale proposal is never made current merely by replay.
+
+Within one SQLite store, a state transition and its durable event/outbox record are committed in one local transaction. Across stores, use the documented local-transaction plus outbox/inbox and reconciliation pattern; do not claim distributed atomicity. A consumer checkpoint advances atomically with the consumer's local effect and is based on that store's durable sequence. Event IDs provide identity; per-store sequence provides local append order; neither is a global clock.
+
+Concurrent reads may proceed against immutable snapshots. A result produced from a snapshot may be retained as a hypothesis or historical analysis, but any write or action that relies on it must revalidate the relevant dependency versions at commit/dispatch. This prevents a valid earlier inference from being treated as valid after a permission revocation, goal cancellation, context invalidation, descriptor change or plan supersession.
+
+Conflict handling is domain-specific and preserves evidence:
+- Append-only observations, receipts and outcome evidence are not overwritten; corrections or later observations append new records with causal links.
+- Owner-authoritative governance and permission state is never merged by last-write-wins; the authoritative local policy boundary decides.
+- Mutable cognitive projections use optimistic revision checks and domain-specific reconciliation; incompatible updates remain explicit conflicts for reasoning or owner resolution.
+- Plan/task state changes require the current plan version and checkpoint lineage; stale work must replan rather than resume against changed dependencies.
+- Learned estimates retain their source evidence and update lineage; concurrent candidate updates are evaluated against the same declared baseline or explicitly rebased and re-evaluated.
+
+Cancellation and interruption are durable control signals. A handler checks cancellation before side effects and at documented safe points. If cancellation races with dispatch, the operation follows the durable operation state machine and may become uncertain; cancellation does not imply that an external effect was reversed. Reconciliation is required before a retry or a completion claim.
+
 ## 7. Persistent learning and behavioural change
 
 For a learning claim, the system must show a chain:
