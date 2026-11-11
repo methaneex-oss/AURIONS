@@ -187,7 +187,7 @@ New discovery adapters and capability providers can be added without rewriting t
 
 Extension installation does not automatically grant access. New providers are quarantined or unavailable until their provenance, compatibility, security and declared effects are evaluated. A provider cannot register itself as trusted, change governance policy or approve its own operations. Capability knowledge learned from one provider/device/version must not be generalized to another without evidence.
 
-## 6.1 Provider identity, trust and lifecycle
+### 6.1 Provider identity, trust and lifecycle
 
 A discovery provider is a source or adapter that reports environment observations or capability descriptors. A provider's ability to report a descriptor is not evidence that the descriptor is truthful, safe, compatible or authorized. Provider trust and capability confidence are separate records.
 
@@ -211,7 +211,7 @@ Provider lifecycle is a governed state machine, not a learned behaviour:
 
 Transitions require a recorded cause, actor, evidence, timestamp and applicable provider/version identity. A provider cannot validate, enable, approve or restore itself. Re-enabling after revocation requires a fresh validation and the required owner/governance action. A provider version change creates a new validation subject; trust is not inherited merely because the name is unchanged.
 
-## 6.2 Provider and discovery failure semantics
+### 6.2 Provider and discovery failure semantics
 
 Errors must distinguish at least:
 - **not visible** — platform visibility rules prevent observation;
@@ -231,7 +231,7 @@ Every error carries a stable machine code, retryability classification, side-eff
 
 Retry is not inferred from a generic failure. It is allowed only when the error classification and side-effect state prove that retry is safe or when the operation's idempotency/reconciliation contract explicitly permits it. A `dispatched` or `unknown` side-effect state enters durable uncertainty handling and requires reconciliation before retry; neither may trigger a blind retry. Permission denial, owner denial, trust failure and unsupported-interface errors are not automatically retried.
 
-## 6.3 Capability knowledge and provider lifecycle interaction
+### 6.3 Capability knowledge and provider lifecycle interaction
 
 Provider lifecycle events invalidate or constrain dependent capability descriptors and plans:
 - Provider version change invalidates descriptors whose compatibility has not been re-established.
@@ -242,6 +242,28 @@ Provider lifecycle events invalidate or constrain dependent capability descripto
 - Re-discovery creates new evidence and descriptor revisions; it does not mutate old evidence or silently reactivate a revoked provider.
 
 Learned reliability estimates can influence candidate ranking and resource estimates only. They cannot change provider trust state, Android permissions, AURIONS grants, risk class, approval requirements or execution-gateway decisions.
+
+
+### 6.4 Canonical provider lifecycle and failure payload binding
+
+The machine-readable payload definitions are maintained in `schemas/domain-payloads.v1.schema.json` under `providerLifecycle`, `providerFailure` and `compatibilityNegotiationState`; neutral validated-provider and enabled-provider examples are in `schemas/fixtures/provider-lifecycle.fixture.json` and `schemas/fixtures/provider-lifecycle-enabled.fixture.json`; the dispatched-blind-retry negative control is in `schemas/fixtures/negative/provider-failure-dispatched-blind-retry.invalid.json`. These schemas make the lifecycle and failure contract machine-readable, but they do not validate a provider or grant it authority.
+
+Normative lifecycle constraints:
+- A provider first observed from an environment is recorded as `observed` and remains non-invocable until validation and independent policy enablement have occurred.
+- `quarantined` is the safe holding state for unknown, incomplete or integrity-unverified providers. Validation evidence must bind the exact provider identity, version, artifact digest and interface/schema versions.
+- `validated` records technical validation only. It does not grant Android permissions, owner authorization or execution eligibility by itself.
+- `enabled` requires a separate trusted policy decision and currently required platform permissions. The provider cannot issue or approve that decision for itself.
+- `degraded` constrains or suspends use when health, compatibility or reliability evidence changes; it does not silently retain prior eligibility.
+- `revoked` is immediately non-invocable. `retired` is terminal for that provider version; a new version is a new validation subject.
+- Any provider artifact, version, interface schema, permission scope or trust-root change invalidates prior validation for the affected version. Capability descriptors and plans referencing the changed provider are revalidated or invalidated before dispatch.
+- Provider reliability learning may inform estimates and discovery prioritization only. It MUST NOT alter provider trust state, platform permission, owner approval, risk classification or action-gateway policy.
+
+Normative failure constraints:
+- Every discovery/provider failure identifies a stable machine category, retryability, side-effect state, correlation identity and provider/descriptor version when known.
+- If side-effect state is `dispatched` or `unknown`, retryability MUST be `reconcile_before_retry`; no blind retry is permitted.
+- Permission denial, owner-authorization denial, unsupported capability, stale descriptor, schema incompatibility and provider unavailability remain distinct outcomes. They must not be collapsed into a generic failure or interpreted as a learned universal inability.
+- A cancelled request does not prove that an already-dispatched provider operation was cancelled. The operation receipt/reconciliation path remains authoritative for effects.
+- Compatibility negotiation selects only a mutually supported schema/envelope version. It never upgrades an unsupported message by guessing or silently dropping security-relevant fields.
 
 ## 7. Required interfaces
 
@@ -260,7 +282,7 @@ The implementation contract must provide versioned equivalents of:
 
 Each contract must define schema version, stable IDs, provenance, timestamps, correlation/causation, owner/device scope, sensitivity, idempotency, errors, cancellation, durability and compatibility. The implementation-ready planning contract must own the concrete schemas; this architecture document defines their semantics and ownership.
 
-## 7.1 Canonical contract and ownership mapping
+### 7.1 Canonical contract and ownership mapping
 
 The canonical mechanism-to-component/state/API/work-package/test crosswalk is maintained in [Cognitive and Capability Contract Matrix](COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md), Section 3. The field-level environment, discovery, capability descriptor, capability-knowledge, plan-step, operation-proposal and execution-receipt semantics are maintained in [Implementation-Ready Planning Contracts](../planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md), Section 4.4.
 
@@ -320,25 +342,3 @@ This architecture section is not complete until:
 8. Platform-dependent claims remain explicitly unvalidated until actual device evidence exists.
 
 **Current disposition:** IN PROGRESS. This document materially expands the Android architecture but does not itself close the design, platform validation, independent-review or owner-approval gates.
-
-
-## 6.4 Canonical provider lifecycle and failure payload binding
-
-The machine-readable payload definitions are maintained in `schemas/domain-payloads.v1.schema.json` under `providerLifecycle`, `providerFailure` and `compatibilityNegotiationState`; generic examples are in `schemas/fixtures/provider-lifecycle.fixture.json`. These schemas make the lifecycle and failure contract machine-readable, but they do not validate a provider or grant it authority.
-
-Normative lifecycle constraints:
-- A provider first observed from an environment is recorded as `observed` and remains non-invocable until validation and independent policy enablement have occurred.
-- `quarantined` is the safe holding state for unknown, incomplete or integrity-unverified providers. Validation evidence must bind the exact provider identity, version, artifact digest and interface/schema versions.
-- `validated` records technical validation only. It does not grant Android permissions, owner authorization or execution eligibility by itself.
-- `enabled` requires a separate trusted policy decision and currently required platform permissions. The provider cannot issue or approve that decision for itself.
-- `degraded` constrains or suspends use when health, compatibility or reliability evidence changes; it does not silently retain prior eligibility.
-- `revoked` is immediately non-invocable. `retired` is terminal for that provider version; a new version is a new validation subject.
-- Any provider artifact, version, interface schema, permission scope or trust-root change invalidates prior validation for the affected version. Capability descriptors and plans referencing the changed provider are revalidated or invalidated before dispatch.
-- Provider reliability learning may inform estimates and discovery prioritization only. It MUST NOT alter provider trust state, platform permission, owner approval, risk classification or action-gateway policy.
-
-Normative failure constraints:
-- Every discovery/provider failure identifies a stable machine category, retryability, side-effect state, correlation identity and provider/descriptor version when known.
-- If side-effect state is `dispatched` or `unknown`, retryability MUST be `reconcile_before_retry`; no blind retry is permitted.
-- Permission denial, owner-authorization denial, unsupported capability, stale descriptor, schema incompatibility and provider unavailability remain distinct outcomes. They must not be collapsed into a generic failure or interpreted as a learned universal inability.
-- A cancelled request does not prove that an already-dispatched provider operation was cancelled. The operation receipt/reconciliation path remains authoritative for effects.
-- Compatibility negotiation selects only a mutually supported schema/envelope version. It never upgrades an unsupported message by guessing or silently dropping security-relevant fields.
