@@ -464,7 +464,7 @@ Implementation remains blocked pending owner approval and the evidence gates in 
 | WP-12 | Multi-device synchronization | WP-02/03/04/11; Sections 9/11 | Pairing, revocation, domain sync, conflict, deletion and handoff tests |
 | WP-13 | External providers/voice/multimodal | Provider/platform decisions; WP-03/09/11 | Per-provider policy, disclosure, budgets, privacy and failure tests |
 
-WP-00 PR #1 is a scaffold proposal and must be reconciled against this sequence; it is not authorization to implement cognition or prematurely freeze a UI/runtime choice.
+WP-00 PR #1 is a scaffold proposal and must be reconciled against the single canonical roadmap before implementation; it is not authorization to implement cognition or prematurely freeze a UI/runtime choice.
 
 ## 15. Planning exit gates and outstanding evidence
 
@@ -500,11 +500,11 @@ These are specified proposals, not independently validated or owner-approved imp
 The following must not be guessed by the technical lead:
 1. ~~First user-facing interface (CLI, Android-native or another client).~~ **RESOLVED: CLI is the first user-facing interface.**
 2. **RESOLVED: cloud operation and offline-capable mobile operation are concurrent first-release targets.** Offline mobile must not require cloud connectivity; both contexts use shared versioned contracts and the authoritative cognitive core. Mobile UI technology and exact deployment topology remain subject to validation.
-3. **Android capability architecture remains to be corrected and validated.** App launch, volume adjustment and file handling were examples supplied to illustrate the breadth of possible Android interaction, not an exhaustive capability list, fixed scope or selected first action. Planning must define environment perception/representation, capability discovery, capability learning, reasoning/planning over discovered capabilities, platform adapters and independent governance. No fixed operation catalogue should be inferred from the examples.
-3. Numeric performance/latency/resource thresholds after device baselines.
-4. Any change to protected authority, privacy, external disclosure or risk tolerance.
+3. **Android capability architecture:** the examples (app launch, volume adjustment and file handling) are illustrative only, not an exhaustive capability list, fixed scope or selected first action. Planning must define environment perception/representation, general capability discovery, capability learning, reasoning/planning over discovered capabilities, platform adapters and independent governance. No fixed operation catalogue may be inferred from the examples.
+4. Numeric performance/latency/resource thresholds after device baselines.
+5. Any change to protected authority, privacy, external disclosure or risk tolerance.
 
-The first-interface and deployment directions are owner-decided. The Android capability architecture requires correction and validation; implementation authorization and the planning exit remain separate owner gates.
+The first-interface and deployment directions are owner-decided. The Android capability architecture remains an IN-PROGRESS builder design deliverable; implementation authorization and the planning exit remain separate owner gates. See PLANNING-COMPLETION-REGISTER.md for authoritative status.
 
 ## 16. Planning exit rule
 
