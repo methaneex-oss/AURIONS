@@ -131,7 +131,7 @@ Every event includes the common envelope and an immutable event body. Initial ev
 - `memory.recorded.v1`, `memory.retrieved.v1`
 - `belief.proposed.v1`, `belief.revised.v1`
 - `prediction.created.v1`, `prediction.evaluated.v1`
-- `appraisal.updated.v1`, `attention.allocated.v1`, `reasoning.hypothesis.proposed.v1`, `outcome.evaluated.v1`
+- `appraisal.updated.v1`, `attention.allocated.v1`, `reasoning.hypothesis.proposed.v1`, `decision.recorded.v1`, `outcome.evaluated.v1`
 - `goal.created.v1`, `goal.revised.v1`, `plan.proposed.v1`, `plan.revised.v1`, `plan.checkpointed.v1`, `decision.recorded.v1`
 - `permission.evaluated.v1`, `approval.requested.v1`, `approval.decided.v1`
 - `operation.accepted.v1`, `operation.started.v1`, `operation.dispatched.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.rejected.v1`, `operation.uncertain.v1`, `operation.reconciling.v1`, `operation.reconciled.v1`, `operation.compensation_required.v1`, `operation.compensated.v1`, `operation.manual_intervention.v1`
@@ -390,6 +390,7 @@ Every test has stable ID, requirement link, fixture/version, preconditions, exac
 - CAP-002: revoked/stale descriptor or platform grant blocks queued execution and triggers safe revalidation.
 - CAP-003: contradictory capability-use evidence creates a scoped knowledge revision without erasing history.
 - CAP-004: a new schema-compatible capability descriptor is represented without a hardcoded task-to-action branch.
+- NHC-001 through NHC-008: execute the no-hardcoding and capability-extensibility regression checks defined in Section 10.6.
 - SY-001: duplicate sync envelope applies once.
 - SY-002: out-of-order causal change is buffered/rejected safely.
 - SY-003: conflict retains both versions and provenance.
