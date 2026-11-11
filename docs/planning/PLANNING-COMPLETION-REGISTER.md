@@ -95,7 +95,7 @@ These are the main-builder's responsibilities, not owner testing or independent-
 - Produce a single source of truth for each contract.
 
 ### B-06 — Reconcile implementation work packages and roadmap
-- Resolve the differing WP tables between the source specification and planning-contract supplement.
+- Reconcile the differing WP tables in the source specification, architecture and planning-contract supplement to the canonical roadmap; verify component owners and dependencies.
 - Correct sequencing so shared contracts, persistence, runtime, cognition, capability discovery, action governance and Android integration are properly dependent.
 - Keep implementation scope evidence-driven; no fixed operation catalogue.
 - Ensure concurrent cloud/offline mobile direction is reflected in work packages and gates.
