@@ -60,7 +60,7 @@ No layer is currently marked COMPLETE — VERIFIED. This is deliberate: the curr
 These are the main-builder's responsibilities, not owner testing or independent-review work.
 
 ### B-01 — Complete the Android environment and capability architecture
-- A dedicated Android architecture now defines environment observation, general discovery, dynamic descriptors, capability knowledge, planning, permission/governance separation, execution, verification and learning. Remaining: map every responsibility to concrete components/contracts/tests and reconcile with the product and deployment architecture.
+- A dedicated Android architecture now defines environment observation, general discovery, dynamic descriptors, capability knowledge, planning, permission/governance separation, execution, verification and learning. A component/contract/state/test crosswalk has now been added. Remaining: specify exact descriptor and message schemas, map all scenarios into executable fixtures, and reconcile deployment/state ownership.
 - Define general discovery mechanisms and adapters rather than a hardcoded list of operations.
 - Define capability descriptions as data: identity/version, source, interface/schema, preconditions, effects, constraints, permission requirements, risk, reversibility, resource needs, cancellation, verification and lifecycle.
 - Define how discovered capabilities are validated, compared, selected, invoked and re-discovered when the environment changes.
@@ -70,21 +70,21 @@ These are the main-builder's responsibilities, not owner testing or independent-
 
 ### B-02 — Complete the cognitive mechanism contracts
 - A new [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) maps all 17 cognitive domains and the Android discovery/execution responsibilities to ownership, persistence, contract families, work packages and tests.
-- Reconcile the dedicated cognitive mechanism architecture with concrete C++ ownership, versioned contracts, authoritative persistence, Android capability discovery, canonical roadmap and acceptance tests.
+- A mechanism-to-component/persistence/event/test crosswalk has now been added. Remaining: specify exact per-mechanism input/output/error/state-transition schemas, reconcile concurrency and causal version semantics, and ensure every CM-* case has a concrete fixture and assertion.
 - Specify data/state transitions, provenance, uncertainty and temporal relationships.
 - Define iterative, concurrent, interruptible and feedback interactions; do not turn the cycle into a rigid pipeline.
 - Specify how prediction/outcome evaluation changes memory, beliefs, strategies and later decisions.
 - Specify testable experience-dependent change without hardcoded stimulus-to-behaviour mappings.
 
 ### B-03 — Operationalize the no-hardcoding principle
-- The principle is now explicitly defined in the completion register and both dedicated architecture documents. Remaining: trace it through all product requirements, implementation contracts, work packages, review criteria and test fixtures.
+- The principle is explicitly defined across the dedicated architecture documents and completion register. NHC-001…NHC-008 regression acceptance checks have now been added to the contract test catalogue. Remaining: trace the invariant through all product requirements, work packages, review criteria and fixtures, then execute code-level checks after implementation.
 - Separate engineered mechanisms/invariants from data and behaviour learned or discovered through experience.
 - Permit explicit safety invariants, schemas, protocols, resource limits and policy constraints; these are not learned behaviour.
 - Require provenance, confidence/uncertainty and evaluation for acquired capability knowledge.
 - Add architecture and test checks that detect regressions toward hardcoded behaviour.
 
 ### B-04 — Reconcile architecture, product and platform boundaries
-- The architecture and canonical roadmap now distinguish CLI first interface from concurrent cloud/offline-mobile operation. Remaining: verify exact topology, interface scope, local authority and deployment dependencies without making cloud mandatory for offline mobile.
+- The architecture and canonical roadmap distinguish CLI first interface from concurrent cloud/offline-mobile operation. A new roadmap note explicitly separates shared implementation from live state/synchronization and records that WP-15 is not implementation-ready until deployment and state ownership semantics are resolved.
 - Ensure Android integration is not deferred wholesale if offline mobile is a concurrent first-release target.
 - Separate first-release integration requirements from later expansion (voice, multi-device, broader providers) without narrowing the underlying capability architecture.
 - Align C++ core, platform adapters, inference, Python workers and governance boundaries.
@@ -155,3 +155,18 @@ Planning can be marked COMPLETE — VERIFIED only when:
 11. The owner explicitly approves planning exit and the next authorized implementation scope.
 
 Until then, planning remains IN PROGRESS or BLOCKED as recorded above. No implementation authorization is implied.
+
+## 7. Builder audit findings from 2026-11-11
+
+The following findings were identified during the current cross-document pass. Corrections are recorded; unresolved items remain open rather than being labelled complete.
+
+| ID | Severity | Finding | Disposition | Remaining evidence/work |
+|---|---|---|---|---|
+| BA-001 | Medium | Product decision list reused item number 3, making owner decisions ambiguous. | Corrected numbering in the product definition. | Re-fetch and confirm final content. |
+| BA-002 | High | Product scope row named Native Android UI even though the owner selected CLI as first user-facing interface and did not select a native mobile UI technology. | Reframed as offline-capable Android platform integration; explicitly states that the row does not select a native UI. | Reconcile with deployment topology and first-release acceptance. |
+| BA-003 | High | Concurrent cloud and offline-mobile targets plus deferred multi-device synchronization did not explicitly define whether shared contracts meant shared live state, independent runtimes or cross-context continuity. | Added an explicit distinction and recorded the unresolved state-ownership/topology contract in the canonical roadmap. | Builder must prepare a concrete topology proposal and compare its implications; any owner-reserved continuity choice must be presented explicitly. |
+| BA-004 | Medium | Android and cognitive architecture documents described mechanisms and tests but lacked a single visible crosswalk to component ownership, persistence domains, contract families and verification IDs. | Added crosswalks to both architecture documents. | Verify every row against canonical schemas and turn scenarios into fixtures. |
+| BA-005 | Medium | No-hardcoding had scenario tests but lacked a named regression family covering extensibility, generic planning, scoped evidence updates and authority invariance. | Added NHC-001 through NHC-008 to the implementation-contract test catalogue. | Tests are specified, not executed; code-level review and behavioural fixtures remain future validation. |
+| BA-006 | Medium | Cognitive mechanism crosswalk referenced a decision event not present in the event catalogue. | Added decision.recorded.v1 to the event catalogue. | Define its exact payload schema and fixture in the contract schema set. |
+
+These findings do not establish completion of any planning layer. They document specific corrections and remaining work discovered by the builder audit.
