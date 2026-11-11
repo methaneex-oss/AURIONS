@@ -2,7 +2,7 @@
 
 **Status:** Author-prepared planning supplement; proposed until owner approval. This document closes the design gaps listed in the author-side review where they can be resolved without fabricating test evidence or making owner-reserved product decisions. It does not claim SQL execution, device measurements, dependency audit, penetration testing, or implementation.
 
-**Authority:** The imported owner decision register remains authoritative. Where this supplement adds detail, it is an engineering proposal. A proposal must not silently become an owner decision. The [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) is the canonical crosswalk for cognitive and Android capability state ownership, persistence, work-package and test mapping. The initial language-neutral JSON Schema source is `schemas/domain-payloads.v1.schema.json`; it defines 45 payload examples across experience, representation, context, evidence, belief, prediction, appraisal, attention, reasoning, memory, knowledge, goals, plans, decisions, capability discovery/knowledge, operation lifecycle, outcome evaluation, learning, self-model, evolution, governance, checkpoints and sync. The common envelope and extensible capability descriptor body are defined separately in `schemas/message-envelope.v1.schema.json` and `schemas/capability-descriptor-body.v1.schema.json`. It is an initial schema set, not yet the complete command/event contract corpus or a selected runtime validator.
+**Authority:** The imported owner decision register remains authoritative. Where this supplement adds detail, it is an engineering proposal. A proposal must not silently become an owner decision. The [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) is the canonical crosswalk for cognitive and Android capability state ownership, persistence, work-package and test mapping. The initial language-neutral JSON Schema source is `schemas/domain-payloads.v1.schema.json`; it defines 47 payload examples across experience, representation, context, evidence, belief, prediction, appraisal, attention, reasoning, memory, knowledge, goals, plans, decisions, capability discovery/knowledge, operation lifecycle, outcome evaluation, learning, self-model, evolution, governance, checkpoints and sync. The common envelope and extensible capability descriptor body are defined separately in `schemas/message-envelope.v1.schema.json` and `schemas/capability-descriptor-body.v1.schema.json`. It is an initial schema set, not yet the complete command/event contract corpus or a selected runtime validator.
 
 ## 1. Scope and completion semantics
 
@@ -149,7 +149,7 @@ Every event body MUST validate against exactly one versioned payload schema befo
 |---|---|
 | `experience.observed.v1` | `experienceObserved` |
 | `representation.created.v1` / `representation.revised.v1` | `representationCreated` / `representationRevised` |
-| `context.assembled.v1` / `context.invalidated.v1` | `contextSnapshot` |
+| `context.assembled.v1` / `context.invalidated.v1` | `contextSnapshot` / `contextInvalidated` |
 | `environment.observed.v1` | `environmentObserved` |
 | `capability.discovered.v1` / `capability.verified.v1` / `capability.invalidated.v1` / `capability.revoked.v1` | `capabilityDescriptorRecord` |
 | `capability.knowledge.revised.v1` | `capabilityKnowledgeRevision` |
@@ -162,10 +162,10 @@ Every event body MUST validate against exactly one versioned payload schema befo
 | `plan.proposed.v1` / `plan.revised.v1` / `plan.checkpointed.v1` | `planRevision` / `planRevision` / `taskCheckpointDetails` |
 | `permission.evaluated.v1` / `approval.requested.v1` / `approval.decided.v1` | `permissionEvaluated` / `approvalRequested` / `approvalDecision` |
 | All `operation.*.v1` lifecycle events | `operationLifecycleEvent` |
-| `outcome.observed.v1` / `outcome.evaluated.v1` | `outcomeEvaluation` |
+| `outcome.observed.v1` / `outcome.evaluated.v1` | `outcomeObserved` / `outcomeEvaluation` |
 | `learning.update.proposed.v1` / `learning.update.accepted.v1` / `learning.experiment.completed.v1` | `learningUpdate` / `learningUpdate` / `learningExperimentCompleted` |
 | `self_model.updated.v1` | `selfModelUpdated` |
-| `evolution.proposed.v1` / `evolution.candidate.evaluated.v1` | `evolutionProposed` |
+| `evolution.proposed.v1` / `evolution.candidate.evaluated.v1` | `evolutionProposed` / `evolutionCandidateLifecycle` |
 | `candidate.activated.v1` / `candidate.rolled_back.v1` | `evolutionCandidateLifecycle` |
 | `sync.change.exported.v1` / `sync.change.applied.v1` / `sync.tombstone.applied.v1` | `syncChange` |
 | `artifact.registered.v1` / `artifact.quarantined.v1` / `artifact.deleted.v1` | `artifactManifest` |
