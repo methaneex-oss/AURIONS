@@ -204,25 +204,17 @@ The implementation contract must provide versioned equivalents of:
 
 Each contract must define schema version, stable IDs, provenance, timestamps, correlation/causation, owner/device scope, sensitivity, idempotency, errors, cancellation, durability and compatibility. The implementation-ready planning contract must own the concrete schemas; this architecture document defines their semantics and ownership.
 
-## 7.1 Contract, state and verification ownership
+## 7.1 Canonical contract and ownership mapping
 
-The following crosswalk makes the logical architecture actionable without duplicating canonical payload schemas. Command/query/event names are versioned interface families, not a closed set of Android behaviours.
+The canonical mechanism-to-component/state/API/work-package/test crosswalk is maintained in [Cognitive and Capability Contract Matrix](COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md), Section 3. The field-level environment, discovery, capability descriptor, capability-knowledge, plan-step, operation-proposal and execution-receipt semantics are maintained in [Implementation-Ready Planning Contracts](../planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md), Section 4.4.
 
-| Mechanism | Owning component | Contract families | Authoritative state | Verification coverage |
-|---|---|---|---|---|
-| Environment observation | Environment/discovery + Android platform adapter | `environment.observe`, `environment.inspect`, `environment.observed.v1` | `aurion_memory.db.experiences`; durable observation events in `aurion_events.db` | AD-001, AD-004, AD-011, AD-013 |
-| Discovery broker | Environment/discovery | `capability.discover`, `capability.search`, `capability.discovered.v1`, `capability.invalidated.v1` | `capability_descriptors`, `capability_discovery_evidence`; discovery event history | AD-002, AD-003, AD-004, AD-015 |
-| Capability registry and lifecycle | Environment/discovery | `capability.inspect`, `capability.verify`, `capability.invalidate`, `capability.verified.v1`, `capability.revoked.v1` | Versioned descriptor and lifecycle records in `aurion_memory.db`; lifecycle events in `aurion_events.db` | AD-004, AD-005, AD-015 |
-| Capability-use knowledge | Learning/evaluation, with descriptor ownership retained by Environment/discovery | `outcome.evaluate`, `learning.update.propose`, `outcome.evaluated.v1`, `learning.update.proposed.v1`, `learning.update.accepted.v1` | `capability_knowledge_revisions`, `capability_knowledge_evidence`, `capability_relationships`, `learning_updates` | AD-008, AD-009, CAP-003 |
-| Goal decomposition and plan binding | Goals/planning | `plan.propose`, `plan.checkpoint`, `plan.proposed.v1`, `plan.checkpointed.v1` | `goals`, `plans`, `plan_steps`, `plan_step_dependencies` | AD-006, AD-012, CM-007 |
-| Permission and approval | Governance; Android OS remains an independent authority | `approval.request`, `approval.revoke`, `permission.evaluated.v1`, `approval.requested.v1`, `approval.decided.v1` | `aurion_governance.db` permission, approval and audit records; OS grant state is queried from Android | AD-001, AD-005, AD-006, AD-010, AD-013 |
-| Operation dispatch and recovery | Action gateway + runtime | `operation.propose`, `operation.cancel`, `operation.reconcile`, `operation.started.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.uncertain.v1`, `operation.reconciled.v1` | `aurion_events.db` operations, steps and recovery journal | AD-014; OP-001…OP-008 |
-| Postcondition and outcome evaluation | Outcome evaluation | `outcome.evaluate`, `outcome.evaluated.v1` | `outcome_evaluations` in `aurion_memory.db`, linked to immutable operation/observation evidence | AD-007, CM-009, CM-010 |
-| Rediscovery and stale-state handling | Environment/discovery + runtime | Environment-change observations, `capability.discover`, `capability.invalidate`, capability lifecycle events | Descriptor versions and provenance in memory store; event and checkpoint history in event store | AD-004, AD-005, AD-014 |
+These documents are the single sources of truth for the mapping and payload semantics; this architecture document defines Android-specific behaviour and invariants. Do not create a second capability catalogue or duplicate schemas here.
 
-Authority separation is mandatory: the capability registry owns descriptions and evidence, not permission grants; governance owns AURIONS authorization; Android owns platform grants; the action gateway revalidates both immediately before dispatch. No adapter, provider, planner or learned capability record may bypass those boundaries.
-
-Concrete field-level schemas, error codes, compatibility rules and fixture payloads remain owned by the Implementation-Ready Planning Contracts. This crosswalk is not a claim that those schemas have already been fully specified or executed.
+The critical authority boundaries remain:
+- The environment/discovery component owns observations, discovery provenance, descriptor versions and capability knowledge references; it does not own permission grants.
+- Android remains authoritative for platform permission state. AURIONS governance independently evaluates owner authority and exact-operation policy.
+- The action gateway owns durable dispatch and operation lifecycle. Outcome evaluation owns postcondition evidence and learning proposals.
+- The cognitive planner references discovered descriptor IDs/versions; it never treats a descriptor as permission or as proof that an operation is currently feasible.
 
 ## 8. Required verification scenarios
 
