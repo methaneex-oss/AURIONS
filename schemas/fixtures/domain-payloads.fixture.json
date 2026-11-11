@@ -480,13 +480,15 @@
   "operationLifecycleEvent": {
     "operation_id": "70000000-0000-4000-8000-000000000001",
     "attempt_id": "73000000-0000-4000-8000-000000000001",
-    "state": "accepted",
+    "state": "proposed",
     "occurred_at": "2026-11-11T08:00:08Z",
     "provider_receipt_ref": null,
     "verification_evidence_ref": null,
     "error_ref": null,
     "uncertainty_reason": null,
-    "policy_decision_ref": null
+    "policy_decision_ref": null,
+    "attempt_state": "prepared",
+    "attempt_number": 1
   },
   "decisionRecorded": {
     "decision_id": "5d2f4c90-7a6d-4e23-ae32-1b7d51e20a11",
