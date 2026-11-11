@@ -140,7 +140,7 @@ For every finding include:
 Evaluate all 14 areas in Phase 3. Do not omit an area because the architecture does not define it; report the omission and its significance.
 
 ### E. First-release assessment
-Define what must work end-to-end for the first usable local release. Identify measurable acceptance tests and reject superficial demonstrations.
+Define what must work end-to-end for the first usable release. Identify measurable acceptance tests and reject superficial demonstrations.
 
 ### F. Learning-proof assessment
 Specify how the system should demonstrate repeatable improvement against a baseline on held-out tasks, related unseen variations and regression checks. Distinguish genuine learning from stored history, state mutation and successful model training.
