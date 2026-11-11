@@ -268,9 +268,9 @@ No cross-database atomic transaction is assumed. Use local transaction + outbox 
 ## 8. Persistence, schema and transaction boundaries
 
 ### 8.1 Store ownership
-- `aurion_memory.db`: experience/representation/context, memories, knowledge, evidence, beliefs, predictions, goals, plans, learning metadata.
-- `aurion_events.db`: event log, operations, operation steps, task runs/checkpoints, outbox/inbox, recovery journal.
-- `aurion_governance.db`: identities, device trust, policies, capabilities/grants, approvals, revocations, disclosure records and security audit.
+- `aurion_memory.db`: experience/representation/context, memories, knowledge, evidence, beliefs, predictions, goals, plans, versioned discovered capability descriptors and learned capability knowledge, durable appraisal/decision/outcome summaries, self-model revisions, evolution proposals and learning metadata.
+- `aurion_events.db`: event log, capability discovery/execution events, operations, operation steps, task runs/checkpoints, outbox/inbox and recovery journal.
+- `aurion_governance.db`: owner/device identities and trust, policies, permission grants, approval requests/decisions, revocations, disclosure records and security audit. A capability descriptor is not a permission grant; the OS and governance authorities are rechecked independently at execution.
 
 Each DB has its own migration ledger, backup/restore procedure, integrity check and schema version. Cross-file foreign keys are prohibited. Cross-store references use UUIDs validated by application services.
 
