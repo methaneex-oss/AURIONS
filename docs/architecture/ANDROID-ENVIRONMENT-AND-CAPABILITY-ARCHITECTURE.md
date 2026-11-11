@@ -227,9 +227,9 @@ Errors must distinguish at least:
 - **integrity/trust failure** — signature, digest, provenance or isolation validation failed;
 - **internal adapter failure** — unexpected adapter fault, reported without leaking secrets.
 
-Every error carries a stable machine code, retryability classification, side-effect state (not-dispatched, no-effect-confirmed, effect-confirmed, or unknown), correlation/operation identity where applicable, provider and descriptor versions, safe diagnostic reference and user-action requirement. Human-readable messages are not used for control flow.
+Every error carries a stable machine code, retryability classification, side-effect state (`not_dispatched`, `dispatched`, `unknown` or `not_applicable`), correlation/operation identity where applicable, provider and descriptor versions, a safe diagnostic reference (or explicit null when no safe artifact exists) and user-action requirement. `dispatched` means invocation may have occurred; it does not prove the effect. Confirmed effects are recorded through provider receipts and independent outcome evidence. Human-readable messages are not used for control flow.
 
-Retry is not inferred from a generic failure. It is allowed only when the error classification and side-effect state prove that retry is safe or when the operation's idempotency/reconciliation contract explicitly permits it. An unknown side-effect state enters durable uncertainty handling; it must never trigger blind retry. Permission denial, owner denial, trust failure and unsupported-interface errors are not automatically retried.
+Retry is not inferred from a generic failure. It is allowed only when the error classification and side-effect state prove that retry is safe or when the operation's idempotency/reconciliation contract explicitly permits it. A `dispatched` or `unknown` side-effect state enters durable uncertainty handling and requires reconciliation before retry; neither may trigger a blind retry. Permission denial, owner denial, trust failure and unsupported-interface errors are not automatically retried.
 
 ## 6.3 Capability knowledge and provider lifecycle interaction
 
@@ -338,7 +338,7 @@ Normative lifecycle constraints:
 
 Normative failure constraints:
 - Every discovery/provider failure identifies a stable machine category, retryability, side-effect state, correlation identity and provider/descriptor version when known.
-- If side-effect state is `unknown`, retryability MUST be `reconcile_before_retry`; no blind retry is permitted.
+- If side-effect state is `dispatched` or `unknown`, retryability MUST be `reconcile_before_retry`; no blind retry is permitted.
 - Permission denial, owner-authorization denial, unsupported capability, stale descriptor, schema incompatibility and provider unavailability remain distinct outcomes. They must not be collapsed into a generic failure or interpreted as a learned universal inability.
 - A cancelled request does not prove that an already-dispatched provider operation was cancelled. The operation receipt/reconciliation path remains authoritative for effects.
 - Compatibility negotiation selects only a mutually supported schema/envelope version. It never upgrades an unsupported message by guessing or silently dropping security-relevant fields.
