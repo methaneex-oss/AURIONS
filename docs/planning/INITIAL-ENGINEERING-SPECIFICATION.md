@@ -1565,6 +1565,9 @@ CREATE TABLE task_checkpoint_details (
   created_at_ms INTEGER NOT NULL
 ) STRICT;
 
+ALTER TABLE task_runs
+  ADD COLUMN revision INTEGER NOT NULL DEFAULT 1 CHECK(revision>0);
+
 ```
 
 The expanded `operations.state` and `operation_steps.state` values in the proposed base DDL are the canonical durable lifecycle projection. The operation-attempt table records each dispatch attempt and its receipt/verification evidence. Operation details bind owner, actor, device, originating plan step, exact capability version and the canonical parameter artifact ID/digest. Parameter payloads and sensitive effect details are stored as governed artifacts with sensitivity and encryption metadata, not copied as plaintext into the event database. Task checkpoint details bind a resumable checkpoint to the exact plan version, context/capability epoch and dependency-state digest. State transitions remain governed by Section 7.1; SQL CHECK constraints restrict values but do not enforce the transition graph. The command handler must atomically append the lifecycle event and update the owning projection in one `aurion_events.db` transaction.
