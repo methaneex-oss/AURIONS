@@ -2375,6 +2375,912 @@
           "$ref": "urn:aurions:schema:capability-descriptor-body:1"
         }
       }
+    },
+    "representationRevised": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "representation_id",
+        "revision_number",
+        "supersedes_revision_id",
+        "experience_id",
+        "representation_type",
+        "method_id",
+        "method_version",
+        "content",
+        "uncertainty",
+        "source_refs",
+        "created_at"
+      ],
+      "properties": {
+        "representation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "revision_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "supersedes_revision_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "experience_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "representation_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "method_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "method_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content": {
+          "type": "object"
+        },
+        "uncertainty": {
+          "type": "object"
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "approvalRequested": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id",
+        "operation_id",
+        "owner_ref",
+        "session_ref",
+        "operation_digest",
+        "capability_id",
+        "descriptor_version",
+        "target_ref",
+        "data_categories",
+        "recipients",
+        "risk_class",
+        "policy_version_ref",
+        "expires_at",
+        "requested_at"
+      ],
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "owner_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation_digest": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "capability_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "descriptor_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "data_categories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "recipients": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "risk_class": {
+          "enum": [
+            "R0",
+            "R1",
+            "R2",
+            "R3",
+            "R4",
+            "R5"
+          ]
+        },
+        "policy_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "requested_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "learningExperimentCompleted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "experiment_id",
+        "attempt_id",
+        "hypothesis_ref",
+        "baseline_artifact_ref",
+        "candidate_artifact_ref",
+        "dataset_manifest_ref",
+        "protocol_ref",
+        "metrics_ref",
+        "regression_results_ref",
+        "code_revision",
+        "random_seed",
+        "started_at",
+        "finished_at",
+        "status"
+      ],
+      "properties": {
+        "experiment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "hypothesis_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseline_artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataset_manifest_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "protocol_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metrics_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "regression_results_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "random_seed": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "finished_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "inconclusive",
+            "cancelled"
+          ]
+        }
+      }
+    },
+    "evolutionCandidateLifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "proposal_id",
+        "state",
+        "artifact_ref",
+        "occurred_at"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "proposal_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "enum": [
+            "quarantined",
+            "evaluated",
+            "approved",
+            "active",
+            "rolled_back",
+            "rejected"
+          ]
+        },
+        "artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evaluation_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approval_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "previous_candidate_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rollback_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "artifactManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "artifact_kind",
+        "schema_version",
+        "media_type",
+        "byte_size",
+        "sha256",
+        "storage_ref",
+        "owner_id",
+        "sensitivity",
+        "provenance",
+        "lineage",
+        "retention_class",
+        "lifecycle",
+        "created_at"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "artifact_kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schema_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "byte_size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "storage_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sensitivity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "producer_id",
+            "source_refs"
+          ],
+          "properties": {
+            "producer_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "lineage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "parent_artifact_refs"
+          ],
+          "properties": {
+            "parent_artifact_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "derived_from": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "retention_class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle": {
+          "enum": [
+            "staging",
+            "quarantined",
+            "available",
+            "deletion_pending",
+            "deleted"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "externalDisclosureRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disclosure_id",
+        "owner_id",
+        "actor_identity",
+        "recipient_ref",
+        "purpose_ref",
+        "data_categories",
+        "source_refs",
+        "sensitivity",
+        "operation_id",
+        "policy_version_ref",
+        "payload_digest",
+        "decision",
+        "status",
+        "created_at"
+      ],
+      "properties": {
+        "disclosure_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recipient_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "purpose_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "data_categories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sensitivity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "policy_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload_digest": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "approval_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision": {
+          "enum": [
+            "allow",
+            "deny",
+            "require_approval"
+          ]
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "denied",
+            "transferred",
+            "failed"
+          ]
+        },
+        "transferred_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "retentionDeletionEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deletion_id",
+        "owner_id",
+        "domain",
+        "target_refs",
+        "reason",
+        "requested_at",
+        "active_visibility_removed_at",
+        "tombstone_ref",
+        "backup_epoch",
+        "expires_at",
+        "propagation_state"
+      ],
+      "properties": {
+        "deletion_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requested_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "active_visibility_removed_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tombstone_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "backup_epoch": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "propagation_state": {
+          "enum": [
+            "local_pending",
+            "sync_pending",
+            "acknowledged",
+            "revoked_devices_only",
+            "completed"
+          ]
+        }
+      }
+    },
+    "syncConflictRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "conflict_id",
+        "domain",
+        "aggregate_id",
+        "local_version_ref",
+        "remote_version_ref",
+        "causal_parent_refs",
+        "conflict_kind",
+        "resolution_state",
+        "detected_at"
+      ],
+      "properties": {
+        "conflict_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aggregate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "local_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remote_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "causal_parent_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "conflict_kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolution_state": {
+          "enum": [
+            "detected",
+            "pending_owner",
+            "merged",
+            "rejected"
+          ]
+        },
+        "detected_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "resolution_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "workerRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "protocol_version",
+        "job_type",
+        "input_artifact_refs",
+        "config",
+        "resource_budget",
+        "deadline"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "protocol_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "job_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_artifact_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "config": {
+          "type": "object"
+        },
+        "seed": {
+          "type": [
+            "integer",
+            "string",
+            "null"
+          ]
+        },
+        "resource_budget": {
+          "type": "object"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "workerProgress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "sequence",
+        "phase",
+        "occurred_at"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "phase": {
+          "type": "string",
+          "minLength": 1
+        },
+        "progress_fraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "metrics": {
+          "type": "object"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "workerResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "status",
+        "output_artifact_refs",
+        "metrics",
+        "environment_manifest",
+        "dataset_manifest",
+        "code_revision",
+        "random_seed",
+        "started_at",
+        "finished_at"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "partial",
+            "failed"
+          ]
+        },
+        "output_artifact_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "metrics": {
+          "type": "object"
+        },
+        "environment_manifest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataset_manifest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "random_seed": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "finished_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "workerFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "error_code",
+        "retryable",
+        "diagnostic_ref",
+        "occurred_at"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "error_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "diagnostic_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     }
   }
 }
