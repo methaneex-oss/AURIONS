@@ -38,7 +38,7 @@ These are logical ownership boundaries, not a mandate for one process/service pe
 
 ## 3. Deployment topology
 
-Initial deployment is a single-device local runtime, initially exercised in Termux. The C++ core remains authoritative. A CLI is an engineering/control interface, not the final product UI.
+Initial deployment is a single-device local runtime, initially exercised in Termux. The C++ core remains authoritative. The CLI is the owner-selected first user-facing interface. Cloud operation and offline-capable mobile operation are concurrent first-release targets, not sequential phases.
 
 Future topology:
 - **Android client:** native interface and Android-specific adapters.
@@ -63,7 +63,7 @@ The JNI/shared-library versus isolated-process choice is unresolved. Compare sta
 **Deferred candidate:** TypeScript + React for a browser client when remote access and web-specific workflows justify it. It remains an authenticated client, not a separate intelligence implementation.
 
 ### CLI
-A small C++ CLI can provide immediate diagnostics, configuration, testing and controlled operation. It is not a substitute for the eventual user interface.
+The CLI is the first user-facing interface and must support the first-release workflows through stable application contracts. It may also expose diagnostics and controlled operations, but it is not allowed to bypass core policy.
 
 ### UI contract
 UI clients communicate through versioned application commands/queries and event subscriptions. Every operation carries a durable operation ID and exposes explicit lifecycle status. The UI must display permissions, external data disclosures, progress, blocked states and recovery needs. No UI can bypass the action gateway or write cognitive state directly.
@@ -183,7 +183,7 @@ These are sources of capability inspiration, not templates to copy blindly and n
 Reproducible repository/build, stable contracts, dependency inventory, test harness and validated target toolchain.
 
 ### First usable local release
-One local persistent runtime; a usable text interface selected through the product-definition and platform-validation gates (CLI remains an engineering interface candidate, not an approved product-interface decision); model-independent inference; persistent conversation/experience; provenance-aware memory and retrieval; bounded task reasoning/planning; one narrowly scoped permitted action through the gateway; verified outcome persistence; restart recovery; offline operation; inspectable permissions and resource limits.
+A usable CLI as the first user-facing interface; concurrent cloud operation and offline-capable mobile operation using shared versioned contracts and one authoritative cognitive architecture; model-independent inference; persistent conversation/experience; provenance-aware memory and retrieval; bounded task reasoning/planning; one narrowly scoped permitted action through the gateway; verified outcome persistence; restart recovery; offline operation; inspectable permissions and resource limits.
 
 It must demonstrate that a recorded outcome changes later retrieval/reasoning in a repeatable test. Conversation history alone does not qualify as learning.
 
@@ -305,9 +305,9 @@ Proactive bounded autonomy is an owner-approved system requirement, not merely a
 
 This does not authorize unrestricted action. The existing approval requirements for financial transactions, external communications unless specifically authorized, permanent destructive operations, significant security changes and protected governance changes remain in force. Sensitive external disclosure remains approval-gated. Early releases may expose only a narrow subset of autonomous workflows, but their architecture must not preclude the approved model.
 
-### 16.6 First interface remains unresolved (F-06)
+### 16.6 First-interface decision superseded (F-06)
 
-CLI is an engineering/debugging interface candidate, not an owner-approved first-release product interface. The first usable release interface is deliberately unresolved pending the product-definition and platform-validation work. The product definition records this explicitly; the Android runtime/UI integration and interface choice must be decided using measured feasibility and owner approval, not silently fixed by the scaffold.
+The earlier unresolved-interface disposition is superseded by the owner's explicit decision: CLI is the first user-facing interface. Cloud operation and offline-capable mobile operation are concurrent first-release targets. This decision does not settle the mobile UI technology, the exact deployment topology, or the JNI/shared-library versus IPC boundary; those remain subject to platform validation. Offline mobile operation must remain useful without cloud connectivity.
 
 ### 16.7 Planning exit conditions
 
@@ -325,7 +325,7 @@ The architecture proposal can be sent for independent review after the author-si
 - Defined release progression, validation spikes, revised planning sequence and architecture acceptance criteria.
 - No application code, database migrations, device configuration or production dependencies were changed by this planning document.
 
-- Added author-review resolutions for learning evidence, product scope dependency, architecture completeness, governance, proactive bounded autonomy and unresolved first-interface choice.
+- Added author-review resolutions for learning evidence, product scope dependency, architecture completeness, governance, proactive bounded autonomy and the then-unresolved first-interface choice, subsequently resolved by the owner as CLI with concurrent cloud and offline-mobile targets.
 
 
 ## 17. Implementation-ready contract supplement
