@@ -125,3 +125,41 @@ The revised proposal is more explicit about its scope, first-release workflows, 
 This conclusion is limited to the review method and material inspected. It is not independent confirmation that the architecture is technically optimal, complete, secure, feasible or correct. The independent reviewer must challenge the architecture from the source requirements and may reject or materially revise it.
 
 **Merge/implementation status:** PR #2 remains a draft proposal. PR #1 remains separate and unmerged. No application implementation, schema execution, device configuration or production dependency change is authorized by this review.
+
+
+## 6. Follow-up planning work completed after the initial six findings
+
+The six findings above were not the entirety of the author's outstanding work. A separate planning supplement has now been added at `docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md`. It specifies the design-level deliverables previously listed as outstanding:
+
+- Component ownership, allowed dependencies and cycle prevention.
+- Versioned message envelope, command/query/event families and compatibility rules.
+- Isolated C++/Python worker protocol and failure semantics.
+- R0–R5 authorization evaluation and exact-operation approval binding.
+- Durable operation state machine, uncertain side effects, crash recovery, reconciliation and compensation.
+- Three-store ownership, local transaction/outbox/inbox pattern, DDL/migration acceptance criteria.
+- Domain-specific synchronization, conflict, offline-device and deletion/tombstone semantics.
+- Contract, cognitive-cycle, governance, operation, persistence, sync and learning test catalogue.
+- Threat model, trust boundaries, key lifecycle and residual-risk disclosures.
+- Dependency/license audit procedure and target-device/platform measurement protocol.
+- Work-package dependencies, exit criteria and planning exit gates.
+
+**Status of these follow-up items: SPECIFIED AS PROPOSALS; NOT INDEPENDENTLY VALIDATED OR IMPLEMENTED.** This is an author-side completion of design work, not a claim that empirical checks passed.
+
+## 7. Remaining non-documentary gates
+
+The following cannot honestly be closed by writing a specification:
+
+1. Execute and fault-test the actual three SQLite DDLs and migrations on the selected SQLite baseline.
+2. Complete the actual dependency/license/SBOM audit after versions and frameworks are selected.
+3. Reconcile WP-00 PR #1 and run clean reproducible host and Termux/ARM64 builds with green CI.
+4. Measure target-device memory, latency, sustained inference, storage, thermals, battery and background lifecycle.
+5. Prototype and measure JNI/shared-library versus IPC.
+6. Validate actual key handling, IPC, update chain, data flows and security controls in implementation.
+7. Implement and execute the specified contract, governance, operation, cognitive-cycle, learning, synchronization and recovery suites.
+8. Validate backup restore and deletion expiry with actual artifacts.
+9. Resolve owner-reserved first UI and first permitted local action.
+10. Obtain independent review of the final revision and explicit owner approval.
+
+These are evidence, owner-decision and implementation gates, not author documentation tasks. They remain open until evidence is attached or the owner explicitly approves a staged validation plan. The independent reviewer should still challenge the entire proposal, but should not be tasked with discovering these already-known omissions as if the author had not addressed them.
+
+**Updated author-side status:** The known design-level planning omissions have been specified in the companion supplement. The initial planning stage is not yet closed because the evidence gates, owner decisions, independent review and final owner approval remain outstanding.
