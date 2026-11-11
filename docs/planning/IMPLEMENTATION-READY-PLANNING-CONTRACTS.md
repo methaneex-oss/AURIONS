@@ -141,6 +141,105 @@ Every event includes the common envelope and an immutable event body. Initial ev
 
 Events are append-only facts. Corrections are new compensating events with causation links; do not rewrite history to conceal a prior outcome.
 
+## 4.4 Canonical environment and capability payload contracts
+
+These payload contracts are extensible data contracts. They describe observations and discovered interfaces; they do not enumerate or hardcode the behaviours AURIONS may learn to perform. Every payload is carried inside the common envelope and remains subject to owner/device scope, schema validation, sensitivity controls and authorization.
+
+### Environment observation
+
+Required fields:
+- `observation_id`: stable UUID.
+- `owner_id`, `device_id`: authenticated scope.
+- `environment_scope`: declared observation boundary.
+- `observed_at`, `recorded_at`: UTC timestamps.
+- `source_id`, `collection_method`, `collector_version`: provenance.
+- `platform_context`: versioned context containing only known device/OS/build/runtime facts relevant to the observation.
+- `observed_facts[]`: typed fact references or bounded structured values; each fact carries its own source and confidence/limitations.
+- `sensitivity`, `limitations[]`, `validity`: disclosure and staleness metadata.
+
+An observation is not a capability, permission, or authorization. Missing facts remain unknown. The observer must record collection limitations and must not claim a complete view of Android.
+
+### Discovery request and result
+
+A discovery request carries:
+- `discovery_id`, `owner_id`, `device_id`, `requested_scope`, `requested_at`.
+- `source_refs[]`: references to installed/approved discovery adapters; this is an extensible provider registry, not a closed behaviour catalogue.
+- `observation_refs[]`: relevant environment evidence.
+- `mode`: passive metadata discovery or separately authorized active verification.
+- `resource_budget`, `deadline`, `cancellation_token`.
+
+A discovery result carries:
+- `discovery_id`, `status`, `completed_at`.
+- `descriptor_refs[]`, `evidence_refs[]`, `unknowns[]`, `limitations[]`.
+- `provider_errors[]` with stable error category, retryability and diagnostic reference.
+- `next_validity_check` or expiry guidance where supported.
+
+Passive discovery must not trigger an unapproved side effect. Active verification is a distinct operation with its own exact-operation authorization when it can affect state.
+
+### Capability descriptor
+
+A descriptor is immutable for a given `capability_id + descriptor_version`. Updates create a new version; revocation, staleness and retirement are lifecycle facts, not silent edits.
+
+Required envelope fields:
+- `capability_id`: stable opaque identifier, not a hardcoded operation enum.
+- `descriptor_version`: positive integer.
+- `provider_id`, `device_scope`, `discovery_epoch`.
+- `descriptor_schema_version`: independently versioned descriptor schema.
+- `descriptor_sha256`: digest of canonical descriptor content.
+- `source_ref`, `first_discovered_at`, `status`.
+
+The descriptor body must support these extensible groups:
+- `interface`: invocation contract reference, input/output schema references, transport/provider version and compatibility constraints.
+- `preconditions[]`: predicates, evidence, validity scope and unknown/known state.
+- `effects[]`: expected state changes, affected resources, data read/write/disclosure and possible side effects.
+- `platform_requirements[]`: required Android permission/API/user-grant conditions. These are requirements, not evidence that a grant exists.
+- `constraints`: availability, OS/provider version, target scope, rate/size limits, connectivity and environmental conditions.
+- `risk_facts`: effect-based facts supplied to the independent risk/policy evaluator. A provider cannot assign itself a lower policy risk or choose its approval class.
+- `execution`: timeout, cancellation, idempotency, retry and uncertain-outcome semantics.
+- `verification`: observable postconditions, evidence sources and verification limitations.
+- `resource_profile`: estimated CPU, memory, storage, network, battery and execution-time needs, each with provenance/uncertainty.
+- `lifecycle`: discovery/verification state, observed validity and invalidation reason.
+- `provenance`: discovery source, evidence references, timestamps, device/OS/provider context and collector version.
+
+Unknown optional fields remain unknown, not default-true. Unsupported major descriptor schema versions are rejected safely; compatible minor extensions are preserved or explicitly reported as unsupported without inventing semantics. Descriptor content is never an authority grant.
+
+### Capability knowledge revision
+
+Required fields:
+- `knowledge_revision_id`, `capability_id`, `descriptor_version`, `revision_number`.
+- `context_scope`: device/provider/OS/app version and other evidenced conditions under which the claim applies.
+- `claims[]`: typed claims about preconditions, effects, reliability, resource use, failure modes or safe composition.
+- `evidence_refs[]`: each evidence reference records support/contradiction/contextualization.
+- `confidence`: calibrated estimate with method and sample basis; null/unknown is permitted.
+- `status`: provisional, supported, disputed, superseded or withdrawn.
+- `created_at`, `supersedes_revision_id`.
+
+A revision cannot broaden permissions, lower governance risk or create authority. A single success/failure cannot create a universal competence/prohibition. Revisions retain history and evidence lineage.
+
+### Plan step capability reference
+
+A plan step that proposes use of a discovered capability must reference:
+- `capability_id` and exact `descriptor_version`.
+- `provider_id`, target scope and input schema version.
+- Parameter reference/digest, precondition references and expected effect references.
+- Expected postcondition/verification criteria.
+- Resource/deadline/cancellation budget.
+- Relevant capability-knowledge revision references and uncertainty.
+
+A plan reference is not a dispatch instruction or authorization. The runtime must revalidate descriptor freshness and preconditions before requesting governance evaluation.
+
+### Exact operation proposal and execution receipt
+
+The operation proposal must bind the exact capability ID/version, provider, target, canonical parameters/digest, expected effects, data categories/recipients, risk facts, resource/deadline limits, idempotency key and plan/goal lineage. Governance evaluates the exact proposal independently and returns an immutable decision reference; the model or provider cannot fill in or alter that decision.
+
+The execution receipt records operation/attempt IDs, dispatch state/time, adapter/provider receipt reference, observed result, verification state/evidence, error category, cancellation/timeout state and uncertainty. A provider success response is not a verified postcondition. Dispatched-without-confirmation becomes UNCERTAIN and must be reconciled before retry.
+
+### Error and compatibility semantics
+
+At minimum, distinguish: unsupported schema major version; malformed descriptor; unknown provider; unavailable provider; stale descriptor; missing observation evidence; missing platform grant; denied AURIONS policy; expired/mismatched approval; failed precondition; resource/deadline exhaustion; cancelled-before-dispatch; dispatch failure; dispatched outcome unknown; postcondition not verified; and provider contract violation.
+
+Errors must preserve retryability and whether dispatch may already have occurred. Never classify an uncertain side effect as safely retryable by default.
+
 ## 5. C++ / Python worker protocol
 
 Python is an untrusted, isolated experiment worker. It is not an authority boundary for production state.
