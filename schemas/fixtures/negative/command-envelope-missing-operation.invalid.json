@@ -1,0 +1,14 @@
+{
+  "command_id": "b0600000-0000-4000-8000-000000000001",
+  "command_version": "1.0",
+  "owner_id": "owner:primary",
+  "actor_identity": "runtime:mobile",
+  "issued_at": "2026-11-11T08:08:00Z",
+  "deadline": "2026-11-11T08:09:00Z",
+  "idempotency_key": "command:fixture:1",
+  "requested_capability": "capability:discovery",
+  "payload": {
+    "scope": "local"
+  },
+  "data_classification": "internal"
+}
