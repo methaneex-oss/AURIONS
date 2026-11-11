@@ -143,7 +143,7 @@ The following cannot honestly be closed by writing a specification:
 6. Validate actual key handling, IPC, update chain, data flows and security controls in implementation.
 7. Implement and execute the specified contract, governance, operation, cognitive-cycle, learning, synchronization and recovery suites.
 8. Validate backup restore and deletion expiry with actual artifacts.
-9. Resolve owner-reserved first UI and first permitted local action.
+9. Resolve the exact first permitted local action; the CLI first-interface decision is already recorded.
 10. Obtain independent review of the final revision and explicit owner approval.
 
 These are evidence, owner-decision and implementation gates, not author documentation tasks. They remain open until evidence is attached or the owner explicitly approves a staged validation plan. The independent reviewer should still challenge the entire proposal, but should not be tasked with discovering these already-known omissions as if the author had not addressed them.
