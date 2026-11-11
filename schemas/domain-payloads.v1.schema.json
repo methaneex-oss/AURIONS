@@ -5126,6 +5126,7 @@
         "task_run_id",
         "task_definition_ref",
         "state",
+        "revision",
         "priority",
         "budget",
         "checkpoint_refs",
@@ -5184,6 +5185,11 @@
               "type": "null"
             }
           ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Optimistic concurrency revision; incremented exactly once for every committed task-run state transition."
         }
       }
     },
@@ -5511,6 +5517,163 @@
           "format": "date-time"
         }
       }
+    },
+    "taskRunTransition": {
+      "type": "object",
+      "description": "Immutable task-run state transition. The event is appended in the same local transaction as the task_runs projection update. Runtime validation enforces revision = previous_revision + 1 and rejects no-op or illegal transitions.",
+      "additionalProperties": false,
+      "required": [
+        "task_run_id",
+        "task_definition_ref",
+        "from_state",
+        "to_state",
+        "previous_revision",
+        "revision",
+        "cause_type",
+        "cause_ref",
+        "actor_ref",
+        "occurred_at"
+      ],
+      "properties": {
+        "task_run_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "task_definition_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "from_state": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            null,
+            "queued",
+            "running",
+            "paused",
+            "completed",
+            "failed",
+            "cancelled",
+            "blocked",
+            "lost"
+          ]
+        },
+        "to_state": {
+          "enum": [
+            "queued",
+            "running",
+            "paused",
+            "completed",
+            "failed",
+            "cancelled",
+            "blocked",
+            "lost"
+          ]
+        },
+        "previous_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cause_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cause_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "actor_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "control_request_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "checkpoint_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "failure_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reconciliation_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "from_state": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "from_state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "previous_revision": {
+                "const": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "from_state": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            },
+            "required": [
+              "from_state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "previous_revision": {
+                "minimum": 1
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
