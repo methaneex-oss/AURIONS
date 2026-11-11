@@ -533,6 +533,8 @@ These tests protect the governing architecture rule: mechanisms are engineered; 
 - OP-006: expired approval and stale policy are rejected.
 - OP-007: compensation is a separate authorized operation.
 - OP-008: resource/deadline budget exhaustion stops work and checkpoints state.
+- OP-009: every operation-state transition is accepted only if it appears in the documented transition graph; terminal states cannot be reopened.
+- OP-010: operation aggregate state and attempt state remain distinct, and every attempt transition is bound to operation ID, attempt ID/number and idempotency key.
 
 ### 10.5 Persistence, sync and deletion tests
 - DB-001 through DB-010: DDL, migration, constraint, disk-full, corruption, crash, restore and transaction fault tests from Section 8.3.
