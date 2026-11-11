@@ -4,7 +4,8 @@
   "status": "design_baseline_not_dispatchable",
   "source_refs": [
     "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#command-query-registry-completeness-gate",
-    "docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md"
+    "docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md",
+    "docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md#26-initial-sqlite-schema-and-migration-baseline"
   ],
   "request_schema_source": "schemas/domain-payloads.v1.schema.json",
   "command_response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
@@ -43,7 +44,24 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "experiences",
+            "evidence_items"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "representation.create",
@@ -78,7 +96,23 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "representations"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "context.assemble",
@@ -113,7 +147,23 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "contexts"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "context.invalidate",
@@ -149,7 +199,23 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "contexts"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "environment.observe",
@@ -185,7 +251,24 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "experiences",
+            "evidence_items"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "capability.discover",
@@ -221,7 +304,24 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "capability_descriptors",
+            "capability_discovery_evidence"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "capability.verify",
@@ -257,7 +357,24 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "capability_descriptors",
+            "capability_discovery_evidence"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "capability.invalidate",
@@ -293,7 +410,23 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "capability_descriptors"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "capability.knowledge.propose",
@@ -328,7 +461,25 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "capability_knowledge_revisions",
+            "capability_knowledge_evidence",
+            "capability_relationships"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "capability.knowledge.revise",
@@ -363,7 +514,25 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "capability_knowledge_revisions",
+            "capability_knowledge_evidence",
+            "capability_relationships"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "memory.retrieve",
@@ -398,7 +567,24 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "memory_records",
+            "memory_links"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "belief.propose",
@@ -433,7 +619,27 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "knowledge_items",
+            "beliefs",
+            "belief_revisions",
+            "evidence_items",
+            "belief_revision_evidence"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "belief.revise",
@@ -468,7 +674,27 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "knowledge_items",
+            "beliefs",
+            "belief_revisions",
+            "evidence_items",
+            "belief_revision_evidence"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "prediction.create",
@@ -503,7 +729,23 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "predictions"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "prediction.evaluate",
@@ -538,7 +780,23 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "prediction_evaluations"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "appraisal.evaluate",
@@ -573,7 +831,23 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "appraisal_records"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "attention.allocate",
@@ -608,7 +882,17 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "reasoning.assess",
@@ -643,7 +927,23 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "reasoning_assessments"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "goal.create",
@@ -678,7 +978,24 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "goals",
+            "goal_revisions"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "goal.revise",
@@ -713,7 +1030,24 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "goals",
+            "goal_revisions"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "goal.cancel",
@@ -749,7 +1083,24 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "goals",
+            "goal_revisions"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "plan.propose",
@@ -784,7 +1135,26 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "plans",
+            "plan_steps",
+            "plan_step_dependencies",
+            "plan_step_contracts"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "plan.revise",
@@ -819,7 +1189,26 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "plans",
+            "plan_steps",
+            "plan_step_dependencies",
+            "plan_step_contracts"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "plan.checkpoint",
@@ -854,7 +1243,19 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "task_checkpoints",
+            "task_checkpoint_details",
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "decision.record",
@@ -889,7 +1290,23 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "decision_records"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "operation.propose",
@@ -924,7 +1341,22 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "operations",
+            "operation_steps",
+            "recovery_journal",
+            "operation_details",
+            "operation_attempts",
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "operation.cancel",
@@ -959,7 +1391,22 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "operations",
+            "operation_steps",
+            "recovery_journal",
+            "operation_details",
+            "operation_attempts",
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "operation.reconcile",
@@ -994,7 +1441,22 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "operations",
+            "operation_steps",
+            "recovery_journal",
+            "operation_details",
+            "operation_attempts",
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "approval.request",
@@ -1029,7 +1491,18 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_governance.db",
+          "tables": [
+            "approval_requests",
+            "approval_decisions",
+            "governance_audit"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "approval.revoke",
@@ -1064,7 +1537,19 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_governance.db",
+          "tables": [
+            "approval_requests",
+            "approval_decisions",
+            "permissions",
+            "governance_audit"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "outcome.evaluate",
@@ -1100,7 +1585,24 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "outcome_evaluations",
+            "prediction_evaluations"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "learning.update.propose",
@@ -1135,7 +1637,26 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "learning_updates",
+            "learning_update_details",
+            "artifacts",
+            "artifact_lineage"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "learning.experiment.submit",
@@ -1171,7 +1692,26 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "learning_updates",
+            "learning_update_details",
+            "artifacts",
+            "artifact_lineage"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "learning.candidate.evaluate",
@@ -1207,7 +1747,26 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "learning_updates",
+            "learning_update_details",
+            "artifacts",
+            "artifact_lineage"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "self_model.update.propose",
@@ -1242,7 +1801,23 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "self_model_revisions"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "evolution.change.propose",
@@ -1277,7 +1852,33 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "evolution_proposals",
+            "artifacts",
+            "artifact_lineage"
+          ]
+        },
+        {
+          "store": "aurion_governance.db",
+          "tables": [
+            "approval_requests",
+            "approval_decisions",
+            "governance_audit"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "evolution.candidate.evaluate",
@@ -1313,7 +1914,33 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "evolution_proposals",
+            "artifacts",
+            "artifact_lineage"
+          ]
+        },
+        {
+          "store": "aurion_governance.db",
+          "tables": [
+            "approval_requests",
+            "approval_decisions",
+            "governance_audit"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "evolution.candidate.activate",
@@ -1349,7 +1976,33 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "evolution_proposals",
+            "artifacts",
+            "artifact_lineage"
+          ]
+        },
+        {
+          "store": "aurion_governance.db",
+          "tables": [
+            "approval_requests",
+            "approval_decisions",
+            "governance_audit"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "evolution.candidate.rollback",
@@ -1385,7 +2038,33 @@
         "emitted_event_mapping_and_outbox_transaction",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "evolution_proposals",
+            "artifacts",
+            "artifact_lineage"
+          ]
+        },
+        {
+          "store": "aurion_governance.db",
+          "tables": [
+            "approval_requests",
+            "approval_decisions",
+            "governance_audit"
+          ]
+        },
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events",
+            "outbox"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "task.start",
@@ -1419,7 +2098,22 @@
         "error_code_mapping_and_recovery_branches",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "task_runs",
+            "task_checkpoints",
+            "task_checkpoint_details",
+            "events",
+            "event_receipts",
+            "outbox",
+            "recovery_journal"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "task.pause",
@@ -1453,7 +2147,22 @@
         "error_code_mapping_and_recovery_branches",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "task_runs",
+            "task_checkpoints",
+            "task_checkpoint_details",
+            "events",
+            "event_receipts",
+            "outbox",
+            "recovery_journal"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "task.resume",
@@ -1487,7 +2196,22 @@
         "error_code_mapping_and_recovery_branches",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "task_runs",
+            "task_checkpoints",
+            "task_checkpoint_details",
+            "events",
+            "event_receipts",
+            "outbox",
+            "recovery_journal"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "task.cancel",
@@ -1521,7 +2245,22 @@
         "error_code_mapping_and_recovery_branches",
         "per_entry_conflict_replay_recovery_assertions"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "task_runs",
+            "task_checkpoints",
+            "task_checkpoint_details",
+            "events",
+            "event_receipts",
+            "outbox",
+            "recovery_journal"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "command_type": "device.pair",
@@ -1545,7 +2284,9 @@
         "request_and_response_schema",
         "all_command_semantics_and_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [],
+      "aggregate_binding_status": "deferred_by_scope"
     },
     {
       "command_type": "device.revoke",
@@ -1569,7 +2310,9 @@
         "request_and_response_schema",
         "all_command_semantics_and_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [],
+      "aggregate_binding_status": "deferred_by_scope"
     }
   ],
   "queries": [
@@ -1608,7 +2351,17 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "experiences",
+            "evidence_items"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "capability.search",
@@ -1645,7 +2398,16 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "capability_descriptors"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "capability.inspect",
@@ -1682,7 +2444,16 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "capability_descriptors"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "capability.knowledge.inspect",
@@ -1719,7 +2490,18 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "capability_knowledge_revisions",
+            "capability_knowledge_evidence",
+            "capability_relationships"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "representation.inspect",
@@ -1756,7 +2538,16 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "representations"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "context.get",
@@ -1793,7 +2584,16 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "contexts"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "memory.search",
@@ -1830,7 +2630,17 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "memory_records",
+            "memory_links"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "knowledge.search",
@@ -1867,7 +2677,20 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "knowledge_items",
+            "beliefs",
+            "belief_revisions",
+            "evidence_items",
+            "belief_revision_evidence"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "belief.inspect",
@@ -1904,7 +2727,19 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "beliefs",
+            "belief_revisions",
+            "evidence_items",
+            "belief_revision_evidence"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "prediction.inspect",
@@ -1941,7 +2776,17 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "predictions",
+            "prediction_evaluations"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "appraisal.inspect",
@@ -1978,7 +2823,16 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "appraisal_records"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "attention.inspect",
@@ -2015,7 +2869,16 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "events"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "runtime_state_with_event_history"
     },
     {
       "query_type": "reasoning.inspect",
@@ -2052,7 +2915,16 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "reasoning_assessments"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "goal.get",
@@ -2089,7 +2961,17 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "goals",
+            "goal_revisions"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "plan.get",
@@ -2126,7 +3008,19 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "plans",
+            "plan_steps",
+            "plan_step_dependencies",
+            "plan_step_contracts"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "decision.inspect",
@@ -2163,7 +3057,16 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "decision_records"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "task.status",
@@ -2200,7 +3103,18 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "task_runs",
+            "task_checkpoints",
+            "task_checkpoint_details"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "operation.status",
@@ -2237,7 +3151,20 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_events.db",
+          "tables": [
+            "operations",
+            "operation_steps",
+            "recovery_journal",
+            "operation_details",
+            "operation_attempts"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "permission.inspect",
@@ -2274,7 +3201,20 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_governance.db",
+          "tables": [
+            "permissions",
+            "policies",
+            "provider_permissions",
+            "approval_requests",
+            "approval_decisions"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "audit.lookup",
@@ -2311,7 +3251,17 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_governance.db",
+          "tables": [
+            "governance_audit",
+            "data_disclosures"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     },
     {
       "query_type": "device.capabilities",
@@ -2348,15 +3298,26 @@
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
       ],
-      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "capability_descriptors"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     }
   ],
-  "dispatch_invariant": "No entry is eligible for production dispatch until every applicable binding is completed, validated, covered by fixtures, and registered by the owning runtime. Null means unresolved, never an implicit default.",
+  "dispatch_invariant": "No entry is eligible for production dispatch until every applicable binding is completed, validated, covered by fixtures, and registered by the owning runtime. Null means unresolved, never an implicit default. Table bindings reference proposed DDL names only; they do not imply the DDL has been executed or that application-level invariants are implemented.",
   "counts": {
     "mapped_command_types": 43,
     "deferred_command_types": 2,
     "query_types": 21,
     "command_envelope_bindings": 45,
-    "query_envelope_bindings": 21
+    "query_envelope_bindings": 21,
+    "proposed_ddl_mapped_commands": 43,
+    "proposed_ddl_mapped_queries": 21
   }
 }
