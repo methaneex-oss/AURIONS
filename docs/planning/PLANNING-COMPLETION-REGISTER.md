@@ -84,7 +84,7 @@ The canonical matrix is the single mechanism-to-component/persistence/event/test
 
 
 ### B-04 — Reconcile architecture, product and platform boundaries
-- The architecture and canonical roadmap distinguish CLI first interface from concurrent cloud/offline-mobile operation. A roadmap note and a dedicated topology decision analysis now separate shared implementation from live state/synchronization and compare three deployment options. Remaining: builder recommendation must be reconciled with the first-release product boundary; owner approval is required only if the recommendation changes the synchronization/continuity scope. WP-15 is not implementation-ready until this is resolved.
+- The architecture and canonical roadmap distinguish CLI first interface from concurrent cloud/offline-mobile operation. A dedicated topology decision analysis compares three deployment options and now recommends Option B (dual runtime with selective domain synchronization) if one continuous personal cognitive history is required. This is a builder recommendation, not an owner decision. Remaining: obtain the owner's resolution on whether that limited synchronization scope belongs in the first release or whether separate cloud/mobile histories (Option A) are acceptable. WP-15 is not implementation-ready until this is resolved.
 - Ensure Android integration is not deferred wholesale if offline mobile is a concurrent first-release target.
 - Separate first-release integration requirements from later expansion (voice, multi-device, broader providers) without narrowing the underlying capability architecture.
 - Align C++ core, platform adapters, inference, Python workers and governance boundaries.
