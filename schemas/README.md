@@ -7,6 +7,7 @@ This directory is the proposed canonical machine-readable schema source. The ini
 - `domain-payloads.v1.schema.json`: core experience, representation, context, belief, prediction, plan-step, operation, outcome and learning payloads; capability descriptor body remains in its separate schema.
 - `fixtures/domain-payloads.fixture.json`: generic valid-shape examples for the core domain payloads; it is test data, not production memory or a real operation. Capability IDs and provider-defined interface names are data, not closed enums.
 - `fixtures/capability-descriptor.fixture.json`: deliberately generic fixture for contract-shape validation only; it is not a real Android capability or product operation.
+- `fixtures/decision-recorded.fixture.json`: decision event body fixture; it is not a selected owner decision.
 
 Rules:
 1. Schema validity never implies permission, trust or authorization.
@@ -15,3 +16,4 @@ Rules:
 4. Unknown or unsupported semantics remain unknown; extension fields cannot change authority or policy.
 5. Schemas are versioned. Breaking changes require a new major schema version and compatibility tests.
 6. The schemas are planning artifacts until validated by the selected C++/Python toolchain and integrated into CI.
+7. The domain schema is still incomplete: appraisal, attention, reasoning, goals, capability knowledge, environment observation/discovery, self-model, evolution and governance decision payloads remain to be added or mapped to an existing canonical schema.
