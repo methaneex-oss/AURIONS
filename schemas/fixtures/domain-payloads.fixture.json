@@ -849,5 +849,27 @@
     "retryable": true,
     "diagnostic_ref": "artifact:diagnostic:1",
     "occurred_at": "2026-11-11T08:06:00Z"
+  },
+  "contextInvalidated": {
+    "context_id": "30000000-0000-4000-8000-000000000001",
+    "version": 1,
+    "reason": "new evidence invalidated task context",
+    "invalidated_at": "2026-11-11T08:07:00Z",
+    "evidence_refs": [
+      "artifact:evidence:3"
+    ]
+  },
+  "outcomeObserved": {
+    "outcome_id": "b0500000-0000-4000-8000-000000000001",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "observed_at": "2026-11-11T08:07:00Z",
+    "observation_refs": [
+      "artifact:observed:2"
+    ],
+    "verification_state": "unknown",
+    "uncertainty": {
+      "reason": "fixture contains no execution evidence"
+    },
+    "observer_ref": "observer:fixture"
   }
 }
