@@ -19,6 +19,9 @@ The architecture must provide:
 
 ## 2. System layers and responsibility ownership
 
+The detailed mechanism interactions, state ownership, invariants, learning distinctions and cognitive-cycle verification scenarios are defined in [Cognitive Mechanism and Interaction Architecture](COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). The high-level layer map below must be reconciled with that mechanism contract; it is not a substitute for it.
+
+
 | Layer | Responsibilities | Primary owner/boundary |
 |---|---|---|
 | User experience | Text, voice, visual status, task views, notifications, settings, accessibility | Platform UI clients; no direct domain DB writes |
