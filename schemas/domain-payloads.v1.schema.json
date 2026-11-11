@@ -980,6 +980,733 @@
           }
         }
       ]
+    },
+    "appraisalUpdated": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "appraisal_id",
+        "context_id",
+        "context_version",
+        "assessment",
+        "uncertainty",
+        "evidence_refs",
+        "sensitivity",
+        "created_at"
+      ],
+      "properties": {
+        "appraisal_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "assessment": {
+          "type": "object"
+        },
+        "uncertainty": {
+          "type": "object"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/sensitivity"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "valid_until": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "reasoningHypothesisProposed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reasoning_id",
+        "context_id",
+        "context_version",
+        "evidence_refs",
+        "uncertainty",
+        "sensitivity",
+        "created_at"
+      ],
+      "properties": {
+        "reasoning_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hypothesis_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "conclusion_summary_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "uncertainty": {
+          "type": "object"
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/sensitivity"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "attentionAllocated": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allocation_id",
+        "context_id",
+        "context_version",
+        "candidate_refs",
+        "selected_refs",
+        "deferred_refs",
+        "resource_budget",
+        "rationale_ref",
+        "created_at"
+      ],
+      "properties": {
+        "allocation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "context_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "candidate_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "selected_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "deferred_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "resource_budget": {
+          "type": "object"
+        },
+        "rationale_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "valid_until": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "goalRevision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "goal_id",
+        "revision",
+        "description",
+        "state",
+        "priority",
+        "constraints",
+        "created_at"
+      ],
+      "properties": {
+        "goal_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "enum": [
+            "proposed",
+            "active",
+            "paused",
+            "completed",
+            "abandoned",
+            "blocked"
+          ]
+        },
+        "priority": {
+          "type": "number"
+        },
+        "constraints": {
+          "type": "object"
+        },
+        "reason_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "capabilityKnowledgeRevision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "knowledge_revision_id",
+        "capability_id",
+        "descriptor_version",
+        "revision_number",
+        "context_scope",
+        "claims",
+        "confidence",
+        "status",
+        "evidence_refs",
+        "created_at"
+      ],
+      "properties": {
+        "knowledge_revision_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "capability_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "descriptor_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revision_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "context_scope": {
+          "type": "object"
+        },
+        "claims": {
+          "type": "object"
+        },
+        "confidence": {
+          "type": "object"
+        },
+        "status": {
+          "enum": [
+            "provisional",
+            "supported",
+            "disputed",
+            "superseded",
+            "withdrawn"
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidenceRef"
+          }
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "environmentObserved": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_id",
+        "owner_id",
+        "device_id",
+        "environment_scope",
+        "observed_at",
+        "recorded_at",
+        "source_id",
+        "collection_method",
+        "collector_version",
+        "platform_context",
+        "observed_facts",
+        "sensitivity",
+        "limitations"
+      ],
+      "properties": {
+        "observation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "owner_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "device_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "environment_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "recorded_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "source_id": {
+          "$ref": "#/$defs/reference"
+        },
+        "collection_method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "collector_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "platform_context": {
+          "type": "object"
+        },
+        "observed_facts": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/sensitivity"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "validity": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    },
+    "selfModelUpdated": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "self_model_revision_id",
+        "revision_number",
+        "claims",
+        "confidence",
+        "evidence_refs",
+        "created_at"
+      ],
+      "properties": {
+        "self_model_revision_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "revision_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "claims": {
+          "type": "object"
+        },
+        "confidence": {
+          "type": "object"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "evolutionProposed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proposal_id",
+        "target_mechanism",
+        "description",
+        "evidence_refs",
+        "impact_risk",
+        "state",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "proposal_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "target_mechanism": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "impact_risk": {
+          "type": "object"
+        },
+        "candidate_artifact_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evaluation_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "enum": [
+            "proposed",
+            "isolated",
+            "evaluating",
+            "awaiting_approval",
+            "approved",
+            "rejected",
+            "activated",
+            "rolled_back",
+            "deferred"
+          ]
+        },
+        "approval_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "permissionEvaluated": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id",
+        "decision_id",
+        "decision",
+        "policy_version_ref",
+        "scope_digest",
+        "risk_class",
+        "evaluated_at"
+      ],
+      "properties": {
+        "request_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "decision_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "decision": {
+          "enum": [
+            "allowed",
+            "denied",
+            "deferred"
+          ]
+        },
+        "policy_version_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "scope_digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "risk_class": {
+          "enum": [
+            "R0",
+            "R1",
+            "R2",
+            "R3",
+            "R4",
+            "R5"
+          ]
+        },
+        "evaluated_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "reason_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "approvalDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id",
+        "decision_id",
+        "authenticated_owner_ref",
+        "decision",
+        "approved_digest",
+        "decided_at",
+        "authentication_context_ref"
+      ],
+      "properties": {
+        "request_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "decision_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "authenticated_owner_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "decision": {
+          "enum": [
+            "approved",
+            "denied"
+          ]
+        },
+        "approved_digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decided_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "authentication_context_ref": {
+          "$ref": "#/$defs/reference"
+        }
+      }
+    },
+    "taskCheckpointDetails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkpoint_id",
+        "plan_id",
+        "plan_version",
+        "context_version_ref",
+        "capability_epoch_digest",
+        "dependency_state_digest",
+        "pending_steps",
+        "resume_conditions",
+        "created_at"
+      ],
+      "properties": {
+        "checkpoint_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "plan_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "plan_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "context_version_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "capability_epoch_digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependency_state_digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pending_steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/uuid"
+          }
+        },
+        "resume_conditions": {
+          "type": "object"
+        },
+        "invalidation_reason": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "syncChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "change_id",
+        "domain",
+        "schema_version",
+        "owner_id",
+        "source_device_id",
+        "aggregate_id",
+        "aggregate_version",
+        "created_at",
+        "payload_hash",
+        "tombstone",
+        "retention_class",
+        "idempotency_key"
+      ],
+      "properties": {
+        "change_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schema_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "source_device_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "aggregate_id": {
+          "$ref": "#/$defs/reference"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "causal_parent_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/uuid"
+          }
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "payload_hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "encrypted_payload_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tombstone": {
+          "type": "boolean"
+        },
+        "retention_class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotency_key": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     }
   }
 }
