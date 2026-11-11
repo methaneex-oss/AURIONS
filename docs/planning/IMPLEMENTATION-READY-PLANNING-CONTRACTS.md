@@ -2,7 +2,7 @@
 
 **Status:** Author-prepared planning supplement; proposed until owner approval. This document closes the design gaps listed in the author-side review where they can be resolved without fabricating test evidence or making owner-reserved product decisions. It does not claim SQL execution, device measurements, dependency audit, penetration testing, or implementation.
 
-**Authority:** The imported owner decision register remains authoritative. Where this supplement adds detail, it is an engineering proposal. A proposal must not silently become an owner decision.
+**Authority:** The imported owner decision register remains authoritative. Where this supplement adds detail, it is an engineering proposal. A proposal must not silently become an owner decision. The [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) is the canonical crosswalk for cognitive and Android capability state ownership, persistence, work-package and test mapping.
 
 ## 1. Scope and completion semantics
 
@@ -103,15 +103,16 @@ A command requests a state transition; it is not proof that the transition occur
 Required fields: `command_id`, `command_version`, `owner_id`, `actor_identity`, `operation_id`, `issued_at`, `deadline`, `idempotency_key`, `requested_capability`, `payload`, `data_classification`, `approval_reference` (nullable only when policy says no approval is required).
 
 Initial command families:
-- `experience.submit`
-- `environment.observe`, `capability.discover`, `capability.verify`, `capability.invalidate`
-- `memory.retrieve`
-- `goal.create`, `goal.cancel`
-- `plan.propose`, `plan.checkpoint`
+- `experience.submit`, `representation.create`, `context.assemble`, `context.invalidate`
+- `environment.observe`, `capability.discover`, `capability.verify`, `capability.invalidate`, `capability.knowledge.propose`, `capability.knowledge.revise`
+- `memory.retrieve`, `belief.propose`, `belief.revise`, `prediction.create`, `prediction.evaluate`
+- `appraisal.evaluate`, `attention.allocate`, `reasoning.assess`
+- `goal.create`, `goal.revise`, `goal.cancel`, `plan.propose`, `plan.revise`, `plan.checkpoint`, `decision.record`
 - `operation.propose`, `operation.cancel`, `operation.reconcile`
-- `approval.request`, `approval.revoke`
-- `outcome.evaluate`, `learning.update.propose`, `learning.experiment.submit`, `learning.candidate.evaluate`
-- `self_model.update.propose`, `evolution.change.propose`, `evolution.candidate.evaluate`
+- `approval.request`, `approval.revoke`, `outcome.evaluate`
+- `learning.update.propose`, `learning.experiment.submit`, `learning.candidate.evaluate`
+- `self_model.update.propose`, `evolution.change.propose`, `evolution.candidate.evaluate`, `evolution.candidate.activate`, `evolution.candidate.rollback`
+- `task.start`, `task.pause`, `task.resume`, `task.cancel`
 - `device.pair`, `device.revoke` (future multi-device phase)
 
 A command response is one of: `accepted`, `rejected`, `pending`, `conflict`, `unsupported_version`. Accepted means durably accepted for processing, not completed.
@@ -119,21 +120,21 @@ A command response is one of: `accepted`, `rejected`, `pending`, `conflict`, `un
 ### 4.2 Query contract
 Queries are read-only, scoped to an authenticated owner/device context, bounded by timeout and result size, and carry a consistency indicator (`snapshot`, `eventual`, or `local_committed`). Queries MUST NOT trigger hidden side effects.
 
-Initial query families: `environment.inspect`, `capability.search`, `capability.inspect`, `context.get`, `memory.search`, `belief.inspect`, `prediction.inspect`, `goal.get`, `task.status`, `operation.status`, `permission.inspect`, `audit.lookup`, `device.capabilities`. Query families are versioned interface namespaces, not a closed list of system behaviours.
+Initial query families: `environment.inspect`, `capability.search`, `capability.inspect`, `capability.knowledge.inspect`, `representation.inspect`, `context.get`, `memory.search`, `knowledge.search`, `belief.inspect`, `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect`, `goal.get`, `plan.get`, `decision.inspect`, `task.status`, `operation.status`, `permission.inspect`, `audit.lookup`, `device.capabilities`. Query families are versioned interface namespaces, not a closed list of system behaviours or capabilities.
 
 ### 4.3 Event catalogue
 Every event includes the common envelope and an immutable event body. Initial event names:
 - `experience.observed.v1`
-- `representation.created.v1`
-- `context.assembled.v1`
-- `environment.observed.v1`, `capability.discovered.v1`, `capability.verified.v1`, `capability.invalidated.v1`, `capability.revoked.v1`
+- `representation.created.v1`, `representation.revised.v1`
+- `context.assembled.v1`, `context.invalidated.v1`
+- `environment.observed.v1`, `capability.discovered.v1`, `capability.verified.v1`, `capability.invalidated.v1`, `capability.revoked.v1`, `capability.knowledge.revised.v1`
 - `memory.recorded.v1`, `memory.retrieved.v1`
 - `belief.proposed.v1`, `belief.revised.v1`
 - `prediction.created.v1`, `prediction.evaluated.v1`
 - `appraisal.updated.v1`, `attention.allocated.v1`, `reasoning.hypothesis.proposed.v1`, `outcome.evaluated.v1`
-- `goal.created.v1`, `plan.proposed.v1`, `plan.checkpointed.v1`
+- `goal.created.v1`, `goal.revised.v1`, `plan.proposed.v1`, `plan.revised.v1`, `plan.checkpointed.v1`, `decision.recorded.v1`
 - `permission.evaluated.v1`, `approval.requested.v1`, `approval.decided.v1`
-- `operation.accepted.v1`, `operation.started.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.uncertain.v1`, `operation.reconciled.v1`
+- `operation.accepted.v1`, `operation.started.v1`, `operation.dispatched.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.rejected.v1`, `operation.uncertain.v1`, `operation.reconciling.v1`, `operation.reconciled.v1`, `operation.compensation_required.v1`, `operation.compensated.v1`, `operation.manual_intervention.v1`
 - `outcome.observed.v1`, `learning.update.proposed.v1`, `learning.update.accepted.v1`, `learning.experiment.completed.v1`
 - `self_model.updated.v1`, `evolution.proposed.v1`, `candidate.activated.v1`, `candidate.rolled_back.v1`
 - `sync.change.exported.v1`, `sync.change.applied.v1`, `sync.tombstone.applied.v1`
@@ -242,7 +243,7 @@ Alternative terminal/exception transitions:
 Terminal states are immutable; corrections are new linked operations/events. Never transition UNCERTAIN directly to retry.
 
 ### 7.2 Operation record
-Persist: operation ID, task/goal ID, owner/actor/device, capability and version, canonical parameter hash, target, risk class, policy version, approval reference, idempotency key, deadlines, resource budget, current state, attempt number, dispatch receipt, external reference, observed result, verification evidence, timestamps and causation/correlation IDs.
+The authoritative operation projection is stored in `operations`; exact immutable operation parameters and authorization context are stored in `operation_details`; each dispatch/retry is recorded in `operation_attempts`; step-level execution is tracked in `operation_steps`; cross-store recovery is tracked in `recovery_journal`. Together they persist operation ID, task/goal/plan/step lineage, owner/actor/device, capability and descriptor version, canonical parameters and digest, target, expected effects, data categories, risk class, policy version, approval reference, idempotency key, deadline, resource budget, current state, attempt number, dispatch receipt, observed result, verification evidence, timestamps and causation/correlation IDs. See proposed event/recovery migration v2 in Section 26.5.2 of the source specification.
 
 ### 7.3 Side-effect rules
 - Prefer idempotent operations with stable idempotency keys.
@@ -284,7 +285,7 @@ Each DB has its own migration ledger, backup/restore procedure, integrity check 
 - SQLite connections use explicit transaction scopes, foreign keys within each DB, busy timeout and WAL only after target-device validation. Durability/synchronous settings must be documented and tested against power-loss expectations.
 
 ### 8.3 DDL and migration acceptance
-Before implementation approval:
+The current proposed schema additions are documented in Section 26.5.2 of the source specification: memory migration v3 and event/recovery migration v2. They remain unexecuted proposals. Before implementation approval:
 - Parse/execute all three DDLs against the pinned minimum SQLite version.
 - Enable foreign keys and verify every declared FK.
 - Run schema lint for missing indexes on foreign keys, owner scope, status, timestamps, retrieval predicates and idempotency keys.
@@ -376,6 +377,11 @@ Every test has stable ID, requirement link, fixture/version, preconditions, exac
 
 ### 10.5 Persistence, sync and deletion tests
 - DB-001 through DB-010: DDL, migration, constraint, disk-full, corruption, crash, restore and transaction fault tests from Section 8.3.
+- DB-011: plan-step contract accepts a current versioned capability descriptor and rejects missing/stale/mismatched descriptor references; non-capability steps remain representable.
+- DB-012: operation projection rejects illegal lifecycle transitions and preserves terminal-state immutability.
+- DB-013: canonical operation parameter digest and capability/policy/approval references remain bound to the exact operation.
+- DB-014: duplicate attempt delivery is idempotent; dispatch without receipt becomes uncertain and cannot be blindly retried.
+- DB-015: learning-update details require evidence and baseline/evaluation references before acceptance; artifact lineage and rollback references remain resolvable.
 - ART-001: artifact checksum and byte size are verified before metadata becomes available.
 - ART-002: artifact lineage rejects self-reference and application validation rejects cycles.
 - ART-003: deleting a source artifact processes derived lineage, indexes and backup/sync state.
