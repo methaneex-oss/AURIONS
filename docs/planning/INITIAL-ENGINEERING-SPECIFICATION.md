@@ -719,6 +719,7 @@ For cross-database writes, no global SQLite transaction exists. Use an explicit 
 - Timestamps: UTC Unix epoch milliseconds in INTEGER columns; RFC 3339 at interfaces.
 - JSON TEXT only for bounded, validated flexible documents. Query-critical fields remain typed columns.
 - Enable foreign keys on every connection. Use short write transactions; never hold DB transactions during inference or external actions.
+- Proposed minimum supported SQLite version is 3.38.0: STRICT tables require 3.37.0 or later, and JSON functions are built in by default from 3.38.0. The target build must not define `SQLITE_OMIT_JSON`. This is a proposed minimum, not evidence that the Termux/Android build meets it; record and test the actual version and compile options before acceptance.
 - Use STRICT tables only if the shipped SQLite version supports them; otherwise add explicit type checks. Verify JSON functions, WAL and backup API on the actual Termux SQLite build.
 - Keep large models/datasets outside SQLite as immutable artifacts with metadata and checksums.
 - Back up live DBs through SQLite backup facilities or a coordinated checkpointed procedure, not by blindly copying a live WAL database.
