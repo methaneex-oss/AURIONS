@@ -36,7 +36,7 @@ This roadmap supersedes the earlier work-package tables for future planning. His
 | WP-12 | Outcome feedback and learning | Prediction/outcome comparison, capability/strategy learning, controlled experiments, held-out evaluation, regression detection and reversible activation. | WP-07…WP-11 | Repeatable improvement evidence against frozen baseline; no memory-only or training-loss-only learning claims. |
 | WP-13 | Self-model and governed evolution | Capability/limitation/confidence/resource model, change proposals, isolated candidates, impact analysis, approval, activation and rollback. | WP-04, WP-05, WP-06, WP-12 | Self-assessments calibrated against outcomes; candidates cannot self-approve; rollback verified. |
 | WP-14 | Python workers and training infrastructure | Isolated worker supervisor, datasets, training/fine-tuning, evaluation jobs, artifact provenance, budgets, cancellation and reproducibility. | WP-01, WP-02, WP-03, WP-12 | Worker crash/retry/cancel safe; outputs validated and quarantined; no direct live-state or policy mutation. |
-| WP-15 | First-release integration and hardening | Integrate the cognitive core and first-release workflows. CLI is the first user-facing interface. Deliver cloud operation and offline-capable mobile operation as concurrent first-release targets using shared contracts and authoritative core. Includes resource, security, privacy, recovery and release validation. | WP-00…WP-14 as required by selected first-release scope; platform spikes and owner decisions | First-release acceptance protocol PR-01…PR-18 passes. PR-15 proves cloud runtime operation; PR-16 proves shared contract compatibility across cloud/mobile builds; PR-17 proves required mobile workflows work with network disabled; PR-18 proves cloud cannot authorize mobile-local operations and state ownership is explicit. Reproducible security/resource/recovery evidence is required in both contexts. |
+| WP-15 | First-release integration and hardening | Integrate the cognitive core and first-release workflows. CLI is the first user-facing interface. Deliver cloud operation and offline-capable mobile operation as concurrent first-release targets using shared contracts and authoritative core. Includes resource, security, privacy, recovery and release validation. | WP-00…WP-13; platform spikes and owner decisions. WP-14 is not required for PR-01…PR-18 because fine-tuning is explicitly not a first-release requirement; include WP-14 only if the owner adds model-training scope. | First-release acceptance protocol PR-01…PR-18 passes. PR-15 proves cloud runtime operation; PR-16 proves shared contract compatibility across cloud/mobile builds; PR-17 proves required mobile workflows work with network disabled; PR-18 proves cloud cannot authorize mobile-local operations and state ownership is explicit. Reproducible security/resource/recovery evidence is required in both contexts. |
 | WP-16 | Later ecosystem expansion | Voice and continuous sensing, multi-device synchronization/handoff, broader external providers, expanded multimodal interfaces and additional compute topologies. | WP-15 accepted; separate platform/security/privacy approvals | Each expansion has a scoped proposal, permission model, tests and owner approval. |
 
 The cognitive mechanism specification is [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). The Android environment/capability specification is [Android Environment and Capability Architecture](../architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md). Their state ownership, persistence, contract families, work-package and verification mapping is tracked in the [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md). All three remain IN PROGRESS until the mapped contracts and tests are fully reconciled and verified.
@@ -52,15 +52,15 @@ The architecture must distinguish:
 - **State ownership and continuity:** the authoritative location of user state, cloud/mobile continuity, conflict handling and whether any subset of data is synchronized must be explicitly specified before implementation. Do not infer that shared contracts mean shared live state.
 - **Synchronization scope:** the existing decision to defer multi-device synchronization remains distinct from the requirement to deliver cloud and offline-mobile operation concurrently. Any required first-release cross-context continuity must be stated explicitly and reconciled with that deferred scope.
 
-Until this topology and state-ownership contract is resolved, PR-18 and WP-15's dual-context exit criteria are not sufficiently precise for implementation authorization.
+The builder's provisional recommendation is Option B (selective synchronization) if one continuous cognitive history is required; Option A remains the no-sync alternative with separate histories. The owner must resolve this before WP-15 implementation authorization. See the [topology decision record](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md).
 
 ### 2.2 Dependency-graph audit
 
-The declared WP-00…WP-16 prerequisite edges were checked as a directed graph. The graph is acyclic; one valid topological ordering is:
+The declared WP-00…WP-16 prerequisite edges were checked as a directed graph. WP-15 depends on WP-00…WP-13; WP-14 is optional for the first release because model fine-tuning is not required by PR-01…PR-18. The graph is acyclic; one valid topological ordering is:
 
 `WP-00 → WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12 → WP-13 → WP-14 → WP-15 → WP-16`
 
-This is a valid ordering, not a required serial schedule. Independent packages may proceed concurrently once their prerequisites and interfaces are stable (for example, WP-05 and WP-06 after their common prerequisites). WP-00 also has the separate external gate of planning-exit approval. The graph audit checks only dependency cycles; it does not prove that every package has complete component ownership, machine-readable contracts, executable acceptance fixtures or authorization to start.
+This is a valid ordering, not a required serial schedule. Independent packages may proceed concurrently once their prerequisites and interfaces are stable (for example, WP-05 and WP-06 after their common prerequisites, and WP-14 can proceed independently of WP-15 once its WP-12 prerequisites are met). WP-00 also has the separate external gate of planning-exit approval. The graph audit checks only dependency cycles; it does not prove that every package has complete component ownership, machine-readable contracts, executable acceptance fixtures or authorization to start.
 
 ## 3. Dependency principles
 
@@ -72,7 +72,7 @@ This is a valid ordering, not a required serial schedule. Independent packages m
 - Learning evaluation depends on a stable baseline, data provenance and repeatable task fixtures.
 - Android integration is a first-release platform requirement because offline-capable mobile is a concurrent first-release target. The capability architecture remains broader than the first-release set of validated scenarios.
 - Cloud and offline mobile share contracts and the authoritative cognitive core. Cloud must not become a hidden dependency for offline mobile or a remote bypass of local authorization.
-- Multi-device synchronization, voice/continuous sensing and broad external integrations remain later expansions unless the owner changes scope.
+- General multi-device synchronization, voice/continuous sensing and broad external integrations remain later expansions unless the owner changes scope. If the owner accepts the builder's Option B recommendation, only the explicitly approved first-release continuity subset moves into WP-15; broad device handoff remains WP-16.
 - No WP can use a fixed task-to-action catalogue as a substitute for discovery, reasoning or learning.
 
 ## 4. First-release scope boundary
@@ -90,6 +90,23 @@ The first-release acceptance scenario must verify general mechanisms:
 - Shared contracts and consistent cognitive semantics across CLI, cloud and mobile contexts.
 
 No specific Android operation is selected by this roadmap. The separate first permitted local action remains an owner-reserved acceptance decision.
+
+## 4.1 No-hardcoding invariant — work-package verification crosswalk
+
+The NHC regression family is a release-spanning architectural invariant, not a single feature test. The mapping below assigns where each test must be implemented and executed; the examples are test stimuli, not an exhaustive capability list.
+
+| Test | Required work packages | What the test must prove |
+|---|---|---|
+| NHC-001 | WP-01, WP-06, WP-11 | A new schema-compatible provider is discovered and represented without a task-specific core branch. |
+| NHC-002 | WP-06, WP-09, WP-10, WP-11 | The same objective under different observed environments leads to reasoning over discovered capabilities, not a fixed objective-to-operation mapping. |
+| NHC-003 | WP-06, WP-09, WP-10 | Incomplete discovery remains unknown; the system defers, asks or reports limits rather than inventing an interface. |
+| NHC-004 | WP-07, WP-12 | Failure evidence changes knowledge only within its supported context and does not become a universal prohibition. |
+| NHC-005 | WP-04, WP-11, WP-12 | Success does not create permission, universal competence or authority to repeat an action in a new scope. |
+| NHC-006 | WP-06, WP-15 | Removing or changing an illustrative phone-operation example does not alter the capability architecture or define its boundary. |
+| NHC-007 | WP-02, WP-12, WP-15 | An accepted evidence-backed update persists across restart and changes a later related task with traceable evaluation provenance. |
+| NHC-008 | WP-04, WP-11, WP-13 | Repeated successful actions cannot weaken authorization, risk classification, approval or owner authority. |
+
+A work package cannot claim its no-hardcoding obligation is met by passing only its local unit tests. The integration suite must execute the relevant NHC tests against a new/unseen capability descriptor and related unseen task variations. Explicit schemas, protocols, permission checks, resource limits and safety invariants are engineered constraints, not hardcoded behavioural substitutes.
 
 ## 5. Work-package status discipline
 
