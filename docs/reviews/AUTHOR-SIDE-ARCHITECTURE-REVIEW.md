@@ -37,7 +37,7 @@ This was a documentation consistency review. It did not execute SQL DDL, build a
 
 **Original defect:** The architecture described a broad first usable release but lacked sufficiently explicit user workflows, capability boundaries, non-goals and testable acceptance scenarios.
 
-**Correction:** Added a separate product definition with six end-to-end workflows, capability scope, exclusions, 14 acceptance conditions, operational constraints, unresolved owner decisions and implementation gate.
+**Correction:** Added a separate product definition with six end-to-end workflows, capability scope, exclusions, 18 acceptance conditions, operational constraints, unresolved owner decisions and implementation gate.
 
 **Disposition:** Incorporated in `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`; architecture Section 16.2 links the product-definition dependency.
 
