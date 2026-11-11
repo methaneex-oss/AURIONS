@@ -3791,6 +3791,367 @@
           ]
         }
       }
+    },
+    "providerLifecycle": {
+      "$comment": "Provider trust lifecycle is independent of capability knowledge and never grants execution authority.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider_id",
+        "provider_version",
+        "state",
+        "origin_ref",
+        "artifact_integrity",
+        "interface_versions",
+        "permission_scopes",
+        "provenance_ref",
+        "transition"
+      ],
+      "properties": {
+        "provider_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "enum": [
+            "observed",
+            "quarantined",
+            "validated",
+            "enabled",
+            "degraded",
+            "revoked",
+            "retired"
+          ]
+        },
+        "origin_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "artifact_integrity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "algorithm",
+            "digest",
+            "verified_at"
+          ],
+          "properties": {
+            "algorithm": {
+              "const": "sha256"
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "verified_at": {
+              "$ref": "#/$defs/timestamp"
+            }
+          }
+        },
+        "interface_versions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "interface_id",
+              "schema_version"
+            ],
+            "properties": {
+              "interface_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "schema_version": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "permission_scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "provenance_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "transition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "from_state",
+            "to_state",
+            "cause",
+            "actor_ref",
+            "evidence_refs",
+            "occurred_at"
+          ],
+          "properties": {
+            "from_state": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                null,
+                "observed",
+                "quarantined",
+                "validated",
+                "enabled",
+                "degraded",
+                "revoked",
+                "retired"
+              ]
+            },
+            "to_state": {
+              "enum": [
+                "observed",
+                "quarantined",
+                "validated",
+                "enabled",
+                "degraded",
+                "revoked",
+                "retired"
+              ]
+            },
+            "cause": {
+              "type": "string",
+              "minLength": 1
+            },
+            "actor_ref": {
+              "$ref": "#/$defs/reference"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/reference"
+              },
+              "minItems": 1
+            },
+            "occurred_at": {
+              "$ref": "#/$defs/timestamp"
+            }
+          }
+        }
+      }
+    },
+    "providerFailure": {
+      "$comment": "Typed provider/discovery failure. Unknown side effects prohibit blind retry.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "failure_id",
+        "category",
+        "machine_code",
+        "retryability",
+        "side_effect_state",
+        "correlation_id",
+        "provider_id",
+        "provider_version",
+        "descriptor_version",
+        "occurred_at",
+        "user_action_required"
+      ],
+      "properties": {
+        "failure_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "category": {
+          "enum": [
+            "not_visible",
+            "not_supported",
+            "permission_required",
+            "permission_denied",
+            "owner_authorization_required",
+            "owner_authorization_denied",
+            "stale_descriptor",
+            "incompatible_schema",
+            "provider_unavailable",
+            "rate_limited",
+            "resource_limited",
+            "cancelled",
+            "outcome_uncertain",
+            "integrity_failure",
+            "trust_failure",
+            "adapter_failure"
+          ]
+        },
+        "machine_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retryability": {
+          "enum": [
+            "never",
+            "after_condition_change",
+            "after_backoff",
+            "safe_idempotent_retry",
+            "reconcile_before_retry"
+          ]
+        },
+        "side_effect_state": {
+          "enum": [
+            "not_dispatched",
+            "dispatched",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "provider_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "descriptor_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "diagnostic_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "user_action_required": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "side_effect_state": {
+                "const": "unknown"
+              }
+            },
+            "required": [
+              "side_effect_state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "retryability": {
+                "const": "reconcile_before_retry"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "compatibilityNegotiationState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "negotiation_id",
+        "state",
+        "producer_id",
+        "consumer_id",
+        "offered_versions",
+        "selected_version",
+        "occurred_at"
+      ],
+      "properties": {
+        "negotiation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "state": {
+          "enum": [
+            "initiated",
+            "compatible",
+            "rejected",
+            "expired"
+          ]
+        },
+        "producer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consumer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "offered_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "selected_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "compatible"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "selected_version": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "rejected",
+                  "expired"
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "selected_version": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
