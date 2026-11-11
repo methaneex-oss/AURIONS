@@ -145,6 +145,9 @@
               "type": "string",
               "minLength": 1
             }
+          },
+          "envelope_schema": {
+            "const": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
           }
         },
         "required": [
@@ -164,7 +167,8 @@
           "emitted_event_bindings",
           "fixture_refs",
           "dispatch_status",
-          "unresolved_bindings"
+          "unresolved_bindings",
+          "envelope_schema"
         ]
       }
     },
@@ -276,6 +280,9 @@
               "type": "string",
               "minLength": 1
             }
+          },
+          "envelope_schema": {
+            "const": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
           }
         },
         "required": [
@@ -297,7 +304,8 @@
           "freshness_cache_contract",
           "fixture_refs",
           "dispatch_status",
-          "unresolved_bindings"
+          "unresolved_bindings",
+          "envelope_schema"
         ]
       }
     },
@@ -317,12 +325,20 @@
         },
         "query_types": {
           "const": 21
+        },
+        "command_envelope_bindings": {
+          "const": 43
+        },
+        "query_envelope_bindings": {
+          "const": 21
         }
       },
       "required": [
         "mapped_command_types",
         "deferred_command_types",
-        "query_types"
+        "query_types",
+        "command_envelope_bindings",
+        "query_envelope_bindings"
       ]
     }
   },
