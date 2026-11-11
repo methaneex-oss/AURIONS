@@ -215,6 +215,7 @@ Every event includes the common envelope and an immutable event body. Initial ev
 - `sync.change.exported.v1`, `sync.change.applied.v1`, `sync.tombstone.applied.v1`, `sync.conflict.detected.v1`, `sync.conflict.resolved.v1`
 - `artifact.registered.v1`, `artifact.quarantined.v1`, `artifact.deleted.v1`, `disclosure.recorded.v1`, `retention.deletion.requested.v1`, `retention.deletion.completed.v1`
 - `worker.job.requested.v1`, `worker.job.progressed.v1`, `worker.job.completed.v1`, `worker.job.failed.v1`
+- `task.control.requested.v1`, `task.run.transitioned.v1`
 
 #### Event-body schema binding
 
@@ -247,6 +248,8 @@ Every event body MUST validate against exactly one versioned payload schema befo
 | `disclosure.recorded.v1` | `externalDisclosureRecord` |
 | `retention.deletion.requested.v1` / `retention.deletion.completed.v1` | `retentionDeletionEvent` |
 | `sync.conflict.detected.v1` / `sync.conflict.resolved.v1` | `syncConflictRecord` |
+| `task.control.requested.v1` | `taskControlRequest` |
+| `task.run.transitioned.v1` | `taskRunTransition` |
 | `worker.job.requested.v1` / `worker.job.progressed.v1` / `worker.job.completed.v1` / `worker.job.failed.v1` | `workerRequest` / `workerProgress` / `workerResult` / `workerFailure` |
 
 Payload definitions are in `schemas/domain-payloads.v1.schema.json`. The common envelope is in `schemas/message-envelope.v1.schema.json`; capability descriptor bodies use `schemas/capability-descriptor-body.v1.schema.json`. Event-to-payload binding MUST be enforced by the event validator, not by a model-authored type claim. Any new event requires a new explicit mapping and compatible schema/fixture before it can be published.
@@ -258,6 +261,13 @@ Event-stream acceptance checks:
 - **EV-002:** duplicate message ID with identical digest does not create a second event or apply twice; same ID with a different digest is rejected and audited.
 - **EV-003:** consumer checkpoint advances only after its owning state change and receipt commit; restart resumes after the last committed sequence without skipping or replaying side effects.
 - **EV-004:** timestamps are not used as the sole ordering mechanism; causation/correlation and domain revisions are retained, and no global order is inferred across independent event stores.
+- **TS-001:** every accepted task control request is durably recorded as `task.control.requested.v1`; rejected/stale requests do not mutate task state.
+- **TS-002:** every committed task state transition emits `task.run.transitioned.v1` in the same event-store transaction as the `task_runs` projection update.
+- **TS-003:** `taskControlRequest.expected_version` must equal `task_runs.revision`; stale requests return conflict and preserve the current revision.
+- **TS-004:** pause/cancel requests remain pending until a documented safe point; dispatched operations are reconciled before a task is reported cancelled.
+- **TS-005:** resume requires a current checkpoint and revalidation of plan, context, capability and dependency versions; a `lost` run cannot resume before reconciliation.
+- **TS-006:** `completed`, `failed` and `cancelled` are terminal task states; no transition can mutate a terminal run.
+- **TS-007:** crash/replay around control acceptance or transition commit does not duplicate a state change or advance revision twice.
 
 ## 4.4 Canonical environment and capability payload contracts
 
@@ -527,6 +537,28 @@ On restart:
 
 No cross-database atomic transaction is assumed. Use local transaction + outbox in each owning store, stable IDs, idempotent consumers and reconciliation.
 
+## 7.5 Task-run lifecycle and scheduler control
+
+Task-run state is a durable scheduler projection in `aurion_events.db`. Its states are `queued`, `running`, `paused`, `completed`, `failed`, `cancelled`, `blocked` and `lost`. The `revision` field is the optimistic-concurrency version for that task run. Proposed event/recovery migration v2 adds `task_runs.revision` with an initial value of 1; every committed state transition increments it exactly once.
+
+A `taskControlRequest.expected_version` MUST equal the current `task_runs.revision`. A mismatch returns a typed conflict with the current revision and produces no state mutation. The `taskRunStatus` query projection exposes the revision. Every accepted control request emits `task.control.requested.v1` using `taskControlRequest`; every actual state transition emits `task.run.transitioned.v1` using `taskRunTransition`. The task-run projection update and its transition event are committed in one local event-store transaction. The request event may be committed before the resulting transition when the scheduler must wait for a safe point.
+
+Allowed task-run transitions:
+
+| Current state | Allowed next state | Constraint |
+|---|---|---|
+| Initial | `queued` | New run starts at revision 1. |
+| `queued` | `running`, `blocked`, `cancelled`, `failed` | `task.start` may move a queued run to running only after current prerequisites and budgets are checked. |
+| `running` | `paused`, `completed`, `failed`, `blocked`, `cancelled`, `lost` | Pause/cancel is cooperative. A dispatched operation must be reconciled before the task is marked cancelled or completed. |
+| `paused` | `running`, `cancelled`, `blocked` | Resume revalidates checkpoint and all bound dependency versions. |
+| `blocked` | `queued`, `cancelled`, `failed` | A blocker must be resolved and current dependencies revalidated before returning to the queue. |
+| `lost` | `queued`, `failed`, `cancelled` | Reconcile worker/process and checkpoint state first; never resume directly from an unresolved lost state. |
+| `completed`, `failed`, `cancelled` | None | Terminal states are immutable. |
+
+`task.start` is valid only for a queued run; `task.pause` only for a running run; `task.resume` only for a paused run; and `task.cancel` for a non-terminal run. A control request can be durably accepted while its effect remains pending. In particular, cancellation does not imply that a dispatched operation stopped or was reversed. The task remains non-terminal until safe-point handling and any required operation reconciliation are complete. A blocked run returns to `queued` through scheduler readiness evaluation; a lost run requires reconciliation before it can be queued again.
+
+The event body records the previous/current state and revision, cause, actor, time and applicable control-request, checkpoint, failure or reconciliation references. JSON Schema validates payload shape; the owning scheduler enforces legal transitions, revision increment, state-dependent evidence and the atomic projection/event commit.
+
 ## 8. Persistence, schema and transaction boundaries
 
 ### 8.1 Store ownership
@@ -659,6 +691,7 @@ These tests protect the governing architecture rule: mechanisms are engineered; 
 - DB-015: learning-update details require evidence and baseline/evaluation references before acceptance; artifact lineage and rollback references remain resolvable.
 - DB-016: task checkpoint detail binds the checkpoint to a plan/version, context version, capability epoch and dependency-state digest; stale or mismatched checkpoints cannot resume silently.
 - DB-017: after restart, historical attention-allocation events are not restored as current truth; allocation is recomputed from current goals, tasks, context, permissions and resources.
+- TS-001…TS-007: verify durable task-control requests, versioned task-run transitions, safe-point pause/cancel, stale-checkpoint rejection, lost-run reconciliation, terminal immutability and crash/replay.
 - ART-001: artifact checksum and byte size are verified before metadata becomes available.
 - ART-002: artifact lineage rejects self-reference and application validation rejects cycles.
 - ART-003: deleting a source artifact processes derived lineage, indexes and backup/sync state.
