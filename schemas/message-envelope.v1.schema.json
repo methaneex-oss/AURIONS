@@ -54,7 +54,7 @@
     },
     "tenant_or_owner_id": {
       "type": "string",
-      "format": "uuid"
+      "minLength": 1
     },
     "payload": {
       "type": "object"
