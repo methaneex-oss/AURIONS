@@ -2286,6 +2286,95 @@
           ]
         }
       }
+    },
+    "capabilityDescriptorRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability_id",
+        "descriptor_version",
+        "provider_id",
+        "device_scope",
+        "discovery_epoch",
+        "descriptor_schema_version",
+        "descriptor_sha256",
+        "source_ref",
+        "first_discovered_at",
+        "status",
+        "descriptor_body"
+      ],
+      "properties": {
+        "capability_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "descriptor_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "provider_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "device_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "discovery_epoch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "descriptor_schema_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "descriptor_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{64}$"
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "first_discovered_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "last_verified_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expires_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "discovered",
+            "unverified",
+            "verified",
+            "unavailable",
+            "permission_required",
+            "revoked",
+            "stale",
+            "retired"
+          ]
+        },
+        "descriptor_body": {
+          "$ref": "urn:aurions:schema:capability-descriptor-body:1"
+        }
+      }
     }
   }
 }
