@@ -1,6 +1,6 @@
-# AURIONS — Complete System Architecture and Technology Stack
+# AURIONS — System Architecture and Technology Baseline
 
-**Status:** Proposed architecture baseline for owner review. This document expands the imported engineering specification. It does not authorize implementation, lock unmeasured framework choices, or claim any capability is implemented.
+**Status:** Proposed architecture baseline for owner review. This document establishes system-wide architectural coverage and boundaries; it is not a complete set of implementation-ready contracts or an implementation authorization. It expands the imported engineering specification, does not lock unmeasured framework choices, and does not claim any capability is implemented.
 
 ## 1. Architectural objective
 
@@ -241,6 +241,79 @@ The architecture is ready for consistency review only when:
 - Dependencies, security implications, failure modes, recovery behaviour and test evidence are identified.
 - Product scope, architecture and roadmap are consistent with the existing owner decision register.
 
+
+
+## 16. Review-resolution addendum — 2026-11-11
+
+This addendum resolves the author-review findings recorded before independent review. It does not represent independent validation or owner approval.
+
+### 16.1 Learning evidence standard (F-01)
+
+A changed retrieval result or later response after recording an outcome is necessary evidence of feedback, but is not by itself sufficient evidence of learning or improvement.
+
+The following distinctions are mandatory:
+- **Memory update:** an experience, outcome or state is durably recorded with provenance.
+- **Knowledge/belief revision:** a belief changes in response to evidence under an explicit revision procedure; contradictory evidence and uncertainty remain representable.
+- **Strategy/mechanism learning:** a mechanism or strategy is changed and evaluated on held-out tasks against a frozen baseline.
+- **Model training:** a candidate model is produced by a reproducible training/fine-tuning process and evaluated separately.
+- **Architecture evolution:** a proposed structural change is isolated, tested, compared and governed through the approved change lifecycle.
+
+A claim of demonstrated learning improvement requires, at minimum:
+1. A versioned, reproducible task/evaluation dataset with provenance and a held-out split not used to tune the candidate.
+2. A frozen baseline and a candidate that differ in an identified learning mechanism, strategy or model artifact.
+3. Predeclared task metrics, scoring rules and regression constraints appropriate to the capability being evaluated.
+4. Repeatable improvement on held-out tasks, not only training or previously observed examples.
+5. Evaluation on related unseen variations to test generalization.
+6. Regression checks showing that protected capabilities and previously passing tasks have not materially degraded.
+7. Recorded experiment configuration, artifact hashes, results, uncertainty/limitations and a reproducible decision.
+8. Explicit acceptance of the candidate through the applicable release/governance process before activation.
+
+The first usable release must prove the end-to-end experience/outcome feedback path and persistent retrieval. It must not be described as having demonstrated general learning merely because a stored outcome influences one later interaction. The stronger held-out standard above governs any claim of learning improvement. Numerical thresholds are established from measured baselines and task risk; they are not invented in this architecture document.
+
+### 16.2 Product-definition dependency (F-02)
+
+The first-release description in Section 12 is an architectural envelope, not a complete product specification. The companion `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md` defines the proposed user workflows, capability scope, exclusions, acceptance scenarios and unresolved owner choices. That proposal must be reconciled and explicitly approved before implementation.
+
+### 16.3 Meaning of architectural completeness (F-03)
+
+“System architecture” here means coverage of the major system responsibilities, boundaries, deployment topology, architectural constraints and known decision points. It does **not** mean that all engineering contracts are complete. The following remain required downstream deliverables:
+- Versioned API, command, query, event and worker contracts, including compatibility and error semantics.
+- Concrete operation state machine, failure catalogue, recovery and compensation rules.
+- Per-domain synchronization authority, consistency, conflict and deletion semantics.
+- Threat model, key lifecycle, residual-risk register and security validation.
+- Executed schema/migration validation and measured platform/dependency evidence.
+
+These are explicit planning dependencies, not implicit approval to invent them during implementation.
+
+### 16.4 Governance and authorization constraints (F-04)
+
+The source specification's governance decisions remain authoritative. Architecture and implementation must preserve:
+- The defined R0–R5 risk classification and default-deny treatment of ambiguous or unavailable policy decisions.
+- Policy enforcement independent of model reasoning and immediately at the execution boundary.
+- Authenticated owner sessions for approvals, with approval bound to the exact operation, target, parameters, scope, effects and relevant data/recipient context.
+- Approval expiry, revocation, one-time use, replay prevention and invalidation after material operation changes.
+- Durable, append-only approval and governance audit evidence.
+- No model, worker, integration or device agent may grant itself authority, expand its own capability or bypass the central policy boundary.
+- Sensitive external disclosure requires explicit authorization; enabling a provider does not authorize unrestricted memory access.
+- Protected governance changes require the owner's explicit approval and a recovery path.
+
+The detailed risk definitions, approval envelope and security tests must be carried into the security and API-contract deliverables without weakening the source requirements.
+
+### 16.5 Proactive bounded autonomy as a system-wide constraint (F-05)
+
+Proactive bounded autonomy is an owner-approved system requirement, not merely a future UI feature. The runtime must ultimately support durable objectives, task decomposition, permitted task execution without repeated prompting, progress monitoring, bounded retries/recovery, resource budgets, checkpoints, cancellation/resumption and notification when completed, blocked or requiring owner intervention.
+
+This does not authorize unrestricted action. The existing approval requirements for financial transactions, external communications unless specifically authorized, permanent destructive operations, significant security changes and protected governance changes remain in force. Sensitive external disclosure remains approval-gated. Early releases may expose only a narrow subset of autonomous workflows, but their architecture must not preclude the approved model.
+
+### 16.6 First interface remains unresolved (F-06)
+
+CLI is an engineering/debugging interface candidate, not an owner-approved first-release product interface. The first usable release interface is deliberately unresolved pending the product-definition and platform-validation work. The product definition records this explicitly; the Android runtime/UI integration and interface choice must be decided using measured feasibility and owner approval, not silently fixed by the scaffold.
+
+### 16.7 Planning exit conditions
+
+The architecture proposal can be sent for independent review after the author-side findings are incorporated. It is not thereby accepted. Implementation remains blocked until product scope, contracts, platform decisions, data/synchronization design, security/operations, evidence review and explicit owner approval are complete.
+
+
 ## Change log — 2026-11-11
 
 - Added complete system layers and deployment topology.
@@ -251,3 +324,5 @@ The architecture is ready for consistency review only when:
 - Distinguished accepted decisions from recommendations and unresolved platform choices.
 - Defined release progression, validation spikes, revised planning sequence and architecture acceptance criteria.
 - No application code, database migrations, device configuration or production dependencies were changed by this planning document.
+
+- Added author-review resolutions for learning evidence, product scope dependency, architecture completeness, governance, proactive bounded autonomy and unresolved first-interface choice.
