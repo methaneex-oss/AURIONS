@@ -105,9 +105,9 @@ The remaining work is evidence, owner decisions, implementation validation and i
 
 ## 5. Review conclusion
 
-**Author-side verdict: DESIGN-LEVEL AUTHOR WORK COMPLETE; READY FOR INDEPENDENT REVIEW; NOT APPROVED FOR IMPLEMENTATION.**
+**Historical author-side verdict for the reviewed revision: initial design supplement drafted; not approved for implementation.** This verdict does not establish that the current planning baseline is complete.
 
-The author-side consistency pass has addressed the six identified architecture findings and specified the additional planning contracts, recovery, governance, synchronization, test, security and roadmap deliverables. The latest PR diff has been checked against the planning supplement and reviewer brief.
+At that point, the author-side pass had addressed six identified findings and drafted additional planning contracts. A subsequent builder audit identified further design and reconciliation work, including the full Android environment/capability architecture, cognitive mechanism contracts, no-hardcoding traceability, canonical work-package reconciliation and stale status claims. The earlier pass is historical evidence, not a completion declaration for the current branch.
 
 This is not independent confirmation that the architecture is technically optimal, complete, secure, feasible or correct. The independent reviewer must challenge the entire proposal from the original owner requirements and may identify additional defects or reject it.
 
@@ -148,7 +148,7 @@ The following cannot honestly be closed by writing a specification:
 
 These are evidence, owner-decision and implementation gates, not author documentation tasks. They remain open until evidence is attached or the owner explicitly approves a staged validation plan. The independent reviewer should still challenge the entire proposal, but should not be tasked with discovering these already-known omissions as if the author had not addressed them.
 
-**Updated author-side status:** The known design-level planning omissions have been specified in the companion supplement. The initial planning stage is not yet closed because the evidence gates, owner decisions, independent review and final owner approval remain outstanding.
+**Updated author-side status:** The earlier supplement specified several design-level omissions for that historical revision. The current builder audit has reopened architecture and implementation-planning work. See `docs/planning/PLANNING-COMPLETION-REGISTER.md` for the active status and builder-owned work. The initial planning stage is not closed.
 
 
 ## 8. Repository foundation cross-check
@@ -156,3 +156,16 @@ These are evidence, owner-decision and implementation gates, not author document
 During the follow-up pass, WP-00 PR #1 was rechecked rather than left as an unverified blocker. Its latest known GitHub Actions run for commit `913e5626211b76776e70c8c5beef6aae00bf4365` is run [43052743168](https://github.com/methaneex-oss/AURIONS/actions/runs/43052743168), conclusion **success**. The `Configure, build, and test` job completed its toolchain report, configure, build and test steps successfully.
 
 This is hosted CI evidence only. It does not establish a clean local build, Termux/ARM64 build, target-device behaviour or approval to merge. PR #1 remains open, draft and unmerged; its scope remains foundation scaffolding only. Reconcile it with the planning-approved work-package sequence before any implementation transition.
+
+
+## 9. Subsequent builder audit — current status
+
+The earlier author-side “design-level complete” wording is superseded. The current planning branch has additional builder-owned work:
+- Complete the Android environment/capability architecture as a general discovery, representation, planning, governed execution, verification and learning system.
+- Complete cognitive mechanism contracts and their iterative/interruptible interactions.
+- Operationalize the no-hardcoding invariant across architecture, contracts, tests and roadmap.
+- Reconcile the multiple historical work-package tables into one canonical dependency-driven roadmap.
+- Audit product, architecture, platform, persistence, governance, contracts and acceptance criteria for contradictions.
+- Remove stale status/decision claims and prepare the exact final revision for independent re-review.
+
+The [Planning Completion Register](../planning/PLANNING-COMPLETION-REGISTER.md) is the active builder work ledger. No planning layer is currently COMPLETE — VERIFIED, and implementation remains unauthorized.
