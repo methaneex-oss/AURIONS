@@ -326,3 +326,10 @@ The architecture proposal can be sent for independent review after the author-si
 - No application code, database migrations, device configuration or production dependencies were changed by this planning document.
 
 - Added author-review resolutions for learning evidence, product scope dependency, architecture completeness, governance, proactive bounded autonomy and unresolved first-interface choice.
+
+
+## 17. Implementation-ready contract supplement
+
+The companion [Implementation-Ready Planning Contracts](../planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md) now specifies the previously enumerated design-level gaps: component ownership and dependency rules; versioned command/query/event envelopes; C++/Python worker protocol; authorization and exact-operation approval; operation state machine and crash recovery; SQLite transaction/outbox patterns; synchronization, conflict and deletion semantics; test catalogue; threat model and key lifecycle; dependency/device validation procedures; and work-package dependencies.
+
+The supplement is a proposed engineering baseline, not proof of implementation or validation. Its Section 15 separates specified design from empirical evidence gates and owner-reserved decisions. The architecture remains unapproved for implementation until those gates are satisfied or explicitly staged/accepted by the owner, the independent review is complete, and the owner authorizes transition.
