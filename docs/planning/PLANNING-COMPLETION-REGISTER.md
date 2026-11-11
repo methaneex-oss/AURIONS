@@ -84,7 +84,7 @@ These are the main-builder's responsibilities, not owner testing or independent-
 - NHC-001…NHC-008 are now specified in the contract test catalogue; generic capability descriptor schema/fixture added. Remaining: trace all requirements and add executable tests/code-review checks when implementation exists.
 
 ### B-04 — Reconcile architecture, product and platform boundaries
-- The architecture and canonical roadmap distinguish CLI first interface from concurrent cloud/offline-mobile operation. A new roadmap note explicitly separates shared implementation from live state/synchronization and records that WP-15 is not implementation-ready until deployment and state ownership semantics are resolved.
+- The architecture and canonical roadmap distinguish CLI first interface from concurrent cloud/offline-mobile operation. A roadmap note and a dedicated topology decision analysis now separate shared implementation from live state/synchronization and compare three deployment options. Remaining: builder recommendation must be reconciled with the first-release product boundary; owner approval is required only if the recommendation changes the synchronization/continuity scope. WP-15 is not implementation-ready until this is resolved.
 - Ensure Android integration is not deferred wholesale if offline mobile is a concurrent first-release target.
 - Separate first-release integration requirements from later expansion (voice, multi-device, broader providers) without narrowing the underlying capability architecture.
 - Align C++ core, platform adapters, inference, Python workers and governance boundaries.
@@ -99,7 +99,7 @@ These are the main-builder's responsibilities, not owner testing or independent-
 - Complete CCM-04; execute CCM-01…CCM-07 migration, transition, checkpoint and attention-recovery verification; execute migration syntax/integrity/fault validation only when the target SQLite baseline is pinned.
 
 ### B-06 — Reconcile implementation work packages and roadmap
-- Reconcile the differing WP tables in the source specification, architecture and planning-contract supplement to the canonical roadmap; verify component owners and dependencies.
+- The canonical roadmap reconciles the historical WP tables. PR #1 was inspected: it is a minimal version-library/build/CI smoke scaffold, contains no cognitive or capability behaviour, and keeps C++20 explicitly provisional. No scaffold changes are recommended before planning exit. Remaining: verify the roadmap dependency graph and acceptance criteria against every component, then rebase/reconcile PR #1 only after the planning baseline is approved.
 - Correct sequencing so shared contracts, persistence, runtime, cognition, capability discovery, action governance and Android integration are properly dependent.
 - Keep implementation scope evidence-driven; no fixed operation catalogue.
 - Ensure concurrent cloud/offline mobile direction is reflected in work packages and gates.
@@ -169,5 +169,6 @@ The following findings were identified during the current cross-document pass. C
 | BA-004 | Medium | The builder initially added duplicated crosswalk tables to the Android and cognitive architecture documents even though a canonical Cognitive and Capability Contract Matrix already existed. | Removed the duplicated tables; both architecture documents now point to the matrix as the single traceability source and to the implementation contract as the payload source. | Verify the matrix against DDL and schema sources; turn scenarios into executable fixtures. |
 | BA-005 | Medium | No-hardcoding had scenario tests but lacked a named regression family covering extensibility, generic planning, scoped evidence updates and authority invariance. | Added NHC-001 through NHC-008 to the implementation-contract test catalogue. | Tests are specified, not executed; code-level review and behavioural fixtures remain future validation. |
 | BA-006 | Medium | The contract matrix mapped the Decision subsystem to decision.recorded.v1, but the implementation-contract event catalogue did not define that event. | Added decision.recorded.v1 once to the event catalogue. | Define its exact payload schema and fixture in the canonical schema set. |
+| BA-007 | High | Concurrent cloud/mobile deployment direction and deferred multi-device synchronization left state continuity ambiguous. | Added a dedicated topology analysis comparing independent runtimes, selective synchronization and cloud-compute-service options; no option has been silently selected. | Builder recommendation and any required owner approval must be resolved before WP-15 is implementation-ready. |
 
 These findings do not establish completion of any planning layer. They document specific corrections and remaining work discovered by the builder audit.
