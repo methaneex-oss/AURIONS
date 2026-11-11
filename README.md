@@ -22,6 +22,7 @@ Implementation has not been authorized. PR #1 is a proposed foundation scaffold,
 - [System architecture](docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md)
 - [Android environment and capability architecture](docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md)
 - [Cognitive mechanism and interaction architecture](docs/architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md)
+- [Canonical contract schemas](schemas/README.md) — partial planning artifacts; not yet validated by the final C++/Python toolchain
 - [Cognitive and capability contract matrix](docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md)
 - [Canonical Notion project control center](https://app.notion.com/p/41505b96eab381778361fc0d0ccf6344?pvs=204)
 
