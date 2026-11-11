@@ -110,7 +110,7 @@ The canonical matrix is the single mechanism-to-component/persistence/event/test
 ### B-07 — Complete architecture-wide consistency and completeness audit
 - A [Owner Decision Traceability Matrix](OWNER-DECISION-TRACEABILITY-MATRIX.md) now maps MP-01…MP-06, IP-01…IP-10, UQ-01…UQ-17 and operational-authority decisions to architecture, contracts, roadmap and test IDs. It is a traceability baseline, not validation evidence.
 - First focused crosswalk completed for cognitive/capability state ownership and persistence; the seven resulting CCM findings are recorded with severity and required resolution.
-- Verify every trace in the owner decision matrix against the exact current source files; extend the audit to every architectural invariant, product requirement, failure path and dependency.
+- A bounded identifier audit found all 33 source decision IDs (MP-01…06, IP-01…10, UQ-01…17) represented in the owner-decision matrix, and the product definition contains PR-01…PR-18. The canonical contract matrix now crosswalks all 21 CM and 15 AD scenarios to payload definitions and related catalogue checks. Remaining: semantically verify each decision and scenario against source requirements and exact handler/event/DDL semantics; extend the audit to every architectural invariant, product requirement, failure path and dependency. These identifier checks are trace evidence, not proof of semantic completeness.
 - Check component ownership, allowed/forbidden dependencies, state ownership and authority boundaries.
 - Check all critical paths, failure modes, recovery, privacy, security and resource assumptions.
 - Record every finding with severity, disposition and evidence; no silent assumptions.
