@@ -3805,7 +3805,12 @@
         "interface_versions",
         "permission_scopes",
         "provenance_ref",
-        "transition"
+        "transition",
+        "validation_evidence_refs",
+        "trust_assessment_ref",
+        "governance_decision_ref",
+        "platform_permission_observation_ref",
+        "owner_approval_ref"
       ],
       "properties": {
         "provider_id": {
@@ -3940,11 +3945,110 @@
               "$ref": "#/$defs/timestamp"
             }
           }
+        },
+        "validation_evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          },
+          "uniqueItems": true
+        },
+        "trust_assessment_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "governance_decision_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "platform_permission_observation_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "owner_approval_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "validated",
+                  "enabled"
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "validation_evidence_refs": {
+                "minItems": 1
+              },
+              "trust_assessment_ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "enabled"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "governance_decision_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "platform_permission_observation_ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "providerFailure": {
-      "$comment": "Typed provider/discovery failure. Unknown side effects prohibit blind retry.",
+      "$comment": "Typed provider/discovery failure. Dispatched or unknown side effects require reconciliation before retry.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -3958,7 +4062,8 @@
         "provider_version",
         "descriptor_version",
         "occurred_at",
-        "user_action_required"
+        "user_action_required",
+        "diagnostic_ref"
       ],
       "properties": {
         "failure_id": {
@@ -4027,7 +4132,14 @@
           ]
         },
         "diagnostic_ref": {
-          "$ref": "#/$defs/reference"
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "occurred_at": {
           "$ref": "#/$defs/timestamp"
@@ -4041,7 +4153,10 @@
           "if": {
             "properties": {
               "side_effect_state": {
-                "const": "unknown"
+                "enum": [
+                  "dispatched",
+                  "unknown"
+                ]
               }
             },
             "required": [
