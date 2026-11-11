@@ -18,4 +18,4 @@ Rules:
 4. Unknown or unsupported semantics remain unknown; extension fields cannot change authority or policy.
 5. Schemas are versioned. Breaking changes require a new major schema version and compatibility tests.
 6. The schemas are planning artifacts until validated by the selected C++/Python toolchain and integrated into CI.
-7. The positive fixture set currently contains 45 domain payload fixtures. Ten negative fixtures are included; their current custom structural subset results are recorded in the planning completion register. This check is not a full JSON Schema Draft 2020-12 validator; official schema conformance, format handling, cross-language compatibility and CI enforcement remain open.
+7. The positive fixture set currently contains 47 domain payload fixtures. Ten negative fixtures are included; their current custom structural subset results are recorded in the planning completion register. This check is not a full JSON Schema Draft 2020-12 validator; official schema conformance, format handling, cross-language compatibility and CI enforcement remain open.
