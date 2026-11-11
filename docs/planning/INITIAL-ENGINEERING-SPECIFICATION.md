@@ -205,7 +205,7 @@ Every event contract must define schema version, source, timestamps, correlation
 
 Initial proposal: three SQLite databases:
 
-1. aurion_memory.db: experiences, representations, contexts, memory, knowledge, beliefs, evidence, predictions, goals, plans and learning metadata.
+1. aurion_memory.db: experiences, representations, contexts, memory, knowledge, beliefs, evidence, predictions, goals, plans, discovered capability descriptors/knowledge, durable appraisal/decision/outcome summaries, self-model revisions, evolution proposals and learning metadata.
 2. aurion_events.db: durable events, operations, operation steps, recovery journal, task runs and checkpoints.
 3. aurion_governance.db: policies, permissions, approval requests/decisions, protected changes, audit, provider permissions and data disclosures.
 
@@ -229,7 +229,7 @@ A proposed SQL schema was drafted in the planning conversation. It is a proposal
 
 ### Memory DB entities
 
-experiences; representations; contexts; memory_records; memory_links; knowledge_items; beliefs; evidence_items; belief_revisions; belief_evidence; predictions; prediction_evaluations; goals; plans; plan_steps; plan_step_dependencies; learning_updates.
+experiences; representations; contexts; memory_records; memory_links; knowledge_items; beliefs; evidence_items; belief_revisions; belief_evidence; predictions; prediction_evaluations; goals; plans; plan_steps; plan_step_dependencies; capability_descriptors; capability_discovery_evidence; capability_knowledge_revisions; capability_knowledge_evidence; capability_relationships; appraisal_records; reasoning_assessments; decision_records; outcome_evaluations; self_model_revisions; evolution_proposals; learning_updates.
 
 Rules:
 
@@ -1209,6 +1209,184 @@ CREATE INDEX idx_disclosures_provider_time ON data_disclosures(provider_id,discl
 - Audit-chain hashes need an external signed checkpoint if tamper evidence against whole-database rewrite is required.
 - Use non-null idempotency keys for operations that claim idempotency; enforce this at operation creation.
 - Verify STRICT, JSON functions, WAL and foreign-key behaviour on the actual SQLite runtime before adopting this DDL unchanged.
+
+### 26.5.1 Capability and cognitive-state schema extension — proposed migration
+
+The initial memory DDL did not include durable storage for the dynamic capability registry and several durable cognitive state domains introduced by the Android and cognitive mechanism architectures. That is a schema completeness gap; the registry must not be hidden inside an untyped blob or confused with governance permissions.
+
+The following is a proposed additive migration for `aurion_memory.db`. It is not executed or validated. It deliberately stores capability descriptions and evidence-backed knowledge separately from authority grants. Current Android permission state remains authoritative in the OS and is rechecked at execution; AURIONS grants/approvals remain in `aurion_governance.db`.
+
+```sql
+CREATE TABLE capability_descriptors (
+  capability_id TEXT NOT NULL,
+  descriptor_version INTEGER NOT NULL CHECK(descriptor_version>0),
+  provider_id TEXT NOT NULL,
+  device_scope TEXT NOT NULL,
+  discovery_epoch TEXT NOT NULL,
+  descriptor_json TEXT NOT NULL CHECK(json_valid(descriptor_json)),
+  descriptor_sha256 TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN
+    ('discovered','unverified','verified','unavailable','permission_required',
+     'revoked','stale','retired')),
+  source_ref TEXT NOT NULL,
+  first_discovered_at_ms INTEGER NOT NULL,
+  last_verified_at_ms INTEGER,
+  expires_at_ms INTEGER,
+  PRIMARY KEY(capability_id,descriptor_version),
+  CHECK(expires_at_ms IS NULL OR expires_at_ms>first_discovered_at_ms)
+) STRICT;
+CREATE INDEX idx_capability_status_freshness
+  ON capability_descriptors(device_scope,status,expires_at_ms);
+
+CREATE TABLE capability_discovery_evidence (
+  discovery_evidence_id BLOB PRIMARY KEY CHECK(length(discovery_evidence_id)=16),
+  capability_id TEXT NOT NULL,
+  descriptor_version INTEGER NOT NULL,
+  source_experience_id BLOB REFERENCES experiences(experience_id),
+  evidence_id BLOB REFERENCES evidence_items(evidence_id),
+  discovery_method TEXT NOT NULL,
+  result TEXT NOT NULL CHECK(result IN ('supports','contradicts','inconclusive')),
+  confidence REAL CHECK(confidence IS NULL OR confidence BETWEEN 0.0 AND 1.0),
+  observed_at_ms INTEGER NOT NULL,
+  details_json TEXT NOT NULL CHECK(json_valid(details_json)),
+  FOREIGN KEY(capability_id,descriptor_version)
+    REFERENCES capability_descriptors(capability_id,descriptor_version)
+) STRICT;
+CREATE INDEX idx_capability_discovery_time
+  ON capability_discovery_evidence(capability_id,observed_at_ms DESC);
+
+CREATE TABLE capability_knowledge_revisions (
+  knowledge_revision_id BLOB PRIMARY KEY CHECK(length(knowledge_revision_id)=16),
+  capability_id TEXT NOT NULL,
+  descriptor_version INTEGER NOT NULL,
+  revision_number INTEGER NOT NULL CHECK(revision_number>0),
+  context_scope_json TEXT NOT NULL CHECK(json_valid(context_scope_json)),
+  claims_json TEXT NOT NULL CHECK(json_valid(claims_json)),
+  confidence_json TEXT NOT NULL CHECK(json_valid(confidence_json)),
+  status TEXT NOT NULL CHECK(status IN
+    ('provisional','supported','disputed','superseded','withdrawn')),
+  created_at_ms INTEGER NOT NULL,
+  FOREIGN KEY(capability_id,descriptor_version)
+    REFERENCES capability_descriptors(capability_id,descriptor_version),
+  UNIQUE(capability_id,descriptor_version,revision_number)
+) STRICT;
+
+CREATE TABLE capability_knowledge_evidence (
+  knowledge_revision_id BLOB NOT NULL
+    REFERENCES capability_knowledge_revisions(knowledge_revision_id),
+  evidence_id BLOB NOT NULL REFERENCES evidence_items(evidence_id),
+  stance TEXT NOT NULL CHECK(stance IN ('supports','contradicts','contextualizes')),
+  relevance REAL CHECK(relevance IS NULL OR relevance BETWEEN 0.0 AND 1.0),
+  PRIMARY KEY(knowledge_revision_id,evidence_id,stance)
+) STRICT;
+
+CREATE TABLE capability_relationships (
+  source_capability_id TEXT NOT NULL,
+  source_descriptor_version INTEGER NOT NULL,
+  target_capability_id TEXT NOT NULL,
+  target_descriptor_version INTEGER NOT NULL,
+  relation_type TEXT NOT NULL,
+  conditions_json TEXT NOT NULL CHECK(json_valid(conditions_json)),
+  evidence_refs_json TEXT NOT NULL CHECK(json_valid(evidence_refs_json)),
+  created_at_ms INTEGER NOT NULL,
+  PRIMARY KEY(source_capability_id,source_descriptor_version,
+               target_capability_id,target_descriptor_version,relation_type),
+  FOREIGN KEY(source_capability_id,source_descriptor_version)
+    REFERENCES capability_descriptors(capability_id,descriptor_version),
+  FOREIGN KEY(target_capability_id,target_descriptor_version)
+    REFERENCES capability_descriptors(capability_id,descriptor_version),
+  CHECK(source_capability_id<>target_capability_id OR
+        source_descriptor_version<>target_descriptor_version)
+) STRICT;
+
+CREATE TABLE appraisal_records (
+  appraisal_id BLOB PRIMARY KEY CHECK(length(appraisal_id)=16),
+  context_id BLOB NOT NULL,
+  context_version INTEGER NOT NULL,
+  assessment_json TEXT NOT NULL CHECK(json_valid(assessment_json)),
+  uncertainty_json TEXT NOT NULL CHECK(json_valid(uncertainty_json)),
+  evidence_refs_json TEXT NOT NULL CHECK(json_valid(evidence_refs_json)),
+  sensitivity INTEGER NOT NULL CHECK(sensitivity BETWEEN 0 AND 4),
+  created_at_ms INTEGER NOT NULL,
+  valid_until_ms INTEGER,
+  FOREIGN KEY(context_id,context_version) REFERENCES contexts(context_id,version)
+) STRICT;
+
+CREATE TABLE reasoning_assessments (
+  reasoning_id BLOB PRIMARY KEY CHECK(length(reasoning_id)=16),
+  context_id BLOB NOT NULL,
+  context_version INTEGER NOT NULL,
+  hypothesis_ref TEXT,
+  evidence_refs_json TEXT NOT NULL CHECK(json_valid(evidence_refs_json)),
+  conclusion_summary_ref TEXT,
+  uncertainty_json TEXT NOT NULL CHECK(json_valid(uncertainty_json)),
+  sensitivity INTEGER NOT NULL CHECK(sensitivity BETWEEN 0 AND 4),
+  created_at_ms INTEGER NOT NULL,
+  FOREIGN KEY(context_id,context_version) REFERENCES contexts(context_id,version)
+) STRICT;
+
+CREATE TABLE decision_records (
+  decision_id BLOB PRIMARY KEY CHECK(length(decision_id)=16),
+  goal_id BLOB REFERENCES goals(goal_id),
+  plan_id BLOB REFERENCES plans(plan_id),
+  decision_type TEXT NOT NULL CHECK(decision_type IN
+    ('selected','deferred','rejected','clarification_required','cancelled')),
+  selected_option_ref TEXT,
+  rationale_ref TEXT NOT NULL,
+  uncertainty_json TEXT NOT NULL CHECK(json_valid(uncertainty_json)),
+  created_at_ms INTEGER NOT NULL
+) STRICT;
+
+CREATE TABLE outcome_evaluations (
+  outcome_evaluation_id BLOB PRIMARY KEY CHECK(length(outcome_evaluation_id)=16),
+  prediction_id BLOB REFERENCES predictions(prediction_id),
+  plan_id BLOB REFERENCES plans(plan_id),
+  operation_id TEXT,
+  expected_outcome_ref TEXT,
+  observed_outcome_ref TEXT NOT NULL,
+  result TEXT NOT NULL CHECK(result IN
+    ('verified','partially_verified','not_verified','failed','inconclusive')),
+  evaluation_json TEXT NOT NULL CHECK(json_valid(evaluation_json)),
+  created_at_ms INTEGER NOT NULL
+) STRICT;
+
+CREATE TABLE self_model_revisions (
+  self_model_revision_id BLOB PRIMARY KEY CHECK(length(self_model_revision_id)=16),
+  revision_number INTEGER NOT NULL UNIQUE CHECK(revision_number>0),
+  claims_json TEXT NOT NULL CHECK(json_valid(claims_json)),
+  confidence_json TEXT NOT NULL CHECK(json_valid(confidence_json)),
+  evidence_refs_json TEXT NOT NULL CHECK(json_valid(evidence_refs_json)),
+  created_at_ms INTEGER NOT NULL
+) STRICT;
+
+CREATE TABLE evolution_proposals (
+  proposal_id BLOB PRIMARY KEY CHECK(length(proposal_id)=16),
+  target_mechanism TEXT NOT NULL,
+  description TEXT NOT NULL,
+  evidence_refs_json TEXT NOT NULL CHECK(json_valid(evidence_refs_json)),
+  impact_risk_json TEXT NOT NULL CHECK(json_valid(impact_risk_json)),
+  candidate_artifact_ref TEXT,
+  evaluation_ref TEXT,
+  state TEXT NOT NULL CHECK(state IN
+    ('proposed','isolated','evaluating','awaiting_approval','approved',
+     'rejected','activated','rolled_back','deferred')),
+  approval_ref TEXT,
+  created_at_ms INTEGER NOT NULL,
+  updated_at_ms INTEGER NOT NULL
+) STRICT;
+CREATE INDEX idx_evolution_state ON evolution_proposals(state,updated_at_ms);
+```
+
+**Storage semantics:**
+- Capability descriptors are versioned discovered interface descriptions, not permissions. The descriptor JSON is schema-validated by the application and hash-checked; unknown fields do not grant authority.
+- Discovery evidence and capability knowledge revisions retain provenance and contradictory evidence. A failed attempt is contextual evidence, not a universal prohibition.
+- Capability relationships describe evidence-supported composition/constraints; they are not fixed task recipes.
+- Appraisal and reasoning records store bounded evidence-linked assessments and concise rationale references, not unbounded internal reasoning transcripts. Attention allocations are transient runtime state; durable attention decisions may be represented by typed events when needed.
+- Decision and outcome records summarize durable decisions and observed effects. Operation lifecycle remains authoritative in `aurion_events.db`; policy grants and approvals remain authoritative in `aurion_governance.db`.
+- Self-model revisions and evolution proposals preserve evidence and version history. They cannot grant permissions or activate protected changes.
+- Cross-store operation IDs and approval references are validated by application services; no cross-file foreign keys are introduced.
+
+This migration must be reconciled with the final component contracts and tested for index coverage, JSON schema validation, retention/deletion, migrations and crash recovery before implementation.
 
 ### 26.6 Migration protocol
 
