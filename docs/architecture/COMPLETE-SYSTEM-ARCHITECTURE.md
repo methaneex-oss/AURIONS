@@ -76,14 +76,13 @@ Capability categories may include read-only diagnostics, user-selected files, no
 
 The device agent checks local platform permissions and policy at execution time. Model reasoning cannot grant permissions.
 
-### Initial Android device-control capabilities
+### Android environment understanding and capability discovery
 
-The owner-selected first-release direction is basic Android device operation, not unrestricted device automation. The initial capability set is:
-- **Launch installed applications:** launch only an app selected by the owner or explicitly named in the current authorized request. Resolve the installed package through Android package APIs; do not hardcode a preferred app or silently broaden the target.
-- **Adjust media volume:** use supported Android audio APIs and stay within the OS-provided stream/range. Do not silently change alarm, ringtone or notification volume when the request concerns media volume.
-- **File operations:** operate only on files/directories selected by the owner through Android's Storage Access Framework/document picker, or within an explicitly designated AURIONS-owned workspace. No unrestricted root, shell or whole-device filesystem access is implied. Reads and non-destructive writes must preserve the selected URI/scope. Delete, overwrite, move or other destructive changes require exact-operation authorization and explicit confirmation; use temporary files/backups or other recovery mechanisms where feasible, and report when an operation cannot be rolled back.
+The Android integration must not be designed as a fixed list of phone operations derived from illustrative owner examples. AURIONS needs mechanisms to perceive and represent the supported device environment; discover available system capabilities, application interfaces, resources and constraints; understand permission and execution requirements; and maintain provenance for what it has discovered.
 
-Each operation is a separately declared capability with its own schema, required Android permission, risk classification, authorization check, operation ID, receipt and verification. Android runtime permissions and platform restrictions are necessary but do not replace AURIONS policy enforcement. The first end-to-end action-gateway acceptance path is launching an owner-selected installed app; volume and scoped file capabilities must also be implemented and tested before they are described as available.
+The architecture must support capability descriptions and discovery results as data that can be evaluated, related, revised and learned from experience. Reasoning and planning should select among discovered capabilities to pursue an objective rather than relying on hardcoded task-to-action mappings. The platform adapter exposes constrained interfaces; the independent governance boundary decides whether a proposed operation is authorized, and Android's own permission model remains authoritative.
+
+Examples such as launching an application, adjusting volume or manipulating files are scenarios for validating the general mechanisms. They are not an exhaustive capability catalogue, a fixed first-release scope or a preselected first action. The first end-to-end Android action scenario remains an owner decision. Capability discovery must not imply unrestricted root, shell, filesystem or privileged OS access.
 
 ## 6. Multi-device identity, communication and synchronization
 
@@ -142,7 +141,7 @@ Images, audio and other modalities follow the same capture → provenance → re
 
 OS, application, web, hardware and provider integrations use adapters registered with the capability/tool gateway. Each declares identity/version, operation schemas, data access, side effects, permissions, network destinations, budgets, cancellation, idempotency and verification.
 
-The gateway enforces authorization immediately before execution and records outcome evidence. Initial Android integrations should prove the lifecycle with app launch, media-volume adjustment and scoped file operations. Start the end-to-end action-gateway acceptance path with launching an owner-selected installed app; file mutations remain scope-limited and destructive operations require explicit confirmation. External communications, purchases, account changes, destructive operations and protected governance changes retain existing approval requirements.
+The gateway enforces authorization immediately before execution and records outcome evidence. Initial Android integration should validate the general environment-discovery, capability-representation, policy and execution mechanisms using carefully selected scenarios. App launch, volume adjustment and file handling are examples, not the full capability scope or a predetermined first action. External communications, purchases, account changes, destructive operations and protected governance changes retain existing approval requirements.
 
 ## 10. Technology stack and decision status
 
