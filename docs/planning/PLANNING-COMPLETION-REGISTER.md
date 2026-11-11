@@ -81,7 +81,7 @@ These are the main-builder's responsibilities, not owner testing or independent-
 - Separate engineered mechanisms/invariants from data and behaviour learned or discovered through experience.
 - Permit explicit safety invariants, schemas, protocols, resource limits and policy constraints; these are not learned behaviour.
 - Require provenance, confidence/uncertainty and evaluation for acquired capability knowledge.
-- Add architecture and test checks that detect regressions toward hardcoded behaviour.
+- NHC-001…NHC-008 are now specified in the contract test catalogue; generic capability descriptor schema/fixture added. Remaining: trace all requirements and add executable tests/code-review checks when implementation exists.
 
 ### B-04 — Reconcile architecture, product and platform boundaries
 - The architecture and canonical roadmap distinguish CLI first interface from concurrent cloud/offline-mobile operation. A new roadmap note explicitly separates shared implementation from live state/synchronization and records that WP-15 is not implementation-ready until deployment and state ownership semantics are resolved.
@@ -92,10 +92,10 @@ These are the main-builder's responsibilities, not owner testing or independent-
 ### B-05 — Reconcile persistence, contracts and recovery
 - Contract-to-DDL audit identified seven explicit gaps (CCM-01…CCM-07) in the [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md).
 - Proposed memory migration v3 adds typed plan-step contracts and learning-update details; proposed events migration v2 adds exact operation details and per-attempt receipts. The proposed base operation-state constraints and outcome operation ID representation were also aligned with the operation lifecycle and UUID convention.
-- These are documentation-level design corrections only; DDL has not been executed. Remaining gaps include machine-readable domain payload schemas/fixtures, checkpoint binding/replanning contracts and attention restart semantics. Remaining: compare canonical entity definitions, proposed DDL, event contracts, worker contracts and implementation-ready contracts; resolve duplicate/missing schemas and state ownership.
+- These are documentation-level design corrections only; DDL has not been executed. Remaining gaps include machine-readable domain payload schemas/fixtures, checkpoint binding/replanning contracts and attention restart semantics. Initial canonical JSON Schema Draft 2020-12 files now exist for the common message envelope and extensible capability descriptor, with a generic fixture. Remaining: define schemas for all domain payloads, choose/pin validator and generator dependencies, generate or validate C++/Python types, reconcile canonical entity definitions with proposed DDL, and add shared fixtures/CI enforcement.
 - Resolve duplicated or conflicting definitions and schema ownership.
 - Ensure cross-store references, outbox delivery, idempotency, recovery, artifact lineage, deletion and sync rules agree.
-- Produce a single source of truth for each contract.
+- Produce a single source of truth for each contract. The canonical schema directory is now established but currently covers only the common envelope and capability descriptor.
 - Complete CCM-04, CCM-06 and CCM-07; execute migration syntax/integrity/fault validation only when the target SQLite baseline is pinned.
 
 ### B-06 — Reconcile implementation work packages and roadmap
