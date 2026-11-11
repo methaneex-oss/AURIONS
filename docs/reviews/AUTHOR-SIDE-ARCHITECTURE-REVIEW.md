@@ -81,6 +81,8 @@ This was a documentation consistency review. It did not execute SQL DDL, build a
 
 **Disposition:** Incorporated in architecture Sections 3, 4, 12 and 16.6 and product definition Section 8.
 
+**Historical-status note:** This finding records the state at the time of the original author-side review. It was subsequently superseded by the owner's explicit decision that CLI is the first user-facing interface. The current product definition and owner-decision traceability matrix govern; this historical finding is not an unresolved current decision.
+
 ## 3. Additional source-alignment checks
 
 The revised documents preserve these established constraints:
