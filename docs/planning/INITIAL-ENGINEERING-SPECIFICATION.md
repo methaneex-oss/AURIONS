@@ -1512,9 +1512,10 @@ CREATE TABLE operation_details (
   capability_id TEXT NOT NULL,
   descriptor_version INTEGER NOT NULL CHECK(descriptor_version>0),
   target_ref TEXT NOT NULL,
-  canonical_parameters_json TEXT NOT NULL CHECK(json_valid(canonical_parameters_json)),
+  canonical_parameters_artifact_id BLOB NOT NULL CHECK(length(canonical_parameters_artifact_id)=16),
   parameter_digest TEXT NOT NULL CHECK(length(parameter_digest)=64),
-  expected_effects_json TEXT NOT NULL CHECK(json_valid(expected_effects_json)),
+  expected_effects_ref TEXT NOT NULL,
+  sensitivity INTEGER NOT NULL CHECK(sensitivity BETWEEN 0 AND 4),
   data_categories_json TEXT NOT NULL CHECK(json_valid(data_categories_json)),
   risk_class TEXT NOT NULL CHECK(risk_class IN ('R0','R1','R2','R3','R4','R5')),
   policy_version_ref TEXT NOT NULL,
@@ -1537,7 +1538,7 @@ CREATE TABLE operation_attempts (
   dispatched_at_ms INTEGER,
   finished_at_ms INTEGER,
   provider_receipt_ref TEXT,
-  reported_effects_json TEXT CHECK(reported_effects_json IS NULL OR json_valid(reported_effects_json)),
+  reported_effects_ref TEXT,
   verification_evidence_ref TEXT,
   error_ref TEXT,
   uncertainty_reason TEXT,
@@ -1563,7 +1564,7 @@ CREATE TABLE task_checkpoint_details (
 
 ```
 
-The expanded `operations.state` and `operation_steps.state` values in the proposed base DDL are the canonical durable lifecycle projection. The operation-attempt table records each dispatch attempt and its receipt/verification evidence. Operation details bind owner, actor, device, originating plan step, exact capability version and canonical parameters. Task checkpoint details bind a resumable checkpoint to the exact plan version, context/capability epoch and dependency-state digest. State transitions remain governed by Section 7.1; SQL CHECK constraints restrict values but do not enforce the transition graph. The command handler must atomically append the lifecycle event and update the owning projection in one `aurion_events.db` transaction.
+The expanded `operations.state` and `operation_steps.state` values in the proposed base DDL are the canonical durable lifecycle projection. The operation-attempt table records each dispatch attempt and its receipt/verification evidence. Operation details bind owner, actor, device, originating plan step, exact capability version and the canonical parameter artifact ID/digest. Parameter payloads and sensitive effect details are stored as governed artifacts with sensitivity and encryption metadata, not copied as plaintext into the event database. Task checkpoint details bind a resumable checkpoint to the exact plan version, context/capability epoch and dependency-state digest. State transitions remain governed by Section 7.1; SQL CHECK constraints restrict values but do not enforce the transition graph. The command handler must atomically append the lifecycle event and update the owning projection in one `aurion_events.db` transaction.
 
 Cross-store capability descriptor and approval references are validated by application services against the current memory and governance stores immediately before dispatch. No cross-file foreign keys are introduced.
 
