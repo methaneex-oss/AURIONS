@@ -376,15 +376,17 @@ Allowed transitions:
 `PROPOSED → VALIDATING → AWAITING_APPROVAL → READY → DISPATCHED → RUNNING → SUCCEEDED`
 
 Alternative terminal/exception transitions:
-- `PROPOSED/VALIDATING/READY → REJECTED`
-- `AWAITING_APPROVAL → EXPIRED | REVOKED | CANCELLED`
-- `READY/DISPATCHED/RUNNING → CANCEL_REQUESTED`
+- `PROPOSED/VALIDATING/READY → REJECTED | EXPIRED`
+- `AWAITING_APPROVAL → REJECTED | EXPIRED | REVOKED | CANCELLED`
+- `READY/DISPATCHED/RUNNING → CANCEL_REQUESTED`; a pre-dispatch permission revocation transitions to `REVOKED`, while a post-dispatch revocation requires outcome reconciliation.
 - `RUNNING → FAILED | UNCERTAIN`
 - `CANCEL_REQUESTED → CANCELLED | SUCCEEDED | UNCERTAIN`
 - `UNCERTAIN → RECONCILING → SUCCEEDED | FAILED | COMPENSATION_REQUIRED | MANUAL_INTERVENTION`
 - `COMPENSATION_REQUIRED → COMPENSATING → COMPENSATED | MANUAL_INTERVENTION`
 
-Terminal states are immutable; corrections are new linked operations/events. Never transition UNCERTAIN directly to retry.
+Terminal states are immutable: `SUCCEEDED`, `FAILED`, `REJECTED`, `EXPIRED`, `REVOKED`, `CANCELLED`, `COMPENSATED` and `MANUAL_INTERVENTION`. Corrections are new linked operations/events. Never transition `UNCERTAIN` directly to retry.
+
+The durable operation projection and operation-event payload use the exact 19 values in the proposed `operations.state` CHECK constraint. For state-specific events (`operation.proposed.v1`, `operation.validating.v1`, `operation.awaiting_approval.v1`, `operation.ready.v1`, `operation.dispatched.v1`, `operation.running.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.rejected.v1`, `operation.expired.v1`, `operation.revoked.v1`, `operation.cancel_requested.v1`, `operation.cancelled.v1`, `operation.uncertain.v1`, `operation.reconciling.v1`, `operation.compensation_required.v1`, `operation.compensating.v1`, `operation.compensated.v1`, `operation.manual_intervention.v1`), the payload `state` MUST equal the event suffix. `operation.reconciled.v1` is a reconciliation-result event; its payload `state` is the actual resulting operation state and must include reconciliation evidence. The attempt lifecycle is separate: when `attempt_state` is present, `attempt_id` and `attempt_number` are required and the state must match the `operation_attempts.state` contract. `accepted` is a command response, not an operation state; `started` is not a durable state (use `running`).
 
 ### 7.2 Operation record
 The authoritative operation projection is stored in `operations`; exact immutable operation parameters and authorization context are stored in `operation_details`; each dispatch/retry is recorded in `operation_attempts`; step-level execution is tracked in `operation_steps`; cross-store recovery is tracked in `recovery_journal`. Together they persist operation ID, task/goal/plan/step lineage, owner/actor/device, capability and descriptor version, canonical parameters and digest, target, expected effects, data categories, risk class, policy version, approval reference, idempotency key, deadline, resource budget, current state, attempt number, dispatch receipt, observed result, verification evidence, timestamps and causation/correlation IDs. See proposed event/recovery migration v2 in Section 26.5.2 of the source specification.
