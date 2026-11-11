@@ -1221,5 +1221,75 @@
     "created_at": "2026-11-11T08:00:00Z",
     "updated_at": "2026-11-11T08:10:00Z",
     "failure_ref": null
+  },
+  "contextInvalidationRequest": {
+    "context_id": "31000000-0000-4000-8000-000000000001",
+    "expected_version": 2,
+    "reason_ref": "reason:new_evidence",
+    "evidence_refs": [
+      "evidence:4"
+    ],
+    "requested_at": "2026-11-11T08:11:00Z"
+  },
+  "predictionEvaluationRequest": {
+    "prediction_id": "36000000-0000-4000-8000-000000000001",
+    "observed_outcome_ref": "outcome:observed:1",
+    "evidence_refs": [
+      "evidence:5"
+    ],
+    "evaluation_context": {
+      "scope": "held_out"
+    },
+    "requested_at": "2026-11-11T08:11:00Z"
+  },
+  "outcomeEvaluationRequest": {
+    "prediction_ref": "prediction:1",
+    "plan_ref": "plan:1",
+    "operation_ref": "operation:1",
+    "expected_outcome_ref": "artifact:expected:1",
+    "observed_outcome_ref": "artifact:observed:1",
+    "verification_sources": [
+      "platform_observation:1"
+    ],
+    "attribution_context": {
+      "confounders": [
+        "network_state"
+      ]
+    },
+    "requested_at": "2026-11-11T08:11:00Z"
+  },
+  "learningExperimentRequest": {
+    "experiment_id": "ad100000-0000-4000-8000-000000000002",
+    "hypothesis_ref": "hypothesis:2",
+    "baseline_artifact_ref": "artifact:baseline:2",
+    "dataset_manifest_ref": "artifact:dataset:2",
+    "protocol_ref": "artifact:protocol:2",
+    "candidate_artifact_ref": "artifact:candidate:2",
+    "random_seed": 17,
+    "resource_budget": {
+      "cpu_ms": 60000,
+      "memory_bytes": 536870912
+    },
+    "requested_at": "2026-11-11T08:11:00Z",
+    "deadline": "2026-11-11T08:20:00Z"
+  },
+  "learningCandidateEvaluationRequest": {
+    "candidate_artifact_ref": "artifact:candidate:2",
+    "baseline_artifact_ref": "artifact:baseline:2",
+    "dataset_manifest_ref": "artifact:dataset:2",
+    "evaluation_protocol_ref": "artifact:protocol:2",
+    "regression_suite_ref": "artifact:regression:2",
+    "requested_at": "2026-11-11T08:11:00Z",
+    "deadline": "2026-11-11T08:20:00Z"
+  },
+  "evolutionCandidateActionRequest": {
+    "candidate_id": "ae100000-0000-4000-8000-000000000002",
+    "proposal_id": "a8000000-0000-4000-8000-000000000002",
+    "action": "evaluate",
+    "artifact_ref": "artifact:candidate:2",
+    "evaluation_ref": null,
+    "approval_ref": null,
+    "rollback_ref": null,
+    "requested_at": "2026-11-11T08:11:00Z"
   }
 }
