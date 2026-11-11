@@ -1,5 +1,7 @@
 # AURIONS contract schemas
 
+- [`persistence/`](./persistence/README.md): machine-readable proposed SQLite base schemas and additive migrations; unexecuted and pending target validation.
+
 This directory is the proposed canonical machine-readable schema source. The initial schema dialect is JSON Schema Draft 2020-12. A validator candidate and an explicit no-code-generation baseline are documented in Section 12.1 of the implementation-ready contracts; neither has been integrated into the runtime or CI, and Android target feasibility remains unverified.
 
 - `message-envelope.v1.schema.json`: common versioned message envelope.
