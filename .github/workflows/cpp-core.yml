@@ -22,8 +22,10 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Set up CMake
-        uses: lukka/get-cmake@v4
+      - name: Report toolchain
+        run: |
+          cmake --version
+          c++ --version
 
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DAURIONS_BUILD_TESTS=ON
