@@ -117,10 +117,12 @@ Initial command families:
 
 A command response uses `commandResponse`, echoes `command_type` and `command_version`, and is one of: `accepted`, `rejected`, `pending`, `conflict`, `unsupported_version`. Accepted means durably accepted for processing, not completed. Failures use `contractError`, which records retryability and whether a side effect was not dispatched, dispatched, unknown or not applicable; this distinction is mandatory for safe retry/reconciliation.
 
+The command envelope is a wrapper, not a complete command contract. Every registered `command_type + command_version` still requires its own request payload schema, response semantics, owning state transition, authorization requirements, idempotency behaviour, cancellation/deadline rules and error mapping. The command family list above is extensible and is not evidence that every family has a complete request schema. Unknown command types or unsupported major versions are rejected before side effects.
+
 ### 4.2 Query contract
 Canonical body schema: `queryEnvelope`. Each query carries an open namespaced `query_type` and `query_version`, resolved through a versioned query registry rather than a closed enum. Queries are read-only, scoped to an authenticated owner/device context, bounded by timeout and result size, and carry a consistency indicator (`snapshot`, `eventual`, or `local_committed`). Queries MUST NOT trigger hidden side effects.
 
-Initial query families: `environment.inspect`, `capability.search`, `capability.inspect`, `capability.knowledge.inspect`, `representation.inspect`, `context.get`, `memory.search`, `knowledge.search`, `belief.inspect`, `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect`, `goal.get`, `plan.get`, `decision.inspect`, `task.status`, `operation.status`, `permission.inspect`, `audit.lookup`, `device.capabilities`. Query families are versioned interface namespaces, not a closed list of system behaviours or capabilities.
+Initial query families: `environment.inspect`, `capability.search`, `capability.inspect`, `capability.knowledge.inspect`, `representation.inspect`, `context.get`, `memory.search`, `knowledge.search`, `belief.inspect`, `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect`, `goal.get`, `plan.get`, `decision.inspect`, `task.status`, `operation.status`, `permission.inspect`, `audit.lookup`, `device.capabilities`. Query families are versioned interface namespaces, not a closed list of system behaviours or capabilities. Each query type still requires a typed filter/input schema, result schema, authorization/data-scope rules, consistency semantics and resource bounds; the generic query envelope does not complete those family-specific contracts.
 
 ### 4.3 Event catalogue
 Every event includes the common envelope and an immutable event body. Initial event names:
@@ -273,9 +275,9 @@ The execution receipt records operation/attempt IDs, dispatch state/time, adapte
 
 ### Error and compatibility semantics
 
-At minimum, distinguish: unsupported schema major version; malformed descriptor; unknown provider; unavailable provider; stale descriptor; missing observation evidence; missing platform grant; denied AURIONS policy; expired/mismatched approval; failed precondition; resource/deadline exhaustion; cancelled-before-dispatch; dispatch failure; dispatched outcome unknown; postcondition not verified; and provider contract violation.
+Use the `contractError` payload. At minimum, distinguish: unsupported schema major version; malformed descriptor; unknown provider; unavailable provider; stale descriptor; missing observation evidence; missing platform grant; denied AURIONS policy; expired/mismatched approval; failed precondition; resource/deadline exhaustion; cancelled-before-dispatch; dispatch failure; dispatched outcome unknown; postcondition not verified; and provider contract violation.
 
-Errors must preserve retryability and whether dispatch may already have occurred. Never classify an uncertain side effect as safely retryable by default.
+`error_code` is a stable, namespaced identifier resolved through a versioned error registry, not a closed list embedded in the cognitive core. `category` identifies the failure domain; `retryable` is advisory and cannot override `side_effect_state`. `side_effect_state=unknown` or `dispatched` forbids blind retry; the operation must reconcile or enter manual intervention unless a provider-specific idempotency/reconciliation contract proves safety. Unknown error codes default to non-retryable with unknown side-effect state. Diagnostic references must point to redacted, access-controlled artifacts; `details` cannot carry secrets or grant authority.
 
 ## 5. C++ / Python worker protocol
 
