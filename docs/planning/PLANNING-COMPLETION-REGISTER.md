@@ -105,8 +105,9 @@ These are the main-builder's responsibilities, not owner testing or independent-
 - Ensure concurrent cloud/offline mobile direction is reflected in work packages and gates.
 
 ### B-07 — Complete architecture-wide consistency and completeness audit
+- A [Owner Decision Traceability Matrix](OWNER-DECISION-TRACEABILITY-MATRIX.md) now maps MP-01…MP-06, IP-01…IP-10, UQ-01…UQ-17 and operational-authority decisions to architecture, contracts, roadmap and test IDs. It is a traceability baseline, not validation evidence.
 - First focused crosswalk completed for cognitive/capability state ownership and persistence; the seven resulting CCM findings are recorded with severity and required resolution.
-- Trace each owner decision and foundational invariant into architecture, product, contracts, roadmap and tests.
+- Verify every trace in the owner decision matrix against the exact current source files; extend the audit to every architectural invariant, product requirement, failure path and dependency.
 - Check component ownership, allowed/forbidden dependencies, state ownership and authority boundaries.
 - Check all critical paths, failure modes, recovery, privacy, security and resource assumptions.
 - Record every finding with severity, disposition and evidence; no silent assumptions.
