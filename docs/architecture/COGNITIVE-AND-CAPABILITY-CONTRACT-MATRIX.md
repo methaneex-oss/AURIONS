@@ -99,7 +99,7 @@ Rules: steps may represent reasoning, observation, waiting, clarification or act
 
 ### 4.8 Operation proposal and receipt
 
-Proposal required: `operation_id`, `goal_ref`, `plan_ref`, `step_ref`, `capability_id/version`, `target`, `canonical_parameters`, `parameter_digest`, `expected_effects`, `data_categories`, `risk_class`, `policy_version`, `deadline`, `budget`, `idempotency_key`.
+Proposal required: `operation_id`, `goal_ref`, `plan_ref`, `step_ref`, `capability_id/version`, `target`, `canonical_parameters_artifact_ref` (encrypted/governed), `parameter_digest`, `expected_effects`, `data_categories`, `risk_class`, `policy_version`, `deadline`, `budget`, `idempotency_key`.
 
 Receipt required: `operation_id`, `attempt_id`, `dispatch_state`, `provider_receipt_ref`, `started_at`, optional `finished_at`, `reported_effects`, `error_ref`, `uncertainty`.
 
