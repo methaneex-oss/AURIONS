@@ -1625,38 +1625,17 @@ Pass only when one reproducible test run demonstrates:
 
 A scripted demo, hardcoded response, transcript alone or one successful inference is insufficient. The learned outcome must survive restart.
 
-## 40. Final planning status and approval gate
+## 40. Earlier planning status — superseded by current completion register
 
-| Area | Status |
-| --- | --- |
-| Mission, principles and owner decisions | Recorded |
-| Architecture and module responsibilities | Specified at logical level |
-| Database entities and initial DDL | Drafted; target-runtime validation outstanding |
-| Event/worker contracts | Semantics specified; concrete schemas/fixtures outstanding |
-| Cross-store transaction/recovery | Protocol specified; fault-injection validation outstanding |
-| Artifact registry | Specified; implementation outstanding |
-| Authorization/risk/privacy | Policy model specified; owner authentication mechanism must be verified in security design |
-| Key management/threat model | Requirements specified; platform-specific design/review outstanding |
-| Deletion/backup/sync | Lifecycle specified; restore/offline-device tests outstanding |
-| Test catalogue/milestone acceptance | Specified; executable fixtures/tests outstanding |
-| Dependencies/licenses | Review criteria specified; exact SBOM/license audit outstanding |
-| Device performance | Basic inference only; benchmark outstanding |
-| Work packages/roadmap | Deliverables and exit gates specified |
-| Implementation | Not started |
+This section's former status table and WP-00/WP-01 planning-exit statement were an earlier planning snapshot. They are superseded by Section 33 of this specification and by [Planning Completion Register](PLANNING-COMPLETION-REGISTER.md) and [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md).
 
-### Planning exit decision
+In particular:
+- The earlier checked/drafted status did not establish COMPLETE — VERIFIED.
+- The former recommendation to begin WP-00/WP-01 is not current implementation authorization.
+- Android capability discovery, cognitive mechanism contracts, cross-document consistency and canonical work-package reconciliation remain builder-owned planning work.
+- External validation, independent review of the exact final revision and explicit owner approval remain separate gates.
 
-The architecture and initial engineering plan are now consolidated as the implementation-planning baseline. They are not a validated release specification: concrete schemas, platform security choices, dependency audit and measured resource thresholds must be completed before the affected capabilities are enabled.
-
-This prevents planning from becoming endless without representing unverified assumptions as proven. The first implementation scope should be limited to WP-00 and WP-01: repository/build baseline, dependency inventory, stable contracts and CI. That work does not enable live autonomous action, sensitive external disclosure, production training or protected-policy mutation.
-
-**Owner approval is required before implementation begins.** Approval authorizes transition only to WP-00/WP-01 against this specification, not every future consequential capability. Later security, privacy and governance gates remain mandatory.
-
-### Change log
-
-- 2026-11-11: Added Sections 32–40: message contracts, C++/Python boundaries, artifact registry, transactional outbox, authorization/risk/privacy, security/key requirements, risk register, work-package exit gates, first-milestone acceptance and final planning status.
-- Sections 26–31 retain the DDL, migration, recovery, deletion, testing, dependency and roadmap baselines.
-- Specification work only: no source code, database, device configuration or repository was changed by this update.
+**Current status:** Planning is IN PROGRESS. Implementation is not authorized.
 
 ## 32. Final engineering resolutions for implementation readiness
 
@@ -1817,7 +1796,7 @@ The previous checklist's checked boxes represented that text had been drafted, n
 - Defined module ownership and dependency direction.
 - Defined per-task resource budgets, cancellation and preemption.
 - Consolidated privacy/security defaults and explicit fail-closed behaviour.
-- Marked planning design deliverables complete while retaining evidence-dependent validation and owner approval as explicit gates.
+- Recorded an earlier draft-level planning baseline; this was later superseded by the evidence-based completion register. Drafted sections are not proof of verified planning completion.
 - No implementation code, database migration, device configuration or repository changes were performed by this planning update.
 
 - 2026-11-11: Corrected the former planning checklist: checked boxes had indicated documented sections, not verified completion. Replaced the implied completion claim with explicit specified/reviewed/validated/implemented/verified status and linked the builder-owned planning completion register.
