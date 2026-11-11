@@ -285,6 +285,47 @@ Use the `contractError` payload. At minimum, distinguish: unsupported schema maj
 
 `error_code` is a stable, namespaced identifier resolved through a versioned error registry, not a closed list embedded in the cognitive core. `category` identifies the failure domain; `retryable` is advisory and cannot override `side_effect_state`. `side_effect_state=unknown` or `dispatched` forbids blind retry; the operation must reconcile or enter manual intervention unless a provider-specific idempotency/reconciliation contract proves safety. Unknown error codes default to non-retryable with unknown side-effect state. Diagnostic references must point to redacted, access-controlled artifacts; `details` cannot carry secrets or grant authority.
 
+### 4.5 Normative error taxonomy and compatibility negotiation
+
+The error registry is extensible, but each registered code MUST declare one stable category, default retry posture, side-effect default, required reconciliation action, and whether owner/platform intervention is required. Codes are identifiers, not behavioural rules; handlers use the category and operation state to select a safe recovery path.
+
+| Category | Representative namespaced codes | Default side-effect state | Retry/recovery rule |
+|---|---|---|---|
+| `contract.schema` | `SCHEMA_MALFORMED`, `SCHEMA_MAJOR_UNSUPPORTED`, `SCHEMA_CONDITION_UNSUPPORTED` | `not_dispatched` | Do not retry unchanged input; negotiate or correct the contract first |
+| `provider.identity` | `PROVIDER_UNKNOWN`, `PROVIDER_UNTRUSTED`, `PROVIDER_VERSION_UNVALIDATED` | `not_dispatched` | Quarantine/revalidate provider; provider cannot self-promote trust |
+| `provider.availability` | `PROVIDER_UNAVAILABLE`, `PROVIDER_RATE_LIMITED` | `not_dispatched` only when dispatch is proven absent; otherwise `unknown` | Retry only after backoff and fresh availability evidence; reconcile if dispatch may have occurred |
+| `capability.validity` | `CAPABILITY_STALE`, `CAPABILITY_REVOKED`, `CAPABILITY_INCOMPATIBLE` | `not_dispatched` | Invalidate dependent plans and rediscover/revalidate; never dispatch from stale descriptor |
+| `evidence.precondition` | `EVIDENCE_INSUFFICIENT`, `PRECONDITION_FALSE`, `PRECONDITION_UNKNOWN` | `not_dispatched` | Acquire evidence, re-evaluate or defer; unknown is not false |
+| `platform.permission` | `PLATFORM_GRANT_MISSING`, `PLATFORM_GRANT_REVOKED` | `not_dispatched` | Require platform grant through OS flow; do not infer or synthesize it |
+| `governance.authorization` | `POLICY_DENIED`, `APPROVAL_EXPIRED`, `APPROVAL_MISMATCH`, `APPROVAL_REVOKED` | `not_dispatched` | Do not retry until a new valid authorization decision exists |
+| `operation.conflict` | `EXPECTED_REVISION_CONFLICT`, `DEPENDENCY_VERSION_STALE`, `IDEMPOTENCY_KEY_REUSE_MISMATCH` | `not_dispatched` unless existing operation is found | Reload authoritative revisions; same idempotency key with different canonical digest is an integrity failure |
+| `operation.budget` | `DEADLINE_EXCEEDED`, `RESOURCE_BUDGET_EXCEEDED`, `CANCELLED_BEFORE_DISPATCH` | `not_dispatched` only when dispatch absence is durable | Checkpoint or replan; a new attempt requires a new explicit operation decision where scope/effects change |
+| `operation.dispatch` | `ADAPTER_DISPATCH_FAILED`, `DISPATCH_RECEIPT_MISSING` | `dispatched` or `unknown` unless proven otherwise | Reconcile the target/provider; no blind retry |
+| `operation.outcome` | `OUTCOME_UNCERTAIN`, `POSTCONDITION_UNVERIFIED`, `PROVIDER_RESULT_CONTRADICTED` | `dispatched` or `unknown` | Preserve evidence, perform independent observation/reconciliation, or enter manual intervention |
+| `provider.contract` | `PROVIDER_CONTRACT_VIOLATION`, `PROVIDER_INTEGRITY_FAILURE` | `unknown` after dispatch; otherwise `not_dispatched` | Quarantine affected provider version; preserve receipts and reconcile possible effects |
+| `runtime.internal` | `INTERNAL_FAILURE`, `STORAGE_COMMIT_UNCERTAIN` | `unknown` unless transaction rollback is proven | Recover from durable state; never infer rollback from process failure |
+
+The table is the minimum registry seed, not a closed error enum. An implementation MUST retain the actual side-effect state observed for the individual attempt; it MUST NOT overwrite it with the category default. `retryable=true` is never sufficient authority to retry. Retry requires all of: dispatch state proven safe, current descriptor and policy revalidation, unchanged canonical operation digest or a newly authorized operation, valid deadline/budget, and idempotency/reconciliation contract.
+
+#### Compatibility negotiation state machine
+
+A producer and consumer negotiate before accepting a versioned command, query, event stream or worker job:
+1. Exchange producer/consumer identity, supported envelope major/minor ranges, message-family versions and required feature identifiers.
+2. Select the highest mutually supported major and a mutually supported minor under that major; required features must all be supported.
+3. Reject if no common major exists, a required feature is missing, a security-relevant extension is unknown, or the peer identity/trust check fails.
+4. Record the negotiated tuple, peer identities, feature set, decision, reason and timestamp as an auditable compatibility result.
+5. Bind the negotiated tuple to the session/job/stream. Re-negotiate on peer restart, version change, trust/lifecycle change or schema incompatibility.
+
+Compatibility negotiation MUST NOT silently downgrade security, authorization, integrity, encryption or side-effect guarantees. Optional extension loss may be tolerated only when the owning schema declares the extension optional and the consumer reports the loss. A successful negotiation establishes protocol compatibility only; it grants no capability, permission or authorization.
+
+#### Command/query registry completeness gate
+
+For every `command_type + command_version`, the registry MUST bind: request schema ID/version; response schema ID/version; owning component and aggregate; expected-revision/dependency-version requirements; state transition(s); authorization/data classification; idempotency scope and digest rules; deadline/cancellation semantics; possible side-effect state; error-code mapping; emitted event(s); persistence owner; and positive, negative, conflict, replay and recovery fixtures.
+
+For every `query_type + query_version`, the registry MUST bind: filter/input schema; result schema; owner/device scope; data classification and field-level redaction; authorization rule; consistency mode; deterministic ordering/cursor semantics; timeout/result/byte limits; cache/freshness rules; and proof that execution is read-only.
+
+A registry entry missing any applicable binding is **not registered for production dispatch**. The current command/query family names and generic envelopes remain interface proposals until their individual entries and payload schemas exist. This gate prevents a generic envelope or open namespace from being mistaken for a complete application API.
+
 ## 5. C++ / Python worker protocol
 
 Python is an untrusted, isolated experiment worker. It is not an authority boundary for production state.
