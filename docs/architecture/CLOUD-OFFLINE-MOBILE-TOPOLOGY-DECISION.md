@@ -49,13 +49,15 @@ The architecture must explicitly relax or qualify one of these statements. It mu
 
 Retain one cognitive-core implementation and common versioned contracts in every option. Keep local Android authorization and execution authority on the device in every option.
 
-Before implementation planning is finalized, select whether first-release cloud/mobile operation requires shared cognitive-state continuity:
+**Builder recommendation: Option B — dual runtime with selective domain synchronization — is the best semantic fit if AURIONS is intended to remain one persistent personal intelligence when the owner moves between cloud and offline mobile.** Without some continuity mechanism, Option A creates two separate histories: an experience or belief learned in one runtime is unavailable to the other until manually transferred. That weakens the product's persistent-memory and experience-dependent adaptation objectives.
 
-- If **yes**, choose Option B and define the smallest justified synchronized domain set, conflict rules, deletion propagation, offline queueing and recovery as first-release scope. General device handoff and broad ecosystem synchronization can remain later work.
-- If **no**, choose Option A and explicitly accept separate cloud/mobile cognitive histories for the first release.
-- If cloud is intended only as an optional compute/service plane, choose Option C and revise the meaning and acceptance criteria of "cloud operation" accordingly.
+This recommendation is deliberately narrower than general multi-device synchronization. A first-release continuity subset should be considered for owner-approved durable memory/knowledge/belief updates and explicitly selected goal/context continuity. Device-local operation state, Android permissions, device credentials, owner approval secrets and governance authority remain local and are never made transferable merely because a memory domain is synchronized. Sensitive/raw observations remain local unless separately classified and authorized for transfer. The exact domain set, retention/deletion propagation and conflict semantics must be specified before implementation.
 
-This is a product/authority clarification, not a detail that can be safely guessed by the builder.
+The trade-off is real: Option B brings a limited synchronization mechanism into the first-release scope and therefore changes the existing proposal to defer all synchronization. That scope change requires explicit owner approval. It cannot be smuggled in as an engineering detail.
+
+If the owner does **not** want first-release cross-context continuity, Option A is the clean fallback. It preserves the existing no-sync scope, but the product must explicitly accept and disclose that cloud and mobile maintain separate cognitive histories. Option C is appropriate only if cloud is intended as an optional compute/service plane rather than a full concurrent AURIONS runtime; it is not the default recommendation under the current wording of the deployment target.
+
+The owner must resolve whether one continuous cognitive history is required in the first release. Until then, Option B is a builder recommendation, not a selected topology or owner decision.
 
 ## 6. Acceptance consequences
 
@@ -71,6 +73,6 @@ Product acceptance PR-15 through PR-18 applies to every option. Option B additio
 
 ## 7. Current disposition
 
-**UNRESOLVED — builder proposal prepared; cross-context continuity requires owner clarification if continuity is expected in first release.**
+**UNRESOLVED — builder recommendation is Option B if one continuous personal intelligence is required; owner approval is required because this adds selective synchronization to first-release scope. Option A remains the no-sync fallback with explicitly separate histories.**
 
 Until this is resolved, WP-15's cloud/mobile integration topology and state-continuity exit criteria are not implementation-ready. This does not block continued builder work on unrelated planning layers and does not authorize implementation.
