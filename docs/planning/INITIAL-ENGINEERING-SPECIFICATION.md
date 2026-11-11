@@ -1205,7 +1205,7 @@ CREATE INDEX idx_disclosures_provider_time ON data_disclosures(provider_id,discl
 - Plan dependency acyclicity must be enforced by planner validation and transactional tests; SQLite CHECK constraints cannot express arbitrary graph-cycle detection.
 - Cross-file action/goal/plan references require reconciliation because they are not foreign keys.
 - JSON validity is not schema validation, authorization or encryption. Validate each JSON document against its contract before storage.
-- Add artifact registry tables and immutable artifact metadata before storing production references.
+- The proposed additive memory-schema migration in Section 26.5.1 now defines artifact metadata and lineage tables; execution, hash/lineage invariants and deletion/restore fault tests remain outstanding.
 - Define sensitive event-payload encryption/redaction before durable event storage.
 - Audit-chain hashes need an external signed checkpoint if tamper evidence against whole-database rewrite is required.
 - Use non-null idempotency keys for operations that claim idempotency; enforce this at operation creation.
@@ -1243,7 +1243,9 @@ CREATE TABLE artifacts (
     ('active','pending_deletion','deleted_active','backup_expiry_pending')),
   created_at_ms INTEGER NOT NULL,
   updated_at_ms INTEGER NOT NULL,
-  deleted_at_ms INTEGER
+  deleted_at_ms INTEGER,
+  CHECK(updated_at_ms>=created_at_ms),
+  CHECK(deleted_at_ms IS NULL OR deleted_at_ms>=created_at_ms)
 ) STRICT;
 CREATE INDEX idx_artifacts_hash ON artifacts(sha256);
 CREATE INDEX idx_artifacts_kind_status ON artifacts(artifact_kind,validation_state,availability_state);
