@@ -204,6 +204,26 @@ The implementation contract must provide versioned equivalents of:
 
 Each contract must define schema version, stable IDs, provenance, timestamps, correlation/causation, owner/device scope, sensitivity, idempotency, errors, cancellation, durability and compatibility. The implementation-ready planning contract must own the concrete schemas; this architecture document defines their semantics and ownership.
 
+## 7.1 Contract, state and verification ownership
+
+The following crosswalk makes the logical architecture actionable without duplicating canonical payload schemas. Command/query/event names are versioned interface families, not a closed set of Android behaviours.
+
+| Mechanism | Owning component | Contract families | Authoritative state | Verification coverage |
+|---|---|---|---|---|
+| Environment observation | Environment/discovery + Android platform adapter | `environment.observe`, `environment.inspect`, `environment.observed.v1` | `aurion_memory.db.experiences`; durable observation events in `aurion_events.db` | AD-001, AD-004, AD-011, AD-013 |
+| Discovery broker | Environment/discovery | `capability.discover`, `capability.search`, `capability.discovered.v1`, `capability.invalidated.v1` | `capability_descriptors`, `capability_discovery_evidence`; discovery event history | AD-002, AD-003, AD-004, AD-015 |
+| Capability registry and lifecycle | Environment/discovery | `capability.inspect`, `capability.verify`, `capability.invalidate`, `capability.verified.v1`, `capability.revoked.v1` | Versioned descriptor and lifecycle records in `aurion_memory.db`; lifecycle events in `aurion_events.db` | AD-004, AD-005, AD-015 |
+| Capability-use knowledge | Learning/evaluation, with descriptor ownership retained by Environment/discovery | `outcome.evaluate`, `learning.update.propose`, `outcome.evaluated.v1`, `learning.update.proposed.v1`, `learning.update.accepted.v1` | `capability_knowledge_revisions`, `capability_knowledge_evidence`, `capability_relationships`, `learning_updates` | AD-008, AD-009, CAP-003 |
+| Goal decomposition and plan binding | Goals/planning | `plan.propose`, `plan.checkpoint`, `plan.proposed.v1`, `plan.checkpointed.v1` | `goals`, `plans`, `plan_steps`, `plan_step_dependencies` | AD-006, AD-012, CM-007 |
+| Permission and approval | Governance; Android OS remains an independent authority | `approval.request`, `approval.revoke`, `permission.evaluated.v1`, `approval.requested.v1`, `approval.decided.v1` | `aurion_governance.db` permission, approval and audit records; OS grant state is queried from Android | AD-001, AD-005, AD-006, AD-010, AD-013 |
+| Operation dispatch and recovery | Action gateway + runtime | `operation.propose`, `operation.cancel`, `operation.reconcile`, `operation.started.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.uncertain.v1`, `operation.reconciled.v1` | `aurion_events.db` operations, steps and recovery journal | AD-014; OP-001…OP-008 |
+| Postcondition and outcome evaluation | Outcome evaluation | `outcome.evaluate`, `outcome.evaluated.v1` | `outcome_evaluations` in `aurion_memory.db`, linked to immutable operation/observation evidence | AD-007, CM-009, CM-010 |
+| Rediscovery and stale-state handling | Environment/discovery + runtime | Environment-change observations, `capability.discover`, `capability.invalidate`, capability lifecycle events | Descriptor versions and provenance in memory store; event and checkpoint history in event store | AD-004, AD-005, AD-014 |
+
+Authority separation is mandatory: the capability registry owns descriptions and evidence, not permission grants; governance owns AURIONS authorization; Android owns platform grants; the action gateway revalidates both immediately before dispatch. No adapter, provider, planner or learned capability record may bypass those boundaries.
+
+Concrete field-level schemas, error codes, compatibility rules and fixture payloads remain owned by the Implementation-Ready Planning Contracts. This crosswalk is not a claim that those schemas have already been fully specified or executed.
+
 ## 8. Required verification scenarios
 
 These are mechanism tests, not a fixed set of product capabilities:
