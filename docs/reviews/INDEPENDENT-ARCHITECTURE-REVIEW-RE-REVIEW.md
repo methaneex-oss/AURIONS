@@ -102,22 +102,12 @@ After this review was received, the owner resolved the first-interface direction
 This update resolves the interface-direction portion of F-IND-04 and gate 1 in Section 6. It does not resolve the first-action decision or any empirical validation gate. The review verdict remains ACCEPT WITH REQUIRED CORRECTIONS; implementation remains gated.
 
 
-## 9. Subsequent owner decision — Android device operations
+## 9. Correction — Android examples are not a fixed capability decision
 
-The owner selected basic Android phone operations as the initial mobile device-control direction:
-- Launch an installed app selected by the owner.
-- Adjust media volume.
-- Perform file operations within user-selected file/directory scopes or an AURIONS-owned workspace.
-
-The first end-to-end action-gateway acceptance action is launching an owner-selected installed app. App targets are runtime/user input, not hardcoded. File access does not imply unrestricted filesystem/root/shell access; destructive file changes require exact-operation authorization and explicit confirmation, with recovery where feasible. Android platform permissions and OS restrictions remain authoritative.
-
-This resolves the first-action direction in F-IND-04. It does not close target-device feasibility, Android permission/API validation, security, DDL, dependency or other empirical gates, and it does not authorize implementation or merging.
-
-
-## 10. Correction — Android examples are not a fixed capability decision
-
-The earlier post-review note incorrectly described app launch, media-volume adjustment and scoped file operations as the owner's selected initial Android capability set and selected app launch as the first action-gateway acceptance action. That interpretation was incorrect and is superseded.
+An earlier author update incorrectly described app launch, media-volume adjustment and scoped file operations as the owner's selected initial Android capability set and selected app launch as the first action. That interpretation was incorrect and is superseded; it was not an owner decision.
 
 The owner supplied those operations as illustrative examples to communicate that AURIONS should interact with and operate across its Android environment. They are not an exhaustive catalogue, a fixed capability scope, or a selected first action. The architecture must instead address general environment perception and representation, capability discovery, learning how discovered capabilities work, reasoning and planning over them, platform interfaces and independent authorization/governance. The system must not be reduced to a hardcoded phone-operation assistant.
 
-No first Android action has been selected. The product definition, architecture and planning contracts must be reconciled accordingly. This correction does not close the target-device or other empirical gates and does not authorize implementation.
+No first Android action has been selected. The exact first permitted local action in the first-release acceptance protocol remains a separate unresolved product decision; it must not be inferred from the Android examples. This correction does not close target-device or other empirical gates and does not authorize implementation or merging.
+
+The review verdict remains ACCEPT WITH REQUIRED CORRECTIONS for the historical revision identified at the top of this report. This record is not an independent review of the current corrected PR #2 head.
