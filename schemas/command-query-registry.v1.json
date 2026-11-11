@@ -2356,7 +2356,7 @@
     "mapped_command_types": 43,
     "deferred_command_types": 2,
     "query_types": 21,
-    "command_envelope_bindings": 43,
+    "command_envelope_bindings": 45,
     "query_envelope_bindings": 21
   }
 }
