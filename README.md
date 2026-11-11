@@ -10,14 +10,17 @@ The system is not intended to be a chatbot wrapper or a collection of hardcoded 
 
 ## Project status
 
-**Current stage:** repository foundation / WP-00.
+**Current stage:** architecture planning and technical design; implementation planning is in progress.
 
-The initial planning design is consolidated. Implementation-readiness evidence gates remain; see the [planning status and owner gate](docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md). Do not interpret a documented design as implemented functionality.
+Implementation has not been authorized. PR #1 is a proposed foundation scaffold, not an active implementation phase. No planning layer is declared complete merely because a document exists. See the [planning completion register](docs/planning/PLANNING-COMPLETION-REGISTER.md) for exact statuses and builder-owned work, and the [canonical implementation roadmap](docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md) for the proposed dependency sequence.
 
 ## Start here
 
 - [Planning documentation index](docs/planning/README.md)
 - [Complete initial engineering specification](docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md)
+- [System architecture](docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md)
+- [Android environment and capability architecture](docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md)
+- [Cognitive mechanism and interaction architecture](docs/architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md)
 - [Canonical Notion project control center](https://app.notion.com/p/41505b96eab381778361fc0d0ccf6344?pvs=204)
 
 ## Engineering direction
