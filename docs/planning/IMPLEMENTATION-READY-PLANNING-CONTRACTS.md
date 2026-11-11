@@ -784,6 +784,37 @@ Before pinning a dependency:
 
 No dependency/license audit is claimed complete by this checklist. It becomes complete only when the actual selected dependency inventory and evidence are attached.
 
+
+### 12.1 Current dependency inventory and JSON Schema validator evaluation
+
+**Observed WP-00 scaffold inventory (PR #1, inspected on 2026-11-12):**
+- The scaffold has no third-party C++ runtime library dependency. It uses the C++ standard library, CMake/CTest and a single version smoke test.
+- Its CI workflow uses `actions/checkout@v4` by major tag and `ubuntu-latest`; neither the action commit nor runner image is immutable. This is a reproducibility/supply-chain gap to address when WP-00 is reconciled after planning approval.
+- No SQLite library/version, JSON Schema validator, C++/Python contract generator, Python runtime package or model runtime is currently selected/pinned by the scaffold.
+- C++20 is explicitly provisional; target Termux/Android compiler and build evidence remain outstanding.
+
+**Validator candidate — proposed, not yet adopted:**
+- C++ boundary: Corvus JSON Schema C ABI release `capi-v0.1.7`, tag commit `150e755760a0b318e7f0aa5c57d7522e79af612c`, using its header-only C++ wrapper.
+- Shared evaluator: Corvus Rust crate `corvus-json-schema` version `0.2.2`; the C API crate is version `0.1.7`, edition 2024, and declares Rust 1.89 as its minimum.
+- Python worker/test binding: `corvus-json-schema-rs` version `0.2.2`, backed by the same Rust evaluator. The pure-Python `corvus-json-schema` package is a separate implementation and is not the proposed pairing.
+- Project license: Apache-2.0. The published C API release contains Linux aarch64 GNU and musl packages, but no Android/Bionic target package. The Python binding's published wheel matrix likewise does not list Android. A source build/cross-compile for the actual Android/Termux target is therefore a mandatory feasibility gate, not an assumed capability.
+- The C API release includes a third-party notice for Unicode-derived tables under Unicode License 3.0. The complete transitive crate/license/SBOM inventory and exact package hashes must be captured before adoption.
+- The evaluator advertises JSON Schema Draft 2020-12 support and reports conformance against the official JSON-Schema-Test-Suite/Bowtie. These upstream claims are candidate-selection evidence, not AURIONS integration or target-device test results.
+
+**Decision on schema-to-code generation for the initial contract baseline:**
+- No generator is selected for the first implementation baseline. C++ interfaces and Python worker message types will be explicit, reviewed boundary types; the versioned JSON Schemas remain the wire-format validation authority.
+- Rationale: capability descriptors and provider-defined extensions are intentionally open-world. Generating closed enums or assuming all extension properties are statically known would create pressure to encode the current fixture set as the capability boundary. Explicit adapters must preserve unknown compatible extension data while keeping authority-sensitive fields closed and validated.
+- C++/Python conformance will be enforced by running the same positive/negative fixture corpus through both bindings. If hand-maintained adapters produce measurable drift, evaluate a generator against the actual schemas and require unknown-field preservation and Draft 2020-12 compatibility before adoption.
+
+**Adoption gate (not yet passed):**
+1. Build C API 0.1.7 and Python binding 0.2.2 from pinned sources for host and target Android/Termux; record compiler, Rust, NDK/ABI and package hashes.
+2. Verify all external `$ref` resolution, format assertion, regex/resource limits, error reporting and maximum recursion depth against the AURIONS schemas.
+3. Run the official JSON-Schema-Test-Suite subset required by the selected dialect plus every AURIONS positive/negative fixture in both bindings; compare normalized validation results.
+4. Produce Cargo/Python dependency inventories, license notices, SBOM, vulnerability scan and reproducible offline rebuild.
+5. Integrate the validator and fixture checks into CI only after the target and licensing gates pass. Until then the schemas remain planning artifacts and the current structural subset checks are not full conformance evidence.
+
+The current evaluation is a reasoned candidate recommendation, not a final dependency approval or completed license/security audit. Sources inspected: `https://github.com/corvus-dotnet/Corvus.JsonSchema`, release `https://github.com/corvus-dotnet/Corvus.JsonSchema/releases/tag/capi-v0.1.7`, and `https://json-schema.org/specification`.
+
 ## 13. Platform and target-device validation plan
 
 Target baseline recorded in the source spec is historical and must be remeasured. On the actual device, capture:
