@@ -871,5 +871,79 @@
       "reason": "fixture contains no execution evidence"
     },
     "observer_ref": "observer:fixture"
+  },
+  "commandEnvelope": {
+    "command_id": "b0600000-0000-4000-8000-000000000001",
+    "command_version": "1.0",
+    "owner_id": "owner:primary",
+    "actor_identity": "runtime:mobile",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "issued_at": "2026-11-11T08:08:00Z",
+    "deadline": "2026-11-11T08:09:00Z",
+    "idempotency_key": "command:fixture:1",
+    "requested_capability": "capability:discovery",
+    "payload": {
+      "scope": "local"
+    },
+    "data_classification": "internal",
+    "approval_reference": null
+  },
+  "queryEnvelope": {
+    "query_id": "b0700000-0000-4000-8000-000000000001",
+    "query_version": "1.0",
+    "owner_id": "owner:primary",
+    "actor_identity": "runtime:mobile",
+    "scope": {
+      "device_id": "71000000-0000-4000-8000-000000000001"
+    },
+    "requested_at": "2026-11-11T08:08:00Z",
+    "deadline": "2026-11-11T08:08:05Z",
+    "consistency": "local_committed",
+    "query_payload": {
+      "kind": "capability_search"
+    },
+    "max_results": 50
+  },
+  "commandResponse": {
+    "command_id": "b0600000-0000-4000-8000-000000000001",
+    "status": "accepted",
+    "responded_at": "2026-11-11T08:08:01Z",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "reason_ref": null,
+    "accepted_for_processing": true
+  },
+  "contractError": {
+    "error_id": "b0800000-0000-4000-8000-000000000001",
+    "error_code": "CAPABILITY_STALE",
+    "category": "precondition",
+    "retryable": false,
+    "side_effect_state": "not_dispatched",
+    "occurred_at": "2026-11-11T08:08:02Z",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "retry_after_ms": null,
+    "diagnostic_ref": "artifact:diagnostic:1",
+    "details": {
+      "descriptor_version": 1
+    }
+  },
+  "contractNegotiation": {
+    "negotiation_id": "b0900000-0000-4000-8000-000000000001",
+    "producer_id": "runtime:mobile",
+    "consumer_id": "adapter:platform",
+    "supported_envelope_versions": [
+      "1.0"
+    ],
+    "supported_schema_versions": {
+      "capability-descriptor": [
+        "1.0"
+      ],
+      "command": [
+        "1.0"
+      ]
+    },
+    "result": "accepted",
+    "negotiated_at": "2026-11-11T08:08:03Z",
+    "selected_envelope_version": "1.0",
+    "rejection_reason": null
   }
 }
