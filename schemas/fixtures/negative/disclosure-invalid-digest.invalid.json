@@ -1,0 +1,16 @@
+{
+  "disclosure_id": "b0100000-0000-4000-8000-000000000001",
+  "owner_id": "owner:primary",
+  "actor_identity": "runtime:cloud",
+  "recipient_ref": "provider:example",
+  "purpose_ref": "task:1",
+  "data_categories": [],
+  "source_refs": [],
+  "sensitivity": 2,
+  "operation_id": "70000000-0000-4000-8000-000000000001",
+  "policy_version_ref": "policy:1",
+  "payload_digest": "bad",
+  "decision": "deny",
+  "status": "denied",
+  "created_at": "2026-11-11T08:03:00Z"
+}
