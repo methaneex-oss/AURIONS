@@ -132,7 +132,7 @@ Every event includes the common envelope and an immutable event body. Initial ev
 - `belief.proposed.v1`, `belief.revised.v1`
 - `prediction.created.v1`, `prediction.evaluated.v1`
 - `appraisal.updated.v1`, `attention.allocated.v1`, `reasoning.hypothesis.proposed.v1`, `outcome.evaluated.v1`
-- `goal.created.v1`, `goal.revised.v1`, `plan.proposed.v1`, `plan.revised.v1`, `plan.checkpointed.v1`, `decision.recorded.v1`
+- `goal.created.v1`, `goal.revised.v1`, `plan.proposed.v1`, `plan.revised.v1`, `plan.checkpointed.v1`
 - `permission.evaluated.v1`, `approval.requested.v1`, `approval.decided.v1`
 - `operation.accepted.v1`, `operation.started.v1`, `operation.dispatched.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.rejected.v1`, `operation.uncertain.v1`, `operation.reconciling.v1`, `operation.reconciled.v1`, `operation.compensation_required.v1`, `operation.compensated.v1`, `operation.manual_intervention.v1`
 - `outcome.observed.v1`, `learning.update.proposed.v1`, `learning.update.accepted.v1`, `learning.experiment.completed.v1`
