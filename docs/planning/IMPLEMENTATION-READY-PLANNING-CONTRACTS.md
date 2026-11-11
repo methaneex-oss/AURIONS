@@ -540,7 +540,7 @@ These tests protect the governing architecture rule: mechanisms are engineered; 
 - CAP-002: revoked/stale descriptor or platform grant blocks queued execution and triggers safe revalidation.
 - CAP-003: contradictory capability-use evidence creates a scoped knowledge revision without erasing history.
 - CAP-004: a new schema-compatible capability descriptor is represented without a hardcoded task-to-action branch.
-- NHC-001 through NHC-008: execute the no-hardcoding and capability-extensibility regression checks defined in Section 10.6.
+- NHC-001 through NHC-008: execute the no-hardcoding and capability-extensibility regression checks defined in Section 10.7.
 - SY-001: duplicate sync envelope applies once.
 - SY-002: out-of-order causal change is buffered/rejected safely.
 - SY-003: conflict retains both versions and provenance.
@@ -550,8 +550,8 @@ These tests protect the governing architecture rule: mechanisms are engineered; 
 - SY-007: revoked device cannot sync or execute.
 - SY-008: direct SQLite file replication is absent.
 
-### 10.6 First usable release exit criteria
-The first usable local release is accepted only when:
+### 10.6 Local cognitive/action acceptance subset (not the full dual-context release)
+This local cognitive/action acceptance subset is necessary but is not, by itself, acceptance of the complete first release. The complete first release must also pass the cloud/offline-mobile integration acceptance protocol PR-15 through PR-18 in the product definition and canonical roadmap. The local subset is accepted only when:
 1. Fresh install and restart preserve the same local owner/system identity under the documented recovery model.
 2. A conversation creates durable, provenance-linked experience records.
 3. A later session retrieves relevant memory and cites its source internally.
