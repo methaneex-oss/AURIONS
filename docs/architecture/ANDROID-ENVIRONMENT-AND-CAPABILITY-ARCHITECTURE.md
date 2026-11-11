@@ -187,6 +187,62 @@ New discovery adapters and capability providers can be added without rewriting t
 
 Extension installation does not automatically grant access. New providers are quarantined or unavailable until their provenance, compatibility, security and declared effects are evaluated. A provider cannot register itself as trusted, change governance policy or approve its own operations. Capability knowledge learned from one provider/device/version must not be generalized to another without evidence.
 
+## 6.1 Provider identity, trust and lifecycle
+
+A discovery provider is a source or adapter that reports environment observations or capability descriptors. A provider's ability to report a descriptor is not evidence that the descriptor is truthful, safe, compatible or authorized. Provider trust and capability confidence are separate records.
+
+Every provider record must retain, where applicable:
+- Stable provider identity and provider type as extensible data, not a closed list of desired Android operations.
+- Origin and acquisition path (platform-bundled adapter, AURIONS-bundled adapter, owner-authorized integration or externally supplied extension).
+- Publisher/signing identity and artifact digest where executable code or signed metadata is involved.
+- Declared interface and schema versions, supported platform ranges and dependency requirements.
+- Requested Android permissions, AURIONS data scopes, declared effects and resource limits.
+- Provenance of security review, compatibility checks, owner approval and revocation.
+- Last successful health/compatibility check, current lifecycle state and reasons for any restriction.
+
+Provider lifecycle is a governed state machine, not a learned behaviour:
+1. **observed** — provider metadata is visible; no trust is implied.
+2. **quarantined** — metadata and artifacts may be inspected in isolation; invocation is disabled.
+3. **validated** — integrity, schema, compatibility and declared-scope checks passed for a specific version and environment; this is not owner authorization.
+4. **enabled** — provider use is permitted within an explicit governance grant and current OS permissions.
+5. **degraded** — provider is retained but temporarily unavailable or unreliable; new operations are blocked or restricted according to the failure class.
+6. **revoked** — grants or trust have been withdrawn; queued work is invalidated and active work is cancelled/reconciled safely.
+7. **retired** — provider is no longer offered; historical evidence remains available for audit and learning.
+
+Transitions require a recorded cause, actor, evidence, timestamp and applicable provider/version identity. A provider cannot validate, enable, approve or restore itself. Re-enabling after revocation requires a fresh validation and the required owner/governance action. A provider version change creates a new validation subject; trust is not inherited merely because the name is unchanged.
+
+## 6.2 Provider and discovery failure semantics
+
+Errors must distinguish at least:
+- **not visible** — platform visibility rules prevent observation;
+- **not supported** — the current OS/provider contract does not expose the interface;
+- **permission required / permission denied** — Android or provider permission is absent or refused;
+- **owner authorization required / denied** — AURIONS governance has not granted the exact use;
+- **stale descriptor** — provider, OS, app or permission context changed after discovery;
+- **incompatible schema/version** — request or response contract cannot be safely interpreted;
+- **provider unavailable** — provider is absent, stopped, offline or unhealthy;
+- **rate/resource limited** — a declared budget, quota, deadline or device resource limit prevents work;
+- **cancelled** — cancellation was observed before dispatch or at a documented safe point;
+- **outcome uncertain** — dispatch may have caused an effect but no authoritative receipt/postcondition is available;
+- **integrity/trust failure** — signature, digest, provenance or isolation validation failed;
+- **internal adapter failure** — unexpected adapter fault, reported without leaking secrets.
+
+Every error carries a stable machine code, retryability classification, side-effect state (not-dispatched, no-effect-confirmed, effect-confirmed, or unknown), correlation/operation identity where applicable, provider and descriptor versions, safe diagnostic reference and user-action requirement. Human-readable messages are not used for control flow.
+
+Retry is not inferred from a generic failure. It is allowed only when the error classification and side-effect state prove that retry is safe or when the operation's idempotency/reconciliation contract explicitly permits it. An unknown side-effect state enters durable uncertainty handling; it must never trigger blind retry. Permission denial, owner denial, trust failure and unsupported-interface errors are not automatically retried.
+
+## 6.3 Capability knowledge and provider lifecycle interaction
+
+Provider lifecycle events invalidate or constrain dependent capability descriptors and plans:
+- Provider version change invalidates descriptors whose compatibility has not been re-established.
+- Provider degradation lowers availability confidence but does not rewrite historical success/failure evidence.
+- Permission revocation invalidates the affected authority claims immediately, regardless of learned reliability.
+- Provider revocation blocks new dispatch, invalidates queued plans and routes active operations through cancellation/reconciliation.
+- Provider retirement prevents new use while preserving provenance and outcome history.
+- Re-discovery creates new evidence and descriptor revisions; it does not mutate old evidence or silently reactivate a revoked provider.
+
+Learned reliability estimates can influence candidate ranking and resource estimates only. They cannot change provider trust state, Android permissions, AURIONS grants, risk class, approval requirements or execution-gateway decisions.
+
 ## 7. Required interfaces
 
 The implementation contract must provide versioned equivalents of:
