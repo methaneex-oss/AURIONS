@@ -4,8 +4,8 @@ This directory is the proposed canonical machine-readable schema source. The ini
 
 - `message-envelope.v1.schema.json`: common versioned message envelope.
 - `capability-descriptor-body.v1.schema.json`: extensible evidence-backed descriptor body.
-- `domain-payloads.v1.schema.json`: versioned payloads for experience, representation, context, evidence, belief, prediction, appraisal, attention, reasoning, memory, knowledge, goals, plans, decisions, capability descriptor records/discovery/knowledge, operation lifecycle, outcome evaluation, learning, self-model, evolution, governance, checkpoints and sync. The descriptor record references the separately defined extensible descriptor body schema.
-- `fixtures/domain-payloads.fixture.json`: 32 generic domain payload examples; it is test data, not production memory or real operations.
+- `domain-payloads.v1.schema.json`: versioned payloads for experience, representation, context, evidence, belief, prediction, appraisal, attention, reasoning, memory, knowledge, goals, plans, decisions, capability descriptor records/discovery/knowledge, operation lifecycle, outcome evaluation, learning, self-model, evolution, governance, checkpoints, synchronization, artifact lineage, disclosure, retention/deletion, worker protocol and experiment/candidate lifecycle. The descriptor record references the separately defined extensible descriptor body schema.
+- `fixtures/domain-payloads.fixture.json`: 45 generic domain payload examples; it is test data, not production memory or real operations.
 - `fixtures/message-envelope.fixture.json`: common envelope fixture containing a generic decision event.
 - `fixtures/negative/`: five intentionally invalid fixtures covering descriptor authority injection, missing provenance, invalid selected-decision shape, invalid owner identity type and invalid operation risk class. Capability IDs and provider-defined interface names are data, not closed enums.
 - `fixtures/capability-descriptor.fixture.json`: deliberately generic fixture for contract-shape validation only; it is not a real Android capability or product operation.
@@ -18,4 +18,4 @@ Rules:
 4. Unknown or unsupported semantics remain unknown; extension fields cannot change authority or policy.
 5. Schemas are versioned. Breaking changes require a new major schema version and compatibility tests.
 6. The schemas are planning artifacts until validated by the selected C++/Python toolchain and integrated into CI.
-7. The positive fixture set currently covers 33 domain payload definitions. Five negative fixtures were rejected by a custom structural subset check. This check is not a full JSON Schema Draft 2020-12 validator; official schema conformance, format handling, cross-language compatibility and CI enforcement remain open.
+7. The positive fixture set currently contains 45 domain payload fixtures. Five negative fixtures have previously been rejected by a custom structural subset check. This check is not a full JSON Schema Draft 2020-12 validator; official schema conformance, format handling, cross-language compatibility and CI enforcement remain open.
