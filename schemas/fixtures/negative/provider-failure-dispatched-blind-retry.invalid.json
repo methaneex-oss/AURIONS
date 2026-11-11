@@ -1,0 +1,16 @@
+{
+  "providerFailure": {
+    "failure_id": "aaaaaaaa-0000-4000-8000-000000000001",
+    "category": "outcome_uncertain",
+    "machine_code": "PROVIDER_EFFECT_UNKNOWN",
+    "retryability": "safe_idempotent_retry",
+    "side_effect_state": "dispatched",
+    "correlation_id": "aaaaaaaa-0000-4000-8000-000000000002",
+    "provider_id": "provider:fixture.adapter.alpha",
+    "provider_version": "1.0.0",
+    "descriptor_version": "3",
+    "diagnostic_ref": "artifact:diagnostic:provider:01",
+    "occurred_at": "2026-11-11T08:00:02Z",
+    "user_action_required": true
+  }
+}
