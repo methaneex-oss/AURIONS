@@ -652,5 +652,202 @@
         }
       }
     }
+  },
+  "representationRevised": {
+    "representation_id": "21000000-0000-4000-8000-000000000001",
+    "revision_number": 2,
+    "supersedes_revision_id": "20000000-0000-4000-8000-000000000001",
+    "experience_id": "10000000-0000-4000-8000-000000000001",
+    "representation_type": "semantic_interpretation",
+    "method_id": "representation.pipeline",
+    "method_version": "1.1",
+    "content": {
+      "summary": "Revised interpretation from additional evidence."
+    },
+    "uncertainty": {
+      "confidence": 0.7
+    },
+    "source_refs": [
+      "artifact:experience:1",
+      "artifact:evidence:2"
+    ],
+    "created_at": "2026-11-11T08:01:00Z"
+  },
+  "approvalRequested": {
+    "request_id": "ac100000-0000-4000-8000-000000000001",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "owner_ref": "owner:primary",
+    "session_ref": "session:authenticated:1",
+    "operation_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "target_ref": "resource:example",
+    "data_categories": [
+      "local_metadata"
+    ],
+    "recipients": [
+      "local_device"
+    ],
+    "risk_class": "R1",
+    "policy_version_ref": "policy:1",
+    "expires_at": "2026-11-11T08:05:00Z",
+    "requested_at": "2026-11-11T08:01:00Z"
+  },
+  "learningExperimentCompleted": {
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "hypothesis_ref": "hypothesis:fixture:1",
+    "baseline_artifact_ref": "artifact:baseline:1",
+    "candidate_artifact_ref": "artifact:candidate:1",
+    "dataset_manifest_ref": "artifact:dataset:1",
+    "protocol_ref": "artifact:protocol:1",
+    "metrics_ref": "artifact:metrics:1",
+    "regression_results_ref": "artifact:regression:1",
+    "code_revision": "commit:fixture",
+    "random_seed": 42,
+    "started_at": "2026-11-11T08:00:00Z",
+    "finished_at": "2026-11-11T08:02:00Z",
+    "status": "inconclusive"
+  },
+  "evolutionCandidateLifecycle": {
+    "candidate_id": "ae100000-0000-4000-8000-000000000001",
+    "proposal_id": "a8000000-0000-4000-8000-000000000001",
+    "state": "quarantined",
+    "artifact_ref": "artifact:candidate:1",
+    "evaluation_ref": null,
+    "approval_ref": null,
+    "previous_candidate_ref": null,
+    "rollback_ref": null,
+    "occurred_at": "2026-11-11T08:02:00Z"
+  },
+  "artifactManifest": {
+    "artifact_id": "af100000-0000-4000-8000-000000000001",
+    "artifact_kind": "evaluation_report",
+    "schema_version": "1.0",
+    "media_type": "application/json",
+    "byte_size": 128,
+    "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "storage_ref": "artifact-store:fixture:1",
+    "owner_id": "owner:primary",
+    "sensitivity": 1,
+    "provenance": {
+      "producer_id": "evaluation.worker",
+      "source_refs": [
+        "experiment:fixture:1"
+      ]
+    },
+    "lineage": {
+      "parent_artifact_refs": [
+        "artifact:dataset:1"
+      ],
+      "derived_from": [
+        "artifact:dataset:1"
+      ]
+    },
+    "retention_class": "project-retained",
+    "lifecycle": "quarantined",
+    "created_at": "2026-11-11T08:02:00Z"
+  },
+  "externalDisclosureRecord": {
+    "disclosure_id": "b0100000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "actor_identity": "runtime:cloud",
+    "recipient_ref": "provider:example",
+    "purpose_ref": "task:authorized:1",
+    "data_categories": [
+      "minimal_context"
+    ],
+    "source_refs": [
+      "artifact:context:1"
+    ],
+    "sensitivity": 2,
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "policy_version_ref": "policy:1",
+    "payload_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "approval_ref": null,
+    "decision": "deny",
+    "status": "denied",
+    "transferred_at": null,
+    "created_at": "2026-11-11T08:03:00Z"
+  },
+  "retentionDeletionEvent": {
+    "deletion_id": "b0200000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "domain": "memory",
+    "target_refs": [
+      "memory:1",
+      "artifact:memory:1"
+    ],
+    "reason": "owner_requested",
+    "requested_at": "2026-11-11T08:03:00Z",
+    "active_visibility_removed_at": "2026-11-11T08:03:01Z",
+    "tombstone_ref": "tombstone:1",
+    "backup_epoch": 3,
+    "expires_at": "2026-12-11T08:03:00Z",
+    "propagation_state": "sync_pending"
+  },
+  "syncConflictRecord": {
+    "conflict_id": "b0300000-0000-4000-8000-000000000001",
+    "domain": "belief",
+    "aggregate_id": "belief:1",
+    "local_version_ref": "belief:revision:2",
+    "remote_version_ref": "belief:revision:3",
+    "causal_parent_refs": [
+      "belief:revision:1"
+    ],
+    "conflict_kind": "concurrent_revision",
+    "resolution_state": "pending_owner",
+    "detected_at": "2026-11-11T08:04:00Z",
+    "resolution_ref": null
+  },
+  "workerRequest": {
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "protocol_version": "1.0",
+    "job_type": "evaluation",
+    "input_artifact_refs": [
+      "artifact:dataset:1"
+    ],
+    "config": {
+      "mode": "held_out"
+    },
+    "seed": 42,
+    "resource_budget": {
+      "cpu_ms": 10000,
+      "memory_bytes": 268435456
+    },
+    "deadline": "2026-11-11T08:10:00Z"
+  },
+  "workerProgress": {
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "sequence": 1,
+    "phase": "evaluating",
+    "progress_fraction": 0.5,
+    "metrics": {
+      "cases_completed": 5
+    },
+    "occurred_at": "2026-11-11T08:05:00Z"
+  },
+  "workerResult": {
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "status": "completed",
+    "output_artifact_refs": [
+      "artifact:metrics:1"
+    ],
+    "metrics": {
+      "held_out_score": 0.7
+    },
+    "environment_manifest": "artifact:environment:1",
+    "dataset_manifest": "artifact:dataset:1",
+    "code_revision": "commit:fixture",
+    "random_seed": 42,
+    "started_at": "2026-11-11T08:04:00Z",
+    "finished_at": "2026-11-11T08:06:00Z"
+  },
+  "workerFailure": {
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "error_code": "WORKER_TIMEOUT",
+    "retryable": true,
+    "diagnostic_ref": "artifact:diagnostic:1",
+    "occurred_at": "2026-11-11T08:06:00Z"
   }
 }
