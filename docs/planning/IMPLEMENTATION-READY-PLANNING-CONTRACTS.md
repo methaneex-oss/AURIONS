@@ -500,11 +500,11 @@ These are specified proposals, not independently validated or owner-approved imp
 The following must not be guessed by the technical lead:
 1. ~~First user-facing interface (CLI, Android-native or another client).~~ **RESOLVED: CLI is the first user-facing interface.**
 2. **RESOLVED: cloud operation and offline-capable mobile operation are concurrent first-release targets.** Offline mobile must not require cloud connectivity; both contexts use shared versioned contracts and the authoritative cognitive core. Mobile UI technology and exact deployment topology remain subject to validation.
-3. **RESOLVED: initial Android device-control direction is basic phone operations.** Initial capability set: launch an owner-selected installed app, adjust media volume, and perform scoped file operations. The first end-to-end action-gateway acceptance action is launching an owner-selected installed app. File access is limited to user-selected locations or an AURIONS-owned workspace; destructive changes require explicit operation-level confirmation and recovery handling where feasible.
+3. **Android capability architecture remains to be corrected and validated.** App launch, volume adjustment and file handling were examples supplied to illustrate the breadth of possible Android interaction, not an exhaustive capability list, fixed scope or selected first action. Planning must define environment perception/representation, capability discovery, capability learning, reasoning/planning over discovered capabilities, platform adapters and independent governance. No fixed operation catalogue should be inferred from the examples.
 3. Numeric performance/latency/resource thresholds after device baselines.
 4. Any change to protected authority, privacy, external disclosure or risk tolerance.
 
-The first-interface, deployment and initial Android device-control directions are now owner-decided. Android API feasibility, exact permission UX, and measured implementation details remain validation work; implementation authorization and the planning exit remain separate owner gates.
+The first-interface and deployment directions are owner-decided. The Android capability architecture requires correction and validation; implementation authorization and the planning exit remain separate owner gates.
 
 ## 16. Planning exit rule
 
