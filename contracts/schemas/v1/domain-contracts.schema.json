@@ -1007,6 +1007,73 @@
           "format": "date-time"
         }
       }
+    },
+    "messageEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "envelope_version",
+        "message_id",
+        "message_type",
+        "schema_version",
+        "created_at",
+        "producer_id",
+        "correlation_id",
+        "owner_id",
+        "payload",
+        "classification",
+        "integrity"
+      ],
+      "properties": {
+        "envelope_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "message_type": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.-]*$"
+        },
+        "schema_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "producer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "causation_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "type": "object"
+        },
+        "classification": {
+          "$ref": "#/$defs/sensitivity"
+        },
+        "integrity": {
+          "type": "object"
+        }
+      }
     }
   }
 }
