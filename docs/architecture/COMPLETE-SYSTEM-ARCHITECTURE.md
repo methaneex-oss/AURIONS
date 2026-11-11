@@ -70,9 +70,9 @@ UI clients communicate through versioned application commands/queries and event 
 
 ## 5. Device agents and capability model
 
-Each connected device exposes declared capabilities, not unrestricted OS access. A capability descriptor includes stable ID/version, device identity, operation schema, required permissions, data categories, side effects, resource requirements, availability, cancellation, idempotency and verification method.
+Each device agent maintains an evidence-backed, versioned representation of capabilities discoverable in its actual environment. Capability descriptions are dynamic data, not a developer-authored closed operation catalogue. A descriptor records provenance, interface/schema, preconditions, effects, required platform grants, AURIONS policy requirements, risk, reversibility, resource constraints, availability, cancellation, idempotency and verification evidence.
 
-Capability categories may include read-only diagnostics, user-selected files, notifications, voice I/O, camera/microphone/location, supported app integrations, local compute and narrowly scoped automation. Sensors require platform permission and purpose checks. A central plan does not imply that a device has granted a capability. Capabilities may be revoked or unavailable offline.
+Discovery, capability knowledge, authorization and execution are separate mechanisms. Discovering an interface does not grant permission or authorize use. Unknown interfaces remain unknown; stale descriptors are revalidated; revoked grants invalidate dependent plans. The architecture must support new discoverable providers without adding hardcoded task-to-action branches to the cognitive core.
 
 The device agent checks local platform permissions and policy at execution time. Model reasoning cannot grant permissions.
 
@@ -141,7 +141,7 @@ Images, audio and other modalities follow the same capture → provenance → re
 
 OS, application, web, hardware and provider integrations use adapters registered with the capability/tool gateway. Each declares identity/version, operation schemas, data access, side effects, permissions, network destinations, budgets, cancellation, idempotency and verification.
 
-The gateway enforces authorization immediately before execution and records outcome evidence. Initial Android integration should validate the general environment-discovery, capability-representation, policy and execution mechanisms using carefully selected scenarios. App launch, volume adjustment and file handling are examples, not the full capability scope or a predetermined first action. External communications, purchases, account changes, destructive operations and protected governance changes retain existing approval requirements.
+The gateway enforces authorization immediately before execution and records outcome evidence. Android integration must validate the general mechanisms described in the dedicated Android capability architecture. Any selected scenario is a test fixture for those mechanisms, not a predefined capability catalogue or fixed first action. External communications, purchases, account changes, destructive operations and protected governance changes retain existing approval requirements.
 
 ## 10. Technology stack and decision status
 
