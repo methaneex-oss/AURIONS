@@ -2,7 +2,7 @@
 
 **Status:** Author-prepared planning supplement; proposed until owner approval. This document closes the design gaps listed in the author-side review where they can be resolved without fabricating test evidence or making owner-reserved product decisions. It does not claim SQL execution, device measurements, dependency audit, penetration testing, or implementation.
 
-**Authority:** The imported owner decision register remains authoritative. Where this supplement adds detail, it is an engineering proposal. A proposal must not silently become an owner decision. The [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) is the canonical crosswalk for cognitive and Android capability state ownership, persistence, work-package and test mapping. The initial language-neutral JSON Schema source is `schemas/domain-payloads.v1.schema.json`; it defines 47 payload examples across experience, representation, context, evidence, belief, prediction, appraisal, attention, reasoning, memory, knowledge, goals, plans, decisions, capability discovery/knowledge, operation lifecycle, outcome evaluation, learning, self-model, evolution, governance, checkpoints and sync. The common envelope and extensible capability descriptor body are defined separately in `schemas/message-envelope.v1.schema.json` and `schemas/capability-descriptor-body.v1.schema.json`. It is an initial schema set, not yet the complete command/event contract corpus or a selected runtime validator.
+**Authority:** The imported owner decision register remains authoritative. Where this supplement adds detail, it is an engineering proposal. A proposal must not silently become an owner decision. The [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) is the canonical crosswalk for cognitive and Android capability state ownership, persistence, work-package and test mapping. The initial language-neutral JSON Schema source is `schemas/domain-payloads.v1.schema.json`; it defines 52 payload examples across experience, representation, context, evidence, belief, prediction, appraisal, attention, reasoning, memory, knowledge, goals, plans, decisions, capability discovery/knowledge, operation lifecycle, outcome evaluation, learning, self-model, evolution, governance, checkpoints and sync. The common envelope and extensible capability descriptor body are defined separately in `schemas/message-envelope.v1.schema.json` and `schemas/capability-descriptor-body.v1.schema.json`. It is an initial schema set, not yet the complete command/event contract corpus or a selected runtime validator.
 
 ## 1. Scope and completion semantics
 
@@ -23,7 +23,7 @@ Three kinds of completion must not be conflated:
 2. **Validated:** the design or artifact has passed the named reproducible test or review.
 3. **Implemented:** production code/configuration exists and passes its acceptance tests.
 
-This document can move items to Specified only. It cannot move empirical or implementation gates to Validated/Implemented.
+This document can move items to Specified only. It cannot move empirical or implementation gates to Validated/Implemented. Command/query/response/error/compatibility payload definitions are planning contracts; they do not establish runtime conformance.
 
 ## 2. Normative language and compatibility
 
@@ -100,7 +100,7 @@ The receiver validates identity, version, size, schema, ownership, classificatio
 ### 4.1 Command contract
 A command requests a state transition; it is not proof that the transition occurred.
 
-Required fields: `command_id`, `command_version`, `owner_id`, `actor_identity`, `operation_id`, `issued_at`, `deadline`, `idempotency_key`, `requested_capability`, `payload`, `data_classification`, `approval_reference` (nullable only when policy says no approval is required).
+Canonical body schema: `commandEnvelope`. Required fields: `command_id`, `command_version`, `owner_id`, `actor_identity`, `operation_id`, `issued_at`, `deadline`, `idempotency_key`, `requested_capability`, `payload`, `data_classification`, `approval_reference` (nullable only when policy says no approval is required).
 
 Initial command families:
 - `experience.submit`, `representation.create`, `context.assemble`, `context.invalidate`
@@ -115,10 +115,10 @@ Initial command families:
 - `task.start`, `task.pause`, `task.resume`, `task.cancel`
 - `device.pair`, `device.revoke` (future multi-device phase)
 
-A command response is one of: `accepted`, `rejected`, `pending`, `conflict`, `unsupported_version`. Accepted means durably accepted for processing, not completed.
+A command response uses `commandResponse` and is one of: `accepted`, `rejected`, `pending`, `conflict`, `unsupported_version`. Accepted means durably accepted for processing, not completed. Failures use `contractError`, which records retryability and whether a side effect was not dispatched, dispatched, unknown or not applicable; this distinction is mandatory for safe retry/reconciliation.
 
 ### 4.2 Query contract
-Queries are read-only, scoped to an authenticated owner/device context, bounded by timeout and result size, and carry a consistency indicator (`snapshot`, `eventual`, or `local_committed`). Queries MUST NOT trigger hidden side effects.
+Canonical body schema: `queryEnvelope`. Queries are read-only, scoped to an authenticated owner/device context, bounded by timeout and result size, and carry a consistency indicator (`snapshot`, `eventual`, or `local_committed`). Queries MUST NOT trigger hidden side effects.
 
 Initial query families: `environment.inspect`, `capability.search`, `capability.inspect`, `capability.knowledge.inspect`, `representation.inspect`, `context.get`, `memory.search`, `knowledge.search`, `belief.inspect`, `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect`, `goal.get`, `plan.get`, `decision.inspect`, `task.status`, `operation.status`, `permission.inspect`, `audit.lookup`, `device.capabilities`. Query families are versioned interface namespaces, not a closed list of system behaviours or capabilities.
 
