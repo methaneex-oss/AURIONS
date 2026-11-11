@@ -17,7 +17,7 @@ First inspect the repository and establish its current state:
 1. Read the repository README and planning index.
 2. Read `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md` in full.
 3. Read `docs/planning/REVIEW-AND-IMPORT-NOTES.md`.
-4. Inspect existing work packages, engineering plans, build scaffold and relevant documentation.
+4. Read `docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md` in full; inspect existing work packages, engineering plans, build scaffold and relevant documentation.
 5. Inspect current branches and open pull requests, particularly PR #1 and PR #2.
 6. Distinguish explicitly owner-approved decisions from engineering proposals, unresolved questions and claims supported by implementation/test evidence.
 
@@ -44,16 +44,19 @@ Target PR: https://github.com/methaneex-oss/AURIONS/pull/2
 
 Branch: `docs/complete-system-architecture`
 
-Revision to inspect: `991f3d1f341934cd4fd5e947772e87556a1ffb26`
+Revision to inspect: **the exact current PR #2 head at the time you begin review**. Record the full commit SHA in your report. The author must not send this request until the planning supplement and all cross-document updates are committed and the PR diff has been rechecked.
 
-Review all three changed files:
+Review the complete changed-file set returned by GitHub for the exact PR head. At the current planning revision, the expected files are:
 - `docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md`
 - `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`
 - `docs/reviews/AUTHOR-SIDE-ARCHITECTURE-REVIEW.md`
+- `docs/reviews/INDEPENDENT-REVIEW-REQUEST.md`
+- `docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md`
+- `docs/planning/README.md`
 
-The author-side review record is included for transparency. **Do not treat its findings, verdict or corrections as authoritative.** Complete and preserve your own project-understanding and architecture assessment before using that record as a comparison. Identify where you agree and disagree, with evidence.
+The author-side review record and planning-contract supplement are included for transparency. The supplement closes the author's known design-level planning omissions as proposals; it does not claim empirical validation or implementation. **Do not treat its findings, verdict or corrections as authoritative.** Complete and preserve your own project-understanding and architecture assessment before using that record as a comparison. Identify where you agree and disagree, with evidence.
 
-If the branch has advanced, record the exact revision actually reviewed and inspect the complete changed-file set.
+If the branch has advanced, record the exact revision actually reviewed and inspect the complete changed-file set. Do not treat the expected file list above as a substitute for checking GitHub's actual changed-file list.
 
 ## Phase 3 — Independent technical assessment
 
@@ -142,7 +145,7 @@ State whether the architecture is technically sound, aligned with the owner's re
 - Do not equate code volume, module count or technology sophistication with architectural quality.
 - Do not invent repository facts, tests or implementation evidence.
 - Do not recommend implementation merely to create a sense of progress.
-- Do not alter repository files, branches, pull requests or owner decisions during the review.
+- Do not alter repository files, branches, pull requests or owner decisions during the review. The author-side planning supplement is not a checklist that limits your review: independently identify defects, contradictions, omissions and unnecessary complexity across the whole proposal.
 - Preserve your independent report before comparing it with the author's report.
 - Disclose any repository material you could not access or verify.
 
