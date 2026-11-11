@@ -46,13 +46,20 @@ Branch: `docs/complete-system-architecture`
 
 Revision to inspect: **the exact current PR #2 head at the time you begin review**. Record the full commit SHA in your report. The author must not send this request until the planning supplement and all cross-document updates are committed and the PR diff has been rechecked.
 
-Review the complete changed-file set returned by GitHub for the exact PR head. At the current planning revision, the expected files are:
+Review the complete changed-file set returned by GitHub for the exact PR head. At the current planning revision, the expected files include:
+- `README.md`
 - `docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md`
+- `docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md`
+- `docs/architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md`
 - `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`
+- `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md`
+- `docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md`
+- `docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md`
+- `docs/planning/PLANNING-COMPLETION-REGISTER.md`
+- `docs/planning/README.md`
 - `docs/reviews/AUTHOR-SIDE-ARCHITECTURE-REVIEW.md`
 - `docs/reviews/INDEPENDENT-REVIEW-REQUEST.md`
-- `docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md`
-- `docs/planning/README.md`
+- `docs/reviews/INDEPENDENT-ARCHITECTURE-REVIEW-RE-REVIEW.md`
 
 The author-side review record, planning-contract supplement, Android capability architecture, planning completion register and canonical implementation roadmap are included for transparency. Earlier author-side completion statements apply only to the historical revision and are superseded by the current completion register. None of these documents claims empirical validation or implementation. **Do not treat its findings, verdict or corrections as authoritative.** Complete and preserve your own project-understanding and architecture assessment before using that record as a comparison. Identify where you agree and disagree, with evidence.
 
@@ -65,18 +72,18 @@ Evaluate at least:
 1. Architectural coherence: component boundaries, ownership, dependencies and consistency.
 2. Cognitive architecture: whether it supports interacting, iterative and interruptible mechanisms rather than disconnected modules or hardcoded behaviour.
 3. No-hardcoding invariant: whether behaviour/capabilities are acquired from evidence and experience rather than fixed task-to-action mappings, while explicit safety invariants remain engineered.
-3. Learning and adaptation: memory updates, knowledge revision, strategy learning, model training and architecture evolution; measurable evidence.
-4. First usable release: scope, utility, feasibility, exclusions and end-to-end acceptance tests.
-5. Persistence and memory: storage ownership, transactions, migrations, recovery, retention and deletion.
-6. Runtime and technology: C++, Python, SQLite, inference, platform interfaces and process boundaries.
-7. Android and target-device feasibility: general environment observation, capability discovery, dynamic capability representation, permission/authority separation, execution verification, experience-driven capability learning, unsupported assumptions and required measurements.
-8. Multi-device architecture: identity, pairing, synchronization, conflicts, offline operation, deletion propagation and task handoff.
-9. Security and governance: authentication, permissions, approval binding, risk classification, execution-boundary enforcement, data disclosure, encryption and recovery.
-10. Autonomy: proactive bounded autonomy without unrestricted authority.
-11. Failure handling: crash recovery, uncertain side effects, retries, idempotency, cancellation, resource budgets and reconciliation.
-12. Implementation sequencing: whether planning and work-package order is correct and whether implementation choices are premature.
-13. Maintainability and complexity: unnecessary abstractions, premature infrastructure, coupling and avoidable costs.
-14. Evidence quality: distinguish requirements, tested facts, assumptions, proposals and unverified claims.
+4. Learning and adaptation: memory updates, knowledge revision, strategy learning, model training and architecture evolution; measurable evidence.
+5. First usable release: scope, utility, feasibility, exclusions and end-to-end acceptance tests.
+6. Persistence and memory: storage ownership, transactions, migrations, recovery, retention and deletion.
+7. Runtime and technology: C++, Python, SQLite, inference, platform interfaces and process boundaries.
+8. Android and target-device feasibility: general environment observation, capability discovery, dynamic capability representation, permission/authority separation, execution verification, experience-driven capability learning, unsupported assumptions and required measurements.
+9. Multi-device architecture: identity, pairing, synchronization, conflicts, offline operation, deletion propagation and task handoff.
+10. Security and governance: authentication, permissions, approval binding, risk classification, execution-boundary enforcement, data disclosure, encryption and recovery.
+11. Autonomy: proactive bounded autonomy without unrestricted authority.
+12. Failure handling: crash recovery, uncertain side effects, retries, idempotency, cancellation, resource budgets and reconciliation.
+13. Implementation sequencing: whether planning and work-package order is correct and whether implementation choices are premature.
+14. Maintainability and complexity: unnecessary abstractions, premature infrastructure, coupling and avoidable costs.
+15. Evidence quality: distinguish requirements, tested facts, assumptions, proposals and unverified claims.
 
 ## Phase 4 — Challenge the design
 
