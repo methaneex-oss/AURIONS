@@ -14,6 +14,18 @@ The system is not intended to be a chatbot wrapper or a collection of hardcoded 
 
 The initial planning design is consolidated. Implementation-readiness evidence gates remain; see the [planning status and owner gate](docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md). Do not interpret a documented design as implemented functionality.
 
+## Build the C++ foundation
+
+Requires CMake 3.20+ and a C++20-capable compiler. The C++20 setting is provisional until validated on the target Termux environment.
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DAURIONS_BUILD_TESTS=ON
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+```
+
+See [WP-00 foundation record](docs/engineering/WP-00-FOUNDATION.md) for scope and outstanding validation.
+
 ## Start here
 
 - [Planning documentation index](docs/planning/README.md)
