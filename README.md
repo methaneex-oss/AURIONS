@@ -17,6 +17,7 @@ Implementation has not been authorized. PR #1 is a proposed foundation scaffold,
 ## Start here
 
 - [Planning documentation index](docs/planning/README.md)
+- [Owner decision traceability matrix](docs/planning/OWNER-DECISION-TRACEABILITY-MATRIX.md)
 - [Complete initial engineering specification](docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md)
 - [System architecture](docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md)
 - [Android environment and capability architecture](docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md)
