@@ -209,5 +209,283 @@
     "state": "proposed",
     "rollback_ref": null,
     "created_at": "2026-11-11T08:00:07Z"
+  },
+  "appraisalUpdated": {
+    "appraisal_id": "a1000000-0000-4000-8000-000000000001",
+    "context_id": "30000000-0000-4000-8000-000000000001",
+    "context_version": 1,
+    "assessment": {
+      "relevance": "context-dependent estimate"
+    },
+    "uncertainty": {
+      "basis": "fixture only"
+    },
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "sensitivity": 1,
+    "created_at": "2026-11-11T08:00:08Z",
+    "valid_until": null
+  },
+  "reasoningHypothesisProposed": {
+    "reasoning_id": "a2000000-0000-4000-8000-000000000001",
+    "context_id": "30000000-0000-4000-8000-000000000001",
+    "context_version": 1,
+    "hypothesis_ref": "urn:fixture:hypothesis:1",
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "conclusion_summary_ref": null,
+    "uncertainty": {
+      "known_unknowns": [
+        "fixture has no real evidence"
+      ]
+    },
+    "sensitivity": 1,
+    "created_at": "2026-11-11T08:00:08Z"
+  },
+  "attentionAllocated": {
+    "allocation_id": "a3000000-0000-4000-8000-000000000001",
+    "context_id": "30000000-0000-4000-8000-000000000001",
+    "context_version": 1,
+    "candidate_refs": [
+      "task:fixture"
+    ],
+    "selected_refs": [
+      "task:fixture"
+    ],
+    "deferred_refs": [],
+    "resource_budget": {
+      "time_ms": 1000
+    },
+    "rationale_ref": "urn:fixture:attention:rationale",
+    "created_at": "2026-11-11T08:00:08Z",
+    "valid_until": null
+  },
+  "goalRevision": {
+    "goal_id": "a4000000-0000-4000-8000-000000000001",
+    "revision": 1,
+    "description": "Fixture-only bounded objective",
+    "state": "proposed",
+    "priority": 0.5,
+    "constraints": {
+      "scope": "fixture"
+    },
+    "reason_ref": "urn:fixture:goal:reason",
+    "created_at": "2026-11-11T08:00:08Z"
+  },
+  "capabilityKnowledgeRevision": {
+    "knowledge_revision_id": "a5000000-0000-4000-8000-000000000001",
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "revision_number": 1,
+    "context_scope": {
+      "provider_id": "provider.example",
+      "device_id": "71000000-0000-4000-8000-000000000001"
+    },
+    "claims": {
+      "precondition": "unknown"
+    },
+    "confidence": {
+      "estimate": null,
+      "method": "insufficient evidence"
+    },
+    "status": "provisional",
+    "evidence_refs": [
+      {
+        "evidence_id": "43000000-0000-4000-8000-000000000001",
+        "stance": "contextualizes"
+      }
+    ],
+    "created_at": "2026-11-11T08:00:08Z"
+  },
+  "environmentObserved": {
+    "observation_id": "a6000000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "device_id": "71000000-0000-4000-8000-000000000001",
+    "environment_scope": "fixture-only",
+    "observed_at": "2026-11-11T08:00:08Z",
+    "recorded_at": "2026-11-11T08:00:08Z",
+    "source_id": "fixture.platform.observer",
+    "collection_method": "schema-fixture",
+    "collector_version": "fixture-1",
+    "platform_context": {
+      "platform": "not measured"
+    },
+    "observed_facts": [],
+    "sensitivity": 1,
+    "limitations": [
+      "No real Android observation was performed."
+    ],
+    "validity": {
+      "status": "fixture-only"
+    }
+  },
+  "selfModelUpdated": {
+    "self_model_revision_id": "a7000000-0000-4000-8000-000000000001",
+    "revision_number": 1,
+    "claims": {
+      "capability": "unknown"
+    },
+    "confidence": {
+      "calibration": "not measured"
+    },
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "created_at": "2026-11-11T08:00:08Z"
+  },
+  "evolutionProposed": {
+    "proposal_id": "a8000000-0000-4000-8000-000000000001",
+    "target_mechanism": "capability_discovery",
+    "description": "Fixture-only change proposal",
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "impact_risk": {
+      "status": "not evaluated"
+    },
+    "candidate_artifact_ref": null,
+    "evaluation_ref": null,
+    "state": "proposed",
+    "approval_ref": null,
+    "created_at": "2026-11-11T08:00:08Z",
+    "updated_at": "2026-11-11T08:00:08Z"
+  },
+  "permissionEvaluated": {
+    "request_id": "a9000000-0000-4000-8000-000000000001",
+    "decision_id": "aa000000-0000-4000-8000-000000000001",
+    "decision": "deferred",
+    "policy_version_ref": "policy:fixture:v1",
+    "scope_digest": "fixture-digest",
+    "risk_class": "R0",
+    "evaluated_at": "2026-11-11T08:00:08Z",
+    "reason_ref": "urn:fixture:permission:unknown"
+  },
+  "approvalDecision": {
+    "request_id": "ab000000-0000-4000-8000-000000000001",
+    "decision_id": "ac000000-0000-4000-8000-000000000001",
+    "authenticated_owner_ref": "owner:primary",
+    "decision": "denied",
+    "approved_digest": "fixture-digest",
+    "decided_at": "2026-11-11T08:00:08Z",
+    "authentication_context_ref": "auth:fixture"
+  },
+  "taskCheckpointDetails": {
+    "checkpoint_id": "ad000000-0000-4000-8000-000000000001",
+    "plan_id": "61000000-0000-4000-8000-000000000001",
+    "plan_version": 1,
+    "context_version_ref": "30000000-0000-4000-8000-000000000001:1",
+    "capability_epoch_digest": "fixture-capability-epoch",
+    "dependency_state_digest": "fixture-dependency-state",
+    "pending_steps": [
+      "60000000-0000-4000-8000-000000000001"
+    ],
+    "resume_conditions": {
+      "network": "not-required-for-fixture"
+    },
+    "invalidation_reason": null,
+    "created_at": "2026-11-11T08:00:08Z"
+  },
+  "syncChange": {
+    "change_id": "ae000000-0000-4000-8000-000000000001",
+    "domain": "fixture-domain",
+    "schema_version": "1.0",
+    "owner_id": "owner:primary",
+    "source_device_id": "71000000-0000-4000-8000-000000000001",
+    "aggregate_id": "fixture-aggregate",
+    "aggregate_version": 1,
+    "causal_parent_ids": [],
+    "created_at": "2026-11-11T08:00:08Z",
+    "payload_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "encrypted_payload_ref": "artifact:encrypted-fixture:1",
+    "tombstone": false,
+    "retention_class": "fixture-only",
+    "idempotency_key": "fixture-sync-change-1"
+  },
+  "discoveryRequest": {
+    "discovery_id": "af000000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "device_id": "71000000-0000-4000-8000-000000000001",
+    "requested_scope": {
+      "scope": "fixture-only"
+    },
+    "requested_at": "2026-11-11T08:00:08Z",
+    "source_refs": [
+      "fixture.provider.alpha"
+    ],
+    "observation_refs": [
+      "artifact:observed:1"
+    ],
+    "mode": "passive_metadata",
+    "resource_budget": {
+      "duration_ms": 1000
+    },
+    "deadline": "2026-11-11T08:00:10Z",
+    "cancellation_token": null
+  },
+  "discoveryResult": {
+    "discovery_id": "af000000-0000-4000-8000-000000000001",
+    "status": "partial",
+    "completed_at": "2026-11-11T08:00:08Z",
+    "descriptor_refs": [
+      "capability:fixture:1"
+    ],
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "unknowns": [
+      "actual provider interface"
+    ],
+    "limitations": [
+      "fixture-only; no real discovery"
+    ],
+    "provider_errors": []
+  },
+  "memoryRecord": {
+    "memory_id": "b0000000-0000-4000-8000-000000000001",
+    "memory_type": "episodic",
+    "content_ref": "artifact:memory-fixture:1",
+    "summary": "Fixture-only memory record",
+    "sensitivity": 1,
+    "status": "active",
+    "created_at": "2026-11-11T08:00:08Z",
+    "updated_at": "2026-11-11T08:00:08Z",
+    "last_accessed_at": null,
+    "retention_until": null,
+    "deleted_at": null
+  },
+  "knowledgeItem": {
+    "knowledge_id": "b1000000-0000-4000-8000-000000000001",
+    "proposition": "Fixture-only provisional knowledge statement",
+    "domain": "fixture",
+    "status": "active",
+    "created_at": "2026-11-11T08:00:08Z",
+    "updated_at": "2026-11-11T08:00:08Z"
+  },
+  "predictionEvaluation": {
+    "evaluation_id": "b2000000-0000-4000-8000-000000000001",
+    "prediction_id": "50000000-0000-4000-8000-000000000001",
+    "observed_outcome_ref": "artifact:observed:1",
+    "result": "inconclusive",
+    "evaluated_at": "2026-11-11T08:00:08Z",
+    "evaluator_ref": "evaluator:fixture",
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "uncertainty": {
+      "reason": "No real execution evidence"
+    }
+  },
+  "operationLifecycleEvent": {
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "attempt_id": "73000000-0000-4000-8000-000000000001",
+    "state": "accepted",
+    "occurred_at": "2026-11-11T08:00:08Z",
+    "provider_receipt_ref": null,
+    "verification_evidence_ref": null,
+    "error_ref": null,
+    "uncertainty_reason": null,
+    "policy_decision_ref": null
   }
 }
