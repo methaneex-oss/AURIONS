@@ -50,18 +50,20 @@ Review the complete changed-file set returned by GitHub for the exact PR head. A
 - `README.md`
 - `docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md`
 - `docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md`
+- `docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md`
 - `docs/architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md`
 - `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`
 - `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md`
 - `docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md`
 - `docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md`
 - `docs/planning/PLANNING-COMPLETION-REGISTER.md`
+- `docs/planning/OWNER-DECISION-TRACEABILITY-MATRIX.md`
 - `docs/planning/README.md`
 - `docs/reviews/AUTHOR-SIDE-ARCHITECTURE-REVIEW.md`
 - `docs/reviews/INDEPENDENT-REVIEW-REQUEST.md`
 - `docs/reviews/INDEPENDENT-ARCHITECTURE-REVIEW-RE-REVIEW.md`
 
-The author-side review record, planning-contract supplement, Android capability architecture, planning completion register and canonical implementation roadmap are included for transparency. Earlier author-side completion statements apply only to the historical revision and are superseded by the current completion register. None of these documents claims empirical validation or implementation. **Do not treat its findings, verdict or corrections as authoritative.** Complete and preserve your own project-understanding and architecture assessment before using that record as a comparison. Identify where you agree and disagree, with evidence.
+The author-side review record, planning-contract supplement, Android capability architecture, cognitive/capability contract matrix, owner-decision traceability matrix, planning completion register and canonical implementation roadmap are included for transparency. Earlier author-side completion statements apply only to the historical revision and are superseded by the current completion register. None of these documents claims empirical validation or implementation. **Do not treat its findings, verdict or corrections as authoritative.** Complete and preserve your own project-understanding and architecture assessment before using that record as a comparison. Identify where you agree and disagree, with evidence.
 
 If the branch has advanced, record the exact revision actually reviewed and inspect the complete changed-file set. Do not treat the expected file list above as a substitute for checking GitHub's actual changed-file list.
 
