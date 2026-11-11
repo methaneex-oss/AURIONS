@@ -3,7 +3,8 @@
 This directory is the proposed canonical machine-readable schema source. The initial schema dialect is JSON Schema Draft 2020-12; validator/generator library selection remains subject to the dependency and licence audit.
 
 - `message-envelope.v1.schema.json`: common versioned message envelope.
-- `capability-descriptor-body.v1.schema.json`: extensible evidence-backed descriptor body. Capability IDs and provider-defined interface names are data, not closed enums.
+- `capability-descriptor-body.v1.schema.json`: extensible evidence-backed descriptor body.
+- `domain-payloads.v1.schema.json`: core experience, representation, context, belief, prediction, plan-step, operation, outcome and learning payloads; references use the canonical capability descriptor schema where applicable. Capability IDs and provider-defined interface names are data, not closed enums.
 - `fixtures/capability-descriptor.fixture.json`: deliberately generic fixture for contract-shape validation only; it is not a real Android capability or product operation.
 
 Rules:
