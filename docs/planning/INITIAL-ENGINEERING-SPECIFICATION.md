@@ -213,13 +213,14 @@ Working memory remains in RAM. Large content/model/dataset artifacts live in fil
 
 Ownership:
 
-- Memory owns memory records.
-- Knowledge owns consolidated knowledge.
-- Belief subsystem owns provisional/revised beliefs.
+- Memory owns episodic/semantic memory records and retrieval metadata.
+- Knowledge owns consolidated knowledge; belief subsystem owns provisional/revised beliefs and evidence lineage.
+- Capability discovery owns versioned capability descriptors, discovery evidence, capability knowledge revisions and evidence-supported capability relationships in the memory domain; it does not own permission grants.
 - Event infrastructure owns durable event history.
 - Model manager owns model metadata/deployment.
-- Evolution owns candidate changes/evaluation.
-- Governance owns protected policies and authorization.
+- Appraisal/reasoning/decision/outcome subsystems own bounded durable assessment/decision/evaluation records; transient attention allocation remains in working runtime state unless a durable event is required.
+- Self-model owns evidence-backed self-model revisions; evolution owns change proposals and candidate/evaluation references.
+- Governance owns protected policies, owner identity, permission grants, approvals and authorization.
 
 Cross-store consistency uses shared durable operation IDs, transactions within each DB, idempotent event processing, explicit commit states, recovery journal/reconciliation, periodic consistency checks and coordinated backup/restore. Do not assume a global transaction across database files.
 
