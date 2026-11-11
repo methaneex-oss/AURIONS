@@ -143,7 +143,7 @@ The first usable release does not promise:
 
 ## 6. First-release acceptance protocol
 
-The release is accepted only when the following scenarios pass on the actual target environment, with reproducible test evidence:
+The release is accepted only when the following scenarios pass in both required deployment contexts (cloud runtime and offline-capable mobile runtime), with reproducible evidence. Each result must identify its runtime, build, configuration and state-ownership boundary.
 
 | ID | Acceptance condition | Evidence required |
 |---|---|---|
@@ -161,6 +161,10 @@ The release is accepted only when the following scenarios pass on the actual tar
 | PR-12 | Sensitive data is not sent to an external provider without authorization | Egress/policy tests and disclosure audit |
 | PR-13 | Resource limits and failure paths are observable | Measurements, bounded-failure tests and redacted diagnostics |
 | PR-14 | Runtime can recover without corrupting committed state | Restart/crash tests and database integrity checks |
+| PR-15 | Cloud runtime operates as a real deployment target using the shared cognitive-core contracts | Authenticated cloud startup/conversation/task trace, durable cloud-side state and policy audit |
+| PR-16 | Cloud and mobile builds implement compatible versioned cognitive/application contracts without becoming separate intelligence designs | Shared contract fixtures and compatibility tests against both runtime builds |
+| PR-17 | Offline-mobile workflows complete with network disabled; cloud unavailability does not block local cognition, persistence, discovery or authorized local execution | Network-isolation test, local persistence/restart test and authorized/denied local operation traces |
+| PR-18 | Cloud runtime cannot authorize or execute a mobile-local operation, and neither runtime silently assumes the other's local state | Negative cross-boundary authorization tests and state-ownership assertions |
 
 Passing PR-11 demonstrates experience-dependent feedback, not general learning improvement. Any stronger learning claim requires the held-out evaluation standard in the architecture document.
 
@@ -168,7 +172,7 @@ Numerical performance thresholds for latency, memory, storage and battery are in
 
 ## 7. Operational and safety constraints
 
-- Local-first behaviour is the default. Remote inference or external services receive only the minimum authorized context.
+- The offline-mobile runtime must remain locally useful and independent of cloud availability. The cloud runtime is a concurrent first-release deployment target, not merely an optional inference provider. Remote inference or external services receive only the minimum authorized context.
 - The owner remains the authority for permissions and protected changes.
 - The R0–R5 risk model, exact-operation approval binding, authenticated owner session, expiry, revocation, replay protection and durable audit remain mandatory.
 - The model, Python workers and integrations cannot grant permissions or directly mutate authoritative live cognitive state.
@@ -183,7 +187,7 @@ Numerical performance thresholds for latency, memory, storage and battery are in
 These items cannot be silently decided by the architecture author or implementation team:
 
 1. **First interface: OWNER DECISION — CLI.** The CLI is the first user-facing interface, not merely an engineering/debugging tool.
-2. **Deployment: OWNER DECISION — cloud and offline mobile concurrently.** The first-release plan must deliver cloud operation and an offline-capable mobile experience as concurrent first-class targets. Offline mobile operation must not depend on cloud availability. Both deployment contexts must use shared versioned application contracts and the authoritative cognitive core; they must not become separate intelligence implementations. The CLI deployment context(s) and exact cloud/mobile topology remain engineering details to validate, not permission to make cloud mandatory for offline use.
+2. **Deployment: OWNER DECISION — cloud and offline mobile concurrently.** The first-release plan must deliver cloud operation and an offline-capable mobile runtime as concurrent first-class targets. Offline mobile operation must not depend on cloud availability. Both deployment contexts must use shared versioned application contracts and the same authoritative cognitive-core implementation/semantics; they must not become separate intelligence designs. **Builder topology proposal:** each runtime is authoritative for its own local state in the first release; automatic cross-runtime state synchronization and seamless handoff are excluded unless separately approved. A cloud plan cannot authorize a mobile-local action. The CLI deployment context(s) and exact process topology remain engineering details to validate.
 3. **Android capability architecture:** The examples discussed by the owner (such as opening apps, adjusting volume and handling files) are illustrative scenarios only. They do not define, limit or preselect AURIONS' Android capabilities or its first permitted action. The architecture must investigate how AURIONS can perceive and represent its Android environment, discover available capabilities and their interfaces/constraints, learn their use through experience, reason and plan over them, and execute only through independent governance and platform permission boundaries. The capability model must not be a hardcoded catalogue of owner examples. The first end-to-end Android action-gateway acceptance scenario remains an owner decision.
 4. **Target-device performance thresholds:** Establish after repeatable baseline measurements.
 5. **Specific inference model/runtime configuration:** Preserve model independence and validate actual device feasibility; existing basic inference is not sufficient performance evidence.
@@ -196,7 +200,7 @@ The architecture/platform validation work must establish a general Android envir
 This product definition depends on the existing owner-approved engineering specification and architecture constraints. It must be reconciled with the API contracts, persistence/recovery design, platform strategy, security/operations design and evidence review.
 
 No implementation work package is authorized by this proposal. Before implementation:
-- The owner must approve this product definition. The first interface and concurrent cloud/offline-mobile direction are owner decisions; the exact first permitted local action remains unresolved.
+- The owner must approve this product definition. The first interface and concurrent cloud/offline-mobile direction are owner decisions; the first permitted local action remains unresolved. The independent runtime state boundary is a builder proposal and must be explicitly surfaced for owner acceptance if cross-context continuity is expected.
 - The architecture and contracts must be reconciled with it.
 - Required security, persistence, recovery and learning-evaluation criteria must be testable.
 - The owner must explicitly approve the planning exit.
