@@ -50,9 +50,9 @@ No layer is currently marked COMPLETE — VERIFIED. This is deliberate: the curr
 | Model/inference and compute routing | IN PROGRESS | Model-independent inference and local/external options are specified. | Reconcile provider/capability metadata, routing, privacy, resource constraints and model lifecycle contracts. Device performance validation remains external evidence. |
 | Multi-device and synchronization | IN PROGRESS | Domain classification, change envelopes, conflict/deletion rules and tests are specified. | Cross-check against authoritative store ownership, governance and offline-mobile first-release requirements; implementation and SY tests are later gates. |
 | Technical contracts and component boundaries | IN PROGRESS | Command/query/event, worker, authorization and operation contracts are drafted. | Check every architecture component against concrete contract ownership; remove ambiguous/duplicate definitions; resolve compatibility/versioning and missing schemas/fixtures. |
-| Implementation planning and work packages | IN PROGRESS | A canonical dependency-driven roadmap is drafted; adoption and dependency audit across every planning document remain open. | Reconcile all historical WP tables to CANONICAL-IMPLEMENTATION-ROADMAP.md; verify component ownership, dependency graph, concurrent cloud/offline-mobile target integration and measurable exit criteria. |
+| Implementation planning and work packages | IN PROGRESS | A canonical dependency-driven roadmap is drafted; adoption and dependency audit across every planning document remain open. | Historical WP tables are now marked superseded in the source specification and contract supplement; architecture sequence points to the canonical roadmap. Remaining: verify component ownership, dependency graph acyclicity, concurrent cloud/offline-mobile integration and measurable exit criteria. |
 | Validation and testing planning | IN PROGRESS | Test catalogue and device/dependency/security procedures exist. | Trace every requirement to a test/evidence method; distinguish design review from executable tests; define coverage and first-release gate dependencies. |
-| Planning documentation and decision traceability | IN PROGRESS | Core planning documents and review records exist. | Remove stale active claims, mark superseded history clearly, reconcile status labels, links, decision register and PR description. |
+| Planning documentation and decision traceability | IN PROGRESS | Core planning documents and review records exist. | Initial stale status claims and false Android action record have been corrected; root README, planning index and PR description updated. Remaining: complete full branch-wide search for stale claims, verify every link/status and re-fetch the final PR diff. |
 | Final planning baseline | BLOCKED | Prior independent review exists for an earlier revision and accepted it with required corrections. | Complete builder-owned design work, reconcile current baseline, obtain independent re-review of exact final revision, resolve findings, then obtain explicit owner planning-exit approval. |
 
 ## 3. Builder-owned work remaining
@@ -60,7 +60,7 @@ No layer is currently marked COMPLETE — VERIFIED. This is deliberate: the curr
 These are the main-builder's responsibilities, not owner testing or independent-review work.
 
 ### B-01 — Complete the Android environment and capability architecture
-- Define what AURIONS can observe about the Android environment and how observations are represented with provenance and uncertainty.
+- A dedicated Android architecture now defines environment observation, general discovery, dynamic descriptors, capability knowledge, planning, permission/governance separation, execution, verification and learning. Remaining: map every responsibility to concrete components/contracts/tests and reconcile with the product and deployment architecture.
 - Define general discovery mechanisms and adapters rather than a hardcoded list of operations.
 - Define capability descriptions as data: identity/version, source, interface/schema, preconditions, effects, constraints, permission requirements, risk, reversibility, resource needs, cancellation, verification and lifecycle.
 - Define how discovered capabilities are validated, compared, selected, invoked and re-discovered when the environment changes.
@@ -76,20 +76,20 @@ These are the main-builder's responsibilities, not owner testing or independent-
 - Specify testable experience-dependent change without hardcoded stimulus-to-behaviour mappings.
 
 ### B-03 — Operationalize the no-hardcoding principle
-- Prohibit fixed task-to-action mappings, fixed Android capability catalogues and hand-authored behavioural conclusions presented as acquired competence.
+- The principle is now explicitly defined in the completion register and both dedicated architecture documents. Remaining: trace it through all product requirements, implementation contracts, work packages, review criteria and test fixtures.
 - Separate engineered mechanisms/invariants from data and behaviour learned or discovered through experience.
 - Permit explicit safety invariants, schemas, protocols, resource limits and policy constraints; these are not learned behaviour.
 - Require provenance, confidence/uncertainty and evaluation for acquired capability knowledge.
 - Add architecture and test checks that detect regressions toward hardcoded behaviour.
 
 ### B-04 — Reconcile architecture, product and platform boundaries
-- Reconcile CLI first interface with concurrent cloud and offline-mobile first-release targets.
+- The architecture and canonical roadmap now distinguish CLI first interface from concurrent cloud/offline-mobile operation. Remaining: verify exact topology, interface scope, local authority and deployment dependencies without making cloud mandatory for offline mobile.
 - Ensure Android integration is not deferred wholesale if offline mobile is a concurrent first-release target.
 - Separate first-release integration requirements from later expansion (voice, multi-device, broader providers) without narrowing the underlying capability architecture.
 - Align C++ core, platform adapters, inference, Python workers and governance boundaries.
 
 ### B-05 — Reconcile persistence, contracts and recovery
-- Compare canonical entity definitions, proposed DDL, event contracts, worker contracts and implementation-ready contracts.
+- Initial cross-mapping has been added for cognitive and capability mechanisms. Remaining: compare canonical entity definitions, proposed DDL, event contracts, worker contracts and implementation-ready contracts; resolve duplicate/missing schemas and state ownership.
 - Resolve duplicated or conflicting definitions and schema ownership.
 - Ensure cross-store references, outbox delivery, idempotency, recovery, artifact lineage, deletion and sync rules agree.
 - Produce a single source of truth for each contract.
