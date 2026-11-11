@@ -581,12 +581,12 @@ Each DB has its own migration ledger, backup/restore procedure, integrity check 
 - SQLite connections use explicit transaction scopes, foreign keys within each DB, busy timeout and WAL only after target-device validation. Durability/synchronous settings must be documented and tested against power-loss expectations.
 
 ### 8.3 DDL and migration acceptance
-The current proposed schema additions are documented in Section 26.5.2 of the source specification: memory migration v3 and event/recovery migration v2. They remain unexecuted proposals. Before implementation approval:
-- Parse/execute all three DDLs against the pinned minimum SQLite version.
+The canonical proposed SQL is under [`schemas/persistence/`](../../schemas/persistence/README.md): three base schemas plus memory migrations v2/v3 and event/recovery migration v2. The source specification Section 26 links to these machine-readable files. Proposed minimum SQLite version is 3.38.0 (STRICT tables plus built-in JSON functions); target Termux/Android compile options remain unverified. All scripts remain unexecuted proposals. Before implementation approval:
+- Parse/execute all three base schemas and all three additive migrations against the pinned minimum SQLite version.
 - Enable foreign keys and verify every declared FK.
 - Run schema lint for missing indexes on foreign keys, owner scope, status, timestamps, retrieval predicates and idempotency keys.
 - Validate uniqueness for IDs, idempotency keys and active approval nonces.
-- Test migration from empty DB and each supported prior schema version.
+- Test each store from empty DB and each supported prior schema version; apply memory migrations v2 then v3 and event migration v2 in order.
 - Test interrupted migration and recovery from verified backup.
 - Test constraint violations, busy/locked behaviour, WAL checkpoint, disk full, read-only/corrupt DB and process crash during commit.
 - Verify no cross-file FK or direct database-file replication exists.
