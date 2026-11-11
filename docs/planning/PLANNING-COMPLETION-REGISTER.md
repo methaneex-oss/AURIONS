@@ -4,7 +4,7 @@
 - **Purpose:** Track planning-layer completion using evidence, not document existence or optimistic labels.
 - **Current phase:** Architecture planning and technical design, with implementation planning in progress.
 - **Implementation authorization:** Not granted.
-- **Last builder audit:** 2026-11-11.
+- **Last builder audit:** 2026-11-11 (contract-to-persistence reconciliation pass).
 - **Authority:** Existing owner decision register in `INITIAL-ENGINEERING-SPECIFICATION.md`; this register tracks completion and does not replace owner decisions.
 
 ## 1. Completion semantics
@@ -69,6 +69,7 @@ These are the main-builder's responsibilities, not owner testing or independent-
 - Define limits honestly: discovery cannot manufacture OS privileges, bypass sandboxing or guarantee arbitrary access.
 
 ### B-02 — Complete the cognitive mechanism contracts
+- A new [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) maps all 17 cognitive domains and the Android discovery/execution responsibilities to ownership, persistence, contract families, work packages and tests.
 - Reconcile the dedicated cognitive mechanism architecture with concrete C++ ownership, versioned contracts, authoritative persistence, Android capability discovery, canonical roadmap and acceptance tests.
 - Specify data/state transitions, provenance, uncertainty and temporal relationships.
 - Define iterative, concurrent, interruptible and feedback interactions; do not turn the cycle into a rigid pipeline.
@@ -89,10 +90,13 @@ These are the main-builder's responsibilities, not owner testing or independent-
 - Align C++ core, platform adapters, inference, Python workers and governance boundaries.
 
 ### B-05 — Reconcile persistence, contracts and recovery
-- Initial cross-mapping has been added for cognitive and capability mechanisms. Remaining: compare canonical entity definitions, proposed DDL, event contracts, worker contracts and implementation-ready contracts; resolve duplicate/missing schemas and state ownership.
+- Contract-to-DDL audit identified seven explicit gaps (CCM-01…CCM-07) in the [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md).
+- Proposed memory migration v3 adds typed plan-step contracts and learning-update details; proposed events migration v2 adds exact operation details and per-attempt receipts. The proposed base operation-state constraints and outcome operation ID representation were also aligned with the operation lifecycle and UUID convention.
+- These are documentation-level design corrections only; DDL has not been executed. Remaining gaps include machine-readable domain payload schemas/fixtures, checkpoint binding/replanning contracts and attention restart semantics. Remaining: compare canonical entity definitions, proposed DDL, event contracts, worker contracts and implementation-ready contracts; resolve duplicate/missing schemas and state ownership.
 - Resolve duplicated or conflicting definitions and schema ownership.
 - Ensure cross-store references, outbox delivery, idempotency, recovery, artifact lineage, deletion and sync rules agree.
 - Produce a single source of truth for each contract.
+- Complete CCM-04, CCM-06 and CCM-07; execute migration syntax/integrity/fault validation only when the target SQLite baseline is pinned.
 
 ### B-06 — Reconcile implementation work packages and roadmap
 - Reconcile the differing WP tables in the source specification, architecture and planning-contract supplement to the canonical roadmap; verify component owners and dependencies.
@@ -101,6 +105,7 @@ These are the main-builder's responsibilities, not owner testing or independent-
 - Ensure concurrent cloud/offline mobile direction is reflected in work packages and gates.
 
 ### B-07 — Complete architecture-wide consistency and completeness audit
+- First focused crosswalk completed for cognitive/capability state ownership and persistence; the seven resulting CCM findings are recorded with severity and required resolution.
 - Trace each owner decision and foundational invariant into architecture, product, contracts, roadmap and tests.
 - Check component ownership, allowed/forbidden dependencies, state ownership and authority boundaries.
 - Check all critical paths, failure modes, recovery, privacy, security and resource assumptions.
