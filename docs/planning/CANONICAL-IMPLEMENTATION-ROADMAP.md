@@ -39,6 +39,8 @@ This roadmap supersedes the earlier work-package tables for future planning. His
 | WP-15 | First-release integration and hardening | Integrate the cognitive core and first-release workflows. CLI is the first user-facing interface. Deliver cloud operation and offline-capable mobile operation as concurrent first-release targets using shared contracts and authoritative core. Includes resource, security, privacy, recovery and release validation. | WP-00…WP-14 as required by selected first-release scope; platform spikes and owner decisions | First-release acceptance protocol passes in both required deployment contexts; offline mobile works without cloud; reproducible security/resource/recovery evidence. |
 | WP-16 | Later ecosystem expansion | Voice and continuous sensing, multi-device synchronization/handoff, broader external providers, expanded multimodal interfaces and additional compute topologies. | WP-15 accepted; separate platform/security/privacy approvals | Each expansion has a scoped proposal, permission model, tests and owner approval. |
 
+The cognitive mechanism specification is [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). The Android environment/capability specification is [Android Environment and Capability Architecture](../architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md). Both remain IN PROGRESS until mapped to concrete contracts, component ownership and tests.
+
 ## 3. Dependency principles
 
 - Work packages describe dependency constraints, not a rigid serial waterfall. Independent tasks may proceed concurrently once their contracts and prerequisites are stable.
