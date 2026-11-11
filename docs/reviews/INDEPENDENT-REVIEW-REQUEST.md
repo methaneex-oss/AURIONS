@@ -49,6 +49,7 @@ Revision to inspect: **the exact current PR #2 head at the time you begin review
 Review the complete changed-file set returned by GitHub for the exact PR head. At the current planning revision, the expected files include:
 - `README.md`
 - `docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md`
+- `docs/architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md`
 - `docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md`
 - `docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md`
 - `docs/architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md`
@@ -59,11 +60,16 @@ Review the complete changed-file set returned by GitHub for the exact PR head. A
 - `docs/planning/PLANNING-COMPLETION-REGISTER.md`
 - `docs/planning/OWNER-DECISION-TRACEABILITY-MATRIX.md`
 - `docs/planning/README.md`
+- `schemas/README.md`
+- `schemas/message-envelope.v1.schema.json`
+- `schemas/capability-descriptor-body.v1.schema.json`
+- `schemas/domain-payloads.v1.schema.json`
+- all positive and negative schema fixtures under `schemas/fixtures/`
 - `docs/reviews/AUTHOR-SIDE-ARCHITECTURE-REVIEW.md`
 - `docs/reviews/INDEPENDENT-REVIEW-REQUEST.md`
 - `docs/reviews/INDEPENDENT-ARCHITECTURE-REVIEW-RE-REVIEW.md`
 
-The author-side review record, planning-contract supplement, Android capability architecture, cognitive/capability contract matrix, owner-decision traceability matrix, planning completion register and canonical implementation roadmap are included for transparency. Earlier author-side completion statements apply only to the historical revision and are superseded by the current completion register. None of these documents claims empirical validation or implementation. **Do not treat its findings, verdict or corrections as authoritative.** Complete and preserve your own project-understanding and architecture assessment before using that record as a comparison. Identify where you agree and disagree, with evidence.
+The author-side review record, planning-contract supplement, Android capability architecture, cognitive/capability contract matrix, owner-decision traceability matrix, planning completion register and canonical implementation roadmap are included for transparency. Earlier author-side completion statements apply only to the historical revision and are superseded by the current completion register. The schema fixtures have only passed a custom structural subset check, not a full JSON Schema Draft 2020-12 validator or C++/Python conformance test. The cloud/mobile state-continuity topology remains unresolved. None of these documents claims runtime implementation or target-device validation. **Do not treat its findings, verdict or corrections as authoritative.** Complete and preserve your own project-understanding and architecture assessment before using that record as a comparison. Identify where you agree and disagree, with evidence.
 
 If the branch has advanced, record the exact revision actually reviewed and inspect the complete changed-file set. Do not treat the expected file list above as a substitute for checking GitHub's actual changed-file list.
 
