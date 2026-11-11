@@ -1,0 +1,28 @@
+{
+  "envelope_version": "1.0",
+  "message_id": "c0000000-0000-4000-8000-000000000001",
+  "message_type": "decision.recorded.v1",
+  "schema_version": "1.0",
+  "created_at": "2026-11-11T08:00:09Z",
+  "producer_id": "fixture.runtime",
+  "correlation_id": "c1000000-0000-4000-8000-000000000001",
+  "causation_id": null,
+  "tenant_or_owner_id": "owner:primary",
+  "payload": {
+    "decision_id": "5d2f4c90-7a6d-4e23-ae32-1b7d51e20a11",
+    "goal_id": null,
+    "plan_id": null,
+    "decision_type": "deferred",
+    "rationale_ref": "urn:aurions:fixture:rationale:deferred-decision",
+    "uncertainty": {
+      "reason": "Required evidence is not yet available",
+      "confidence": null
+    },
+    "created_at": "2026-11-11T00:00:00Z"
+  },
+  "classification": "internal",
+  "integrity": {
+    "algorithm": "sha-256",
+    "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  }
+}
