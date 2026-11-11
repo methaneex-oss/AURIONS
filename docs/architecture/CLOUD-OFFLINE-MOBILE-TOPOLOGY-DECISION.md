@@ -1,7 +1,7 @@
 # AURIONS — Cloud and Offline-Mobile Runtime Topology Decision
 
 - **Status:** Builder decision analysis; unresolved.
-- **Decision authority:** Owner. This document does not reinterpret the approved deployment direction.
+- **Decision authority:** Builder owns the technical topology proposal. Owner approval is required only if the selected topology changes the product's cross-context continuity or first-release synchronization scope. This document does not reinterpret the approved deployment direction.
 - **Related owner decision:** Cloud operation and offline-capable mobile operation are concurrent first-release targets. Offline mobile must remain functional without cloud availability. Both contexts use shared versioned contracts and the authoritative cognitive-core implementation.
 - **Related existing proposal:** General multi-device synchronization and handoff are currently excluded from first release. The relationship between this proposal and the concurrent deployment decision requires explicit reconciliation.
 
@@ -71,6 +71,6 @@ Option B additionally requires executable SY tests for the selected domain set. 
 
 ## 7. Current disposition
 
-**UNRESOLVED — owner clarification required.**
+**UNRESOLVED — builder proposal prepared; cross-context continuity requires owner clarification if continuity is expected in first release.**
 
 Until this is resolved, WP-15's cloud/mobile integration topology and state-continuity exit criteria are not implementation-ready. This does not block continued builder work on unrelated planning layers and does not authorize implementation.
