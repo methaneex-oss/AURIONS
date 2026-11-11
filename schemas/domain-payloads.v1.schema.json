@@ -1297,7 +1297,8 @@
           "$ref": "#/$defs/uuid"
         },
         "owner_id": {
-          "$ref": "#/$defs/uuid"
+          "type": "string",
+          "minLength": 1
         },
         "device_id": {
           "$ref": "#/$defs/uuid"
@@ -1660,7 +1661,8 @@
           "minLength": 1
         },
         "owner_id": {
-          "$ref": "#/$defs/uuid"
+          "type": "string",
+          "minLength": 1
         },
         "source_device_id": {
           "$ref": "#/$defs/uuid"
@@ -1705,6 +1707,392 @@
         "idempotency_key": {
           "type": "string",
           "minLength": 1
+        }
+      }
+    },
+    "discoveryRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "discovery_id",
+        "owner_id",
+        "device_id",
+        "requested_scope",
+        "requested_at",
+        "source_refs",
+        "observation_refs",
+        "mode",
+        "resource_budget",
+        "deadline"
+      ],
+      "properties": {
+        "discovery_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "device_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "requested_scope": {
+          "type": "object"
+        },
+        "requested_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "observation_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "mode": {
+          "enum": [
+            "passive_metadata",
+            "active_verification"
+          ]
+        },
+        "resource_budget": {
+          "type": "object"
+        },
+        "deadline": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "cancellation_token": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "discoveryResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "discovery_id",
+        "status",
+        "completed_at",
+        "descriptor_refs",
+        "evidence_refs",
+        "unknowns",
+        "limitations",
+        "provider_errors"
+      ],
+      "properties": {
+        "discovery_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "partial",
+            "failed",
+            "cancelled"
+          ]
+        },
+        "completed_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "descriptor_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "unknowns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "provider_errors": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "memoryRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "memory_id",
+        "memory_type",
+        "content_ref",
+        "sensitivity",
+        "status",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "memory_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "memory_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/sensitivity"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "archived",
+            "pending_deletion",
+            "deleted_active"
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "last_accessed_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retention_until": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deleted_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "knowledgeItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "knowledge_id",
+        "proposition",
+        "domain",
+        "status",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "knowledge_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "proposition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "active",
+            "superseded",
+            "withdrawn"
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "predictionEvaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evaluation_id",
+        "prediction_id",
+        "observed_outcome_ref",
+        "result",
+        "evaluated_at",
+        "evidence_refs"
+      ],
+      "properties": {
+        "evaluation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "prediction_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "observed_outcome_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "result": {
+          "enum": [
+            "verified",
+            "partially_verified",
+            "not_verified",
+            "failed",
+            "inconclusive"
+          ]
+        },
+        "evaluated_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "evaluator_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "uncertainty": {
+          "type": "object"
+        }
+      }
+    },
+    "operationLifecycleEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_id",
+        "state",
+        "occurred_at"
+      ],
+      "properties": {
+        "operation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "attempt_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "enum": [
+            "accepted",
+            "prepared",
+            "dispatched",
+            "running",
+            "succeeded",
+            "failed",
+            "rejected",
+            "uncertain",
+            "reconciling",
+            "reconciled",
+            "compensation_required",
+            "compensating",
+            "compensated",
+            "manual_intervention",
+            "cancelled"
+          ]
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "provider_receipt_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification_evidence_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "uncertainty_reason": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_decision_ref": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     }
