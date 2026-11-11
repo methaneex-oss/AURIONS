@@ -3372,14 +3372,13 @@
       "additionalProperties": false,
       "required": [
         "command_id",
+        "command_type",
         "command_version",
         "owner_id",
         "actor_identity",
-        "operation_id",
         "issued_at",
         "deadline",
         "idempotency_key",
-        "requested_capability",
         "payload",
         "data_classification"
       ],
@@ -3401,8 +3400,15 @@
           "minLength": 1
         },
         "operation_id": {
-          "type": "string",
-          "format": "uuid"
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "issued_at": {
           "type": "string",
@@ -3417,8 +3423,15 @@
           "minLength": 1
         },
         "requested_capability": {
-          "type": "string",
-          "minLength": 1
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "payload": {
           "type": "object"
@@ -3437,6 +3450,11 @@
               "type": "null"
             }
           ]
+        },
+        "command_type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Open namespaced command identifier; resolved by the receiver's versioned command registry, not a closed capability enum."
         }
       }
     },
@@ -3445,6 +3463,7 @@
       "additionalProperties": false,
       "required": [
         "query_id",
+        "query_type",
         "query_version",
         "owner_id",
         "actor_identity",
@@ -3497,6 +3516,11 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 10000
+        },
+        "query_type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Open namespaced query identifier; resolved by the receiver's versioned query registry."
         }
       }
     },
@@ -3505,6 +3529,8 @@
       "additionalProperties": false,
       "required": [
         "command_id",
+        "command_type",
+        "command_version",
         "status",
         "responded_at"
       ],
@@ -3550,6 +3576,14 @@
         },
         "accepted_for_processing": {
           "type": "boolean"
+        },
+        "command_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "command_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
         }
       }
     },
