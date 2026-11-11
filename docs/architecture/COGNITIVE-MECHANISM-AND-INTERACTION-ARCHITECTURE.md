@@ -423,7 +423,8 @@ Explicit engineered constraints are not prohibited: schemas, safety invariants, 
 - **CM-017:** evolution candidates cannot self-approve or mutate protected governance.
 - **CM-018:** resource exhaustion/cancellation preserves committed state and produces a recoverable task status.
 - **CM-019:** no fixed task-to-action mapping is required to use a newly discovered compatible capability.
-- **CM-020:** a later experience can trigger revision of an earlier belief/representation without erasing its provenance.\n- **CM-021:** after restart, prior attention allocations are treated as historical; current allocation is reconstructed from current goals, task/checkpoint state, context, permissions and resource availability.
+- **CM-020:** a later experience can trigger revision of an earlier belief/representation without erasing its provenance.
+- **CM-021:** after restart, prior attention allocations are treated as historical; current allocation is reconstructed from current goals, task/checkpoint state, context, permissions and resource availability.
 
 These tests require fixtures, exact steps, durable-state assertions, negative controls and reproducible evidence before they can be marked VALIDATED.
 
