@@ -67,7 +67,7 @@ Whichever option is selected, first-release acceptance must prove:
 - Restart, crash, stale data, duplicate delivery and deletion behaviour are specified.
 - The system never reports cross-context continuity unless the relevant state has actually been reconciled and verified.
 
-Option B additionally requires executable SY tests for the selected domain set. Option A requires tests proving isolation and explicit UI disclosure of context-local history. Option C requires tests proving remote services cannot become mandatory for local cognition or execution.
+Product acceptance PR-15 through PR-18 applies to every option. Option B additionally requires executable SY tests for the selected domain set. Option A requires tests proving isolation and explicit UI disclosure of context-local history. Option C requires tests proving remote services cannot become mandatory for local cognition or execution.
 
 ## 7. Current disposition
 
