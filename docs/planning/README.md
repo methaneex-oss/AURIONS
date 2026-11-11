@@ -1,22 +1,34 @@
 # Planning documentation
 
-This directory contains the planning baseline imported from the canonical Notion project control center.
+This directory contains the canonical planning mirror and the detailed contracts required before implementation.
 
-## Canonical source
+## Canonical source and planning baseline
 
-- [Initial engineering specification](INITIAL-ENGINEERING-SPECIFICATION.md) — full planning record, including owner decisions, architecture, proposed database DDL, event/worker contracts, artifact lifecycle, governance, security, testing, roadmap and final planning gates.
+- [Initial engineering specification](INITIAL-ENGINEERING-SPECIFICATION.md) — owner decisions, architecture, proposed database DDL, event/worker contracts, governance, security, testing, roadmap and historical decision record.
+- [Implementation-ready planning contracts](IMPLEMENTATION-READY-PLANNING-CONTRACTS.md) — component ownership, versioned contracts, worker boundary, authorization, operation recovery, persistence, synchronization/deletion, test catalogue, threat model, validation procedures and implementation work packages.
 - [Notion project control center](https://app.notion.com/p/41505b96eab381778361fc0d0ccf6344?pvs=204) — original planning source and decision history.
+
+The architecture and first-release product definition are maintained under `docs/architecture/` and `docs/product/`. Review records are under `docs/reviews/`.
 
 ## Status discipline
 
-The specification distinguishes owner decisions, accepted baselines, proposals, unresolved items, validated evidence and implementation status. A design being documented is not proof that it has been implemented or tested.
+A documented proposal is not an owner decision, a validated result or an implementation. Every item must be marked as specified, validated or implemented with evidence. The planning supplement closes design omissions only; it does not claim that SQL has been executed, target-device measurements have been performed, dependencies have been audited, security has been penetration-tested, or implementation exists.
 
-At import time:
-- Planning design was consolidated.
-- Exact dependency/license inventory, target-device measurements, execution of the complete DDL, migration/fault testing, and implementation-specific threat-model review remained evidence gates.
-- No implementation code or database migrations had been performed.
-- Implementation work begins with WP-00 and WP-01; do not reopen settled owner decisions without concrete contradictory evidence or material risk.
+## Remaining evidence and approval gates
+
+Before implementation, the project still requires:
+- Execute and fault-test the three actual SQLite DDLs and migration paths.
+- Complete the real dependency/license/SBOM audit after technology versions are selected.
+- Reconcile WP-00 PR #1, achieve clean reproducible host/Termux builds and green CI.
+- Measure target-device performance, memory, thermals, battery, storage and background lifecycle.
+- Prototype JNI/shared-library versus IPC and validate platform choices.
+- Review actual security implementation, key lifecycle, IPC, update chain and data flows.
+- Implement and execute the contract, governance, operation, cognitive-cycle, learning, sync and recovery tests.
+- Resolve owner-reserved first UI and first permitted local action.
+- Complete an independent review of the final revision and obtain explicit owner approval.
+
+No implementation or merge is authorized merely by these documents.
 
 ## Editorial note
 
-The source document accumulated several planning additions over time and contains repeated section numbers (including repeated 32 and 33 headings), plus historical statements that reflect earlier project status. The imported specification preserves that history rather than silently rewriting it. Future edits should resolve navigation and numbering while retaining decision provenance and the change log.
+The imported source preserves historical wording and decision provenance. Its repeated section numbering and historical status notes are not silently rewritten. Use the current status and change log when reconciling older statements.
