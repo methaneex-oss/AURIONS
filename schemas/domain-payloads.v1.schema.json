@@ -894,6 +894,92 @@
           "format": "date-time"
         }
       }
+    },
+    "decisionRecorded": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "decision_type",
+        "rationale_ref",
+        "uncertainty",
+        "created_at"
+      ],
+      "properties": {
+        "decision_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "goal_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/uuid"
+            }
+          ]
+        },
+        "plan_id": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/uuid"
+            }
+          ]
+        },
+        "decision_type": {
+          "enum": [
+            "selected",
+            "deferred",
+            "rejected",
+            "clarification_required",
+            "cancelled"
+          ]
+        },
+        "selected_option_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "rationale_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "uncertainty": {
+          "type": "object"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "decision_type": {
+                "const": "selected"
+              }
+            },
+            "required": [
+              "decision_type"
+            ]
+          },
+          "then": {
+            "required": [
+              "selected_option_ref"
+            ],
+            "properties": {
+              "selected_option_ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
