@@ -327,7 +327,7 @@
           "const": 21
         },
         "command_envelope_bindings": {
-          "const": 43
+          "const": 45
         },
         "query_envelope_bindings": {
           "const": 21
