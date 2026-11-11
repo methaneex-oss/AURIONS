@@ -76,6 +76,15 @@ Capability categories may include read-only diagnostics, user-selected files, no
 
 The device agent checks local platform permissions and policy at execution time. Model reasoning cannot grant permissions.
 
+### Initial Android device-control capabilities
+
+The owner-selected first-release direction is basic Android device operation, not unrestricted device automation. The initial capability set is:
+- **Launch installed applications:** launch only an app selected by the owner or explicitly named in the current authorized request. Resolve the installed package through Android package APIs; do not hardcode a preferred app or silently broaden the target.
+- **Adjust media volume:** use supported Android audio APIs and stay within the OS-provided stream/range. Do not silently change alarm, ringtone or notification volume when the request concerns media volume.
+- **File operations:** operate only on files/directories selected by the owner through Android's Storage Access Framework/document picker, or within an explicitly designated AURIONS-owned workspace. No unrestricted root, shell or whole-device filesystem access is implied. Reads and non-destructive writes must preserve the selected URI/scope. Delete, overwrite, move or other destructive changes require exact-operation authorization and explicit confirmation; use temporary files/backups or other recovery mechanisms where feasible, and report when an operation cannot be rolled back.
+
+Each operation is a separately declared capability with its own schema, required Android permission, risk classification, authorization check, operation ID, receipt and verification. Android runtime permissions and platform restrictions are necessary but do not replace AURIONS policy enforcement. The first end-to-end action-gateway acceptance path is launching an owner-selected installed app; volume and scoped file capabilities must also be implemented and tested before they are described as available.
+
 ## 6. Multi-device identity, communication and synchronization
 
 Multi-device support is a distributed-systems concern, not simply a UI feature. Design contracts now; implement after the single-device core works.
@@ -133,7 +142,7 @@ Images, audio and other modalities follow the same capture → provenance → re
 
 OS, application, web, hardware and provider integrations use adapters registered with the capability/tool gateway. Each declares identity/version, operation schemas, data access, side effects, permissions, network destinations, budgets, cancellation, idempotency and verification.
 
-The gateway enforces authorization immediately before execution and records outcome evidence. Initial integrations should prove the lifecycle using local, low-risk capabilities: read-only diagnostics, user-selected files, local retrieval and one narrowly scoped reversible action. External communications, purchases, account changes, destructive operations and protected governance changes retain existing approval requirements.
+The gateway enforces authorization immediately before execution and records outcome evidence. Initial Android integrations should prove the lifecycle with app launch, media-volume adjustment and scoped file operations. Start the end-to-end action-gateway acceptance path with launching an owner-selected installed app; file mutations remain scope-limited and destructive operations require explicit confirmation. External communications, purchases, account changes, destructive operations and protected governance changes retain existing approval requirements.
 
 ## 10. Technology stack and decision status
 
