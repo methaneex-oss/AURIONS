@@ -388,6 +388,8 @@ The error registry is extensible, but each registered code MUST declare one stab
 | `provider.contract` | `PROVIDER_CONTRACT_VIOLATION`, `PROVIDER_INTEGRITY_FAILURE` | `unknown` after dispatch; otherwise `not_dispatched` | Quarantine affected provider version; preserve receipts and reconcile possible effects |
 | `runtime.internal` | `INTERNAL_FAILURE`, `STORAGE_COMMIT_UNCERTAIN` | `unknown` unless transaction rollback is proven | Recover from durable state; never infer rollback from process failure |
 
+The machine-readable seed is `schemas/error-registry.v1.json`, governed by `schemas/error-registry.v1.schema.json`. It contains 35 representative codes across 13 extensible categories. Every entry is explicitly `seed` with a null handler mapping, so no entry is registered for production dispatch. The schema binds a namespaced code to its category, default side-effect state, default retry posture, recovery action and owner/platform-intervention policy. These defaults are advisory; the actual per-attempt state remains authoritative.
+
 The table is the minimum registry seed, not a closed error enum. An implementation MUST retain the actual side-effect state observed for the individual attempt; it MUST NOT overwrite it with the category default. `retryable=true` is never sufficient authority to retry. Retry requires all of: dispatch state proven safe, current descriptor and policy revalidation, unchanged canonical operation digest or a newly authorized operation, valid deadline/budget, and idempotency/reconciliation contract.
 
 #### Compatibility negotiation state machine
