@@ -1,10 +1,10 @@
-# AURIONS — First Usable Local Release Product Definition
+# AURIONS — First Usable Release Product Definition
 
 **Status:** Proposed product definition for owner review. This document translates the existing owner-approved mission and first-milestone requirements into a bounded first-release proposal. It does not authorize implementation or silently settle unresolved product choices.
 
 ## 1. Product purpose
 
-The first usable local release is a persistent, local-first personal assistant that can converse, retain and retrieve relevant experiences, reason through a bounded objective, execute a narrowly scoped action that the owner has explicitly permitted, observe the result, and use the recorded outcome in a later related interaction.
+The first usable release is a persistent, adaptive personal intelligence system available through concurrent cloud operation and offline-capable mobile operation. Both deployment contexts use the same authoritative cognitive architecture and versioned contracts. The mobile runtime must complete its required local workflows without cloud connectivity. The system can converse, retain and retrieve relevant experiences, reason through bounded objectives, use discovered capabilities through owner-authorized boundaries, observe consequences and use evidence in later related interactions.
 
 It is a first working system, not a finished general intelligence, unrestricted autonomous agent, multi-device ecosystem or proof of general learning.
 
@@ -16,7 +16,7 @@ The release must demonstrate interacting mechanisms and durable state changes. I
 
 ## 2. Target user and primary job
 
-**Target user:** The owner operating AURIONS locally, initially through the supported Termux environment on the target Android device.
+**Target user:** The owner operating AURIONS through the first CLI interface, with concurrent cloud and offline-capable mobile runtime targets. The initial mobile engineering baseline is the supported Termux environment on the target Android device; a native Android UI is not yet selected.
 
 **Primary job:** Help the owner carry a bounded task across interactions and process restarts: understand the objective, retain relevant context, retrieve evidence, form and track a plan, perform an authorized low-risk action, record what happened and use that experience later.
 
@@ -24,16 +24,27 @@ The system must remain useful when remote services are unavailable. Remote model
 
 ## 3. First-release user workflows
 
-### Workflow A — Start and converse locally
+### Workflow 0 — Operate through the cloud runtime
 
-1. The owner starts the local runtime through the selected supported interface.
-2. AURIONS initializes its local stores, runtime and model-independent inference adapter.
+1. The owner authenticates to the cloud deployment through the supported CLI/application contract.
+2. The cloud runtime initializes its own authorized runtime context and uses the same cognitive-core contracts and semantics as the offline-mobile runtime.
+3. AURIONS performs cloud-hosted work within the owner's configured permissions, data-disclosure policy and resource budgets.
+4. Remote inference, external providers and cloud-hosted execution remain separately governed; cloud availability does not create authority over a mobile device.
+5. The runtime records durable experiences, task state, operation receipts and outcomes within its declared state-ownership boundary.
+
+**Expected result:** Cloud operation is a real first-release deployment target, not merely an optional inference provider. It cannot bypass local Android authorization or silently assume access to mobile-local state.
+
+
+### Workflow A — Start and converse in offline mobile mode
+
+1. The owner starts the mobile-local runtime through the selected supported interface.
+2. AURIONS initializes the mobile runtime's local stores, cognitive core and model-independent inference adapter.
 3. The owner submits a message.
 4. AURIONS produces a response using the local model path.
 5. The interaction is durably recorded as an experience with timestamps, source/provenance and relevant references.
 6. The owner can restart the runtime and continue without losing committed state.
 
-**Expected result:** Local conversation works without requiring a cloud service, and committed experience survives process restart.
+**Expected result:** Offline-mobile conversation works without requiring a cloud service, and committed experience survives process restart.
 
 ### Workflow B — Recall a relevant prior experience
 
@@ -107,9 +118,10 @@ The system must remain useful when remote services are unavailable. Remote model
 | Proactive autonomy | Architectural requirement; narrow first-release task execution only | No unrestricted background activity |
 | Model training/fine-tuning | Not required to claim first release works | Training infrastructure and evaluation are separate work |
 | General learning improvement | Not claimed by the feedback workflow | Requires held-out evaluation described in architecture |
-| Offline-capable Android platform integration | Required as a first-release deployment context; local environment/capability discovery and governed platform operation must work without cloud availability | The CLI remains the first user-facing interface. A native Android UI is not selected by this row; mobile UI technology and core boundary remain engineering decisions subject to platform validation |
+| Offline-capable mobile runtime | Required concurrently with cloud operation; local environment/capability discovery, cognition, persistence and governed local operation must work without cloud availability | The CLI remains the first user-facing interface. A native Android UI is not selected; mobile UI technology and core boundary remain engineering decisions subject to platform validation |
+| Cloud runtime | Required concurrently with offline-capable mobile operation; uses the same cognitive architecture/contracts and independently enforces owner, provider, disclosure and operation policy | Cloud availability does not authorize mobile-local operations or imply automatic cross-runtime state synchronization |
 | Voice, camera and continuous sensing | Excluded from first release | Separate permissions, privacy and feasibility gates |
-| Multi-device synchronization | Excluded from first release | Contracts designed early; implementation later |
+| Automatic cross-runtime state synchronization | Not assumed in first release | Cloud and mobile runtime state ownership/continuity must be explicitly specified; any synchronization is a separate governed capability and must not be inferred from shared contracts |
 | Desktop/web clients | Excluded from first release | Later clients must use stable core contracts |
 | Broad external integrations | Excluded from first release | Add one by one under capability and disclosure policy |
 
@@ -122,7 +134,7 @@ The first usable release does not promise:
 - Autonomous modification of its own production code or protected governance.
 - Unrestricted shell, device, account, network or filesystem access.
 - Always-on microphone, camera, location or sensor monitoring.
-- A cloud-dependent runtime or mandatory hosted backend.
+- A mobile runtime that depends on cloud availability.
 - Multi-device live synchronization or seamless handoff.
 - A complete Android application experience.
 - Arbitrary execution of external communications, purchases, financial transactions or destructive operations.
