@@ -100,3 +100,15 @@ After this review was received, the owner resolved the first-interface direction
 - **Still unresolved:** the exact first permitted local action and its target/scope.
 
 This update resolves the interface-direction portion of F-IND-04 and gate 1 in Section 6. It does not resolve the first-action decision or any empirical validation gate. The review verdict remains ACCEPT WITH REQUIRED CORRECTIONS; implementation remains gated.
+
+
+## 9. Subsequent owner decision — Android device operations
+
+The owner selected basic Android phone operations as the initial mobile device-control direction:
+- Launch an installed app selected by the owner.
+- Adjust media volume.
+- Perform file operations within user-selected file/directory scopes or an AURIONS-owned workspace.
+
+The first end-to-end action-gateway acceptance action is launching an owner-selected installed app. App targets are runtime/user input, not hardcoded. File access does not imply unrestricted filesystem/root/shell access; destructive file changes require exact-operation authorization and explicit confirmation, with recovery where feasible. Android platform permissions and OS restrictions remain authoritative.
+
+This resolves the first-action direction in F-IND-04. It does not close target-device feasibility, Android permission/API validation, security, DDL, dependency or other empirical gates, and it does not authorize implementation or merging.
