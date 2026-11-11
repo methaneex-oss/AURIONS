@@ -1213,11 +1213,53 @@ CREATE INDEX idx_disclosures_provider_time ON data_disclosures(provider_id,discl
 
 ### 26.5.1 Capability and cognitive-state schema extension — proposed migration v2
 
-The initial memory DDL did not include durable storage for the dynamic capability registry and several durable cognitive state domains introduced by the Android and cognitive mechanism architectures. That is a schema completeness gap; the registry must not be hidden inside an untyped blob or confused with governance permissions.
+The initial memory DDL did not include durable storage for the artifact registry, dynamic capability registry and several durable cognitive state domains introduced by the Android and cognitive mechanism architectures. That is a schema completeness gap; the registry must not be hidden inside an untyped blob or confused with governance permissions.
 
 The following is a proposed additive migration for `aurion_memory.db`. It is not executed or validated. It deliberately stores capability descriptions and evidence-backed knowledge separately from authority grants. Current Android permission state remains authoritative in the OS and is rechecked at execution; AURIONS grants/approvals remain in `aurion_governance.db`.
 
 ```sql
+CREATE TABLE artifacts (
+  artifact_id BLOB PRIMARY KEY CHECK(length(artifact_id)=16),
+  artifact_kind TEXT NOT NULL,
+  logical_name TEXT NOT NULL,
+  semantic_version TEXT,
+  sha256 TEXT NOT NULL CHECK(length(sha256)=64),
+  byte_size INTEGER NOT NULL CHECK(byte_size>=0),
+  media_type TEXT NOT NULL,
+  storage_uri TEXT NOT NULL,
+  producer_id TEXT NOT NULL,
+  producer_version TEXT NOT NULL,
+  source_operation_id TEXT,
+  provenance_ref TEXT NOT NULL,
+  license_ref TEXT,
+  sensitivity INTEGER NOT NULL CHECK(sensitivity BETWEEN 0 AND 4),
+  retention_class TEXT NOT NULL,
+  encryption_key_ref TEXT,
+  validation_state TEXT NOT NULL CHECK(validation_state IN
+    ('unvalidated','validated','rejected','quarantined')),
+  availability_state TEXT NOT NULL CHECK(availability_state IN
+    ('available','missing','corrupt','quarantined')),
+  deletion_state TEXT NOT NULL CHECK(deletion_state IN
+    ('active','pending_deletion','deleted_active','backup_expiry_pending')),
+  created_at_ms INTEGER NOT NULL,
+  updated_at_ms INTEGER NOT NULL,
+  deleted_at_ms INTEGER
+) STRICT;
+CREATE INDEX idx_artifacts_hash ON artifacts(sha256);
+CREATE INDEX idx_artifacts_kind_status ON artifacts(artifact_kind,validation_state,availability_state);
+CREATE INDEX idx_artifacts_retention ON artifacts(retention_class,deletion_state);
+
+CREATE TABLE artifact_lineage (
+  parent_artifact_id BLOB NOT NULL REFERENCES artifacts(artifact_id),
+  child_artifact_id BLOB NOT NULL REFERENCES artifacts(artifact_id),
+  transformation_id TEXT NOT NULL,
+  configuration_digest TEXT NOT NULL,
+  created_at_ms INTEGER NOT NULL,
+  PRIMARY KEY(parent_artifact_id,child_artifact_id,transformation_id),
+  CHECK(parent_artifact_id<>child_artifact_id)
+) STRICT;
+CREATE INDEX idx_artifact_lineage_child ON artifact_lineage(child_artifact_id);
+
 CREATE TABLE capability_descriptors (
   capability_id TEXT NOT NULL,
   descriptor_version INTEGER NOT NULL CHECK(descriptor_version>0),
@@ -1384,6 +1426,7 @@ CREATE INDEX idx_evolution_state ON evolution_proposals(state,updated_at_ms);
 ```
 
 **Storage semantics:**
+- Artifact metadata is authoritative for immutable content references; blobs remain in filesystem/object storage. Lineage is required for derived-data deletion and model/dataset provenance. Content hashes identify bytes but do not merge authorization, retention or sensitivity semantics.
 - Capability descriptors are versioned discovered interface descriptions, not permissions. The descriptor JSON is schema-validated by the application and hash-checked; unknown fields do not grant authority.
 - Discovery evidence and capability knowledge revisions retain provenance and contradictory evidence. A failed attempt is contextual evidence, not a universal prohibition.
 - Capability relationships describe evidence-supported composition/constraints; they are not fixed task recipes.
