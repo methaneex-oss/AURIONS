@@ -445,26 +445,10 @@ Run at least three repetitions per benchmark after a documented warm-up; report 
 
 ## 14. Implementation work packages and dependencies
 
-Implementation remains blocked pending owner approval and the evidence gates in Section 15. Proposed order:
+The former WP table in this section is superseded because it did not align with the original engineering specification and deferred Android device integration despite the owner's concurrent offline-mobile first-release direction.
 
-| WP | Deliverable | Depends on | Exit criteria |
-|---|---|---|---|
-| WP-00 | Repository/build/toolchain foundation | Planning approval | Clean reproducible host and target builds; CI green; no hidden network dependency |
-| WP-01 | Contract/schema foundation | WP-00; Sections 2–5 | Versioned envelopes, command/query/event schemas, compatibility and fixtures |
-| WP-02 | Persistence foundation | WP-01; Section 8 | Three DBs, migrations, integrity and crash/fault tests |
-| WP-03 | Identity/governance | WP-01/02; Section 6/11 | Authenticated owner session, capability registry, default-deny enforcement, approval and audit tests |
-| WP-04 | Operation runtime/scheduler | WP-01/02/03; Section 7 | Durable operation state machine, recovery, reconciliation, budgets and cancellation |
-| WP-05 | Experience/representation/context | WP-01/02 | Provenance-preserving ingestion and restart-safe records |
-| WP-06 | Memory/knowledge/belief | WP-02/05 | Retrieval, evidence-linked revision and conflict history |
-| WP-07 | Prediction/appraisal/reasoning/goals/planning | WP-03/04/05/06 | Integrated bounded cognitive cycle; no hardcoded behavioural conclusions |
-| WP-08 | Inference and narrow action adapter | WP-03/04/07 | Model-independent inference and one owner-approved local capability |
-| WP-09 | Outcome and learning evaluation | WP-05–08 | Paired outcome tests, held-out evaluation harness, provenance and rollback |
-| WP-10 | First user-facing interface | Product/UI owner decision; WP-01/03/04/07/08 | End-to-end first-release workflows; interface cannot bypass policy |
-| WP-11 | Device integration | Platform spike; WP-10 | Android lifecycle, permission, key and background tests |
-| WP-12 | Multi-device synchronization | WP-02/03/04/11; Sections 9/11 | Pairing, revocation, domain sync, conflict, deletion and handoff tests |
-| WP-13 | External providers/voice/multimodal | Provider/platform decisions; WP-03/09/11 | Per-provider policy, disclosure, budgets, privacy and failure tests |
+The single current work-package baseline is [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md). It defines WP-00 through WP-16, dependency relationships, first-release integration targets, deliverables and exit criteria. The roadmap remains a proposal and does not authorize implementation.
 
-WP-00 PR #1 is a scaffold proposal and must be reconciled against the single canonical roadmap before implementation; it is not authorization to implement cognition or prematurely freeze a UI/runtime choice.
 
 ## 15. Planning exit gates and outstanding evidence
 
