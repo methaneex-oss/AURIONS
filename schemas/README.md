@@ -4,7 +4,9 @@ This directory is the proposed canonical machine-readable schema source. The ini
 
 - `message-envelope.v1.schema.json`: common versioned message envelope.
 - `error-registry.v1.schema.json`: schema for extensible error-code registry entries and their default recovery metadata.
-- `error-registry.v1.json`: 35-code, 13-category seed registry; all entries remain non-dispatchable until handler mappings and fixtures are complete.
+- `error-registry.v1.json`: 35-code, 13-category seed registry; every entry now links to a category-owned handler contract and one schema-shaped fixture, but all entries remain non-dispatchable until runtime handlers and recovery tests exist.
+- `error-handler-fixtures.v1.schema.json`: schema for the error-handler contract fixture set.
+- `fixtures/error-handler-cases.fixture.json`: one `contractError` payload fixture for each of the 35 seed codes, linked to its handler contract; fixtures validate payload shape only, not runtime recovery.
 - `capability-descriptor-body.v1.schema.json`: extensible evidence-backed descriptor body.
 - `domain-payloads.v1.schema.json`: versioned payloads for command/query envelopes and responses, compatibility negotiation, errors, experience, representation, context and context invalidation, evidence, belief, prediction, appraisal, attention, reasoning, memory, knowledge, goals, plans, decisions, capability descriptor records/discovery/knowledge, operation lifecycle, task-run status/transitions, outcome observation/evaluation, learning, self-model, evolution, governance, checkpoints, synchronization, artifact lineage, disclosure, retention/deletion, worker protocol and experiment/candidate lifecycle. The descriptor record references the separately defined extensible descriptor body schema.
 - `fixtures/domain-payloads.fixture.json`: 78 domain, protocol, command and query payload examples; it is test data, not production memory or real operations.
@@ -14,6 +16,7 @@ This directory is the proposed canonical machine-readable schema source. The ini
 - `fixtures/decision-recorded.fixture.json`: decision event body fixture; it is not a selected owner decision.
 - `fixtures/provider-lifecycle.fixture.json`: neutral validated-provider, typed provider failure and compatibility negotiation examples; these do not validate a production provider.
 - `fixtures/provider-lifecycle-enabled.fixture.json`: positive example proving that provider enablement carries separate governance-decision and current platform-permission evidence.
+- `../docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md`: 13 category-level handler contracts and a 35-code mapping. Handler contracts are specified, not implemented or registered.
 
 Rules:
 1. Schema validity never implies permission, trust or authorization.
