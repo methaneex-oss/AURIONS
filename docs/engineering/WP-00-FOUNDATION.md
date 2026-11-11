@@ -50,7 +50,7 @@ The version function is build scaffolding only. It is not an application runtime
 
 ## WP-00 exit evidence still required
 
-1. <badge>Hosted CI evidence: PASSED</badge> Configure/build/test completed successfully in the recorded GitHub Actions run.
+1. **Hosted CI evidence: PASSED.** Configure/build/test completed successfully in the recorded GitHub Actions run.
 2. Fresh local host configure/build/test with reproducible toolchain versions: outstanding.
 3. Reproducible build on the actual Termux target, with compiler/CMake versions recorded: outstanding.
 4. Dependency and license inventory before adding external libraries: outstanding.
