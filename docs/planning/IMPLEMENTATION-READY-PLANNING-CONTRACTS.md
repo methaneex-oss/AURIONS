@@ -744,6 +744,25 @@ These tests protect the foundational rule that mechanisms are engineered while b
 
 NHC-006 requires architecture/code review plus targeted static searches and behavioural fixtures; a text search alone is not proof of absence. Record inspected paths, exceptions, reviewer, revision and evidence. NHC-001…NHC-008 are required planning acceptance tests and remain unvalidated until executed against implementation.
 
+
+### 10.8 Security, key lifecycle and supply-chain tests
+
+These tests are infrastructure/security acceptance checks, not behavioural rules. They must use isolated test keys, fake platform/KMS adapters and non-production data until platform validation is authorized.
+
+- **SEC-001 — Key provenance and platform backing:** keys are generated from the platform cryptographic RNG; Android Keystore hardware-backed/StrongBox capability is queried and recorded as evidence, never assumed. A software-backed fallback is explicitly identified and cannot be reported as hardware-backed.
+- **SEC-002 — Key separation:** owner identity, per-device identity, data-encryption, transport/session and code-signing key domains are distinct. A key or grant from one domain cannot decrypt or authorize another.
+- **SEC-003 — Envelope encryption and rotation:** domain/artifact data-encryption keys are wrapped by versioned platform/cloud key-encryption keys. Rotation/re-wrapping is crash-safe, idempotent and auditable; old key versions remain available only for the documented transition/recovery window.
+- **SEC-004 — Device revocation:** revoking a device invalidates future authentication, sync and operation authorization. A disconnected device cannot resurrect deleted data or resume privileged work when it reconnects.
+- **SEC-005 — Key loss and recovery:** missing, corrupt, revoked or unsupported keys fail closed. Recovery is available only through a separately configured owner-controlled recovery path; no hidden export, universal recovery key or model-authorized bypass exists.
+- **SEC-006 — Backup/restore:** backups contain ciphertext and required non-secret metadata, not plaintext key material. Restore verifies integrity and key availability, replays deletion tombstones before exposing data, and records any unrecoverable domain explicitly.
+- **SEC-007 — Update and artifact signing:** release/update manifests and protected model/runtime artifacts are verified against versioned trust roots; tampered, unsigned, revoked-key or unauthorized rollback packages are rejected and audited.
+- **SEC-008 — Log and telemetry minimization:** secrets, raw private observations, authentication material and unapproved sensitive payloads do not appear in logs, crash reports or telemetry; field-level redaction and secret scanning are tested.
+- **SEC-009 — Cloud key-service failure:** unknown key versions, KMS outage, revoked cloud credentials or failed unwrap operations deny protected cloud access; local offline operations remain limited to locally available keys and local authorization.
+- **SEC-010 — Worker isolation:** a compromised Python worker cannot read production keys, write live cognitive/governance databases, change policy or activate artifacts; output is bounded, schema-validated and quarantined before an authorized integration path.
+- **SEC-011 — Data-egress boundary:** prompts, provider requests, sync payloads and diagnostics contain only authorized data categories/recipients; sensitive external disclosure requires the exact-operation approval and durable audit path.
+
+These checks are **SPECIFIED**, not executed. Platform-specific cryptographic provider selection, hardware-backing claims, recovery semantics and KMS integration remain subject to the actual Android/Termux and cloud deployment evidence.
+
 ## 11. Threat model and security validation
 
 ### 11.1 Assets
@@ -769,6 +788,22 @@ Separate owner identity keys, per-device keys, data-encryption keys, transport k
 
 ### 11.5 Residual risks
 Termux is not a strong hostile-app sandbox; a rooted/compromised OS can access process memory and local files. Software-only controls cannot fully protect data on a compromised device. Remote providers see data intentionally transmitted to them. Offline-device deletion is delayed until reconnect or revocation. These limitations must be disclosed, not described as eliminated.
+
+
+### 11.6 Key hierarchy, data protection and validation boundaries
+
+The following is the proposed mechanism boundary; it does not select a cloud vendor or claim a target device supports every feature.
+
+- Keep owner identity keys, per-device identity keys, data-encryption keys (DEKs), key-encryption keys (KEKs), transport/session keys and update/artifact signing keys in separate roles and trust domains.
+- Use envelope encryption for durable data and artifacts. Separate DEK scopes for memory, events, governance and artifact content; store only ciphertext, key-version identifiers and non-secret metadata in SQLite. Never derive encryption keys from device IDs, account IDs or other public identifiers.
+- Device KEKs/private identity keys are held through an Android Keystore-backed native boundary when available. Query and record hardware-backed/StrongBox status. Termux is not assumed to have direct Keystore access; a native bridge/companion boundary and actual API/ABI tests are required. A software-backed fallback, if later approved, must be explicitly labelled and must not claim hardware protection.
+- Cloud KEK operations use a provider-independent interface. No cloud KMS provider, account, region or key hierarchy is selected in this planning phase. Cloud key access must be tenant/owner scoped and independently authenticated.
+- Rotation is versioned and event-audited. Rotation may be triggered by compromise, revocation, key age/algorithm policy or owner action; no arbitrary fixed interval is imposed here. Re-wrapping must be crash-safe and preserve recovery for still-authorized data.
+- Backups contain encrypted data and key-version metadata only. Recovery material, if offered, must be configured and controlled by the owner, stored separately from the backup and tested without creating a universal bypass. Without a valid recovery path, key loss may make encrypted data permanently unavailable; the system must fail closed and disclose this.
+- Revocation blocks new sessions and remote operations, and key rotation/re-wrapping removes access for revoked devices where the storage model permits. Offline revocation cannot be enforced until the device reconnects; this residual risk remains explicit.
+- Update-signing trust roots are distinct from model-generated artifacts and ordinary device identity keys. A model/worker cannot create or replace a production trust root or authorize its own candidate.
+
+**Validation boundary:** SEC-001…SEC-011 require host fakes plus actual platform/cloud integration tests. Android Keystore hardware backing, Termux bridge feasibility, secure backup/restore, KMS outage/revocation, signing-key rotation and device-loss recovery are not validated by schema or documentation checks.
 
 ## 12. Dependency and licensing audit procedure
 
