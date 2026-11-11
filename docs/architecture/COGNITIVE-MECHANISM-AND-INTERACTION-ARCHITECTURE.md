@@ -310,31 +310,11 @@ Cross-domain references use stable IDs and explicit provenance. A consumer canno
 - Changes preserve provenance, reproducibility and rollback.
 - AURIONS may propose foundational change, but protected owner authority and required approval remain enforced.
 
-## 4.18 Mechanism-to-contract and persistence crosswalk
+## 4.18 Canonical contract and persistence mapping
 
-This crosswalk binds the mechanism definitions above to the canonical component ownership and contract set. It identifies the authoritative domain; it does not authorize direct cross-domain writes. Concrete message payload schemas and migration DDL remain in the implementation contract/schema source.
+The canonical mechanism ownership, durable state, contract-family, work-package and verification mapping is maintained in [Cognitive and Capability Contract Matrix](COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md), Section 2. The field-level domain payload semantics are maintained in [Implementation-Ready Planning Contracts](../planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md).
 
-| Mechanism | Authoritative component/state | Persistence or runtime domain | Contract/event family | Existing verification |
-|---|---|---|---|---|
-| Experience/observation | Experience | `experiences` in memory store; capture/event lineage in event store | `experience.submit`; `experience.observed.v1` | CM-001, CG-001 |
-| Representation | Representation | `representations` | Representation creation; `representation.created.v1` | CM-001, CM-020, CG-002 |
-| Context | Context | `contexts`; versioned working snapshots | `context.get`; `context.assembled.v1` | CM-002, CG-002 |
-| Memory | Memory | `memory_records`, `memory_links` | `memory.retrieve`; `memory.recorded.v1`, `memory.retrieved.v1` | CG-003, CM-020 |
-| Knowledge/beliefs | Knowledge and belief | `knowledge_items`, `beliefs`, `evidence_items`, `belief_revisions`, `belief_evidence` | `belief.inspect`; `belief.proposed.v1`, `belief.revised.v1` | CM-003, CM-020, CG-004 |
-| Prediction | Prediction | `predictions`, `prediction_evaluations` | `prediction.inspect`; `prediction.created.v1`, `prediction.evaluated.v1` | CM-004, CG-005, CG-006 |
-| Appraisal | Appraisal | `appraisal_records` plus linked evidence | `appraisal.updated.v1` | CM-005, CG-007 |
-| Attention | Attention | Working runtime state; durable allocation events only where needed | `attention.allocated.v1` | CM-005, CM-006, CG-007 |
-| Reasoning | Reasoning | `reasoning_assessments` and linked inference/evidence references | `reasoning.hypothesis.proposed.v1` | CM-006, CM-007 |
-| Goals | Goals | `goals` with immutable revisions | `goal.create`, `goal.cancel`; `goal.created.v1` | CM-006, CM-018 |
-| Planning | Goals/planning | `plans`, `plan_steps`, `plan_step_dependencies` | `plan.propose`, `plan.checkpoint`; `plan.proposed.v1`, `plan.checkpointed.v1` | CM-006, CM-007, CM-018 |
-| Decision | Decision | `decision_records` | Decision record through internal versioned event; add `decision.recorded.v1` to event catalogue | CM-008 |
-| Action/execution | Action gateway + runtime | `operations`, `operation_steps`, recovery journal and receipts in event store | `operation.propose`, `operation.cancel`, `operation.reconcile`; operation lifecycle events | CM-008, CM-009, CM-010, CM-018 |
-| Outcome evaluation | Outcome evaluation | `outcome_evaluations` linked to predictions, plans, operations and observations | `outcome.evaluate`; `outcome.evaluated.v1` | CM-009…CM-015, CG-006, CG-008 |
-| Learning | Learning/evaluation | `learning_updates`, experiment metadata and immutable artifact references | `learning.update.propose`, experiment submission/evaluation; `learning.update.proposed.v1`, `learning.update.accepted.v1`, `learning.experiment.completed.v1` | CM-011…CM-015, LE-001…LE-008 |
-| Self-model | Self-model | `self_model_revisions` | `self_model.update.propose`; `self_model.updated.v1` | CM-016 |
-| Evolution | Evolution | `evolution_proposals`, candidate/evaluation artifact references | `evolution.change.propose`, candidate evaluation; `evolution.proposed.v1`, `candidate.activated.v1`, `candidate.rolled_back.v1` | CM-017 |
-
-Cross-store references are stable IDs validated by application services. The event store records durable transitions and recovery evidence; it does not become a second owner of cognitive domain state. Appraisal/reasoning/decision/outcome summaries may be durable in the memory store, while transient attention allocations remain in runtime state unless a durable event is required. This follows the canonical ownership rules in the initial engineering specification.
+This document defines cognitive mechanism responsibilities and interaction invariants; it does not duplicate the canonical table or schema definitions. If an owner, table, event or test mapping changes, update the matrix and contract source together, then verify all references. No mechanism may write another domain's authoritative state directly.
 
 ## 5. Interaction contracts
 
