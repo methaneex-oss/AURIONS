@@ -425,7 +425,9 @@ WP-00 → WP-01 → WP-02/WP-03 → WP-04/WP-05 → WP-06/WP-07 → WP-08 → WP
 
 Worker infrastructure follows shared contracts and artifact-management foundations. This is a dependency baseline, not a promise that all work is strictly sequential.
 
-## 19. Remaining specification checklist
+## 19. Remaining specification checklist — historical snapshot
+
+This checklist records the outstanding items at the time of the original specification. Later sections and the [Planning Completion Register](PLANNING-COMPLETION-REGISTER.md) supersede its status. Do not use this historical checklist alone to determine current completion.
 
 - [ ] Exact versioned event schemas and C++/Python worker message contracts.
 - [ ] Component dependency matrix: ownership, allowed/forbidden dependencies, cycle prevention and interfaces.
@@ -449,7 +451,9 @@ Each section must define purpose/scope; requirements/invariants; component owner
 - Initial capture: consolidated AURION mission, owner decisions, architecture baselines, device/model groundwork, cognitive architecture, storage design, SQL entity model, operational/security requirements, first milestone and remaining planning work from the planning conversation.
 - Status: SQL schema and architecture are proposals/baselines, not verified implementation. No implementation is authorized by this document alone.
 
-## 22. Immediate next action
+## 22. Immediate next action — historical snapshot
+
+This was the next action when the initial specification was first consolidated. It is superseded by the later planning supplements and the current builder-owned work ledger in [Planning Completion Register](PLANNING-COMPLETION-REGISTER.md).
 
 Continue the remaining specification checklist in this same controlled project record. Do not restart from the mission or re-summarize settled decisions. Complete exact event/message contracts, component dependencies, authorization, recovery, deletion/sync, tests, dependency/licensing and consistency review. Update this record as each section is completed and preserve the change log. Only after the entire initial planning stage is complete should the owner be asked to approve implementation.
 
@@ -1594,7 +1598,9 @@ Termux is a development/runtime environment, not a guarantee of always-on backgr
 
 Exit criteria: dependency bill of materials, model/dataset license register, ARM64 build verification, unnecessary dependency removal and documented unsupported platform assumptions.
 
-## 31. Architecture consistency review and planning exit gate
+## 31. Architecture consistency review and planning exit gate — historical baseline
+
+The gate principles remain relevant, but the work-package and status snapshot in this section is superseded by [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md) and [Planning Completion Register](PLANNING-COMPLETION-REGISTER.md).
 
 Mandatory pre-implementation resolutions:
 
@@ -1640,7 +1646,7 @@ Every work package must specify inputs/dependencies, owned outputs, interface re
 
 **Status:** Normative design baseline. Exact C++ type names are selected during WP-01; wire semantics are fixed here.
 
-### 32.1 Common message envelope
+### 41.1 Common message envelope
 
 Every inter-module event and worker message carries:
 
@@ -1672,7 +1678,7 @@ Rules:
 - Encrypt or redact sensitive payloads before durable storage; never copy secrets into diagnostic logs.
 - Events are immutable facts. Commands are explicit requests; never disguise a command as an event.
 
-### 32.2 Core event families
+### 41.2 Core event families
 
 | Event | Required semantics |
 | --- | --- |
@@ -1694,7 +1700,7 @@ Rules:
 
 Semantic changes require a new major contract version. Event payloads must not contain credentials or unbounded raw conversation dumps by default.
 
-### 32.3 C++ interface rules
+### 41.3 C++ interface rules
 
 - Public module interfaces use explicit value types, typed results/errors and stable IDs; no shared mutable global state.
 - Asynchronous work uses cancellation tokens, deadlines and explicit lifecycle states.
@@ -1704,7 +1710,7 @@ Semantic changes require a new major contract version. Event payloads must not c
 - Error categories: invalid input, contract/version mismatch, unauthorized, unavailable, timeout, resource exhausted, conflict, persistence failure, uncertain side effect, cancelled and internal fault.
 - Diagnostics are structured and must not expose secrets.
 
-### 32.4 Python worker contract
+### 41.4 Python worker contract
 
 Workers are replaceable, separately supervised processes. They do not own live cognition, user authority, production deployment or protected policy.
 
@@ -1714,7 +1720,7 @@ Responses carry the same job ID/version; state (accepted, running, checkpointed,
 
 Workers do not write application databases, change permissions or activate production artifacts. The C++ coordinator validates worker identity, schema, checksum, budget and output. Duplicate delivery is idempotent; partial outputs are quarantined.
 
-### 32.5 Contract compatibility
+### 41.5 Contract compatibility
 
 Maintain versioned JSON Schema or equivalent typed definitions and one shared fixture corpus consumed by C++ and Python. CI tests valid/invalid payloads, missing fields, unknown versions, size limits, duplicate IDs, digest mismatch, cancellation, deadline expiry and compatibility. Breaking changes require migration notes and a compatibility window for persisted messages.
 
@@ -1870,7 +1876,7 @@ In particular:
 
 **Current status:** Planning is IN PROGRESS. Implementation is not authorized.
 
-## 32. Final engineering resolutions for implementation readiness
+## 41. Final engineering resolutions for implementation readiness
 
 **Status:** Engineering baseline selected to close routine design gaps. These are proposed implementation constraints, not validated code. The owner retains approval over the complete specification and transition to implementation.
 
@@ -1942,7 +1948,7 @@ Risk is determined by actual effects, scope, reversibility, data sensitivity and
 
 Standing permissions specify subject, capability, operation, target/resource, data categories, side effects, environment, budget, validity period and revocation. Deny by default when policy evaluation is unavailable or ambiguous. A model may propose but cannot grant, widen or self-renew permissions.
 
-### 32.6 C++/Python contracts and dependency boundaries
+### 41.6 C++/Python contracts and dependency boundaries
 
 - C++ owns authoritative runtime state, policy enforcement, operation lifecycle, goal/plan state, memory/knowledge writes, evaluation acceptance and deployment decisions.
 - Python workers receive immutable job envelopes and write only to assigned staging/artifact areas. They cannot directly update live domain state, grant permissions, publish accepted knowledge or activate a model.
@@ -1952,7 +1958,7 @@ Standing permissions specify subject, capability, operation, target/resource, da
 - Standard error carries diagnostics; standard output carries protocol envelopes only. No shell interpolation of untrusted fields. Worker processes run with least filesystem/network privileges feasible.
 - C++ validates every result, checks artifact digest and provenance, runs required evaluation, and makes the accept/reject decision.
 
-### 32.7 Component ownership and dependency direction
+### 41.7 Component ownership and dependency direction
 
 | Component | Owns | May depend on | Must not own |
 | --- | --- | --- | --- |
@@ -1974,11 +1980,11 @@ Standing permissions specify subject, capability, operation, target/resource, da
 
 Dependency direction is inward toward stable contracts. Domain modules call interfaces, not concrete UI/platform implementations. Governance enforcement is injected at the action boundary and cannot be bypassed by internal module calls.
 
-### 32.8 Operational budgets and preemption
+### 41.8 Operational budgets and preemption
 
 Every autonomous task receives a budget envelope: wall-clock deadline, CPU time/priority, memory ceiling, storage quota, network allowance, external spend ceiling (default zero unless explicitly authorized), retry count, concurrency class and cancellation policy. The scheduler reserves resources before starting work, checkpoints at safe boundaries, and preempts lower-priority work under memory/thermal pressure. On the phone, background execution is best-effort; missed deadlines are surfaced as delayed/blocked, not silently treated as completed.
 
-### 32.9 Security and privacy defaults
+### 41.9 Security and privacy defaults
 
 - Local-first processing; external transfer is purpose-bound and data-minimized.
 - Sensitive categories are classified before storage, indexing, prompt construction or provider transfer.
@@ -1989,7 +1995,7 @@ Every autonomous task receives a budget envelope: wall-clock deadline, CPU time/
 - Policy evaluation failure, corrupted governance state or unavailable authenticator fails closed for consequential actions.
 - Security events and data disclosures are auditable without retaining unnecessary plaintext.
 
-## 33. Planning status and owner gate — corrected status record
+## 42. Planning status and owner gate — corrected status record
 
 This specification contains a substantial proposed engineering baseline. The presence of the sections below does not mean the corresponding planning layers are complete or verified. The later builder audit identified remaining design work, particularly the Android environment/capability architecture, cognitive mechanism contracts, architecture-wide consistency, and reconciliation of competing work-package roadmaps.
 
