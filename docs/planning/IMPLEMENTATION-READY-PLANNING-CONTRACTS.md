@@ -268,7 +268,7 @@ No cross-database atomic transaction is assumed. Use local transaction + outbox 
 ## 8. Persistence, schema and transaction boundaries
 
 ### 8.1 Store ownership
-- `aurion_memory.db`: experience/representation/context, memories, knowledge, evidence, beliefs, predictions, goals, plans, versioned discovered capability descriptors and learned capability knowledge, durable appraisal/decision/outcome summaries, self-model revisions, evolution proposals and learning metadata.
+- `aurion_memory.db`: experience/representation/context, memories, knowledge, evidence, beliefs, predictions, goals, plans, immutable artifact metadata/lineage, versioned discovered capability descriptors and learned capability knowledge, durable appraisal/decision/outcome summaries, self-model revisions, evolution proposals and learning metadata.
 - `aurion_events.db`: event log, capability discovery/execution events, operations, operation steps, task runs/checkpoints, outbox/inbox and recovery journal.
 - `aurion_governance.db`: owner/device identities and trust, policies, permission grants, approval requests/decisions, revocations, disclosure records and security audit. A capability descriptor is not a permission grant; the OS and governance authorities are rechecked independently at execution.
 
@@ -375,6 +375,14 @@ Every test has stable ID, requirement link, fixture/version, preconditions, exac
 
 ### 10.5 Persistence, sync and deletion tests
 - DB-001 through DB-010: DDL, migration, constraint, disk-full, corruption, crash, restore and transaction fault tests from Section 8.3.
+- ART-001: artifact checksum and byte size are verified before metadata becomes available.
+- ART-002: artifact lineage rejects self-reference and application validation rejects cycles.
+- ART-003: deleting a source artifact processes derived lineage, indexes and backup/sync state.
+- ART-004: byte deduplication never merges sensitivity, authorization, retention or deletion semantics.
+- CAP-001: descriptor discovery does not create a permission grant or authorization.
+- CAP-002: revoked/stale descriptor or platform grant blocks queued execution and triggers safe revalidation.
+- CAP-003: contradictory capability-use evidence creates a scoped knowledge revision without erasing history.
+- CAP-004: a new schema-compatible capability descriptor is represented without a hardcoded task-to-action branch.
 - SY-001: duplicate sync envelope applies once.
 - SY-002: out-of-order causal change is buffered/rejected safely.
 - SY-003: conflict retains both versions and provenance.
