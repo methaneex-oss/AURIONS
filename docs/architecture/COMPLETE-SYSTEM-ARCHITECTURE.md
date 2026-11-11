@@ -183,7 +183,7 @@ These are sources of capability inspiration, not templates to copy blindly and n
 Reproducible repository/build, stable contracts, dependency inventory, test harness and validated target toolchain.
 
 ### First usable local release
-One local persistent runtime; usable text interface (CLI initially, Android UI as a separately gated client); model-independent inference; persistent conversation/experience; provenance-aware memory and retrieval; bounded task reasoning/planning; one narrowly scoped permitted action through the gateway; verified outcome persistence; restart recovery; offline operation; inspectable permissions and resource limits.
+One local persistent runtime; a usable text interface selected through the product-definition and platform-validation gates (CLI remains an engineering interface candidate, not an approved product-interface decision); model-independent inference; persistent conversation/experience; provenance-aware memory and retrieval; bounded task reasoning/planning; one narrowly scoped permitted action through the gateway; verified outcome persistence; restart recovery; offline operation; inspectable permissions and resource limits.
 
 It must demonstrate that a recorded outcome changes later retrieval/reasoning in a repeatable test. Conversation history alone does not qualify as learning.
 
