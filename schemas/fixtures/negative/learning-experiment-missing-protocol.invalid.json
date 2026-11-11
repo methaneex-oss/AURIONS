@@ -1,0 +1,11 @@
+{
+  "experiment_id": "ad100000-0000-4000-8000-000000000002",
+  "hypothesis_ref": "hypothesis:2",
+  "baseline_artifact_ref": "artifact:baseline:2",
+  "dataset_manifest_ref": "artifact:dataset:2",
+  "resource_budget": {
+    "cpu_ms": 60000
+  },
+  "requested_at": "2026-11-11T08:11:00Z",
+  "deadline": "2026-11-11T08:20:00Z"
+}
