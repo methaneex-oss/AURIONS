@@ -99,7 +99,7 @@ The system must remain useful when remote services are unavailable. Remote model
 | Context and representation | Required at a testable baseline | Must not collapse into untraceable prompt assembly |
 | Knowledge/belief handling | Minimum explicit representation and evidence links needed for the first feedback workflow | No claim of mature general knowledge |
 | Bounded reasoning and planning | Required | Objective distinct from versioned plan and task state |
-| Action execution | One narrowly scoped local action | Exact action selected and permitted by owner |
+| Android device control | Initial capability set: launch an owner-selected installed app; adjust media volume; perform scoped file operations | Android platform adapter only; each operation is capability-checked and permission-gated. File access is limited to user-selected files/directories or an AURIONS-owned workspace; destructive changes require explicit operation-level confirmation and recoverable handling where possible |
 | Outcome observation/evaluation | Required | Evidence linked to operation and expectation |
 | Use of prior outcome | Required | Later related interaction must use retrieved outcome |
 | Recovery | Required for committed persistence and operation reconciliation | Process survival is not guaranteed by Android/Termux |
@@ -108,7 +108,8 @@ The system must remain useful when remote services are unavailable. Remote model
 | Proactive autonomy | Architectural requirement; narrow first-release task execution only | No unrestricted background activity |
 | Model training/fine-tuning | Not required to claim first release works | Training infrastructure and evaluation are separate work |
 | General learning improvement | Not claimed by the feedback workflow | Requires held-out evaluation described in architecture |
-| Native Android UI | Not settled by this product definition | Must be decided after platform/interface validation |
+| Android device operations | Required initial capability direction | App launch, media-volume adjustment and scoped file operations; actual API/permission feasibility must be validated on the target Android version |
+| Native Android UI | Android operation support is required; exact UI technology remains subject to platform validation | Keep UI separate from the C++ cognitive core; use Android platform APIs through a least-privilege adapter |
 | Voice, camera and continuous sensing | Excluded from first release | Separate permissions, privacy and feasibility gates |
 | Multi-device synchronization | Excluded from first release | Contracts designed early; implementation later |
 | Desktop/web clients | Excluded from first release | Later clients must use stable core contracts |
@@ -173,12 +174,12 @@ These items cannot be silently decided by the architecture author or implementat
 
 1. **First interface: OWNER DECISION — CLI.** The CLI is the first user-facing interface, not merely an engineering/debugging tool.
 2. **Deployment: OWNER DECISION — cloud and offline mobile concurrently.** The first-release plan must deliver cloud operation and an offline-capable mobile experience as concurrent first-class targets. Offline mobile operation must not depend on cloud availability. Both deployment contexts must use shared versioned application contracts and the authoritative cognitive core; they must not become separate intelligence implementations. The CLI deployment context(s) and exact cloud/mobile topology remain engineering details to validate, not permission to make cloud mandatory for offline use.
-3. **First permitted action:** The exact local action, target and parameters must be selected and approved by the owner before implementation of the acceptance scenario.
+3. **Android device-control scope: OWNER DECISION — basic Android operations.** Initial capability direction includes launching an owner-selected installed app, adjusting media volume, and file operations. The first end-to-end action-gateway acceptance action is launching an owner-selected installed app. Volume control is limited to supported media-volume APIs. File access is restricted to user-selected files/directories via Android's supported document/file access mechanisms or an AURIONS-owned workspace; arbitrary unrestricted filesystem access is excluded. Delete/overwrite and other destructive file changes require explicit operation-level confirmation and safe recovery handling where possible. Android permissions and OS restrictions remain authoritative.
 3. **Target-device performance thresholds:** Establish after repeatable baseline measurements.
 4. **Specific inference model/runtime configuration:** Preserve model independence and validate actual device feasibility; existing basic inference is not sufficient performance evidence.
 5. **Any additional first-release capability:** Must be justified against the primary workflow and must not displace mandatory acceptance criteria.
 
-The architecture/platform validation work should present evidence and trade-offs for decisions 1, 3 and 4. Decision 2 requires an explicit owner choice.
+The architecture/platform validation work must verify Android API/permission feasibility and the file-operation boundary on the actual target device. Numerical performance thresholds remain measurement-dependent.
 
 ## 9. Dependencies and implementation gate
 
