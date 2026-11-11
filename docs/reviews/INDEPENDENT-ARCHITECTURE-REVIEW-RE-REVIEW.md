@@ -88,3 +88,15 @@ The first-release engineering focus should remain experience, memory, bounded go
 - **PR #1:** remains separate, open and unmerged.
 
 This review record documents the reviewer's supplied assessment. It does not represent independent execution of tests by the builder or substitute for the reviewer's underlying evidence.
+
+
+## 8. Post-review owner decision update
+
+After this review was received, the owner resolved the first-interface direction:
+- **First user-facing interface:** CLI.
+- **Deployment direction:** cloud operation and offline-capable mobile operation are concurrent first-release targets, not sequential phases.
+- Offline mobile operation must remain useful without cloud connectivity. Both contexts must use shared versioned application contracts and the authoritative cognitive core.
+- The mobile UI technology, exact cloud/mobile deployment topology and JNI/shared-library versus IPC boundary remain engineering decisions subject to validation.
+- **Still unresolved:** the exact first permitted local action and its target/scope.
+
+This update resolves the interface-direction portion of F-IND-04 and gate 1 in Section 6. It does not resolve the first-action decision or any empirical validation gate. The review verdict remains ACCEPT WITH REQUIRED CORRECTIONS; implementation remains gated.
