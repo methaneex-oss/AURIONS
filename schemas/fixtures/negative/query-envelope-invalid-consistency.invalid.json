@@ -1,0 +1,12 @@
+{
+  "query_id": "b0700000-0000-4000-8000-000000000001",
+  "query_version": "1.0",
+  "owner_id": "owner:primary",
+  "actor_identity": "runtime:mobile",
+  "scope": {},
+  "requested_at": "2026-11-11T08:08:00Z",
+  "deadline": "2026-11-11T08:08:05Z",
+  "consistency": "magical",
+  "query_payload": {},
+  "max_results": 10
+}
