@@ -8,7 +8,7 @@ This directory contains the canonical planning mirror and the detailed contracts
 - [Implementation-ready planning contracts](IMPLEMENTATION-READY-PLANNING-CONTRACTS.md) — component ownership, versioned contracts, worker boundary, authorization, operation recovery, persistence, synchronization/deletion, test catalogue, threat model, validation procedures and implementation work packages.
 - [Notion project control center](https://app.notion.com/p/41505b96eab381778361fc0d0ccf6344?pvs=204) — original planning source and decision history.
 
-The architecture and first-release product definition are maintained under `docs/architecture/` and `docs/product/`. Review records are under `docs/reviews/`.
+The architecture and first-release product definition are maintained under `docs/architecture/` and `docs/product/`. Review records are under `docs/reviews/`, including the [independent architecture re-review](../reviews/INDEPENDENT-ARCHITECTURE-REVIEW-RE-REVIEW.md) for the current PR #2 revision.
 
 ## Status discipline
 
@@ -25,7 +25,7 @@ Before implementation, the project still requires:
 - Review actual security implementation, key lifecycle, IPC, update chain and data flows.
 - Implement and execute the contract, governance, operation, cognitive-cycle, learning, sync and recovery tests.
 - Resolve owner-reserved first UI and first permitted local action.
-- Complete an independent review of the final revision and obtain explicit owner approval.
+- Reconcile the independent re-review's required corrections and obtain explicit owner approval before implementation.
 
 No implementation or merge is authorized merely by these documents.
 
