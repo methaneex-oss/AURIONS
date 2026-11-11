@@ -131,12 +131,12 @@ Every event includes the common envelope and an immutable event body. Initial ev
 - `memory.recorded.v1`, `memory.retrieved.v1`
 - `belief.proposed.v1`, `belief.revised.v1`
 - `prediction.created.v1`, `prediction.evaluated.v1`
-- `appraisal.updated.v1`, `attention.allocated.v1`, `reasoning.hypothesis.proposed.v1`, `decision.recorded.v1`, `outcome.evaluated.v1`
+- `appraisal.updated.v1`, `attention.allocated.v1`, `reasoning.hypothesis.proposed.v1`, `outcome.evaluated.v1`
 - `goal.created.v1`, `goal.revised.v1`, `plan.proposed.v1`, `plan.revised.v1`, `plan.checkpointed.v1`, `decision.recorded.v1`
 - `permission.evaluated.v1`, `approval.requested.v1`, `approval.decided.v1`
 - `operation.accepted.v1`, `operation.started.v1`, `operation.dispatched.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.rejected.v1`, `operation.uncertain.v1`, `operation.reconciling.v1`, `operation.reconciled.v1`, `operation.compensation_required.v1`, `operation.compensated.v1`, `operation.manual_intervention.v1`
 - `outcome.observed.v1`, `learning.update.proposed.v1`, `learning.update.accepted.v1`, `learning.experiment.completed.v1`
-- `self_model.updated.v1`, `evolution.proposed.v1`, `candidate.activated.v1`, `candidate.rolled_back.v1`
+- `self_model.updated.v1`, `evolution.proposed.v1`, `evolution.candidate.evaluated.v1`, `candidate.activated.v1`, `candidate.rolled_back.v1`
 - `sync.change.exported.v1`, `sync.change.applied.v1`, `sync.tombstone.applied.v1`
 
 Events are append-only facts. Corrections are new compensating events with causation links; do not rewrite history to conceal a prior outcome.
@@ -338,6 +338,17 @@ Every test has stable ID, requirement link, fixture/version, preconditions, exac
 - CT-005: unsupported command returns stable error; no hidden side effect.
 - CT-006: query API performs no writes.
 - CT-007: dependency graph contains no forbidden cycles.
+
+### 10.1.1 No-hardcoding regression tests
+These tests protect the governing architecture rule: mechanisms are engineered; behaviour and capability knowledge are acquired through experience. They do not prohibit explicit safety, schema, protocol or permission invariants.
+- NHC-001: introduce a new schema-compatible capability provider; the discovery/representation path accepts it without adding a task-to-action branch to the cognitive core.
+- NHC-002: present the same objective under different observed environments; candidate means are derived from current discovered descriptors and evidence, not a fixed objective-to-operation mapping.
+- NHC-003: with incomplete discovery evidence, the system represents the capability as unknown and asks, defers or explains the limitation instead of inventing an interface.
+- NHC-004: a capability failure updates evidence within its observed context and does not automatically create a universal prohibition.
+- NHC-005: a successful operation does not establish universal competence, persistent permission or authority to repeat it in a different scope.
+- NHC-006: removing or adding one illustrative phone-operation example does not require changing the architecture's capability model or define its capability boundary.
+- NHC-007: an accepted evidence-backed strategy/capability update changes a later related task after restart and is traceable to the experience and evaluation that justified it.
+- NHC-008: repeated successful actions cannot weaken permission checks, risk classification, approval requirements or owner authority.
 
 ### 10.2 Cognitive-cycle integration tests
 - CM-001 through CM-020: execute the cognitive mechanism and interaction scenarios defined in [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). Preserve the exact scenario IDs, fixtures and negative controls.
