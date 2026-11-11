@@ -28,7 +28,7 @@
 | Reasoning | Reasoning subsystem; `reasoning_assessments` and linked evidence/artifacts | reasoning assessment/proposal; `reasoning.hypothesis.proposed.v1` | WP-09 | CM-014, CM-019 |
 | Goals | Goal subsystem; `goals`, `goal_revisions` | `goal.create`, `goal.cancel`, goal revision events | WP-10 | goal lifecycle, CM-006 |
 | Planning | Planning subsystem; `plans`, `plan_steps`, `plan_step_dependencies`; durable run/checkpoint in events DB | `plan.propose`, `plan.checkpoint`; `plan.proposed.v1`, `plan.checkpointed.v1` | WP-10 / WP-03 | CM-006, CM-007, OP-008 |
-| Decision | Decision subsystem; `decision_records` | decision record/query; decision event to be standardized with the command/event schema set | WP-10 | CM-008, owner-defer/clarification tests |
+| Decision | Decision subsystem; `decision_records` | `decision.record`; `decision.recorded.v1` | WP-10 | CM-008, owner-defer/clarification tests |
 | Action / execution | Action gateway owns operation transitions; `operations`, `operation_steps`, `recovery_journal`, receipts/events in `aurion_events.db` | `operation.propose/cancel/reconcile`; operation lifecycle events | WP-11 / WP-03 / WP-04 | OP-001…OP-008, CM-009/010 |
 | Outcome evaluation | Outcome subsystem; `outcome_evaluations`, `prediction_evaluations`, source evidence and operation receipt references | `outcome.evaluate`; `outcome.evaluated.v1`, `outcome.observed.v1` | WP-12 | CM-009…CM-014, LE-* |
 | Learning | Learning/evaluation subsystem; `learning_updates`, experiment manifests and immutable artifacts | learning update/experiment/candidate commands and events | WP-12 / WP-14 | LE-001…LE-008, CM-011…CM-015 |
@@ -87,9 +87,9 @@ Rules: the prospective prediction and criteria are immutable after creation. Eva
 
 ### 4.6 Capability descriptor
 
-Required: `capability_id`, `descriptor_version`, `provider_id`, `device_scope`, `discovery_epoch`, `source_ref`, `discovered_at`, `status`, `interface`, `input_schema_ref`, `output_schema_ref`, `preconditions`, `expected_effects`, `permission_requirements`, `risk_metadata`, `resource_estimates`, `cancellation`, `idempotency`, `verification_contract`, `freshness`.
+Required: `capability_id`, `descriptor_version`, `provider_id`, `device_scope`, `discovery_epoch`, `descriptor_schema_version`, `descriptor_sha256`, `source_ref`, `first_discovered_at`, `status`, and a versioned descriptor body. The body supports `interface` (including input/output schema references), `preconditions[]`, `effects[]`, `platform_requirements[]`, `constraints`, `risk_facts`, `execution` (timeout/cancellation/idempotency/retry/uncertain-outcome semantics), `verification`, `resource_profile`, `lifecycle` and `provenance`.
 
-Rules: descriptor is data describing an observed interface, not code, permission or authorization. Invocation implementation remains in a trusted adapter. Descriptor contents are schema-validated, hashed and provenance-linked. Unknown fields cannot increase authority.
+Rules: descriptor is data describing an observed interface, not code, permission or authorization. Invocation implementation remains in a trusted adapter. Descriptor contents are schema-validated, hashed and provenance-linked. Unknown fields cannot increase authority. Field-level semantics are specified in Section 4.4 of the Implementation-Ready Planning Contracts.
 
 ### 4.7 Plan step
 
