@@ -126,7 +126,7 @@ Initial query families: `environment.inspect`, `capability.search`, `capability.
 
 ### 4.2.1 Initial command payload registry
 
-The machine-readable [command/query registry](../../schemas/command-query-registry.v1.json), governed by `schemas/command-query-registry.v1.schema.json`, is the canonical versioned inventory. It records 43 request-schema mappings, two device commands deferred to the later multi-device phase, and 21 typed queries. Every entry is explicitly non-dispatchable while any required handler binding is unresolved. The tables below remain the human-readable payload crosswalk; they do not authorize runtime registration.
+The machine-readable [command/query registry](../../schemas/command-query-registry.v1.json), governed by `schemas/command-query-registry.v1.schema.json`, is the canonical versioned inventory. It records 43 command envelope and request-payload mappings, two device commands deferred to the later multi-device phase, and 21 query envelope, input and result mappings. Every entry is explicitly non-dispatchable while any required handler binding is unresolved. The tables below remain the human-readable payload crosswalk; they do not authorize runtime registration.
 
 The following table binds the initial command families to request-body schemas. The registry is extensible; it is not a closed list of behaviours or Android capabilities. Command handlers MUST validate the body against the registered schema version before state mutation. The event emitted after a successful command remains a separate immutable event and must use the event-body mapping in Section 4.3.
 
@@ -171,7 +171,7 @@ The schema bindings above define payload shape only. Each handler still requires
 
 ### 4.2.2 Initial query input and result registry
 
-The same machine-readable registry is authoritative for query type/version, input schema, result-item schema, owner and persistence mapping. All entries remain non-dispatchable until authorization, redaction, consistency, ordering, limits, freshness and read-only evidence are bound and tested. All query types use the generic `domainQuery` input schema except memory retrieval, which uses `memoryRetrievalQuery`. Results are wrapped in `queryResponse`; `query_type + query_version` resolves the domain-specific result schema. Query handlers remain read-only and must enforce the owner/device scope and sensitivity policy before returning records.
+The same machine-readable registry is authoritative for query type/version, common query envelope, input schema, result-item schema, owner, persistence mapping and generic payload-shape fixture references. All entries remain non-dispatchable until authorization, redaction, consistency, ordering, limits, freshness and read-only evidence are bound and tested. All query types use the generic `domainQuery` input schema except memory retrieval, which uses `memoryRetrievalQuery`. Results are wrapped in `queryResponse`; `query_type + query_version` resolves the domain-specific result schema. Query handlers remain read-only and must enforce the owner/device scope and sensitivity policy before returning records.
 
 | Query type | Input schema | Result item schema |
 |---|---|---|
