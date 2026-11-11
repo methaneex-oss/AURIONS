@@ -60,7 +60,10 @@ Memory updates, belief revisions, training success or lower training loss alone 
 ## 6. Gates and sequencing
 
 ### Required before implementation authorization
-1. Owner decision: first user-facing interface.
+
+**Historical gate state at the time of the independent review.** Gate 1 (first user-facing interface) was subsequently resolved by the owner as CLI; it is not currently open. Gate 2 (exact first permitted local action) remains unresolved.
+
+1. ~~Owner decision: first user-facing interface.~~ **RESOLVED AFTER REVIEW: CLI.**
 2. Owner decision: exact first permitted local action.
 3. Target-device validation spike with recorded sustained-inference, memory, thermal, background and crash-isolation results.
 4. Execute the three-store SQL DDLs and migration paths; run and record basic fault tests.
@@ -82,7 +85,7 @@ The first-release engineering focus should remain experience, memory, bounded go
 - **Design-level planning:** accepted with required corrections.
 - **Independent review:** received and recorded for the exact revision above.
 - **Empirical validation:** not performed; gates remain open.
-- **Owner decisions:** first UI and first permitted action remain open.
+- **Owner decisions at review time:** first UI and first permitted action were open. The first UI was subsequently resolved by the owner as CLI; the exact first permitted local action remains open.
 - **Implementation authorization:** not granted.
 - **PR #2:** remains draft, open and unmerged pending owner direction and required reconciliation.
 - **PR #1:** remains separate, open and unmerged.
@@ -99,7 +102,7 @@ After this review was received, the owner resolved the first-interface direction
 - The mobile UI technology, exact cloud/mobile deployment topology and JNI/shared-library versus IPC boundary remain engineering decisions subject to validation.
 - **Still unresolved:** the exact first permitted local action and its target/scope.
 
-This update resolves the interface-direction portion of F-IND-04 and gate 1 in Section 6. It does not resolve the first-action decision or any empirical validation gate. The review verdict remains ACCEPT WITH REQUIRED CORRECTIONS; implementation remains gated.
+This update resolves the interface-direction portion of F-IND-04 and the historical gate 1 in Section 6 and the historical status in Section 7. It does not resolve the first-action decision or any empirical validation gate. The review verdict remains ACCEPT WITH REQUIRED CORRECTIONS; implementation remains gated.
 
 
 ## 9. Correction — Android examples are not a fixed capability decision
