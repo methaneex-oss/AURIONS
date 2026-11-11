@@ -353,6 +353,23 @@ It must not impose a single linear cognitive pipeline. A new observation can rev
 
 A concurrent mechanism may consume a consistent versioned snapshot. If its inputs become stale before committing an update or dispatching an action, it must revalidate or abort safely.
 
+### 6.1 Attention state durability and restart reconstruction
+
+Attention allocation is primarily runtime state because relevance, urgency, uncertainty, deadlines and available resources can change continuously. A previous allocation is historical evidence, not a durable instruction and never an authorization.
+
+Persist an attention-allocation event only when the allocation materially changes durable scheduling, preemption, resource reservation or task state. Such an event records:
+- Allocation/event ID and algorithm/mechanism version.
+- Referenced context version and active goal/task/plan versions.
+- Candidate items considered, selected/deferred references and bounded selection rationale.
+- Resource budget and observed resource state used for the allocation.
+- Evidence/provenance references, uncertainty and creation time.
+- Validity/expiry and invalidation conditions.
+
+On restart, AURIONS MUST NOT blindly restore an old allocation as current truth. It reconstructs the candidate set from durable active goals, tasks, plans, checkpoints and current observations; re-evaluates current permissions, deadlines and resource availability; then computes a fresh allocation. Historical attention events may inform learning/evaluation but cannot override new observations, task cancellation, revoked authority or current safety constraints.
+
+If required current inputs are unavailable, the scheduler enters a safe deferred/blocked state rather than treating stale priority as valid. Replay is idempotent and preserves the original event as history.
+
+
 ## 7. Persistent learning and behavioural change
 
 For a learning claim, the system must show a chain:
@@ -406,7 +423,7 @@ Explicit engineered constraints are not prohibited: schemas, safety invariants, 
 - **CM-017:** evolution candidates cannot self-approve or mutate protected governance.
 - **CM-018:** resource exhaustion/cancellation preserves committed state and produces a recoverable task status.
 - **CM-019:** no fixed task-to-action mapping is required to use a newly discovered compatible capability.
-- **CM-020:** a later experience can trigger revision of an earlier belief/representation without erasing its provenance.
+- **CM-020:** a later experience can trigger revision of an earlier belief/representation without erasing its provenance.\n- **CM-021:** after restart, prior attention allocations are treated as historical; current allocation is reconstructed from current goals, task/checkpoint state, context, permissions and resource availability.
 
 These tests require fixtures, exact steps, durable-state assertions, negative controls and reproducible evidence before they can be marked VALIDATED.
 
@@ -436,6 +453,6 @@ This architecture remains IN PROGRESS until:
 7. Every CM-* scenario is mapped to requirements and the canonical test catalogue.
 8. Architecture-wide consistency review finds no unresolved critical/high design contradiction.
 9. The exact final revision receives independent review and required findings are resolved.
-10. Owner planning-exit approval is obtained.
+10. Owner planning-exit approval is obtained.\n11. Attention allocation is reconstructed safely after restart and stale historical allocations cannot override current state.
 
 **Current disposition:** IN PROGRESS. This document advances mechanism-level design but does not claim verified completeness, implementation or demonstrated learning.
