@@ -10,6 +10,7 @@ This directory is the proposed canonical machine-readable schema source. The ini
 - `fixtures/negative/`: 13 intentionally invalid fixtures covering descriptor authority injection, missing provenance, invalid selected-decision shape, invalid owner identity type and invalid operation risk class, artifact digest, approval risk class, worker required identity, sync conflict lineage, disclosure digest, command type binding, query consistency and error side-effect state. Capability IDs and provider-defined interface names are data, not closed enums.
 - `fixtures/capability-descriptor.fixture.json`: deliberately generic fixture for contract-shape validation only; it is not a real Android capability or product operation.
 - `fixtures/decision-recorded.fixture.json`: decision event body fixture; it is not a selected owner decision.
+- `fixtures/provider-lifecycle.fixture.json`: generic provider lifecycle, typed provider failure and compatibility negotiation examples; these do not validate a production provider.
 
 Rules:
 1. Schema validity never implies permission, trust or authorization.
