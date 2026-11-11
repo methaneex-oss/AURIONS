@@ -1,0 +1,127 @@
+# AURIONS — Author-Side Architecture Review Record
+
+**Review date:** 2026-11-11  
+**Reviewer role:** Architecture author / internal consistency reviewer  
+**Target:** PR #2, system architecture and technology baseline  
+**Baseline documents:**  
+- `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md`
+- `docs/planning/REVIEW-AND-IMPORT-NOTES.md`
+- `docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md`
+- `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`
+
+**Independence disclosure:** This review was performed by the same assistant that authored the architecture proposal. It is not independent, blind, external, or equivalent to an independent architectural review. An independent reviewer must inspect the original repository specification and the exact revised PR head without relying on this report's conclusions.
+
+## 1. Review objective and method
+
+The purpose was to compare the architecture proposal with the imported engineering specification and recorded owner decisions, identify internal contradictions and missing planning boundaries, and correct author-side defects before independent review.
+
+The source specification's decision precedence rule applies: later final engineering resolutions supersede earlier provisional or historical wording where they conflict. Owner-approved decisions were treated as constraints; recommendations and unresolved choices were not silently promoted to approved decisions.
+
+This was a documentation consistency review. It did not execute SQL DDL, build application code, run target-device tests, validate security implementation, or establish runtime performance.
+
+## 2. Findings and disposition
+
+### F-01 — Learning acceptance criterion was too weak
+**Severity:** High  
+**Source requirement:** The owner-approved specification requires repeatable held-out task improvement against a baseline, related unseen variations and regression checks. It distinguishes memory updates, belief revision, strategy learning, model training and architecture evolution.
+
+**Original defect:** The architecture's first-release feedback criterion said an outcome should influence later retrieval/reasoning. That demonstrates a persistent feedback path, but does not prove learning improvement. Treating it as proof would permit a superficial pass.
+
+**Correction:** The architecture now explicitly distinguishes memory, belief/knowledge revision, strategy/mechanism learning, model training and architecture evolution. It defines a reproducible held-out evaluation standard, frozen baseline, related unseen variations, regression constraints, experiment provenance and governed activation. The product definition explicitly says its feedback workflow is not proof of general learning improvement.
+
+**Disposition:** Incorporated in architecture Section 16.1 and product definition Sections 4 and 6.
+
+### F-02 — First usable product definition was incomplete
+**Severity:** High  
+**Source requirement:** The owner-approved first milestone is a persistent local assistant that converses, remembers, retrieves, reasons through a bounded objective, executes a permitted action and retains/evaluates outcomes.
+
+**Original defect:** The architecture described a broad first usable release but lacked sufficiently explicit user workflows, capability boundaries, non-goals and testable acceptance scenarios.
+
+**Correction:** Added a separate product definition with six end-to-end workflows, capability scope, exclusions, 14 acceptance conditions, operational constraints, unresolved owner decisions and implementation gate.
+
+**Disposition:** Incorporated in `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`; architecture Section 16.2 links the product-definition dependency.
+
+### F-03 — Architecture completeness was overstated
+**Severity:** Medium  
+**Source requirement:** The imported specification explicitly lists outstanding contracts, recovery catalogue, sync/deletion details, test catalogue, dependency/licensing review, SQL validation, risk register and final owner approval as remaining work.
+
+**Original defect:** The document title and acceptance language could be read as claiming implementation-ready completeness despite these outstanding engineering contracts.
+
+**Correction:** Renamed the document to “System Architecture and Technology Baseline” and clarified that it covers system-wide responsibilities, boundaries and constraints, not all implementation-ready contracts. The remaining deliverables are explicitly enumerated in Section 16.3.
+
+**Disposition:** Incorporated in architecture title, status statement and Section 16.3.
+
+### F-04 — Governance constraints lacked sufficient traceability
+**Severity:** High  
+**Source requirement:** Existing owner decisions require R0–R5 risk classification, default-deny behaviour, execution-boundary policy enforcement, authenticated owner sessions, exact-operation approval binding, expiry, revocation, replay prevention, durable audit and explicit approval for sensitive external disclosure/protected changes.
+
+**Original defect:** The architecture summarized policy and approval but did not sufficiently preserve the full constraints as system-wide non-negotiable requirements.
+
+**Correction:** Section 16.4 now records these constraints and requires their preservation in downstream contracts and security tests. The product definition's operational constraints also point to the authoritative R0–R5 and approval requirements.
+
+**Disposition:** Incorporated in architecture Section 16.4 and product definition Section 7. This does not replace the outstanding detailed authorization policy, threat model or security validation.
+
+### F-05 — Proactive bounded autonomy was underrepresented
+**Severity:** Medium  
+**Source requirement:** The owner-approved autonomy decision requires objective understanding, task decomposition, permitted execution without repeated prompting, monitoring, recoverable-failure handling, durable progress and owner notification, with consequential actions remaining approval-gated.
+
+**Original defect:** The architecture treated some proactive capabilities primarily as future release features and did not state clearly enough that bounded autonomy is a system-wide requirement.
+
+**Correction:** Section 16.5 now establishes proactive bounded autonomy as a system-wide constraint, while allowing early releases to expose only a narrow safe subset. It preserves existing approval boundaries.
+
+**Disposition:** Incorporated in architecture Section 16.5 and product definition Sections 3, 4 and 7.
+
+### F-06 — First-release interface was silently biased toward CLI
+**Severity:** Medium  
+**Source requirement:** The source establishes Termux as the initial development/test environment but does not record a final owner decision that CLI is the first user-facing product interface.
+
+**Original defect:** The architecture release progression described CLI as the initial interface, which could incorrectly turn an engineering convenience into a product decision.
+
+**Correction:** CLI is now explicitly an engineering/debugging candidate. The architecture's first-release interface is unresolved pending product and platform validation. The product definition records this as an owner decision.
+
+**Disposition:** Incorporated in architecture Sections 3, 4, 12 and 16.6 and product definition Section 8.
+
+## 3. Additional source-alignment checks
+
+The revised documents preserve these established constraints:
+- AURIONS is local-first; remote resources are policy-controlled.
+- C++ remains authoritative for core runtime and protected cognitive/domain state.
+- Python workers are isolated for training/experiments and cannot authorize or activate production state.
+- The model-independent interface is retained.
+- SQLite remains the initial persistence direction; the three logical stores and their ownership boundaries are not silently collapsed.
+- Multi-device contracts are designed early; distributed implementation follows a reliable single-device core.
+- Direct SQLite-file replication is rejected.
+- Termux is not represented as a strong security sandbox.
+- Existing 30-day historical-backup expiry and deletion propagation requirements are retained.
+- Basic local inference is not misrepresented as proof of sustained performance.
+- Vector search, large-scale orchestration and microservices are not made mandatory without evidence.
+- No owner decision has been made here about the first UI, exact first permitted action, or numeric device performance thresholds.
+
+## 4. Remaining planning work — not defects silently resolved by this review
+
+The six author-review findings above have been incorporated into the proposal. This does **not** mean the full initial planning stage is complete. The source specification's outstanding work still requires separate deliverables and evidence, including:
+
+1. Versioned API, event, command/query and C++/Python worker contracts.
+2. Component dependency/ownership matrix and cycle prevention.
+3. Concrete authorization policy and test cases.
+4. Operation state machine, crash/failure catalogue, reconciliation and compensation.
+5. Complete deletion, synchronization, offline-device and backup/restore semantics.
+6. Test catalogue with fixtures, steps, expected outcomes and measurable criteria.
+7. Dependency/licensing review for ARM64, Termux, offline operation and Android roadmap.
+8. SQL DDL review, execution, indexes, migrations, transaction and fault testing.
+9. Platform/interface validation and actual target-device measurements.
+10. Threat model, key lifecycle, residual-risk register and security validation.
+11. Implementation roadmap with dependencies, deliverables and exit criteria.
+12. Independent review and explicit owner approval.
+
+These are not marked complete by writing this review record.
+
+## 5. Review conclusion
+
+**Author-side verdict: REVISE BEFORE INDEPENDENT REVIEW; NOT APPROVED FOR IMPLEMENTATION.**
+
+The revised proposal is more explicit about its scope, first-release workflows, learning evidence, governance constraints, autonomy requirements and unresolved product choices. The six identified author-side findings have documented corrections.
+
+This conclusion is limited to the review method and material inspected. It is not independent confirmation that the architecture is technically optimal, complete, secure, feasible or correct. The independent reviewer must challenge the architecture from the source requirements and may reject or materially revise it.
+
+**Merge/implementation status:** PR #2 remains a draft proposal. PR #1 remains separate and unmerged. No application implementation, schema execution, device configuration or production dependency change is authorized by this review.
