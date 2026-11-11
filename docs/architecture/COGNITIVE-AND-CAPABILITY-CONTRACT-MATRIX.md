@@ -128,15 +128,15 @@ Rules: distinguish episodic acquisition, belief revision, capability knowledge, 
 
 ## 6. Identified contract/schema reconciliation gaps
 
-These are builder findings from comparing the cognitive/Android contracts against the current proposed DDL. They must be resolved before this matrix can be marked COMPLETE — VERIFIED.
+These builder findings compare the cognitive/Android contracts against the proposed DDL. Proposed DDL corrections below are design specifications only; they are not executed or validated migrations.
 
 | ID | Severity | Finding | Required builder resolution |
 |---|---|---|---|
-| CCM-01 | HIGH | `plan_steps` stores a free-text description and generic `action_id`; it does not persist the capability ID + descriptor version, parameter bindings, preconditions, expected effects, budget, verification contract or stop conditions required by the plan architecture. | Propose an additive memory migration with a typed plan-step contract table; reconcile action IDs and capability references. |
-| CCM-02 | HIGH | The operation state machine in the contract includes approval, dispatch uncertainty, reconciliation, compensation and manual-intervention states, but the current `operations.state` CHECK constraint supports only a smaller subset. | Define one canonical persisted lifecycle projection/event model and additive migration; ensure transitions and recovery are unambiguous. |
-| CCM-03 | HIGH | The operation record contract requires canonical parameters/digest, capability version, target, risk/policy/approval references, budget, receipt and verification evidence, but the events DDL stores only a small operation header plus step result reference. | Define typed operation detail/attempt/receipt records and cross-store reference validation. |
+| CCM-01 | HIGH | The original `plan_steps` row lacked the typed execution contract required by the plan architecture. | **SPECIFIED:** proposed memory migration v3 adds `plan_step_contracts` with versioned capability reference, input binding, preconditions, expected effects, resource budget, verification, stop conditions and stale-input digest. DDL execution and application validation remain open. |
+| CCM-02 | HIGH | The original operation-state CHECK constraint did not represent the full documented lifecycle. | **SPECIFIED:** proposed base DDL now enumerates the documented approval, dispatch, uncertainty, reconciliation, compensation and manual-intervention states. The transition graph remains application-enforced and requires transition/fault fixtures; SQL CHECK constraints alone do not enforce legal transitions. |
+| CCM-03 | HIGH | The operation header did not persist the exact operation payload and per-attempt receipt/verification evidence required by the execution contract. | **SPECIFIED:** proposed events migration v2 adds `operation_details` and `operation_attempts`; cross-store capability/approval validation and executable recovery tests remain open. |
 | CCM-04 | MEDIUM | The command/event catalogue names message families but does not yet provide machine-readable body schemas and shared fixtures for each domain. | Establish canonical schema source and generate/validate C++ and Python types/fixtures from it. |
-| CCM-05 | MEDIUM | `learning_updates` records mechanism/state and references but lacks typed hypothesis scope, candidate/baseline identity, protocol, metrics and regression result fields. | Define a learning experiment/update manifest schema and artifact lineage mapping; keep large metrics as validated artifacts. |
+| CCM-05 | MEDIUM | `learning_updates` alone did not express the evidence and candidate manifest needed for a learning claim. | **SPECIFIED:** proposed memory migration v3 adds `learning_update_details` with update kind, hypothesis, scope, evidence, baseline/candidate/protocol/metrics/regression artifact references, rollback and approval references. Machine-readable artifact manifests and evaluation fixtures remain open. |
 | CCM-06 | MEDIUM | The cognitive architecture defines plan interruption, stale context, revalidation and checkpoint semantics, but persisted plan/step lifecycle and runtime task checkpoint contracts are not fully reconciled. | Define plan-version supersession, checkpoint binding, stale-input digests and restart/replan transitions across memory and events stores. |
 | CCM-07 | MEDIUM | Attention is intentionally runtime state, but its event durability, replay semantics and restart reconstruction policy are not explicit enough. | Specify which attention changes are transient, sampled or durable and how restart reconstructs current allocation without treating old allocation as current truth. |
 
@@ -144,7 +144,7 @@ These are builder findings from comparing the cognitive/Android contracts agains
 
 This matrix is IN PROGRESS until:
 1. Every row in Sections 2 and 3 maps to an authoritative implementation owner, schema, command/query/event and canonical test.
-2. CCM-01…CCM-07 are resolved in the canonical source specification and planning contracts.
+2. CCM-01, CCM-02, CCM-03 and CCM-05 have a proposed DDL-level design correction in Section 26.5.2 of the source specification; CCM-04, CCM-06 and CCM-07 remain open, and all seven require executable verification.
 3. Domain payload schemas and shared fixtures are machine-readable and validated by the C++/Python contract toolchain.
 4. Every schema change has a proposed migration and a tested migration path before implementation use.
 5. The matrix is consistent with the owner decision register, no-hardcoding invariant, product definition and canonical roadmap.
