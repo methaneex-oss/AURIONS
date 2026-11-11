@@ -102,8 +102,8 @@ Initial command families:
 - `memory.retrieve`
 - `goal.create`, `goal.cancel`
 - `plan.propose`, `plan.checkpoint`
-- `operation.propose`, `operation.cancel`, `operation.reconcile)
-- `approval.request`, `approval.revoke)
+- `operation.propose`, `operation.cancel`, `operation.reconcile`
+- `approval.request`, `approval.revoke`
 - `learning.experiment.submit`, `learning.candidate.evaluate`
 - `device.pair`, `device.revoke` (future multi-device phase)
 
@@ -119,13 +119,13 @@ Every event includes the common envelope and an immutable event body. Initial ev
 - `experience.observed.v1`
 - `representation.created.v1`
 - `context.assembled.v1`
-- `memory.recorded.v1`, `memory.retrieved.v1)
-- `belief.proposed.v1`, `belief.revised.v1)
-- `prediction.created.v1`, `prediction.evaluated.v1)
-- `goal.created.v1`, `plan.proposed.v1`, `plan.checkpointed.v1)
-- `permission.evaluated.v1`, `approval.requested.v1`, `approval.decided.v1)
-- `operation.accepted.v1`, `operation.started.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.uncertain.v1`, `operation.reconciled.v1)
-- `outcome.observed.v1`, `learning.experiment.completed.v1`, `candidate.activated.v1`, `candidate.rolled_back.v1)
+- `memory.recorded.v1`, `memory.retrieved.v1`
+- `belief.proposed.v1`, `belief.revised.v1`
+- `prediction.created.v1`, `prediction.evaluated.v1`
+- `goal.created.v1`, `plan.proposed.v1`, `plan.checkpointed.v1`
+- `permission.evaluated.v1`, `approval.requested.v1`, `approval.decided.v1`
+- `operation.accepted.v1`, `operation.started.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.uncertain.v1`, `operation.reconciled.v1`
+- `outcome.observed.v1`, `learning.experiment.completed.v1`, `candidate.activated.v1`, `candidate.rolled_back.v1`
 - `sync.change.exported.v1`, `sync.change.applied.v1`, `sync.tombstone.applied.v1`
 
 Events are append-only facts. Corrections are new compensating events with causation links; do not rewrite history to conceal a prior outcome.
