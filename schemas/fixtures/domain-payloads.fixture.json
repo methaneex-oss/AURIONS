@@ -480,7 +480,7 @@
   "operationLifecycleEvent": {
     "operation_id": "70000000-0000-4000-8000-000000000001",
     "attempt_id": "73000000-0000-4000-8000-000000000001",
-    "state": "proposed",
+    "state": "ready",
     "occurred_at": "2026-11-11T08:00:08Z",
     "provider_receipt_ref": null,
     "verification_evidence_ref": null,
