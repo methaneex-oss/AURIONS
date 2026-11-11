@@ -13,8 +13,10 @@
       "owner_or_platform_intervention": "none",
       "description": "contract.schema failure: schema malformed.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-001",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/0"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -26,8 +28,10 @@
       "owner_or_platform_intervention": "none",
       "description": "contract.schema failure: schema major unsupported.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-001",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/1"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -39,8 +43,10 @@
       "owner_or_platform_intervention": "none",
       "description": "contract.schema failure: schema condition unsupported.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-001",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/2"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -52,8 +58,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "provider.identity failure: provider unknown.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-002",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/3"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -65,8 +73,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "provider.identity failure: provider untrusted.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-002",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/4"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -78,8 +88,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "provider.identity failure: provider version unvalidated.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-002",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/5"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -91,8 +103,10 @@
       "owner_or_platform_intervention": "none",
       "description": "provider.availability failure: provider unavailable.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-003",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/6"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -104,8 +118,10 @@
       "owner_or_platform_intervention": "none",
       "description": "provider.availability failure: provider rate limited.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-003",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/7"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -117,8 +133,10 @@
       "owner_or_platform_intervention": "none",
       "description": "capability.validity failure: capability stale.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-004",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/8"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -130,8 +148,10 @@
       "owner_or_platform_intervention": "none",
       "description": "capability.validity failure: capability revoked.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-004",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/9"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -143,8 +163,10 @@
       "owner_or_platform_intervention": "none",
       "description": "capability.validity failure: capability incompatible.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-004",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/10"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -156,8 +178,10 @@
       "owner_or_platform_intervention": "none",
       "description": "evidence.precondition failure: evidence insufficient.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-005",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/11"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -169,8 +193,10 @@
       "owner_or_platform_intervention": "none",
       "description": "evidence.precondition failure: precondition false.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-005",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/12"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -182,8 +208,10 @@
       "owner_or_platform_intervention": "none",
       "description": "evidence.precondition failure: precondition unknown.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-005",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/13"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -195,8 +223,10 @@
       "owner_or_platform_intervention": "platform_permission",
       "description": "platform.permission failure: platform grant missing.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-006",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/14"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -208,8 +238,10 @@
       "owner_or_platform_intervention": "platform_permission",
       "description": "platform.permission failure: platform grant revoked.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-006",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/15"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -221,8 +253,10 @@
       "owner_or_platform_intervention": "owner_authorization",
       "description": "governance.authorization failure: policy denied.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-007",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/16"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -234,8 +268,10 @@
       "owner_or_platform_intervention": "owner_authorization",
       "description": "governance.authorization failure: approval expired.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-007",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/17"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -247,8 +283,10 @@
       "owner_or_platform_intervention": "owner_authorization",
       "description": "governance.authorization failure: approval mismatch.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-007",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/18"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -260,8 +298,10 @@
       "owner_or_platform_intervention": "owner_authorization",
       "description": "governance.authorization failure: approval revoked.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-007",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/19"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -273,8 +313,10 @@
       "owner_or_platform_intervention": "none",
       "description": "operation.conflict failure: expected revision conflict.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-008",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/20"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -286,8 +328,10 @@
       "owner_or_platform_intervention": "none",
       "description": "operation.conflict failure: dependency version stale.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-008",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/21"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -299,8 +343,10 @@
       "owner_or_platform_intervention": "none",
       "description": "operation.conflict failure: idempotency key reuse mismatch.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-008",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/22"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -312,8 +358,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "operation.budget failure: deadline exceeded.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-009",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/23"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -325,8 +373,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "operation.budget failure: resource budget exceeded.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-009",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/24"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -338,8 +388,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "operation.budget failure: cancelled before dispatch.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-009",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/25"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -351,8 +403,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "operation.dispatch failure: adapter dispatch failed.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-010",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/26"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -364,8 +418,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "operation.dispatch failure: dispatch receipt missing.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-010",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/27"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -377,8 +433,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "operation.outcome failure: outcome uncertain.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-011",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/28"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -390,8 +448,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "operation.outcome failure: postcondition unverified.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-011",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/29"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -403,8 +463,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "operation.outcome failure: provider result contradicted.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-011",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/30"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -416,8 +478,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "provider.contract failure: provider contract violation.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-012",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/31"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -429,8 +493,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "provider.contract failure: provider integrity failure.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-012",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/32"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -442,8 +508,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "runtime.internal failure: internal failure.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-013",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/33"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     },
     {
@@ -455,8 +523,10 @@
       "owner_or_platform_intervention": "conditional",
       "description": "runtime.internal failure: storage commit uncertain.",
       "status": "seed",
-      "handler_mapping_ref": null,
-      "fixture_refs": [],
+      "handler_mapping_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-013",
+      "fixture_refs": [
+        "schemas/fixtures/error-handler-cases.fixture.json#/cases/34"
+      ],
       "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
     }
   ]
