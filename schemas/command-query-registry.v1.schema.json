@@ -39,7 +39,7 @@
         "properties": {
           "command_type": {
             "type": "string",
-            "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)+$"
+            "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
           },
           "command_version": {
             "type": [
@@ -177,7 +177,7 @@
         "properties": {
           "query_type": {
             "type": "string",
-            "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)+$"
+            "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
           },
           "query_version": {
             "type": "string",
