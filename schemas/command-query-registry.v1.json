@@ -1,0 +1,2021 @@
+{
+  "registry_id": "aurions.command-query-registry",
+  "registry_version": "1.0",
+  "status": "design_baseline_not_dispatchable",
+  "source_refs": [
+    "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#command-query-registry-completeness-gate",
+    "docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md"
+  ],
+  "request_schema_source": "schemas/domain-payloads.v1.schema.json",
+  "command_response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+  "query_response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+  "commands": [
+    {
+      "command_type": "experience.submit",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/experienceObserved",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Experience subsystem",
+      "aggregate": "experiences + evidence_items",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "representation.create",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/representationCreated",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Representation subsystem",
+      "aggregate": "representations",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "context.assemble",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/contextAssemblyRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Context subsystem",
+      "aggregate": "contexts",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "context.invalidate",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/contextInvalidationRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Context subsystem",
+      "aggregate": "contexts",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "environment.observe",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/environmentObservationRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Environment observer / platform adapter",
+      "aggregate": "environment observations + experiences",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "capability.discover",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDiscoveryRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Discovery broker",
+      "aggregate": "discovery provenance + capability descriptors",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "capability.verify",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityVerificationRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Discovery broker + capability registry",
+      "aggregate": "capability descriptors + verification evidence",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "capability.invalidate",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityInvalidationRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Discovery broker + capability registry",
+      "aggregate": "capability descriptors + dependent plans",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "capability.knowledge.propose",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityKnowledgeRevision",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Capability knowledge subsystem",
+      "aggregate": "capability_knowledge_revisions + evidence",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "capability.knowledge.revise",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityKnowledgeRevision",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Capability knowledge subsystem",
+      "aggregate": "capability_knowledge_revisions + evidence",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "memory.retrieve",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/memoryRetrievalQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Memory subsystem",
+      "aggregate": "memory_records + memory_links",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "belief.propose",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/beliefRevision",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Knowledge-belief subsystem",
+      "aggregate": "beliefs + belief_revisions + evidence",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "belief.revise",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/beliefRevision",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Knowledge-belief subsystem",
+      "aggregate": "beliefs + belief_revisions + evidence",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "prediction.create",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/predictionCreated",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Prediction subsystem",
+      "aggregate": "predictions",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "prediction.evaluate",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/predictionEvaluationRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Prediction subsystem",
+      "aggregate": "prediction_evaluations",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "appraisal.evaluate",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/appraisalEvaluationRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Appraisal subsystem",
+      "aggregate": "appraisal_records",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "attention.allocate",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/attentionAllocationRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Attention subsystem",
+      "aggregate": "runtime attention allocation; durable transitions selectively recorded",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "reasoning.assess",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/reasoningAssessmentRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Reasoning subsystem",
+      "aggregate": "reasoning_assessments + evidence/artifacts",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "goal.create",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Goal subsystem",
+      "aggregate": "goals + goal_revisions",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "goal.revise",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Goal subsystem",
+      "aggregate": "goals + goal_revisions",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "goal.cancel",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/goalControlRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Goal subsystem",
+      "aggregate": "goals + goal_revisions",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "plan.propose",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/planRevision",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Planning subsystem",
+      "aggregate": "plans + plan_steps + dependencies",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "plan.revise",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/planRevision",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Planning subsystem",
+      "aggregate": "plans + plan_steps + dependencies",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "plan.checkpoint",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/planCheckpointRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Planning subsystem + scheduler",
+      "aggregate": "task_checkpoints + plan lineage",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "decision.record",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/decisionRecorded",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Decision subsystem",
+      "aggregate": "decision_records",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "operation.propose",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/operationProposal",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Action gateway",
+      "aggregate": "operations + operation_steps + recovery_journal + receipts",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "operation.cancel",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/operationControlRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Action gateway + scheduler",
+      "aggregate": "operations + operation_steps + recovery_journal",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "operation.reconcile",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/operationControlRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Action gateway + scheduler",
+      "aggregate": "operations + operation_steps + recovery_journal + receipts",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "approval.request",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/approvalRequested",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Governance subsystem",
+      "aggregate": "approval_requests + governance audit",
+      "persistence_stores": [
+        "aurion_governance.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "approval.revoke",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/approvalRevocationRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Governance subsystem",
+      "aggregate": "approval decisions + revocations + governance audit",
+      "persistence_stores": [
+        "aurion_governance.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "outcome.evaluate",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/outcomeEvaluationRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Outcome evaluation subsystem",
+      "aggregate": "outcome_evaluations + prediction_evaluations",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "learning.update.propose",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/learningUpdate",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Learning/evaluation subsystem",
+      "aggregate": "learning_updates + evidence/artifact references",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "learning.experiment.submit",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/learningExperimentRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Learning/evaluation subsystem + worker supervisor",
+      "aggregate": "experiment manifests + artifacts",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "learning.candidate.evaluate",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/learningCandidateEvaluationRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Learning/evaluation subsystem",
+      "aggregate": "candidate evaluations + immutable artifacts",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "self_model.update.propose",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/selfModelUpdated",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Self-model subsystem",
+      "aggregate": "self_model_revisions",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "evolution.change.propose",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionProposed",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Evolution subsystem",
+      "aggregate": "evolution_proposals + candidate artifacts",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "evolution.candidate.evaluate",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateActionRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Evolution subsystem + governance",
+      "aggregate": "candidate evaluations + governance decisions",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_governance.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "evolution.candidate.activate",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateActionRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Evolution subsystem + governance",
+      "aggregate": "candidate activation audit + active artifact reference",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_governance.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "evolution.candidate.rollback",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateActionRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Evolution subsystem + governance",
+      "aggregate": "rollback audit + prior artifact reference",
+      "persistence_stores": [
+        "aurion_memory.db",
+        "aurion_governance.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "task.start",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/taskControlRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Scheduler",
+      "aggregate": "task_runs + task_checkpoints + task control/transition events",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "task.pause",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/taskControlRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Scheduler",
+      "aggregate": "task_runs + task_checkpoints + task control/transition events",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "task.resume",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/taskControlRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Scheduler",
+      "aggregate": "task_runs + task_checkpoints + task control/transition events",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "task.cancel",
+      "command_version": "1.0",
+      "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/taskControlRequest",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Scheduler",
+      "aggregate": "task_runs + task_checkpoints + task control/transition events",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owning_aggregate_revision_and_transition_rules",
+        "authorization_and_data_scope_rule",
+        "idempotency_key_scope_and_canonical_digest_rule",
+        "deadline_and_cancellation_semantics",
+        "per_attempt_side_effect_contract",
+        "error_code_mapping_and_recovery_branches",
+        "emitted_event_mapping_and_outbox_transaction",
+        "positive_negative_conflict_replay_recovery_fixtures"
+      ]
+    },
+    {
+      "command_type": "device.pair",
+      "command_version": null,
+      "request_schema": null,
+      "response_schema": null,
+      "owning_component": "Deferred multi-device subsystem",
+      "aggregate": null,
+      "persistence_stores": [],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "deferred_by_scope",
+      "unresolved_bindings": [
+        "future_multi_device_phase_scope_and_owner_authorization",
+        "request_and_response_schema",
+        "all_command_semantics_and_fixtures"
+      ]
+    },
+    {
+      "command_type": "device.revoke",
+      "command_version": null,
+      "request_schema": null,
+      "response_schema": null,
+      "owning_component": "Deferred multi-device subsystem",
+      "aggregate": null,
+      "persistence_stores": [],
+      "expected_revision_contract": null,
+      "authorization_contract": null,
+      "idempotency_contract": null,
+      "deadline_cancellation_contract": null,
+      "side_effect_contract": null,
+      "error_code_bindings": [],
+      "emitted_event_bindings": [],
+      "fixture_refs": [],
+      "dispatch_status": "deferred_by_scope",
+      "unresolved_bindings": [
+        "future_multi_device_phase_scope_and_owner_authorization",
+        "request_and_response_schema",
+        "all_command_semantics_and_fixtures"
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "query_type": "environment.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/environmentObserved",
+      "owning_component": "Environment observer / platform adapter",
+      "aggregate": "environment observations",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "capability.search",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
+      "owning_component": "Capability registry",
+      "aggregate": "capability_descriptors",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "capability.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
+      "owning_component": "Capability registry",
+      "aggregate": "capability_descriptors",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "capability.knowledge.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityKnowledgeRevision",
+      "owning_component": "Capability knowledge subsystem",
+      "aggregate": "capability_knowledge_revisions + evidence",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "representation.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/representationCreated",
+      "owning_component": "Representation subsystem",
+      "aggregate": "representations",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "context.get",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/contextSnapshot",
+      "owning_component": "Context subsystem",
+      "aggregate": "contexts",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "memory.search",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/memoryRetrievalQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/memoryRetrieval",
+      "owning_component": "Memory subsystem",
+      "aggregate": "memory_records + memory_links",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "knowledge.search",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/knowledgeItem",
+      "owning_component": "Knowledge-belief subsystem",
+      "aggregate": "knowledge_items + evidence",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "belief.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/beliefRevision",
+      "owning_component": "Knowledge-belief subsystem",
+      "aggregate": "beliefs + belief_revisions",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "prediction.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/predictionCreated",
+      "owning_component": "Prediction subsystem",
+      "aggregate": "predictions + prediction_evaluations",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "appraisal.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/appraisalUpdated",
+      "owning_component": "Appraisal subsystem",
+      "aggregate": "appraisal_records",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "attention.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/attentionAllocated",
+      "owning_component": "Attention subsystem",
+      "aggregate": "runtime attention allocation; durable transitions selectively recorded",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "reasoning.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/reasoningHypothesisProposed",
+      "owning_component": "Reasoning subsystem",
+      "aggregate": "reasoning_assessments + evidence/artifacts",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "goal.get",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision",
+      "owning_component": "Goal subsystem",
+      "aggregate": "goals + goal_revisions",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "plan.get",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/planRevision",
+      "owning_component": "Planning subsystem",
+      "aggregate": "plans + plan_steps + dependencies",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "decision.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/decisionRecorded",
+      "owning_component": "Decision subsystem",
+      "aggregate": "decision_records",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "task.status",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/taskRunStatus",
+      "owning_component": "Scheduler",
+      "aggregate": "task_runs + task_checkpoints",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "operation.status",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "owning_component": "Action gateway",
+      "aggregate": "operations + operation_steps + receipts",
+      "persistence_stores": [
+        "aurion_events.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "permission.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/permissionRecord",
+      "owning_component": "Governance subsystem",
+      "aggregate": "permissions + policies + grants",
+      "persistence_stores": [
+        "aurion_governance.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "audit.lookup",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/auditRecord",
+      "owning_component": "Governance subsystem",
+      "aggregate": "security audit records",
+      "persistence_stores": [
+        "aurion_governance.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    },
+    {
+      "query_type": "device.capabilities",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
+      "owning_component": "Capability registry / device adapter",
+      "aggregate": "device-scoped capability descriptors",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": null,
+      "data_classification": null,
+      "redaction_contract": null,
+      "consistency_contract": null,
+      "ordering_cursor_contract": null,
+      "limits_contract": null,
+      "freshness_cache_contract": null,
+      "fixture_refs": [],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "owner_device_scope_and_authorization_rule",
+        "data_classification_and_field_redaction",
+        "consistency_mode_and_snapshot_semantics",
+        "deterministic_ordering_and_cursor_semantics",
+        "timeout_result_count_and_byte_limits",
+        "cache_and_freshness_semantics",
+        "positive_negative_redaction_and_consistency_fixtures"
+      ]
+    }
+  ],
+  "dispatch_invariant": "No entry is eligible for production dispatch until every applicable binding is completed, validated, covered by fixtures, and registered by the owning runtime. Null means unresolved, never an implicit default.",
+  "counts": {
+    "mapped_command_types": 43,
+    "deferred_command_types": 2,
+    "query_types": 21
+  }
+}
