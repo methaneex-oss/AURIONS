@@ -1791,31 +1791,34 @@ Every autonomous task receives a budget envelope: wall-clock deadline, CPU time/
 - Policy evaluation failure, corrupted governance state or unavailable authenticator fails closed for consequential actions.
 - Security events and data disclosures are auditable without retaining unnecessary plaintext.
 
-## 33. Final planning status and owner gate
+## 33. Planning status and owner gate — corrected status record
 
-The initial planning specification now has a coherent engineering baseline covering mission, owner decisions, architecture, domain ownership, persistence, initial DDL, event delivery, C++/Python contracts, artifact lifecycle, authorization, encryption, recovery, deletion, testing, dependencies, device constraints and roadmap.
+This specification contains a substantial proposed engineering baseline. The presence of the sections below does not mean the corresponding planning layers are complete or verified. The later builder audit identified remaining design work, particularly the Android environment/capability architecture, cognitive mechanism contracts, architecture-wide consistency, and reconciliation of competing work-package roadmaps.
 
-**Planning deliverables status**
+**Status vocabulary:** SPECIFIED means documented; REVIEWED means consistency-checked; VALIDATED means tested against executable schemas, tools or measured environments; IMPLEMENTED means present in code; VERIFIED means acceptance evidence demonstrates the requirement. These states must not be conflated.
 
-- [x] Mission, non-goals and owner decisions consolidated.
-- [x] Architecture layers, module responsibilities and dependency direction defined.
-- [x] Persistence domains and initial DDL baseline documented.
-- [x] Migration, cross-store consistency and recovery protocols defined.
-- [x] Event envelope and worker contract requirements defined.
-- [x] Artifact lifecycle, encryption and key-management baseline defined.
-- [x] Authorization classes, owner authentication and approval binding defined.
-- [x] Privacy, retention, deletion and sync rules defined.
-- [x] Test catalogue, learning proof standard and device benchmark plan defined.
-- [x] Dependency/licensing review criteria and implementation roadmap defined.
-- [ ] Exact third-party dependency versions and license inventory verified against selected releases.
-- [ ] Target-device SQLite/crypto/runtime capabilities measured and recorded.
-- [ ] Full DDL executed against the selected SQLite version; migrations, constraints and fault tests pass.
-- [ ] Security threat model and residual risks reviewed against actual implementation choices.
-- [ ] Owner review and explicit approval to begin implementation.
+| Area | Current honest status |
+| --- | --- |
+| Mission, non-goals and owner decisions | SPECIFIED; consistency audit in progress |
+| Architecture and module responsibilities | SPECIFIED at logical level; mechanism/interface completeness in progress |
+| Android environment/capability architecture | IN PROGRESS; general discovery and learning architecture not yet complete |
+| Database entities and initial DDL | Drafted; execution and target-runtime validation outstanding |
+| Event/worker contracts | Semantics specified; complete executable schemas/fixtures and component traceability outstanding |
+| Cross-store transaction/recovery | Protocol specified; fault-injection validation outstanding |
+| Artifact registry | Design specified; implementation outstanding |
+| Authorization/risk/privacy | Policy model specified; platform authenticator and enforcement validation outstanding |
+| Key management/threat model | Requirements specified; platform-specific design and review outstanding |
+| Deletion/backup/sync | Lifecycle specified; restore/offline-device tests outstanding |
+| Test catalogue/milestone acceptance | Catalogue specified; executable fixtures/tests outstanding |
+| Dependencies/licenses | Review criteria specified; actual SBOM/license audit outstanding |
+| Device performance | Basic inference only; benchmark outstanding |
+| Work packages/roadmap | Multiple proposals exist; canonical dependency-driven roadmap reconciliation outstanding |
+| Architecture-wide consistency | IN PROGRESS |
+| Implementation | Not started; not authorized |
 
-**Interpretation:** The design/planning work is consolidated to the point where the remaining unchecked items are validation against concrete versions, hardware and security implementation—not another round of abstract architecture brainstorming. They cannot honestly be marked complete without running code, checking current dependency licenses and measuring the target device. Those activities belong at the implementation-readiness validation gate and must not be represented as already passed.
+The previous checklist's checked boxes represented that text had been drafted, not that planning layers were complete or verified. They are intentionally replaced by explicit evidence statuses.
 
-**Implementation remains blocked** until the owner explicitly approves the specification and roadmap. Once approved, start WP-00 and WP-01; do not reopen settled product decisions without evidence.
+**Planning exit is not declared.** The builder must finish the remaining design and consistency work recorded in the planning completion register. External validation, independent review of the exact final revision and explicit owner approval remain separate gates. Implementation remains blocked until the owner authorizes the transition.
 
 ## Change log — final planning consolidation
 
@@ -1830,3 +1833,5 @@ The initial planning specification now has a coherent engineering baseline cover
 - Consolidated privacy/security defaults and explicit fail-closed behaviour.
 - Marked planning design deliverables complete while retaining evidence-dependent validation and owner approval as explicit gates.
 - No implementation code, database migration, device configuration or repository changes were performed by this planning update.
+
+- 2026-11-11: Corrected the former planning checklist: checked boxes had indicated documented sections, not verified completion. Replaced the implied completion claim with explicit specified/reviewed/validated/implemented/verified status and linked the builder-owned planning completion register.
