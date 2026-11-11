@@ -4864,6 +4864,328 @@
           "format": "date-time"
         }
       }
+    },
+    "queryResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query_id",
+        "query_type",
+        "query_version",
+        "result_schema_version",
+        "results",
+        "consistency",
+        "observed_at",
+        "has_more"
+      ],
+      "properties": {
+        "query_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "query_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "query_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "result_schema_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "consistency": {
+          "enum": [
+            "snapshot",
+            "eventual",
+            "local_committed"
+          ]
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "diagnostics_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "permissionRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "permission_id",
+        "owner_id",
+        "capability_ref",
+        "target_scope",
+        "status",
+        "policy_version_ref",
+        "created_at"
+      ],
+      "properties": {
+        "permission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "capability_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_scope": {
+          "type": "object"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "revoked",
+            "expired",
+            "denied"
+          ]
+        },
+        "policy_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "granted_by": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approval_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revoked_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "auditRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "audit_id",
+        "owner_id",
+        "actor_identity",
+        "action_type",
+        "target_ref",
+        "decision",
+        "policy_version_ref",
+        "evidence_refs",
+        "occurred_at",
+        "correlation_id"
+      ],
+      "properties": {
+        "audit_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "enum": [
+            "allowed",
+            "denied",
+            "approved",
+            "revoked",
+            "disclosed",
+            "updated",
+            "reconciled"
+          ]
+        },
+        "policy_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approval_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "correlation_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "taskRunStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_run_id",
+        "task_definition_ref",
+        "state",
+        "priority",
+        "budget",
+        "checkpoint_refs",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "task_run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "task_definition_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "enum": [
+            "queued",
+            "running",
+            "paused",
+            "completed",
+            "failed",
+            "cancelled",
+            "blocked",
+            "lost"
+          ]
+        },
+        "priority": {
+          "type": "number"
+        },
+        "budget": {
+          "type": "object"
+        },
+        "checkpoint_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "failure_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
     }
   }
 }
