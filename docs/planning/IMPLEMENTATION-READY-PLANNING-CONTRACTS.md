@@ -450,7 +450,7 @@ These tests protect the governing architecture rule: mechanisms are engineered; 
 - NHC-008: repeated successful actions cannot weaken permission checks, risk classification, approval requirements or owner authority.
 
 ### 10.2 Cognitive-cycle integration tests
-- CM-001 through CM-020: execute the cognitive mechanism and interaction scenarios defined in [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). Preserve the exact scenario IDs, fixtures and negative controls.
+- CM-001 through CM-021: execute the cognitive mechanism and interaction scenarios defined in [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). Preserve the exact scenario IDs, fixtures and negative controls.
 - AD-001 through AD-015: execute the Android environment/capability discovery scenarios defined in [Android Environment and Capability Architecture](../architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md). These test general mechanisms, not a fixed operation catalogue.
 - CG-001: observation is stored with provenance and source.
 - CG-002: representation/context link to source experience.
@@ -492,6 +492,8 @@ These tests protect the governing architecture rule: mechanisms are engineered; 
 - DB-013: canonical operation parameter digest and capability/policy/approval references remain bound to the exact operation.
 - DB-014: duplicate attempt delivery is idempotent; dispatch without receipt becomes uncertain and cannot be blindly retried.
 - DB-015: learning-update details require evidence and baseline/evaluation references before acceptance; artifact lineage and rollback references remain resolvable.
+- DB-016: task checkpoint detail binds the checkpoint to a plan/version, context version, capability epoch and dependency-state digest; stale or mismatched checkpoints cannot resume silently.
+- DB-017: after restart, historical attention-allocation events are not restored as current truth; allocation is recomputed from current goals, tasks, context, permissions and resources.
 - ART-001: artifact checksum and byte size are verified before metadata becomes available.
 - ART-002: artifact lineage rejects self-reference and application validation rejects cycles.
 - ART-003: deleting a source artifact processes derived lineage, indexes and backup/sync state.
