@@ -163,3 +163,10 @@ The following cannot honestly be closed by writing a specification:
 These are evidence, owner-decision and implementation gates, not author documentation tasks. They remain open until evidence is attached or the owner explicitly approves a staged validation plan. The independent reviewer should still challenge the entire proposal, but should not be tasked with discovering these already-known omissions as if the author had not addressed them.
 
 **Updated author-side status:** The known design-level planning omissions have been specified in the companion supplement. The initial planning stage is not yet closed because the evidence gates, owner decisions, independent review and final owner approval remain outstanding.
+
+
+## 8. Repository foundation cross-check
+
+During the follow-up pass, WP-00 PR #1 was rechecked rather than left as an unverified blocker. Its latest known GitHub Actions run for commit `913e5626211b76776e70c8c5beef6aae00bf4365` is run [43052743168](https://github.com/methaneex-oss/AURIONS/actions/runs/43052743168), conclusion **success**. The `Configure, build, and test` job completed its toolchain report, configure, build and test steps successfully.
+
+This is hosted CI evidence only. It does not establish a clean local build, Termux/ARM64 build, target-device behaviour or approval to merge. PR #1 remains open, draft and unmerged; its scope remains foundation scaffolding only. Reconcile it with the planning-approved work-package sequence before any implementation transition.
