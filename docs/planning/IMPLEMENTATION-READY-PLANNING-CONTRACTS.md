@@ -126,7 +126,7 @@ Initial query families: `environment.inspect`, `capability.search`, `capability.
 
 ### 4.2.1 Initial command payload registry
 
-The machine-readable [command/query registry](../../schemas/command-query-registry.v1.json), governed by `schemas/command-query-registry.v1.schema.json`, is the canonical versioned inventory. It records 43 command envelope and request-payload mappings, two device commands deferred to the later multi-device phase, and 21 query envelope, input and result mappings. Every entry is explicitly non-dispatchable while any required handler binding is unresolved. The tables below remain the human-readable payload crosswalk; they do not authorize runtime registration.
+The machine-readable [command/query registry](../../schemas/command-query-registry.v1.json), governed by `schemas/command-query-registry.v1.schema.json`, is the canonical versioned inventory. It records 45 command-envelope references (43 with request-payload mappings and two device commands deferred to the later multi-device phase) and 21 query-envelope, input and result mappings. Every entry is explicitly non-dispatchable while any required handler binding is unresolved. The tables below remain the human-readable payload crosswalk; they do not authorize runtime registration.
 
 The following table binds the initial command families to request-body schemas. The registry is extensible; it is not a closed list of behaviours or Android capabilities. Command handlers MUST validate the body against the registered schema version before state mutation. The event emitted after a successful command remains a separate immutable event and must use the event-body mapping in Section 4.3.
 
