@@ -408,6 +408,21 @@ The first usable local release is accepted only when:
 11. Data export/deletion and backup restore behave according to documented policy.
 12. Test suite, build revision, environment and evidence artifacts are reproducible.
 
+### 10.6 No-hardcoding and capability extensibility tests
+
+These tests protect the foundational rule that mechanisms are engineered while behaviours and capability knowledge are discovered or acquired from evidence. They do not prohibit deterministic safety constraints, schemas, protocols, type checks, resource limits or governance enforcement.
+
+- **NHC-001 — New provider without planner patch:** introduce a schema-compatible provider and capability descriptor fixture; the generic discovery/registry/planning path can represent and consider it without adding a task-specific branch or changing the cognitive core.
+- **NHC-002 — Environment-dependent candidate generation:** hold the objective constant while changing the discovered environment/capability evidence; candidate means and feasibility must respond to the evidence rather than a fixed objective-to-operation mapping.
+- **NHC-003 — Unknown remains unknown:** remove required descriptor evidence or provide an unsupported major schema version; the system must not infer an interface, permission, precondition or successful outcome.
+- **NHC-004 — Scoped evidence update:** capability success/failure updates only the supported device/provider/version/context scope; it must not become universal competence or prohibition without evaluation.
+- **NHC-005 — Learned update cannot alter authority:** apply a candidate capability/strategy update and verify that permission, risk, approval, owner authority and execution-gateway checks remain unchanged.
+- **NHC-006 — No fixed stimulus-response substitute:** review fixtures and implementation paths for developer-authored stimulus-to-emotion/action, success/failure-to-reward, or task-to-action mappings presented as learned cognition; reject any such path unless it is an explicitly approved deterministic safety invariant.
+- **NHC-007 — New capability regression:** add a compatible capability descriptor after the planner and core are built; the system must process it through generic contracts without recompiling a task catalogue or adding a task-specific dispatch branch.
+- **NHC-008 — Evidence-based strategy adaptation:** after a scoped strategy update passes its evaluation gate, a later related task must show the expected change; related unseen variations and unrelated regression controls must be included.
+
+NHC-006 requires architecture/code review plus targeted static searches and behavioural fixtures; a text search alone is not proof of absence. Record inspected paths, exceptions, reviewer, revision and evidence. NHC-001…NHC-008 are required planning acceptance tests and remain unvalidated until executed against implementation.
+
 ## 11. Threat model and security validation
 
 ### 11.1 Assets
