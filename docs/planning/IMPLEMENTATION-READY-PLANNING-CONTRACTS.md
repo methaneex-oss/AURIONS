@@ -178,7 +178,13 @@ Every event body MUST validate against exactly one versioned payload schema befo
 
 Payload definitions are in `schemas/domain-payloads.v1.schema.json`. The common envelope is in `schemas/message-envelope.v1.schema.json`; capability descriptor bodies use `schemas/capability-descriptor-body.v1.schema.json`. Event-to-payload binding MUST be enforced by the event validator, not by a model-authored type claim. Any new event requires a new explicit mapping and compatible schema/fixture before it can be published.
 
-Events are append-only facts. Corrections are new compensating events with causation links; do not rewrite history to conceal a prior outcome.
+Events are append-only facts. Each durable append receives an `event_sequence` from the receiving event store inside the same local transaction as the event record; producers never supply or predict it. The sequence is monotonically increasing and unique within that one event store, not a global cross-device order. Consumers persist `last_sequence` only after the corresponding state change and event receipt are committed. Duplicate `message_id` with identical content is acknowledged without a second append; the same ID with a different payload digest is a protocol-integrity error. Corrections are new compensating events with causation links; do not rewrite history to conceal a prior outcome.
+
+Event-stream acceptance checks:
+- **EV-001:** concurrent appends receive unique, monotonically increasing local sequences; a crash cannot expose a committed consumer cursor beyond committed event/receipt state.
+- **EV-002:** duplicate message ID with identical digest does not create a second event or apply twice; same ID with a different digest is rejected and audited.
+- **EV-003:** consumer checkpoint advances only after its owning state change and receipt commit; restart resumes after the last committed sequence without skipping or replaying side effects.
+- **EV-004:** timestamps are not used as the sole ordering mechanism; causation/correlation and domain revisions are retained, and no global order is inferred across independent event stores.
 
 ## 4.4 Canonical environment and capability payload contracts
 
