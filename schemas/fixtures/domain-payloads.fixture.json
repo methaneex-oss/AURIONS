@@ -1,0 +1,213 @@
+{
+  "experienceObserved": {
+    "experience_id": "10000000-0000-4000-8000-000000000001",
+    "source_type": "user_input",
+    "observed_at": "2026-11-11T08:00:00Z",
+    "recorded_at": "2026-11-11T08:00:01Z",
+    "content_ref": "artifact:experience:1",
+    "sensitivity": 1,
+    "provenance": {
+      "source_ref": "owner-session:1",
+      "source_kind": "authenticated_owner_input",
+      "actor_ref": "owner:primary",
+      "device_ref": "device:mobile",
+      "external_origin": false
+    },
+    "capture_method": "cli-input",
+    "capture_limitations": [],
+    "retention_class": "durable"
+  },
+  "representationCreated": {
+    "representation_id": "20000000-0000-4000-8000-000000000001",
+    "experience_id": "10000000-0000-4000-8000-000000000001",
+    "representation_type": "semantic_interpretation",
+    "method_id": "representation.pipeline",
+    "method_version": "1.0",
+    "content": {
+      "summary": "Owner supplied a bounded objective."
+    },
+    "uncertainty": {
+      "confidence": 0.9,
+      "limitations": []
+    },
+    "source_refs": [
+      "artifact:experience:1"
+    ],
+    "created_at": "2026-11-11T08:00:02Z"
+  },
+  "contextSnapshot": {
+    "context_id": "30000000-0000-4000-8000-000000000001",
+    "version": 1,
+    "scope": "task:initial",
+    "valid_from": "2026-11-11T08:00:02Z",
+    "valid_until": null,
+    "attributes": {
+      "objective": "inspect current environment"
+    },
+    "provenance_refs": [
+      "artifact:experience:1"
+    ],
+    "uncertainty": {
+      "unknowns": [
+        "available capabilities"
+      ]
+    },
+    "created_at": "2026-11-11T08:00:02Z"
+  },
+  "beliefRevision": {
+    "belief_id": "40000000-0000-4000-8000-000000000001",
+    "knowledge_id": "41000000-0000-4000-8000-000000000001",
+    "revision_id": "42000000-0000-4000-8000-000000000001",
+    "revision_number": 1,
+    "epistemic_status": "provisional",
+    "confidence": 0.5,
+    "revision_reason": "Initial evidence is incomplete.",
+    "evidence_refs": [
+      {
+        "evidence_id": "43000000-0000-4000-8000-000000000001",
+        "stance": "supports",
+        "relevance": 0.5
+      }
+    ],
+    "created_at": "2026-11-11T08:00:03Z"
+  },
+  "predictionCreated": {
+    "prediction_id": "50000000-0000-4000-8000-000000000001",
+    "subject_ref": "task:initial",
+    "expected_outcome": {
+      "state": "objective_completed"
+    },
+    "evaluation_criteria": {
+      "required_evidence": [
+        "completion_receipt"
+      ]
+    },
+    "conditions": {
+      "network": "offline"
+    },
+    "horizon": {
+      "deadline": "2026-11-11T09:00:00Z"
+    },
+    "confidence": 0.6,
+    "evidence_refs": [
+      "belief:40000000-0000-4000-8000-000000000001"
+    ],
+    "created_at": "2026-11-11T08:00:04Z"
+  },
+  "planStepContract": {
+    "step_id": "60000000-0000-4000-8000-000000000001",
+    "plan_id": "61000000-0000-4000-8000-000000000001",
+    "plan_version": 1,
+    "sequence": 0,
+    "step_role": "environment_observation",
+    "role_schema_version": "1.0",
+    "intent": "Discover currently available environment interfaces.",
+    "capability_ref": null,
+    "input_binding": {
+      "scope": "local"
+    },
+    "preconditions": {
+      "owner_session": "authenticated"
+    },
+    "expected_effects": {
+      "observation_records": "created"
+    },
+    "resource_budget": {
+      "deadline_ms": 10000
+    },
+    "dependencies": [],
+    "verification_contract": {
+      "evidence": "observation_receipt"
+    },
+    "stop_conditions": {
+      "permission_missing": "defer"
+    },
+    "status": "pending"
+  },
+  "operationProposal": {
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "actor_identity": "runtime:mobile",
+    "device_id": "71000000-0000-4000-8000-000000000001",
+    "origin_goal_id": null,
+    "origin_plan_id": "61000000-0000-4000-8000-000000000001",
+    "origin_step_id": "60000000-0000-4000-8000-000000000001",
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "target_ref": "resource:example",
+    "canonical_parameters_artifact_id": "72000000-0000-4000-8000-000000000001",
+    "parameter_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "expected_effects_ref": "artifact:expected-effects:1",
+    "sensitivity": 1,
+    "data_categories": [
+      "non_sensitive_metadata"
+    ],
+    "risk_class": "R0",
+    "policy_version_ref": "policy:1",
+    "approval_request_id": null,
+    "deadline": "2026-11-11T08:10:00Z",
+    "resource_budget": {
+      "duration_ms": 5000
+    },
+    "idempotency_key": "operation:70000000-attempt-1",
+    "canonicalization_version": "1.0",
+    "created_at": "2026-11-11T08:00:05Z"
+  },
+  "operationAttemptReceipt": {
+    "attempt_id": "73000000-0000-4000-8000-000000000001",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "attempt_number": 1,
+    "state": "prepared",
+    "idempotency_key": "operation:70000000-attempt-1",
+    "dispatched_at": null,
+    "finished_at": null,
+    "provider_receipt_ref": null,
+    "reported_effects_ref": null,
+    "verification_evidence_ref": null,
+    "error_ref": null,
+    "uncertainty_reason": null,
+    "reconciled_at": null
+  },
+  "outcomeEvaluation": {
+    "outcome_evaluation_id": "80000000-0000-4000-8000-000000000001",
+    "prediction_ref": "50000000-0000-4000-8000-000000000001",
+    "plan_ref": "61000000-0000-4000-8000-000000000001",
+    "operation_ref": "70000000-0000-4000-8000-000000000001",
+    "expected_outcome_ref": "artifact:expected:1",
+    "observed_outcome_ref": "artifact:observed:1",
+    "verification_sources": [
+      "receipt:1",
+      "observation:1"
+    ],
+    "result": "inconclusive",
+    "attribution_hypotheses": [],
+    "uncertainty": {
+      "reason": "Fixture has no real execution evidence."
+    },
+    "created_at": "2026-11-11T08:00:06Z"
+  },
+  "learningUpdate": {
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "target_mechanism": "capability_selection",
+    "update_kind": "capability_knowledge",
+    "hypothesis": {
+      "claim": "Capability precondition estimate should be revised."
+    },
+    "scope": {
+      "provider_id": "provider.example",
+      "device_id": "71000000-0000-4000-8000-000000000001"
+    },
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "baseline_artifact_ref": null,
+    "candidate_artifact_ref": null,
+    "evaluation_protocol_ref": null,
+    "metrics_ref": null,
+    "regression_results_ref": null,
+    "approval_ref": null,
+    "state": "proposed",
+    "rollback_ref": null,
+    "created_at": "2026-11-11T08:00:07Z"
+  }
+}
