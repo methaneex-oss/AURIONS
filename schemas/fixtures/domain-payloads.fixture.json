@@ -1158,5 +1158,68 @@
     },
     "invalidation_reason": null,
     "created_at": "2026-11-11T08:09:00Z"
+  },
+  "queryResponse": {
+    "query_id": "b0700000-0000-4000-8000-000000000001",
+    "query_type": "capability.search",
+    "query_version": "1.0",
+    "result_schema_version": "1.0",
+    "results": [
+      {
+        "capability_id": "provider.example.capability",
+        "descriptor_version": 1
+      }
+    ],
+    "consistency": "local_committed",
+    "observed_at": "2026-11-11T08:10:00Z",
+    "next_cursor": null,
+    "has_more": false,
+    "diagnostics_ref": null
+  },
+  "permissionRecord": {
+    "permission_id": "b1300000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "capability_ref": "provider.example.capability",
+    "target_scope": {
+      "device_ref": "device:local"
+    },
+    "status": "active",
+    "policy_version_ref": "policy:1",
+    "granted_by": "owner:primary",
+    "approval_ref": null,
+    "created_at": "2026-11-11T08:10:00Z",
+    "expires_at": null,
+    "revoked_at": null
+  },
+  "auditRecord": {
+    "audit_id": "b1400000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "actor_identity": "runtime:mobile",
+    "action_type": "operation.authorization.evaluated",
+    "target_ref": "operation:1",
+    "decision": "denied",
+    "policy_version_ref": "policy:1",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "approval_ref": null,
+    "evidence_refs": [
+      "evidence:1"
+    ],
+    "occurred_at": "2026-11-11T08:10:00Z",
+    "correlation_id": "b0600000-0000-4000-8000-000000000001"
+  },
+  "taskRunStatus": {
+    "task_run_id": "33000000-0000-4000-8000-000000000001",
+    "task_definition_ref": "task:definition:1",
+    "state": "paused",
+    "priority": 0.5,
+    "budget": {
+      "cpu_ms": 10000
+    },
+    "checkpoint_refs": [
+      "checkpoint:1"
+    ],
+    "created_at": "2026-11-11T08:00:00Z",
+    "updated_at": "2026-11-11T08:10:00Z",
+    "failure_ref": null
   }
 }
