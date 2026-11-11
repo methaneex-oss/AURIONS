@@ -3366,6 +3366,341 @@
           "minLength": 1
         }
       }
+    },
+    "commandEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command_id",
+        "command_version",
+        "owner_id",
+        "actor_identity",
+        "operation_id",
+        "issued_at",
+        "deadline",
+        "idempotency_key",
+        "requested_capability",
+        "payload",
+        "data_classification"
+      ],
+      "properties": {
+        "command_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "command_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requested_capability": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "type": "object"
+        },
+        "data_classification": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approval_reference": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "queryEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query_id",
+        "query_version",
+        "owner_id",
+        "actor_identity",
+        "scope",
+        "requested_at",
+        "deadline",
+        "consistency",
+        "query_payload",
+        "max_results"
+      ],
+      "properties": {
+        "query_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "query_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "object"
+        },
+        "requested_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "consistency": {
+          "enum": [
+            "snapshot",
+            "eventual",
+            "local_committed"
+          ]
+        },
+        "query_payload": {
+          "type": "object"
+        },
+        "max_results": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "commandResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command_id",
+        "status",
+        "responded_at"
+      ],
+      "properties": {
+        "command_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "pending",
+            "conflict",
+            "unsupported_version"
+          ]
+        },
+        "responded_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "operation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accepted_for_processing": {
+          "type": "boolean"
+        }
+      }
+    },
+    "contractError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "error_id",
+        "error_code",
+        "category",
+        "retryable",
+        "side_effect_state",
+        "occurred_at"
+      ],
+      "properties": {
+        "error_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "error_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "side_effect_state": {
+          "enum": [
+            "not_dispatched",
+            "dispatched",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "operation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retry_after_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "diagnostic_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "details": {
+          "type": "object"
+        }
+      }
+    },
+    "contractNegotiation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "negotiation_id",
+        "producer_id",
+        "consumer_id",
+        "supported_envelope_versions",
+        "supported_schema_versions",
+        "result",
+        "negotiated_at"
+      ],
+      "properties": {
+        "negotiation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "producer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consumer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supported_envelope_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "supported_schema_versions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "result": {
+          "enum": [
+            "accepted",
+            "rejected"
+          ]
+        },
+        "negotiated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "selected_envelope_version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rejection_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
     }
   }
 }
