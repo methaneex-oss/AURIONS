@@ -1000,7 +1000,7 @@ CREATE TABLE operations (
   origin_goal_id BLOB CHECK(origin_goal_id IS NULL OR length(origin_goal_id)=16),
   origin_plan_id BLOB CHECK(origin_plan_id IS NULL OR length(origin_plan_id)=16),
   state TEXT NOT NULL CHECK(state IN
-    ('created','prepared','authorized','running','succeeded','failed','cancel_requested','cancelled','uncertain','reconciling')),
+    ('created','validating','awaiting_approval','ready','dispatched','running','succeeded','failed','rejected','expired','revoked','cancel_requested','cancelled','uncertain','reconciling','compensation_required','compensating','compensated','manual_intervention')),
   idempotency_key TEXT,
   created_at_ms INTEGER NOT NULL,
   updated_at_ms INTEGER NOT NULL,
@@ -1016,7 +1016,7 @@ CREATE TABLE operation_steps (
   step_number INTEGER NOT NULL CHECK(step_number>=0),
   action_id BLOB NOT NULL CHECK(length(action_id)=16),
   state TEXT NOT NULL CHECK(state IN
-    ('pending','authorized','running','succeeded','failed','uncertain','compensated','cancelled')),
+    ('pending','validating','awaiting_approval','ready','dispatched','authorized','running','succeeded','failed','rejected','expired','revoked','cancel_requested','cancelled','uncertain','reconciling','compensation_required','compensating','compensated','manual_intervention')),
   attempt_count INTEGER NOT NULL DEFAULT 0 CHECK(attempt_count>=0),
   result_ref TEXT,
   updated_at_ms INTEGER NOT NULL,
@@ -1398,7 +1398,7 @@ CREATE TABLE outcome_evaluations (
   outcome_evaluation_id BLOB PRIMARY KEY CHECK(length(outcome_evaluation_id)=16),
   prediction_id BLOB REFERENCES predictions(prediction_id),
   plan_id BLOB REFERENCES plans(plan_id),
-  operation_id TEXT,
+  operation_id BLOB CHECK(operation_id IS NULL OR length(operation_id)=16),
   expected_outcome_ref TEXT,
   observed_outcome_ref TEXT NOT NULL,
   result TEXT NOT NULL CHECK(result IN
@@ -1446,6 +1446,108 @@ CREATE INDEX idx_evolution_state ON evolution_proposals(state,updated_at_ms);
 - Cross-store operation IDs and approval references are validated by application services; no cross-file foreign keys are introduced.
 
 This migration must be reconciled with the final component contracts and tested for index coverage, JSON schema validation, retention/deletion, migrations and crash recovery before implementation. Application-level invariants still include descriptor JSON schema validation, exact evidence ownership, decision-to-plan/goal consistency, capability relationship validity, and the rule that no descriptor status or learned knowledge grants authority. The migration's CHECK constraints are necessary but not sufficient.
+
+
+### 26.5.2 Plan execution and operation-evidence contract extension — proposed migration
+
+The cross-document contract audit identified that the cognitive plan contract and operation lifecycle require more structured durable state than the initial DDL currently provides. The following additions are proposed before any migration is executed. They are additive and keep capability descriptions separate from authority.
+
+**Memory database — proposed migration v3**
+
+```sql
+CREATE TABLE plan_step_contracts (
+  step_id BLOB PRIMARY KEY REFERENCES plan_steps(step_id),
+  capability_id TEXT,
+  descriptor_version INTEGER,
+  input_binding_json TEXT NOT NULL CHECK(json_valid(input_binding_json)),
+  preconditions_json TEXT NOT NULL CHECK(json_valid(preconditions_json)),
+  expected_effects_json TEXT NOT NULL CHECK(json_valid(expected_effects_json)),
+  resource_budget_json TEXT NOT NULL CHECK(json_valid(resource_budget_json)),
+  verification_contract_json TEXT NOT NULL CHECK(json_valid(verification_contract_json)),
+  stop_conditions_json TEXT NOT NULL CHECK(json_valid(stop_conditions_json)),
+  stale_input_digest TEXT NOT NULL,
+  contract_version TEXT NOT NULL,
+  created_at_ms INTEGER NOT NULL,
+  CHECK((capability_id IS NULL)=(descriptor_version IS NULL)),
+  FOREIGN KEY(capability_id,descriptor_version)
+    REFERENCES capability_descriptors(capability_id,descriptor_version)
+) STRICT;
+CREATE INDEX idx_plan_step_capability
+  ON plan_step_contracts(capability_id,descriptor_version)
+  WHERE capability_id IS NOT NULL;
+
+CREATE TABLE learning_update_details (
+  learning_update_id BLOB PRIMARY KEY
+    REFERENCES learning_updates(learning_update_id),
+  update_kind TEXT NOT NULL CHECK(update_kind IN
+    ('episodic_acquisition','belief_revision','capability_knowledge',
+     'strategy_mechanism','model_training','architecture_evolution')),
+  hypothesis_json TEXT NOT NULL CHECK(json_valid(hypothesis_json)),
+  scope_json TEXT NOT NULL CHECK(json_valid(scope_json)),
+  evidence_refs_json TEXT NOT NULL CHECK(json_valid(evidence_refs_json)),
+  baseline_artifact_id BLOB REFERENCES artifacts(artifact_id),
+  candidate_artifact_id BLOB REFERENCES artifacts(artifact_id),
+  evaluation_protocol_artifact_id BLOB REFERENCES artifacts(artifact_id),
+  metrics_artifact_id BLOB REFERENCES artifacts(artifact_id),
+  regression_artifact_id BLOB REFERENCES artifacts(artifact_id),
+  rollback_ref TEXT,
+  approval_ref TEXT,
+  created_at_ms INTEGER NOT NULL
+) STRICT;
+```
+
+A plan step that does not invoke an environment capability may leave `capability_id` and `descriptor_version` NULL; it still declares typed inputs, preconditions, expected effects, budgets, verification and stop conditions. The legacy `plan_steps.action_id` is not a capability identity and must not be used as a substitute for the versioned capability reference. Capability reference is not permission or approval.
+
+**Event/recovery database — proposed migration v2**
+
+```sql
+CREATE TABLE operation_details (
+  operation_id BLOB PRIMARY KEY REFERENCES operations(operation_id),
+  capability_id TEXT NOT NULL,
+  descriptor_version INTEGER NOT NULL,
+  target_ref TEXT NOT NULL,
+  canonical_parameters_json TEXT NOT NULL CHECK(json_valid(canonical_parameters_json)),
+  parameter_digest TEXT NOT NULL,
+  expected_effects_json TEXT NOT NULL CHECK(json_valid(expected_effects_json)),
+  data_categories_json TEXT NOT NULL CHECK(json_valid(data_categories_json)),
+  risk_class TEXT NOT NULL CHECK(risk_class IN ('R0','R1','R2','R3','R4','R5')),
+  policy_version_ref TEXT NOT NULL,
+  approval_request_id BLOB,
+  deadline_at_ms INTEGER,
+  resource_budget_json TEXT NOT NULL CHECK(json_valid(resource_budget_json)),
+  canonicalization_version TEXT NOT NULL,
+  created_at_ms INTEGER NOT NULL
+) STRICT;
+
+CREATE TABLE operation_attempts (
+  attempt_id BLOB PRIMARY KEY CHECK(length(attempt_id)=16),
+  operation_id BLOB NOT NULL REFERENCES operations(operation_id),
+  attempt_number INTEGER NOT NULL CHECK(attempt_number>0),
+  state TEXT NOT NULL CHECK(state IN
+    ('prepared','dispatched','running','succeeded','failed','uncertain',
+     'reconciling','compensation_required','compensating','compensated',
+     'manual_intervention','cancelled')),
+  idempotency_key TEXT NOT NULL,
+  dispatched_at_ms INTEGER,
+  finished_at_ms INTEGER,
+  provider_receipt_ref TEXT,
+  reported_effects_json TEXT CHECK(reported_effects_json IS NULL OR json_valid(reported_effects_json)),
+  verification_evidence_ref TEXT,
+  error_ref TEXT,
+  uncertainty_reason TEXT,
+  reconciled_at_ms INTEGER,
+  UNIQUE(operation_id,attempt_number),
+  UNIQUE(operation_id,idempotency_key)
+) STRICT;
+CREATE INDEX idx_operation_attempt_state
+  ON operation_attempts(state,dispatched_at_ms);
+```
+
+The expanded `operations.state` and `operation_steps.state` values in the proposed base DDL are the canonical durable lifecycle projection. The operation-attempt table records each dispatch attempt and its receipt/verification evidence. State transitions remain governed by Section 7.1; SQL CHECK constraints restrict values but do not enforce the transition graph. The command handler must atomically append the lifecycle event and update the owning projection in one `aurion_events.db` transaction.
+
+Cross-store capability descriptor and approval references are validated by application services against the current memory and governance stores immediately before dispatch. No cross-file foreign keys are introduced.
+
+These additions close a specification mismatch only. They have not been executed, benchmarked or validated against the target SQLite build. They require migration fixtures for fresh install, upgrade, interruption, invalid references, duplicate attempts, uncertain dispatch, recovery and rollback.
 
 ### 26.6 Migration protocol
 
