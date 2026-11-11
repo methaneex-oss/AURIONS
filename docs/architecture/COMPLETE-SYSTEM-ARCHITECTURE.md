@@ -175,10 +175,10 @@ These are sources of capability inspiration, not templates to copy blindly and n
 |---|---|---|
 | Conversation and contextual recall | Durable experiences, memory retrieval, provenance-aware context | First usable local release |
 | Reasoning and task planning | Goals, bounded plans, progress and explicit task state | First usable local release, bounded scope |
-| Tool/device operation | Capability registry, action gateway, verification and receipts | First usable local release: one narrow permitted action |
+| Tool/device operation | Environment/capability discovery, capability knowledge, governed action gateway, verification and receipts | First usable local release: prove the general mechanisms with an owner-approved narrow scenario |
 | Proactive assistance | Persistent scheduler, triggers, budgets and notifications | Later, after reliable task lifecycle and permissions |
 | Voice interaction | ASR/TTS adapters and interruption-aware interface | Later; text-first core remains usable |
-| Cross-device access | Android/desktop clients and device identity | Android client after core contracts; desktop thereafter |
+| Cross-device access | Android/desktop clients and device identity | Android native UI after core contracts; the first user-facing interface remains CLI |
 | Cross-device continuity | Task handoff, selected memory sync, conflict/deletion handling | Later, after single-device persistence and security |
 | External resource use | Search, APIs, remote models and compute under policy | Incremental, provider-specific permissions |
 | Sensor/multimodal awareness | Permissioned image/audio/device observations | Later, each modality independently validated |
@@ -191,12 +191,12 @@ These are sources of capability inspiration, not templates to copy blindly and n
 Reproducible repository/build, stable contracts, dependency inventory, test harness and validated target toolchain.
 
 ### First usable local release
-A usable CLI as the first user-facing interface; concurrent cloud operation and offline-capable mobile operation using shared versioned contracts and one authoritative cognitive architecture; model-independent inference; persistent conversation/experience; provenance-aware memory and retrieval; bounded task reasoning/planning; one narrowly scoped permitted action through the gateway; verified outcome persistence; restart recovery; offline operation; inspectable permissions and resource limits.
+A usable CLI as the first user-facing interface; concurrent cloud operation and offline-capable mobile operation using shared versioned contracts and one authoritative cognitive architecture; model-independent inference; persistent conversation/experience; provenance-aware memory and retrieval; bounded task reasoning/planning; environment/capability discovery; one narrowly scoped owner-approved permitted action through the gateway; verified outcome persistence; restart recovery; offline operation; inspectable permissions and resource limits. Offline mobile operation does not by itself select a native Android UI technology; the CLI remains the first user-facing interface and the mobile interface/topology must be validated.
 
 It must demonstrate that a recorded outcome changes later retrieval/reasoning in a repeatable test. Conversation history alone does not qualify as learning.
 
-### Personal device release
-Native Android UI, platform authentication/Keystore integration, notifications and voice adapters, lifecycle-safe local runtime integration, explicit capability permissions and operational diagnostics.
+### Personal device interface expansion
+A native Android UI may follow the first CLI interface, subject to platform validation. Android platform integration needed for the concurrent offline-mobile target is not deferred: its environment/capability discovery, permission, lifecycle and local execution mechanisms are first-release architecture requirements. Additional UI features, notifications and voice adapters can be added when separately validated.
 
 ### Multi-device release
 Authenticated device pairing/revocation, versioned communication contracts, selected-domain synchronization, offline queues, conflict resolution, deletion propagation, task handoff, end-to-end encryption and recovery tests.
@@ -221,23 +221,16 @@ These are dependency/evidence gates, not fixed developmental stages.
 
 ## 14. Revised planning and implementation sequence
 
-- **P-01 Product definition:** capability catalogue, user workflows, first usable release scope, non-goals and measurable acceptance criteria.
-- **P-02 System architecture:** component boundaries, ownership, dependency direction, deployment topology and failure model.
-- **P-03 Interface/API contracts:** commands, queries, events, operation lifecycle, UI/core and worker boundaries.
-- **P-04 Platform strategy:** Android integration spike, desktop UI comparison, CLI engineering interface.
-- **P-05 Data and synchronization design:** domain ownership, migrations, artifacts, device identity, replication and deletion semantics.
-- **P-06 Security and operations:** threat model, authenticator, keys, permissions, updates, observability and recovery.
-- **P-07 Evidence review:** dependency/license inventory, target-device measurements, schema execution and fault/security tests as applicable.
-- **P-08 Consistency review and owner approval:** resolve contradictions, update work packages and obtain explicit approval.
-- **I-00/I-01 only after approval:** foundation/build and shared contracts, revised to match accepted architecture.
-- Subsequent implementation proceeds through persistence, runtime, inference, experience, memory, knowledge, cognition, goals, action, learning and platform/device capabilities in dependency order, each gated by executable tests.
+The former P-01…P-08 and I-00/I-01 sequence is a historical planning outline. The active dependency-driven work-package proposal is [Canonical Implementation Roadmap](../planning/CANONICAL-IMPLEMENTATION-ROADMAP.md). It reconciles the original WP table, the later technical-contract table, the CLI first-interface decision and concurrent cloud/offline-mobile first-release direction.
 
-The existing draft WP-00 PR is not approved for merge merely because it exists. Its scaffold must be reconciled with the approved product definition, target deployment model and revised roadmap first.
+The roadmap is still IN PROGRESS and requires architecture/contract owner mapping and consistency verification. It is not implementation authorization.
 
 ## 15. Architecture acceptance criteria
 
 The architecture is ready for consistency review only when:
-- Every capability has an owning component and explicit interface.
+- Every capability-discovery, representation, knowledge, planning, authorization, execution, verification and learning responsibility has an owning component and explicit interface.
+- Newly discovered capabilities can be represented and used through versioned descriptors without adding fixed task-to-action mappings to the cognitive core.
+- Android capability discovery respects public platform interfaces, current grants and OS restrictions; discovery never implies permission or authorization.
 - UI clients cannot bypass core policy or mutate cognitive state directly.
 - Device agents expose narrow, revocable capabilities with execution-time checks.
 - Local-first operation and remote-service failure behaviour are defined.
@@ -247,7 +240,8 @@ The architecture is ready for consistency review only when:
 - First usable release is testable and does not claim learning from conversation history alone.
 - Technology choices are labelled accepted, recommended, deferred or unresolved.
 - Dependencies, security implications, failure modes, recovery behaviour and test evidence are identified.
-- Product scope, architecture and roadmap are consistent with the existing owner decision register.
+- Product scope, architecture and canonical roadmap are consistent with the existing owner decision register.
+- The no-hardcoding invariant is traceable through architecture, capability contracts, cognitive mechanisms and acceptance tests.
 
 
 
@@ -341,3 +335,5 @@ The architecture proposal can be sent for independent review after the author-si
 The companion [Implementation-Ready Planning Contracts](../planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md) now specifies the previously enumerated design-level gaps: component ownership and dependency rules; versioned command/query/event envelopes; C++/Python worker protocol; authorization and exact-operation approval; operation state machine and crash recovery; SQLite transaction/outbox patterns; synchronization, conflict and deletion semantics; test catalogue; threat model and key lifecycle; dependency/device validation procedures; and work-package dependencies.
 
 The supplement is a proposed engineering baseline, not proof of implementation or validation. Its Section 15 separates specified design from empirical evidence gates and owner-reserved decisions. The architecture remains unapproved for implementation until those gates are satisfied or explicitly staged/accepted by the owner, the independent review is complete, and the owner authorizes transition.
+
+- Added a dedicated Android environment/capability architecture and reconciled the implementation sequence to the canonical roadmap; this does not close planning or validation gates.
