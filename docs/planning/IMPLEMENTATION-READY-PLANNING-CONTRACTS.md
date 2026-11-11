@@ -2,7 +2,7 @@
 
 **Status:** Author-prepared planning supplement; proposed until owner approval. This document closes the design gaps listed in the author-side review where they can be resolved without fabricating test evidence or making owner-reserved product decisions. It does not claim SQL execution, device measurements, dependency audit, penetration testing, or implementation.
 
-**Authority:** The imported owner decision register remains authoritative. Where this supplement adds detail, it is an engineering proposal. A proposal must not silently become an owner decision. The [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) is the canonical crosswalk for cognitive and Android capability state ownership, persistence, work-package and test mapping.
+**Authority:** The imported owner decision register remains authoritative. Where this supplement adds detail, it is an engineering proposal. A proposal must not silently become an owner decision. The [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) is the canonical crosswalk for cognitive and Android capability state ownership, persistence, work-package and test mapping. The initial language-neutral JSON Schema source is `contracts/schemas/v1/domain-contracts.schema.json`; it defines the common message envelope and core experience, representation, context, belief, prediction, capability, plan-step, operation, outcome and learning payloads. It is an initial schema set, not yet the complete command/event contract corpus or a selected runtime validator.
 
 ## 1. Scope and completion semantics
 
@@ -437,6 +437,7 @@ Every test has stable ID, requirement link, fixture/version, preconditions, exac
 - CT-005: unsupported command returns stable error; no hidden side effect.
 - CT-006: query API performs no writes.
 - CT-007: dependency graph contains no forbidden cycles.
+- CT-008: canonical JSON Schema files parse and validate all positive/negative shared fixtures; C++ and Python consumers use the same versioned fixture corpus.
 
 ### 10.1.1 No-hardcoding regression tests
 These tests protect the governing architecture rule: mechanisms are engineered; behaviour and capability knowledge are acquired through experience. They do not prohibit explicit safety, schema, protocol or permission invariants.
