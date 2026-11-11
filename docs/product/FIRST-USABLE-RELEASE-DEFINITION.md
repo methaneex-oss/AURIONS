@@ -171,8 +171,9 @@ Numerical performance thresholds for latency, memory, storage and battery are in
 
 These items cannot be silently decided by the architecture author or implementation team:
 
-1. **First-release user interface:** CLI, Android-native UI or another thin client. CLI is a candidate engineering interface, not an owner-approved product decision.
-2. **First permitted action:** The exact local action, target and parameters must be selected and approved by the owner before implementation of the acceptance scenario.
+1. **First interface: OWNER DECISION — CLI.** The CLI is the first user-facing interface, not merely an engineering/debugging tool.
+2. **Deployment: OWNER DECISION — cloud and offline mobile concurrently.** The first-release plan must deliver cloud operation and an offline-capable mobile experience as concurrent first-class targets. Offline mobile operation must not depend on cloud availability. Both deployment contexts must use shared versioned application contracts and the authoritative cognitive core; they must not become separate intelligence implementations. The CLI deployment context(s) and exact cloud/mobile topology remain engineering details to validate, not permission to make cloud mandatory for offline use.
+3. **First permitted action:** The exact local action, target and parameters must be selected and approved by the owner before implementation of the acceptance scenario.
 3. **Target-device performance thresholds:** Establish after repeatable baseline measurements.
 4. **Specific inference model/runtime configuration:** Preserve model independence and validate actual device feasibility; existing basic inference is not sufficient performance evidence.
 5. **Any additional first-release capability:** Must be justified against the primary workflow and must not displace mandatory acceptance criteria.
@@ -184,7 +185,7 @@ The architecture/platform validation work should present evidence and trade-offs
 This product definition depends on the existing owner-approved engineering specification and architecture constraints. It must be reconciled with the API contracts, persistence/recovery design, platform strategy, security/operations design and evidence review.
 
 No implementation work package is authorized by this proposal. Before implementation:
-- The owner must approve this product definition and resolve the owner decisions above.
+- The owner must approve this product definition. The first interface and concurrent cloud/offline-mobile direction are owner decisions; the exact first permitted local action remains unresolved.
 - The architecture and contracts must be reconciled with it.
 - Required security, persistence, recovery and learning-evaluation criteria must be testable.
 - The owner must explicitly approve the planning exit.
