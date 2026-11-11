@@ -1,6 +1,6 @@
 # WP-00 — Foundation and Build System
 
-**Status:** Initial scaffold committed to the WP-00 working branch. Not yet validated by a local clean build or CI run.
+**Status:** Foundation scaffold proposal only. Hosted GitHub Actions configure/build/test passed for commit `913e5626211b76776e70c8c5beef6aae00bf4365` in [run 43052743168](https://github.com/methaneex-oss/AURIONS/actions/runs/43052743168). Local clean build and target-device validation remain outstanding. WP-00 is not accepted and implementation is not authorized.
 
 ## Scope
 
@@ -50,12 +50,17 @@ The version function is build scaffolding only. It is not an application runtime
 
 ## WP-00 exit evidence still required
 
-1. Clean configure/build/test on a fresh checkout.
-2. Green CI run for this branch.
-3. Reproducible build on the actual Termux target, with compiler/CMake versions recorded.
-4. Dependency and license inventory before adding external libraries.
-5. Confirmed project layout and build conventions.
+1. <badge>Hosted CI evidence: PASSED</badge> Configure/build/test completed successfully in the recorded GitHub Actions run.
+2. Fresh local host configure/build/test with reproducible toolchain versions: outstanding.
+3. Reproducible build on the actual Termux target, with compiler/CMake versions recorded: outstanding.
+4. Dependency and license inventory before adding external libraries: outstanding.
+5. Confirmed project layout and build conventions against the final approved canonical roadmap: outstanding.
 
 ## Change discipline
 
-Keep this work limited to foundation. Shared event/worker contracts belong to WP-01 and should be implemented only against the approved specification. Do not add dependencies merely to anticipate later work.
+Keep this work limited to foundation. Shared event/worker contracts belong to WP-01 in the current proposed roadmap and should be implemented only against the owner-approved planning baseline. See PR #2 and `docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md` once that planning baseline is merged. Do not add dependencies merely to anticipate later work.
+
+
+## Authority and merge status
+
+This PR remains a draft proposal. It must not be merged or treated as the start of implementation until PR #2's planning baseline is reconciled, independently reviewed and explicitly approved by the owner. After the planning baseline is accepted, rebase/reconcile this branch against the accepted base and recheck the changed files before merging.
