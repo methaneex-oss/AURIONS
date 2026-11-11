@@ -41,6 +41,19 @@ This roadmap supersedes the earlier work-package tables for future planning. His
 
 The cognitive mechanism specification is [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). The Android environment/capability specification is [Android Environment and Capability Architecture](../architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md). Their state ownership, persistence, contract families, work-package and verification mapping is tracked in the [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md). All three remain IN PROGRESS until the mapped contracts and tests are fully reconciled and verified.
 
+### 2.1 Deployment semantics that must not be conflated
+
+The owner-approved requirement is concurrent first-release availability of cloud operation and offline-capable mobile operation. It does not, by itself, specify a single shared live process, a cloud-dependent mobile client, automatic state replication or first-release multi-device synchronization.
+
+The architecture must distinguish:
+- **Shared implementation:** both deployment contexts use the same versioned contracts and authoritative cognitive-core implementation/semantics; they are not separate intelligence designs.
+- **Runtime authority:** each runtime must enforce policy at the boundary where an operation is executed. A remote planner cannot authorize a local Android action.
+- **Offline independence:** the mobile runtime must complete its required local workflows without a cloud connection.
+- **State ownership and continuity:** the authoritative location of user state, cloud/mobile continuity, conflict handling and whether any subset of data is synchronized must be explicitly specified before implementation. Do not infer that shared contracts mean shared live state.
+- **Synchronization scope:** the existing decision to defer multi-device synchronization remains distinct from the requirement to deliver cloud and offline-mobile operation concurrently. Any required first-release cross-context continuity must be stated explicitly and reconciled with that deferred scope.
+
+Until this topology and state-ownership contract is resolved, WP-15's dual-context exit criteria are not sufficiently precise for implementation authorization.
+
 ## 3. Dependency principles
 
 - Work packages describe dependency constraints, not a rigid serial waterfall. Independent tasks may proceed concurrently once their contracts and prerequisites are stable.
