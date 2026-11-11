@@ -498,8 +498,9 @@ These are specified proposals, not independently validated or owner-approved imp
 
 ### 15.3 Owner-reserved product decisions
 The following must not be guessed by the technical lead:
-1. First user-facing interface (CLI, Android-native or another client).
-2. Exact first permitted local action and its scope.
+1. ~~First user-facing interface (CLI, Android-native or another client).~~ **RESOLVED: CLI is the first user-facing interface.**
+2. **RESOLVED: cloud operation and offline-capable mobile operation are concurrent first-release targets.** Offline mobile must not require cloud connectivity; both contexts use shared versioned contracts and the authoritative cognitive core. Mobile UI technology and exact deployment topology remain subject to validation.
+3. Exact first permitted local action and its scope.
 3. Numeric performance/latency/resource thresholds after device baselines.
 4. Any change to protected authority, privacy, external disclosure or risk tolerance.
 
