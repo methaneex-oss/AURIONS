@@ -8,5 +8,6 @@
   "deadline": "2026-11-11T08:08:05Z",
   "consistency": "magical",
   "query_payload": {},
-  "max_results": 10
+  "max_results": 10,
+  "query_type": "capability.search"
 }
