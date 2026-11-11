@@ -54,6 +54,14 @@ The architecture must distinguish:
 
 Until this topology and state-ownership contract is resolved, PR-18 and WP-15's dual-context exit criteria are not sufficiently precise for implementation authorization.
 
+### 2.2 Dependency-graph audit
+
+The declared WP-00…WP-16 prerequisite edges were checked as a directed graph. The graph is acyclic; one valid topological ordering is:
+
+`WP-00 → WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12 → WP-13 → WP-14 → WP-15 → WP-16`
+
+This is a valid ordering, not a required serial schedule. Independent packages may proceed concurrently once their prerequisites and interfaces are stable (for example, WP-05 and WP-06 after their common prerequisites). WP-00 also has the separate external gate of planning-exit approval. The graph audit checks only dependency cycles; it does not prove that every package has complete component ownership, machine-readable contracts, executable acceptance fixtures or authorization to start.
+
 ## 3. Dependency principles
 
 - Work packages describe dependency constraints, not a rigid serial waterfall. Independent tasks may proceed concurrently once their contracts and prerequisites are stable.
