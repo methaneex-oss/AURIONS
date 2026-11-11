@@ -136,7 +136,7 @@ Every event includes the common envelope and an immutable event body. Initial ev
 - `appraisal.updated.v1`, `attention.allocated.v1`, `reasoning.hypothesis.proposed.v1`, `decision.recorded.v1`, `outcome.evaluated.v1`
 - `goal.created.v1`, `goal.revised.v1`, `plan.proposed.v1`, `plan.revised.v1`, `plan.checkpointed.v1`
 - `permission.evaluated.v1`, `approval.requested.v1`, `approval.decided.v1`
-- `operation.accepted.v1`, `operation.started.v1`, `operation.dispatched.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.rejected.v1`, `operation.uncertain.v1`, `operation.reconciling.v1`, `operation.reconciled.v1`, `operation.compensation_required.v1`, `operation.compensated.v1`, `operation.manual_intervention.v1`
+- `operation.proposed.v1`, `operation.validating.v1`, `operation.awaiting_approval.v1`, `operation.ready.v1`, `operation.dispatched.v1`, `operation.running.v1`, `operation.succeeded.v1`, `operation.failed.v1`, `operation.rejected.v1`, `operation.expired.v1`, `operation.revoked.v1`, `operation.cancel_requested.v1`, `operation.cancelled.v1`, `operation.uncertain.v1`, `operation.reconciling.v1`, `operation.reconciled.v1`, `operation.compensation_required.v1`, `operation.compensating.v1`, `operation.compensated.v1`, `operation.manual_intervention.v1`
 - `outcome.observed.v1`, `learning.update.proposed.v1`, `learning.update.accepted.v1`, `learning.experiment.completed.v1`
 - `self_model.updated.v1`, `evolution.proposed.v1`, `evolution.candidate.evaluated.v1`, `candidate.activated.v1`, `candidate.rolled_back.v1`
 - `sync.change.exported.v1`, `sync.change.applied.v1`, `sync.tombstone.applied.v1`, `sync.conflict.detected.v1`, `sync.conflict.resolved.v1`
