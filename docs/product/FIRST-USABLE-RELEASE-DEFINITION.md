@@ -192,6 +192,7 @@ These items cannot be silently decided by the architecture author or implementat
 4. **Target-device performance thresholds:** Establish after repeatable baseline measurements.
 5. **Specific inference model/runtime configuration:** Preserve model independence and validate actual device feasibility; existing basic inference is not sufficient performance evidence.
 6. **Any additional first-release capability:** Must be justified against the primary workflow and must not displace mandatory acceptance criteria.
+7. **Cloud/mobile state continuity:** The owner decision requires concurrent cloud and offline-mobile operation but does not explicitly settle whether experiences, memories, beliefs, goals and learning state must remain continuous across those runtimes in the first release. The builder must present a concrete topology recommendation. If continuity requires bringing any cross-runtime synchronization into first-release scope, that scope change requires owner approval; it must not be silently inferred from shared contracts.
 
 The architecture/platform validation work must establish a general Android environment and capability-discovery strategy, including OS permission boundaries and empirical feasibility on the actual target device. Numerical performance thresholds remain measurement-dependent.
 
