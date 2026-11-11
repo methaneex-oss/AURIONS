@@ -5,6 +5,7 @@ This directory contains the canonical planning mirror, detailed technical contra
 ## Canonical source and planning baseline
 
 - [Initial engineering specification](INITIAL-ENGINEERING-SPECIFICATION.md) — owner decisions, architecture, proposed database DDL, event/worker contracts, governance, security, testing, roadmap and historical decision record.
+- [Machine-readable contract schemas](../../schemas/README.md) — proposed JSON Schema source for the common envelope and extensible capability descriptor; currently partial and not yet toolchain-validated.
 - [Implementation-ready planning contracts](IMPLEMENTATION-READY-PLANNING-CONTRACTS.md) — component ownership, versioned contracts, worker boundary, authorization, operation recovery, persistence, synchronization/deletion, test catalogue, threat model, validation procedures and implementation work packages.
 - [Planning completion register](PLANNING-COMPLETION-REGISTER.md) — authoritative layer-by-layer status, builder-owned remaining work, external gates and strict completion criteria. This register replaces informal terms such as “substantially complete.”
 - [Canonical implementation roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md) — reconciled work packages, dependencies, concurrent first-release targets and measurable exit criteria. It supersedes earlier conflicting work-package tables.
