@@ -903,7 +903,7 @@ CREATE TABLE plan_steps (
   plan_id BLOB NOT NULL REFERENCES plans(plan_id),
   sequence INTEGER NOT NULL CHECK(sequence>=0),
   description TEXT NOT NULL,
-  status TEXT NOT NULL CHECK(status IN ('pending','ready','running','completed','failed','skipped','blocked')),
+  status TEXT NOT NULL CHECK(status IN ('pending','ready','running','completed','failed','skipped','blocked','awaiting_input','awaiting_permission','paused','cancelled','stale','superseded','uncertain','retry_wait')),
   action_id BLOB CHECK(action_id IS NULL OR length(action_id)=16),
   created_at_ms INTEGER NOT NULL,
   UNIQUE(plan_id,sequence)
@@ -1457,6 +1457,8 @@ The cross-document contract audit identified that the cognitive plan contract an
 ```sql
 CREATE TABLE plan_step_contracts (
   step_id BLOB PRIMARY KEY REFERENCES plan_steps(step_id),
+  step_role TEXT NOT NULL,
+  role_schema_version TEXT NOT NULL,
   capability_id TEXT,
   descriptor_version INTEGER,
   input_binding_json TEXT NOT NULL CHECK(json_valid(input_binding_json)),
@@ -1503,6 +1505,10 @@ A plan step that does not invoke an environment capability may leave `capability
 ```sql
 CREATE TABLE operation_details (
   operation_id BLOB PRIMARY KEY REFERENCES operations(operation_id),
+  owner_id TEXT NOT NULL,
+  actor_identity TEXT NOT NULL,
+  device_id BLOB NOT NULL CHECK(length(device_id)=16),
+  origin_step_id BLOB CHECK(origin_step_id IS NULL OR length(origin_step_id)=16),
   capability_id TEXT NOT NULL,
   descriptor_version INTEGER NOT NULL CHECK(descriptor_version>0),
   target_ref TEXT NOT NULL,
@@ -1541,13 +1547,27 @@ CREATE TABLE operation_attempts (
 ) STRICT;
 CREATE INDEX idx_operation_attempt_state
   ON operation_attempts(state,dispatched_at_ms);
+
+CREATE TABLE task_checkpoint_details (
+  checkpoint_id BLOB PRIMARY KEY REFERENCES task_checkpoints(checkpoint_id),
+  plan_id BLOB NOT NULL CHECK(length(plan_id)=16),
+  plan_version INTEGER NOT NULL CHECK(plan_version>0),
+  context_version_ref TEXT NOT NULL,
+  capability_epoch_digest TEXT NOT NULL,
+  dependency_state_digest TEXT NOT NULL,
+  pending_steps_json TEXT NOT NULL CHECK(json_valid(pending_steps_json)),
+  resume_conditions_json TEXT NOT NULL CHECK(json_valid(resume_conditions_json)),
+  invalidation_reason TEXT,
+  created_at_ms INTEGER NOT NULL
+) STRICT;
+
 ```
 
-The expanded `operations.state` and `operation_steps.state` values in the proposed base DDL are the canonical durable lifecycle projection. The operation-attempt table records each dispatch attempt and its receipt/verification evidence. State transitions remain governed by Section 7.1; SQL CHECK constraints restrict values but do not enforce the transition graph. The command handler must atomically append the lifecycle event and update the owning projection in one `aurion_events.db` transaction.
+The expanded `operations.state` and `operation_steps.state` values in the proposed base DDL are the canonical durable lifecycle projection. The operation-attempt table records each dispatch attempt and its receipt/verification evidence. Operation details bind owner, actor, device, originating plan step, exact capability version and canonical parameters. Task checkpoint details bind a resumable checkpoint to the exact plan version, context/capability epoch and dependency-state digest. State transitions remain governed by Section 7.1; SQL CHECK constraints restrict values but do not enforce the transition graph. The command handler must atomically append the lifecycle event and update the owning projection in one `aurion_events.db` transaction.
 
 Cross-store capability descriptor and approval references are validated by application services against the current memory and governance stores immediately before dispatch. No cross-file foreign keys are introduced.
 
-These additions close a specification mismatch only. They have not been executed, benchmarked or validated against the target SQLite build. They require migration fixtures for fresh install, upgrade, interruption, invalid references, duplicate attempts, uncertain dispatch, recovery and rollback.
+These additions close specification mismatches only. They have not been executed, benchmarked or validated against the target SQLite build. They require migration fixtures for fresh install, upgrade, interruption, invalid references, duplicate attempts, uncertain dispatch, stale checkpoint invalidation, recovery and rollback.
 
 ### 26.6 Migration protocol
 
