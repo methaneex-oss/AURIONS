@@ -67,6 +67,7 @@ The receiver validates identity, version, size, schema, ownership, classificatio
 | Environment/discovery | Environment observations, discovery provenance, versioned capability descriptors and lifecycle | Platform adapters, capability provider contracts, governance queries | Treat discovery as permission, invent unavailable interfaces or execute operations |
 | Context | Context assembly and relevance metadata | Representation, memory query interfaces | Persist foreign-domain records directly |
 | Memory | Episodic/semantic/working-memory persistence contracts and retrieval | Storage abstraction, provenance | Authorize actions or silently rewrite evidence |
+| Artifact registry | Immutable artifact metadata, content hashes, storage references, lineage and deletion state | Filesystem/object storage, memory DB, retention/deletion services | Treat filenames as trusted paths, merge authorization semantics during deduplication or expose unvalidated artifacts |
 | Knowledge/beliefs | Claims, evidence links, confidence, revision history | Memory, evidence evaluation | Treat model output as verified fact |
 | Prediction | Prediction records, horizons, expected outcomes and uncertainty | Beliefs, context | Execute actions |
 | Outcome evaluation | Prediction/plan comparison, observed postconditions, attribution hypotheses and evaluation evidence | Prediction, action receipts, experience, context | Rewrite original predictions or equate provider success with verified effects |
