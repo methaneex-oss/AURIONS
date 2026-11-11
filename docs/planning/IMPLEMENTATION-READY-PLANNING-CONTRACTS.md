@@ -124,6 +124,79 @@ Canonical body schema: `queryEnvelope`. Each query carries an open namespaced `q
 
 Initial query families: `environment.inspect`, `capability.search`, `capability.inspect`, `capability.knowledge.inspect`, `representation.inspect`, `context.get`, `memory.search`, `knowledge.search`, `belief.inspect`, `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect`, `goal.get`, `plan.get`, `decision.inspect`, `task.status`, `operation.status`, `permission.inspect`, `audit.lookup`, `device.capabilities`. Query families are versioned interface namespaces, not a closed list of system behaviours or capabilities. Each query type still requires a typed filter/input schema, result schema, authorization/data-scope rules, consistency semantics and resource bounds; the generic query envelope does not complete those family-specific contracts.
 
+### 4.2.1 Initial command payload registry
+
+The following table binds the initial command families to request-body schemas. The registry is extensible; it is not a closed list of behaviours or Android capabilities. Command handlers MUST validate the body against the registered schema version before state mutation. The event emitted after a successful command remains a separate immutable event and must use the event-body mapping in Section 4.3.
+
+| Command type | Request payload schema |
+|---|---|
+| `experience.submit` | `experienceObserved` |
+| `representation.create` | `representationCreated` |
+| `context.assemble` | `contextAssemblyRequest` |
+| `context.invalidate` | `contextInvalidationRequest` |
+| `environment.observe` | `environmentObservationRequest` |
+| `capability.discover` | `capabilityDiscoveryRequest` |
+| `capability.verify` | `capabilityVerificationRequest` |
+| `capability.invalidate` | `capabilityInvalidationRequest` |
+| `capability.knowledge.propose` / `capability.knowledge.revise` | `capabilityKnowledgeRevision` |
+| `memory.retrieve` | `memoryRetrievalQuery` |
+| `belief.propose` / `belief.revise` | `beliefRevision` |
+| `prediction.create` | `predictionCreated` |
+| `prediction.evaluate` | `predictionEvaluationRequest` |
+| `appraisal.evaluate` | `appraisalEvaluationRequest` |
+| `attention.allocate` | `attentionAllocationRequest` |
+| `reasoning.assess` | `reasoningAssessmentRequest` |
+| `goal.create` / `goal.revise` | `goalRevision` |
+| `goal.cancel` | `goalControlRequest` |
+| `plan.propose` / `plan.revise` | `planRevision` |
+| `plan.checkpoint` | `planCheckpointRequest` |
+| `decision.record` | `decisionRecorded` |
+| `operation.propose` | `operationProposal` |
+| `operation.cancel` / `operation.reconcile` | `operationControlRequest` |
+| `approval.request` | `approvalRequested` |
+| `approval.revoke` | `approvalRevocationRequest` |
+| `outcome.evaluate` | `outcomeEvaluationRequest` |
+| `learning.update.propose` | `learningUpdate` |
+| `learning.experiment.submit` | `learningExperimentRequest` |
+| `learning.candidate.evaluate` | `learningCandidateEvaluationRequest` |
+| `self_model.update.propose` | `selfModelUpdated` |
+| `evolution.change.propose` | `evolutionProposed` |
+| `evolution.candidate.evaluate` / `evolution.candidate.activate` / `evolution.candidate.rollback` | `evolutionCandidateActionRequest` |
+| `task.start` / `task.pause` / `task.resume` / `task.cancel` | `taskControlRequest` |
+| `device.pair` / `device.revoke` | **DEFERRED:** future multi-device phase; no first-release request schema or executable command is authorized. |
+
+The schema bindings above define payload shape only. Each handler still requires an owning component, allowed state transition, expected-version/concurrency check, authorization/data-scope rule, idempotency rule, cancellation/deadline behaviour, response and failure mapping. Where a request reuses a domain payload schema, the handler must not persist the request as an event without applying the owning domain's validation and transition rules.
+
+### 4.2.2 Initial query input and result registry
+
+All query types use the generic `domainQuery` input schema except memory retrieval, which uses `memoryRetrievalQuery`. Results are wrapped in `queryResponse`; `query_type + query_version` resolves the domain-specific result schema. Query handlers remain read-only and must enforce the owner/device scope and sensitivity policy before returning records.
+
+| Query type | Input schema | Result item schema |
+|---|---|---|
+| `environment.inspect` | `domainQuery` | `environmentObserved` |
+| `capability.search` | `domainQuery` | `capabilityDescriptorRecord` |
+| `capability.inspect` | `domainQuery` | `capabilityDescriptorRecord` |
+| `capability.knowledge.inspect` | `domainQuery` | `capabilityKnowledgeRevision` |
+| `representation.inspect` | `domainQuery` | `representationCreated` |
+| `context.get` | `domainQuery` | `contextSnapshot` |
+| `memory.search` | `memoryRetrievalQuery` | `memoryRetrieval` |
+| `knowledge.search` | `domainQuery` | `knowledgeItem` |
+| `belief.inspect` | `domainQuery` | `beliefRevision` |
+| `prediction.inspect` | `domainQuery` | `predictionCreated` |
+| `appraisal.inspect` | `domainQuery` | `appraisalUpdated` |
+| `attention.inspect` | `domainQuery` | `attentionAllocated` |
+| `reasoning.inspect` | `domainQuery` | `reasoningHypothesisProposed` |
+| `goal.get` | `domainQuery` | `goalRevision` |
+| `plan.get` | `domainQuery` | `planRevision` |
+| `decision.inspect` | `domainQuery` | `decisionRecorded` |
+| `task.status` | `domainQuery` | `taskRunStatus` |
+| `operation.status` | `domainQuery` | `operationLifecycleEvent` |
+| `permission.inspect` | `domainQuery` | `permissionRecord` |
+| `audit.lookup` | `domainQuery` | `auditRecord` |
+| `device.capabilities` | `domainQuery` | `capabilityDescriptorRecord` |
+
+The result schema specifies each result item; `queryResponse.results` is a collection of those validated items with pagination and consistency metadata. This table does not grant access to a record: every result is filtered through the owning domain's authorization and disclosure rules. New query types require an explicit input/result binding and fixtures before publication.
+
 ### 4.3 Event catalogue
 Every event includes the common envelope and an immutable event body. Initial event names:
 - `experience.observed.v1`
