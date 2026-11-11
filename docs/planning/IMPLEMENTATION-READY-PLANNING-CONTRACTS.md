@@ -100,7 +100,7 @@ The receiver validates identity, version, size, schema, ownership, classificatio
 ### 4.1 Command contract
 A command requests a state transition; it is not proof that the transition occurred.
 
-Canonical body schema: `commandEnvelope`. Required fields: `command_id`, `command_version`, `owner_id`, `actor_identity`, `operation_id`, `issued_at`, `deadline`, `idempotency_key`, `requested_capability`, `payload`, `data_classification`, `approval_reference` (nullable only when policy says no approval is required).
+Canonical body schema: `commandEnvelope`. Required fields: `command_id`, open namespaced `command_type`, `command_version`, `owner_id`, `actor_identity`, `issued_at`, `deadline`, `idempotency_key`, `payload`, and `data_classification`. `operation_id`, `requested_capability` and `approval_reference` are optional nullable references because many commands do not create an external operation or request a platform capability. The receiver resolves `command_type + command_version` through its versioned command registry and validates the payload against that registered schema; it must not trust a producer-supplied arbitrary schema path.
 
 Initial command families:
 - `experience.submit`, `representation.create`, `context.assemble`, `context.invalidate`
@@ -115,10 +115,10 @@ Initial command families:
 - `task.start`, `task.pause`, `task.resume`, `task.cancel`
 - `device.pair`, `device.revoke` (future multi-device phase)
 
-A command response uses `commandResponse` and is one of: `accepted`, `rejected`, `pending`, `conflict`, `unsupported_version`. Accepted means durably accepted for processing, not completed. Failures use `contractError`, which records retryability and whether a side effect was not dispatched, dispatched, unknown or not applicable; this distinction is mandatory for safe retry/reconciliation.
+A command response uses `commandResponse`, echoes `command_type` and `command_version`, and is one of: `accepted`, `rejected`, `pending`, `conflict`, `unsupported_version`. Accepted means durably accepted for processing, not completed. Failures use `contractError`, which records retryability and whether a side effect was not dispatched, dispatched, unknown or not applicable; this distinction is mandatory for safe retry/reconciliation.
 
 ### 4.2 Query contract
-Canonical body schema: `queryEnvelope`. Queries are read-only, scoped to an authenticated owner/device context, bounded by timeout and result size, and carry a consistency indicator (`snapshot`, `eventual`, or `local_committed`). Queries MUST NOT trigger hidden side effects.
+Canonical body schema: `queryEnvelope`. Each query carries an open namespaced `query_type` and `query_version`, resolved through a versioned query registry rather than a closed enum. Queries are read-only, scoped to an authenticated owner/device context, bounded by timeout and result size, and carry a consistency indicator (`snapshot`, `eventual`, or `local_committed`). Queries MUST NOT trigger hidden side effects.
 
 Initial query families: `environment.inspect`, `capability.search`, `capability.inspect`, `capability.knowledge.inspect`, `representation.inspect`, `context.get`, `memory.search`, `knowledge.search`, `belief.inspect`, `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect`, `goal.get`, `plan.get`, `decision.inspect`, `task.status`, `operation.status`, `permission.inspect`, `audit.lookup`, `device.capabilities`. Query families are versioned interface namespaces, not a closed list of system behaviours or capabilities.
 
