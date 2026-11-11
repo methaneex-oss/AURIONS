@@ -951,5 +951,212 @@
     "negotiated_at": "2026-11-11T08:08:03Z",
     "selected_envelope_version": "1.0",
     "rejection_reason": null
+  },
+  "contextAssemblyRequest": {
+    "context_id": "31000000-0000-4000-8000-000000000001",
+    "scope": "active_task",
+    "input_refs": [
+      "experience:1",
+      "memory:2",
+      "goal:3"
+    ],
+    "requested_at": "2026-11-11T08:09:00Z",
+    "valid_until": null,
+    "uncertainty_policy": "preserve_conflicts"
+  },
+  "environmentObservationRequest": {
+    "observation_id": "b1000000-0000-4000-8000-000000000001",
+    "environment_scope": {
+      "device_ref": "device:local"
+    },
+    "observation_channels": [
+      "system_metadata",
+      "available_interfaces"
+    ],
+    "provider_refs": [],
+    "purpose_ref": "task:discovery",
+    "requested_at": "2026-11-11T08:09:00Z",
+    "deadline": "2026-11-11T08:10:00Z",
+    "resource_budget": {
+      "cpu_ms": 5000
+    }
+  },
+  "capabilityDiscoveryRequest": {
+    "discovery_id": "b1100000-0000-4000-8000-000000000001",
+    "environment_scope": {
+      "device_ref": "device:local",
+      "scope": "accessible"
+    },
+    "provider_filters": [],
+    "discovery_constraints": {
+      "permission_mode": "observe_only"
+    },
+    "discovery_strategy_ref": "strategy:general_discovery",
+    "environment_observation_refs": [
+      "observation:1"
+    ],
+    "requested_at": "2026-11-11T08:09:00Z",
+    "deadline": "2026-11-11T08:10:00Z",
+    "resource_budget": {
+      "cpu_ms": 10000
+    }
+  },
+  "capabilityVerificationRequest": {
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "verification_plan_ref": "plan:verify:1",
+    "evidence_refs": [
+      "evidence:1"
+    ],
+    "target_scope": {
+      "device_ref": "device:local"
+    },
+    "requested_at": "2026-11-11T08:09:00Z",
+    "deadline": "2026-11-11T08:10:00Z"
+  },
+  "capabilityInvalidationRequest": {
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "reason": "provider interface changed",
+    "evidence_refs": [
+      "evidence:2"
+    ],
+    "observed_at": "2026-11-11T08:09:00Z"
+  },
+  "memoryRetrievalQuery": {
+    "query_id": "b1200000-0000-4000-8000-000000000001",
+    "query_representation_ref": "representation:query:1",
+    "context_ref": "context:1",
+    "scope": {
+      "owner_id": "owner:primary"
+    },
+    "retrieval_constraints": {
+      "relevance_threshold": 0.4
+    },
+    "requested_at": "2026-11-11T08:09:00Z",
+    "limit": 20,
+    "include_provenance": true
+  },
+  "domainQuery": {
+    "resource_selector": {
+      "domain": "goal",
+      "owner_id": "owner:primary"
+    },
+    "filters": [
+      {
+        "field": "state",
+        "operator": "eq",
+        "value": "active"
+      }
+    ],
+    "sort": [
+      {
+        "field": "updated_at",
+        "direction": "desc"
+      }
+    ],
+    "projection": [
+      "goal_id",
+      "revision",
+      "description",
+      "state"
+    ],
+    "temporal_scope": null,
+    "cursor": null,
+    "limit": 50,
+    "requested_at": "2026-11-11T08:09:00Z"
+  },
+  "operationControlRequest": {
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "control_action": "reconcile",
+    "reason_ref": "reason:uncertain",
+    "idempotency_key": "operation-control:1",
+    "expected_state": "uncertain",
+    "reconciliation_query_ref": "query:operation:1",
+    "requested_at": "2026-11-11T08:09:00Z",
+    "deadline": "2026-11-11T08:10:00Z"
+  },
+  "goalControlRequest": {
+    "goal_id": "32000000-0000-4000-8000-000000000001",
+    "expected_revision": 2,
+    "control_action": "pause",
+    "reason_ref": "reason:owner-request",
+    "requested_at": "2026-11-11T08:09:00Z"
+  },
+  "taskControlRequest": {
+    "task_run_id": "33000000-0000-4000-8000-000000000001",
+    "control_action": "pause",
+    "expected_version": 2,
+    "reason_ref": "reason:resource-budget",
+    "requested_at": "2026-11-11T08:09:00Z",
+    "deadline": "2026-11-11T08:10:00Z"
+  },
+  "approvalRevocationRequest": {
+    "approval_request_id": "ac100000-0000-4000-8000-000000000001",
+    "owner_session_ref": "session:authenticated:1",
+    "reason_ref": "reason:owner-revocation",
+    "policy_version_ref": "policy:1",
+    "revoked_at": "2026-11-11T08:09:00Z"
+  },
+  "appraisalEvaluationRequest": {
+    "context_id": "31000000-0000-4000-8000-000000000001",
+    "context_version": 2,
+    "evidence_refs": [
+      "evidence:1",
+      "evidence:2"
+    ],
+    "goal_refs": [
+      "goal:1"
+    ],
+    "prior_outcome_refs": [
+      "outcome:1"
+    ],
+    "resource_context": {
+      "cpu_available": 0.5
+    },
+    "requested_at": "2026-11-11T08:09:00Z"
+  },
+  "attentionAllocationRequest": {
+    "context_ref": "context:1",
+    "candidate_work_refs": [
+      "task:1",
+      "prediction:2",
+      "memory_retrieval:3"
+    ],
+    "resource_budget": {
+      "cpu_ms": 5000,
+      "memory_bytes": 134217728
+    },
+    "allocation_constraints": {
+      "mandatory_governance_checks": true
+    },
+    "deadline": null,
+    "requested_at": "2026-11-11T08:09:00Z"
+  },
+  "reasoningAssessmentRequest": {
+    "context_ref": "context:1",
+    "question": "Which means are feasible under current constraints?",
+    "evidence_refs": [
+      "evidence:1"
+    ],
+    "alternative_hypothesis_refs": [],
+    "resource_budget": {
+      "cpu_ms": 10000
+    },
+    "requested_at": "2026-11-11T08:09:00Z"
+  },
+  "planCheckpointRequest": {
+    "plan_id": "34000000-0000-4000-8000-000000000001",
+    "plan_version": 2,
+    "checkpoint_id": "35000000-0000-4000-8000-000000000001",
+    "pending_steps": [
+      "step:3",
+      "step:4"
+    ],
+    "resume_conditions": {
+      "requires_context_revalidation": true
+    },
+    "invalidation_reason": null,
+    "created_at": "2026-11-11T08:09:00Z"
   }
 }
