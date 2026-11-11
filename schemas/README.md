@@ -4,7 +4,7 @@ This directory is the proposed canonical machine-readable schema source. The ini
 
 - `message-envelope.v1.schema.json`: common versioned message envelope.
 - `capability-descriptor-body.v1.schema.json`: extensible evidence-backed descriptor body.
-- `domain-payloads.v1.schema.json`: core experience, representation, context, belief, prediction, plan-step, operation, outcome and learning payloads; capability descriptor body remains in its separate schema.
+- `domain-payloads.v1.schema.json`: core experience, representation, context, belief, prediction, plan-step, operation, outcome, learning and decision-record payloads; capability descriptor body remains in its separate schema.
 - `fixtures/domain-payloads.fixture.json`: generic valid-shape examples for the core domain payloads; it is test data, not production memory or a real operation. Capability IDs and provider-defined interface names are data, not closed enums.
 - `fixtures/capability-descriptor.fixture.json`: deliberately generic fixture for contract-shape validation only; it is not a real Android capability or product operation.
 - `fixtures/decision-recorded.fixture.json`: decision event body fixture; it is not a selected owner decision.
