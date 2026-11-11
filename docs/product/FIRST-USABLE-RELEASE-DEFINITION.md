@@ -107,7 +107,7 @@ The system must remain useful when remote services are unavailable. Remote model
 | Proactive autonomy | Architectural requirement; narrow first-release task execution only | No unrestricted background activity |
 | Model training/fine-tuning | Not required to claim first release works | Training infrastructure and evaluation are separate work |
 | General learning improvement | Not claimed by the feedback workflow | Requires held-out evaluation described in architecture |
-| Native Android UI | Android operation support is required; exact UI technology remains subject to platform validation | Keep UI separate from the C++ cognitive core; use Android platform APIs through a least-privilege adapter |
+| Offline-capable Android platform integration | Required as a first-release deployment context; local environment/capability discovery and governed platform operation must work without cloud availability | The CLI remains the first user-facing interface. A native Android UI is not selected by this row; mobile UI technology and core boundary remain engineering decisions subject to platform validation |
 | Voice, camera and continuous sensing | Excluded from first release | Separate permissions, privacy and feasibility gates |
 | Multi-device synchronization | Excluded from first release | Contracts designed early; implementation later |
 | Desktop/web clients | Excluded from first release | Later clients must use stable core contracts |
@@ -173,9 +173,9 @@ These items cannot be silently decided by the architecture author or implementat
 1. **First interface: OWNER DECISION — CLI.** The CLI is the first user-facing interface, not merely an engineering/debugging tool.
 2. **Deployment: OWNER DECISION — cloud and offline mobile concurrently.** The first-release plan must deliver cloud operation and an offline-capable mobile experience as concurrent first-class targets. Offline mobile operation must not depend on cloud availability. Both deployment contexts must use shared versioned application contracts and the authoritative cognitive core; they must not become separate intelligence implementations. The CLI deployment context(s) and exact cloud/mobile topology remain engineering details to validate, not permission to make cloud mandatory for offline use.
 3. **Android capability architecture:** The examples discussed by the owner (such as opening apps, adjusting volume and handling files) are illustrative scenarios only. They do not define, limit or preselect AURIONS' Android capabilities or its first permitted action. The architecture must investigate how AURIONS can perceive and represent its Android environment, discover available capabilities and their interfaces/constraints, learn their use through experience, reason and plan over them, and execute only through independent governance and platform permission boundaries. The capability model must not be a hardcoded catalogue of owner examples. The first end-to-end Android action-gateway acceptance scenario remains an owner decision.
-3. **Target-device performance thresholds:** Establish after repeatable baseline measurements.
-4. **Specific inference model/runtime configuration:** Preserve model independence and validate actual device feasibility; existing basic inference is not sufficient performance evidence.
-5. **Any additional first-release capability:** Must be justified against the primary workflow and must not displace mandatory acceptance criteria.
+4. **Target-device performance thresholds:** Establish after repeatable baseline measurements.
+5. **Specific inference model/runtime configuration:** Preserve model independence and validate actual device feasibility; existing basic inference is not sufficient performance evidence.
+6. **Any additional first-release capability:** Must be justified against the primary workflow and must not displace mandatory acceptance criteria.
 
 The architecture/platform validation work must establish a general Android environment and capability-discovery strategy, including OS permission boundaries and empirical feasibility on the actual target device. Numerical performance thresholds remain measurement-dependent.
 
