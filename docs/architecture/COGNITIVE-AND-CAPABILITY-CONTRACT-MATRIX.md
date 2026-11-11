@@ -215,3 +215,18 @@ This section makes the architecture scenario IDs individually traceable to the e
 - The existing test catalogue names the scenario and related contract checks. No executable AURIONS test runner or scenario fixture suite exists in this planning branch.
 - Scenario fixtures must be added with the owning implementation work package, using isolated test stores and deterministic provider fakes. They must include positive, negative, stale-version, replay, concurrency, cancellation and recovery controls as applicable.
 - A scenario may be marked VALIDATED only from a recorded test run tied to the exact implementation commit, fixture corpus, toolchain and environment. This matrix is **SPECIFIED**, not validated.
+
+
+## 9. Security, key and supply-chain traceability
+
+| Test | Owning package / boundary | Required evidence | Status |
+|---|---|---|---|
+| SEC-001, SEC-002 | WP-04 identity/governance; WP-06 Android platform adapter | Key provenance, hardware-backing evidence, role separation and cross-domain denial | SPECIFIED — platform execution outstanding |
+| SEC-003, SEC-005 | WP-02 persistence; WP-04 governance/security | Versioned envelope-encryption, crash-safe rotation, owner-controlled recovery and fail-closed key-loss traces | SPECIFIED — implementation and recovery policy evidence outstanding |
+| SEC-004, SEC-006 | WP-02 persistence; WP-03 runtime; WP-04 security; WP-16 only where multi-device sync is in scope | Device revocation, backup/restore integrity, tombstone replay and no resurrection | SPECIFIED — device/backup execution outstanding |
+| SEC-007 | WP-00 build/release foundation; WP-13 governed evolution | Signed update/artifact verification, key rotation and rejection of tampered/rollback artifacts | SPECIFIED — signing chain not implemented |
+| SEC-008, SEC-011 | WP-04 governance/security; WP-05 provider routing; WP-15 integration | Field-level redaction, secret scans, data-egress policy and exact-operation disclosure approval | SPECIFIED — integration evidence outstanding |
+| SEC-009 | WP-04 governance/security; WP-15 cloud/offline integration | KMS outage, unknown key version and revoked credential fail-closed traces; offline independence | SPECIFIED — cloud provider not selected |
+| SEC-010 | WP-14 worker isolation; WP-04 security; WP-02 persistence | Worker sandbox/least privilege, no live DB/key access, quarantine and validated output | SPECIFIED — worker runtime not implemented |
+
+These tests extend the security and key lifecycle plan in Sections 10.8 and 11.6 of the implementation-ready contracts. They are traceability and acceptance requirements only; no security control is marked implemented or validated by this matrix.
