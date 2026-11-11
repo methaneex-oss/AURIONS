@@ -1,0 +1,60 @@
+{
+  "providerLifecycle": {
+    "provider_id": "provider:android.accessibility.adapter",
+    "provider_version": "1.0.0",
+    "state": "validated",
+    "origin_ref": "artifact:provider-manifest:01",
+    "artifact_integrity": {
+      "algorithm": "sha256",
+      "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "verified_at": "2026-11-11T08:00:00Z"
+    },
+    "interface_versions": [
+      {
+        "interface_id": "platform.environment.observe",
+        "schema_version": "1.0"
+      }
+    ],
+    "permission_scopes": [
+      "android.permission.ACCESSIBILITY_SERVICE"
+    ],
+    "provenance_ref": "evidence:provider-validation:01",
+    "transition": {
+      "from_state": "quarantined",
+      "to_state": "validated",
+      "cause": "manifest integrity and interface contract validated",
+      "actor_ref": "system:provider-validator",
+      "evidence_refs": [
+        "evidence:manifest-check:01",
+        "evidence:interface-check:01"
+      ],
+      "occurred_at": "2026-11-11T08:00:01Z"
+    }
+  },
+  "providerFailure": {
+    "failure_id": "aaaaaaaa-0000-4000-8000-000000000001",
+    "category": "outcome_uncertain",
+    "machine_code": "PROVIDER_EFFECT_UNKNOWN",
+    "retryability": "reconcile_before_retry",
+    "side_effect_state": "unknown",
+    "correlation_id": "aaaaaaaa-0000-4000-8000-000000000002",
+    "provider_id": "provider:android.accessibility.adapter",
+    "provider_version": "1.0.0",
+    "descriptor_version": "3",
+    "diagnostic_ref": "artifact:diagnostic:01",
+    "occurred_at": "2026-11-11T08:00:02Z",
+    "user_action_required": true
+  },
+  "compatibilityNegotiationState": {
+    "negotiation_id": "aaaaaaaa-0000-4000-8000-000000000003",
+    "state": "compatible",
+    "producer_id": "component:discovery",
+    "consumer_id": "component:capability-registry",
+    "offered_versions": [
+      "1.0",
+      "1.1"
+    ],
+    "selected_version": "1.1",
+    "occurred_at": "2026-11-11T08:00:03Z"
+  }
+}
