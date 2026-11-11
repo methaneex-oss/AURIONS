@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aurions:schema:error-handler-fixtures:1",
+  "title": "AURIONS error-handler contract fixture set",
+  "description": "Fixture metadata and contractError payloads for the versioned error registry. These fixtures validate planning contracts; they do not prove runtime handler implementation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fixture_version",
+    "source_ref",
+    "cases"
+  ],
+  "properties": {
+    "fixture_version": {
+      "const": "1.0"
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 35,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "handler_contract_ref",
+          "expected_retry_posture",
+          "expected_side_effect_default",
+          "payload"
+        ],
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "pattern": "^EHC-[0-9]{3}$"
+          },
+          "handler_contract_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected_retry_posture": {
+            "enum": [
+              "never",
+              "after_condition_change",
+              "after_backoff",
+              "safe_idempotent_retry",
+              "reconcile_before_retry",
+              "manual_intervention"
+            ]
+          },
+          "expected_side_effect_default": {
+            "enum": [
+              "not_dispatched",
+              "dispatched",
+              "unknown",
+              "not_applicable"
+            ]
+          },
+          "payload": {
+            "$ref": "domain-payloads.v1.schema.json#/$defs/contractError"
+          }
+        }
+      }
+    }
+  }
+}
