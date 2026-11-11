@@ -41,14 +41,16 @@ These are logical ownership boundaries, not a mandate for one process/service pe
 
 ## 3. Deployment topology
 
-Initial deployment is a single-device local runtime, initially exercised in Termux. The C++ core remains authoritative. The CLI is the owner-selected first user-facing interface. Cloud operation and offline-capable mobile operation are concurrent first-release targets, not sequential phases.
+The first engineering baseline is a single-device local runtime, initially exercised in Termux; this is a validation starting point, not the complete first-release deployment scope. The C++ cognitive core remains authoritative. The CLI is the owner-selected first user-facing interface. Cloud operation and offline-capable mobile operation are concurrent first-release targets, not sequential phases.
 
-Future topology:
-- **Android client:** native interface and Android-specific adapters.
-- **Desktop client:** desktop interface and desktop-specific adapters; may host heavier local compute.
-- **Additional device clients:** interfaces/agents with capability sets appropriate to their hardware.
-- **Local runtime:** executes on a device and owns its local operations and state.
-- **Optional remote services:** synchronization relay, external inference, search, APIs or compute; enabled only through explicit provider and data policies.
+Deployment topology proposal:
+- **Offline-capable mobile runtime:** a complete local runtime with the cognitive core, local stores, local inference where feasible, environment/capability discovery, local governance and local execution. It must continue required workflows without cloud connectivity.
+- **Cloud runtime:** a separately deployable runtime using the same core implementation/semantics and versioned contracts. It owns only its declared cloud-side state and resources; it cannot authorize a mobile-local operation.
+- **CLI:** the first user-facing interface. It communicates with the selected runtime through the same versioned application contracts and does not bypass policy.
+- **Android platform adapter/UI:** Android-specific adapters are required for the offline-mobile target; a native UI remains a separate engineering choice and is not implied by the CLI decision.
+- **Optional remote services:** inference providers, search, APIs or compute; enabled only through explicit provider and data policies.
+
+Shared core contracts do not imply shared mutable databases or automatic state replication. Cloud/mobile state ownership and any first-release cross-context continuity must be explicitly specified before implementation. Until that contract is approved, each runtime is authoritative for its own local state and cross-runtime synchronization is not assumed.
 
 AURIONS must remain useful when remote services are unavailable. A cloud backend is not mandatory merely to support multiple devices.
 
@@ -193,13 +195,13 @@ These are sources of capability inspiration, not templates to copy blindly and n
 ### Engineering foundation (not a user release)
 Reproducible repository/build, stable contracts, dependency inventory, test harness and validated target toolchain.
 
-### First usable local release
-A usable CLI as the first user-facing interface; concurrent cloud operation and offline-capable mobile operation using shared versioned contracts and one authoritative cognitive architecture; model-independent inference; persistent conversation/experience; provenance-aware memory and retrieval; bounded task reasoning/planning; environment/capability discovery; one narrowly scoped owner-approved permitted action through the gateway; verified outcome persistence; restart recovery; offline operation; inspectable permissions and resource limits. Offline mobile operation does not by itself select a native Android UI technology; the CLI remains the first user-facing interface and the mobile interface/topology must be validated.
+### First usable release
+A usable CLI as the first user-facing interface; a cloud runtime and an offline-capable mobile runtime delivered concurrently, using the same versioned contracts and authoritative cognitive architecture; model-independent inference; persistent conversation/experience; provenance-aware memory and retrieval; bounded task reasoning/planning; environment/capability discovery; one narrowly scoped owner-approved permitted action through the gateway; verified outcome persistence; restart recovery; offline operation; inspectable permissions and resource limits. Offline mobile operation does not by itself select a native Android UI technology; the CLI remains the first user-facing interface and the mobile interface/topology must be validated.
 
 It must demonstrate that a recorded outcome changes later retrieval/reasoning in a repeatable test. Conversation history alone does not qualify as learning.
 
 ### Personal device interface expansion
-A native Android UI may follow the first CLI interface, subject to platform validation. Android platform integration needed for the concurrent offline-mobile target is not deferred: its environment/capability discovery, permission, lifecycle and local execution mechanisms are first-release architecture requirements. Additional UI features, notifications and voice adapters can be added when separately validated.
+A native Android UI may follow the first CLI interface, subject to platform validation. Android platform integration needed for the concurrent offline-mobile runtime is not deferred: its environment/capability discovery, permission, lifecycle and local execution mechanisms are first-release architecture requirements. Additional UI features, notifications and voice adapters can be added when separately validated.
 
 ### Multi-device release
 Authenticated device pairing/revocation, versioned communication contracts, selected-domain synchronization, offline queues, conflict resolution, deletion propagation, task handoff, end-to-end encryption and recovery tests.
