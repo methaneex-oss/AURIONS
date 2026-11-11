@@ -18,7 +18,9 @@
 
 ## Category handler contracts
 
-### EH-001 — `contract.schema`
+### EH-001
+
+**Category:** `contract.schema`
 
 - **Owner:** Contract validation and compatibility boundary.
 - **Contract:** Validate envelope and registered payload against the negotiated version before accepting any command, query, event or worker message. Reject malformed input, unsupported required features and incompatible major versions before domain mutation.
@@ -27,7 +29,9 @@
 - **Mapped codes:** `contract.schema.SCHEMA_MALFORMED`, `contract.schema.SCHEMA_MAJOR_UNSUPPORTED`, `contract.schema.SCHEMA_CONDITION_UNSUPPORTED`.
 - **Fixture cases:** `EHC-001`, `EHC-002`, `EHC-003`.
 
-### EH-002 — `provider.identity`
+### EH-002
+
+**Category:** `provider.identity`
 
 - **Owner:** Environment and discovery subsystem.
 - **Contract:** Quarantine the exact provider/version subject; verify identity, provenance, signature/digest, declared interface and validation evidence. Provider cannot validate or enable itself.
@@ -36,7 +40,9 @@
 - **Mapped codes:** `provider.identity.PROVIDER_UNKNOWN`, `provider.identity.PROVIDER_UNTRUSTED`, `provider.identity.PROVIDER_VERSION_UNVALIDATED`.
 - **Fixture cases:** `EHC-004`, `EHC-005`, `EHC-006`.
 
-### EH-003 — `provider.availability`
+### EH-003
+
+**Category:** `provider.availability`
 
 - **Owner:** Discovery broker or action gateway according to operation phase.
 - **Contract:** Distinguish provider absence/unavailability from a dispatch whose effect is uncertain. Preserve the per-attempt dispatch state and provider/version evidence.
@@ -45,7 +51,9 @@
 - **Mapped codes:** `provider.availability.PROVIDER_UNAVAILABLE`, `provider.availability.PROVIDER_RATE_LIMITED`.
 - **Fixture cases:** `EHC-007`, `EHC-008`.
 
-### EH-004 — `capability.validity`
+### EH-004
+
+**Category:** `capability.validity`
 
 - **Owner:** Capability registry and discovery broker.
 - **Contract:** Invalidate the affected descriptor revision and dependent plans/checkpoints; preserve historical evidence and trigger rediscovery or revalidation.
@@ -54,7 +62,9 @@
 - **Mapped codes:** `capability.validity.CAPABILITY_STALE`, `capability.validity.CAPABILITY_REVOKED`, `capability.validity.CAPABILITY_INCOMPATIBLE`.
 - **Fixture cases:** `EHC-009`, `EHC-010`, `EHC-011`.
 
-### EH-005 — `evidence.precondition`
+### EH-005
+
+**Category:** `evidence.precondition`
 
 - **Owner:** Owning cognitive mechanism or action gateway precondition evaluator.
 - **Contract:** Retain evidence and uncertainty; distinguish false from unknown; prevent a command or operation transition whose required precondition is not established.
@@ -63,7 +73,9 @@
 - **Mapped codes:** `evidence.precondition.EVIDENCE_INSUFFICIENT`, `evidence.precondition.PRECONDITION_FALSE`, `evidence.precondition.PRECONDITION_UNKNOWN`.
 - **Fixture cases:** `EHC-012`, `EHC-013`, `EHC-014`.
 
-### EH-006 — `platform.permission`
+### EH-006
+
+**Category:** `platform.permission`
 
 - **Owner:** Platform adapter reports; Android OS remains permission authority.
 - **Contract:** Read current OS permission state at the execution boundary; report missing/revoked grant distinctly from AURIONS policy denial. No subsystem synthesizes a grant.
@@ -72,7 +84,9 @@
 - **Mapped codes:** `platform.permission.PLATFORM_GRANT_MISSING`, `platform.permission.PLATFORM_GRANT_REVOKED`.
 - **Fixture cases:** `EHC-015`, `EHC-016`.
 
-### EH-007 — `governance.authorization`
+### EH-007
+
+**Category:** `governance.authorization`
 
 - **Owner:** Governance subsystem.
 - **Contract:** Evaluate exact owner, actor, device, target, parameters, effects, data categories, risk, policy version, approval digest and expiry. Persist denial/revocation evidence in governance ownership.
@@ -81,7 +95,9 @@
 - **Mapped codes:** `governance.authorization.POLICY_DENIED`, `governance.authorization.APPROVAL_EXPIRED`, `governance.authorization.APPROVAL_MISMATCH`, `governance.authorization.APPROVAL_REVOKED`.
 - **Fixture cases:** `EHC-017`, `EHC-018`, `EHC-019`, `EHC-020`.
 
-### EH-008 — `operation.conflict`
+### EH-008
+
+**Category:** `operation.conflict`
 
 - **Owner:** Owning aggregate handler; action gateway for operation aggregates.
 - **Contract:** Reload authoritative aggregate and dependency revisions; compare canonical idempotency digest; reject stale writes and mismatched key reuse without overwriting newer state.
@@ -90,7 +106,9 @@
 - **Mapped codes:** `operation.conflict.EXPECTED_REVISION_CONFLICT`, `operation.conflict.DEPENDENCY_VERSION_STALE`, `operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH`.
 - **Fixture cases:** `EHC-021`, `EHC-022`, `EHC-023`.
 
-### EH-009 — `operation.budget`
+### EH-009
+
+**Category:** `operation.budget`
 
 - **Owner:** Scheduler and action gateway.
 - **Contract:** Enforce deadline, resource budget and cancellation at defined safe points; preserve checkpoint and actual dispatch state. Cancellation request is not proof of cancellation after dispatch.
@@ -99,7 +117,9 @@
 - **Mapped codes:** `operation.budget.DEADLINE_EXCEEDED`, `operation.budget.RESOURCE_BUDGET_EXCEEDED`, `operation.budget.CANCELLED_BEFORE_DISPATCH`.
 - **Fixture cases:** `EHC-024`, `EHC-025`, `EHC-026`.
 
-### EH-010 — `operation.dispatch`
+### EH-010
+
+**Category:** `operation.dispatch`
 
 - **Owner:** Action gateway and provider adapter boundary.
 - **Contract:** Persist intent and attempt before dispatch; capture provider receipt and dispatch uncertainty; never infer non-dispatch from timeout, missing response or process death.
@@ -108,7 +128,9 @@
 - **Mapped codes:** `operation.dispatch.ADAPTER_DISPATCH_FAILED`, `operation.dispatch.DISPATCH_RECEIPT_MISSING`.
 - **Fixture cases:** `EHC-027`, `EHC-028`.
 
-### EH-011 — `operation.outcome`
+### EH-011
+
+**Category:** `operation.outcome`
 
 - **Owner:** Outcome evaluator with action gateway reconciliation.
 - **Contract:** Keep expected outcome, provider-reported result and independently observed postcondition separate; preserve contradictory and incomplete evidence.
@@ -117,7 +139,9 @@
 - **Mapped codes:** `operation.outcome.OUTCOME_UNCERTAIN`, `operation.outcome.POSTCONDITION_UNVERIFIED`, `operation.outcome.PROVIDER_RESULT_CONTRADICTED`.
 - **Fixture cases:** `EHC-029`, `EHC-030`, `EHC-031`.
 
-### EH-012 — `provider.contract`
+### EH-012
+
+**Category:** `provider.contract`
 
 - **Owner:** Provider trust boundary and action gateway.
 - **Contract:** Quarantine the affected provider version, retain receipts and diagnostics, validate output against its declared schema, and preserve whether dispatch may have occurred.
@@ -126,7 +150,9 @@
 - **Mapped codes:** `provider.contract.PROVIDER_CONTRACT_VIOLATION`, `provider.contract.PROVIDER_INTEGRITY_FAILURE`.
 - **Fixture cases:** `EHC-032`, `EHC-033`.
 
-### EH-013 — `runtime.internal`
+### EH-013
+
+**Category:** `runtime.internal`
 
 - **Owner:** Runtime, scheduler and authoritative persistence owner.
 - **Contract:** Recover from durable journal, transaction outcome and idempotent receipts; distinguish proven rollback from uncertain commit. Never infer rollback from process failure.
