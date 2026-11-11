@@ -36,7 +36,7 @@ No layer is currently marked COMPLETE — VERIFIED. This is deliberate: the curr
 | Product identity, purpose and non-goals | IN PROGRESS | Mission and first-release product proposal exist. | Reconcile every product statement with owner decisions, no-hardcoding principle, actual release targets and architecture; distinguish committed requirements from proposals. |
 | Foundational principles and authority rules | IN PROGRESS | Owner decision register and governance principles exist. | Convert principles into enforceable architectural invariants and trace them through components, contracts, acceptance criteria and change control. |
 | System architecture | IN PROGRESS | Logical layers, ownership, deployment direction and dependency rules are documented. | Complete architecture-wide reconciliation; resolve incomplete/contradictory boundaries and prove every major responsibility has an owner and contract. |
-| Cognitive architecture | IN PROGRESS | Cognitive responsibilities and an iterative feedback loop are described. | Specify mechanism-level state, inputs/outputs, interactions, concurrency/interrupts, feedback, learning pathways and testable behavioural change without fixed behaviour mappings. |
+| Cognitive architecture | IN PROGRESS | A dedicated mechanism/interaction architecture now specifies responsibilities, state ownership, invariants, feedback, concurrency and verification scenarios. | Specify mechanism-level state, inputs/outputs, interactions, concurrency/interrupts, feedback, learning pathways and testable behavioural change without fixed behaviour mappings. |
 | Experience, representation and context | IN PROGRESS | Concepts and some contracts are described. | Specify observation provenance, representation alternatives, context lifecycle, uncertainty, updates and links into memory/belief/prediction. |
 | Memory, knowledge and belief | IN PROGRESS | Domain ownership, entities, evidence and revision concepts are documented. | Reconcile schemas and contracts; define lifecycle/retention/retrieval semantics and traceability; distinguish storage from learning. |
 | Prediction, appraisal, attention and reasoning | IN PROGRESS | Logical responsibilities and some cognitive-cycle tests exist. | Define mechanism contracts and their interactions; ensure appraisal/attention are not hardcoded stimulus-to-state/action tables. |
@@ -69,7 +69,7 @@ These are the main-builder's responsibilities, not owner testing or independent-
 - Define limits honestly: discovery cannot manufacture OS privileges, bypass sandboxing or guarantee arbitrary access.
 
 ### B-02 — Complete the cognitive mechanism contracts
-- Convert the logical cognitive list into explicit responsibilities and interfaces.
+- Reconcile the dedicated cognitive mechanism architecture with concrete C++ ownership, versioned contracts, authoritative persistence, Android capability discovery, canonical roadmap and acceptance tests.
 - Specify data/state transitions, provenance, uncertainty and temporal relationships.
 - Define iterative, concurrent, interruptible and feedback interactions; do not turn the cycle into a rigid pipeline.
 - Specify how prediction/outcome evaluation changes memory, beliefs, strategies and later decisions.
