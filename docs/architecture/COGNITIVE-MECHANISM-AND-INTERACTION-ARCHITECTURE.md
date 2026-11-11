@@ -1,0 +1,435 @@
+# AURIONS — Cognitive Mechanism and Interaction Architecture
+
+- **Status:** Builder design proposal; IN PROGRESS until reconciled with the complete contract set and independently reviewed.
+- **Purpose:** Specify how cognitive mechanisms interact to produce persistent, experience-dependent change.
+- **Governing principle:** Engineer the mechanisms; let behaviour be acquired through experience.
+- **Non-goal:** This is not a hardcoded behavioural script, a fixed stimulus-to-response table, or a rigid linear pipeline.
+
+## 1. Architectural requirement
+
+AURIONS must not consist of a collection of isolated subsystems that merely expose names such as memory, prediction, reasoning or learning. The mechanisms must exchange evidence and state through explicit contracts and interact in a continuing, conditional, interruptible process.
+
+The central requirement is **persistent experience-dependent adaptation**: observations and consequences must be capable of changing the system's future representations, beliefs, predictions, attention allocation, strategies, plans and capability selection. Changes must be traceable to evidence, evaluated in context and retained across restart when they are durable.
+
+The system must not claim that it has learned merely because it stored a conversation, changed a memory record, revised a belief, executed a training job or lowered training loss. Those are distinct events and need distinct evidence.
+
+## 2. Operating model: recurrent, event-driven cognition
+
+The cognitive system is a recurrent set of interacting mechanisms coordinated by an orchestration/runtime layer.
+
+A useful conceptual view is:
+
+**Experience and observation ↔ representation and context ↔ memory, knowledge and beliefs ↔ prediction, appraisal and attention ↔ reasoning ↔ goals, planning and decision ↔ governed action ↔ observed consequences ↔ evaluation and learning ↔ revised future processing.**
+
+The arrows are not a prescribed execution sequence. Mechanisms can:
+- Run concurrently when their inputs are available.
+- Revisit earlier interpretations when new evidence arrives.
+- Interrupt or suspend work when urgency, risk, resources or new evidence changes.
+- Trigger rediscovery, retrieval, replanning or owner clarification.
+- Produce partial results with uncertainty rather than blocking the entire cognitive cycle.
+- Resume from durable checkpoints after process death.
+
+The orchestrator coordinates work and resource budgets; it does not encode the system's desired conclusions or hardcode task-specific behaviour.
+
+## 3. Shared state and ownership
+
+Every state domain has one authoritative owner. Other mechanisms consume it through contracts and publish proposals/events rather than writing directly into another subsystem's records.
+
+| State domain | Authoritative owner | Key content |
+|---|---|---|
+| Raw observations and experiences | Experience subsystem | Source, time, context, raw/normalized observation references, sensitivity and provenance |
+| Representations | Representation subsystem | One or more interpretations, features, relations, uncertainty and source links |
+| Active context | Context subsystem | Relevant entities, temporal/spatial/task context, current constraints and confidence |
+| Durable episodic memory | Memory subsystem | Experiences, events, associations, retrieval metadata and retention |
+| Consolidated knowledge | Knowledge subsystem | Generalized information with source lineage and validity scope |
+| Propositions and evidence | Belief subsystem | Claims, evidence, support/contradiction, epistemic status and revision history |
+| Predictions | Prediction subsystem | Predicted outcome, horizon, conditions, confidence and immutable original record |
+| Appraisal state | Appraisal subsystem | Context-sensitive estimates relevant to significance, urgency, opportunity, uncertainty and potential consequence |
+| Attention allocation | Attention subsystem | Current allocation, selection rationale, resource cost and interruptions |
+| Goals and plans | Goal/planning subsystem | Owner objectives, derived goals, versions, dependencies, budgets and checkpoints |
+| Decision records | Decision subsystem | Selected/deferred/rejected option, rationale, uncertainty and policy handoff |
+| Operations and receipts | Action/runtime subsystem | Exact operation, authorization reference, dispatch, execution receipt, observed effects and reconciliation |
+| Learning hypotheses and updates | Learning subsystem | Evidence, target mechanism, hypothesis, baseline, candidate update and evaluation |
+| Self-model | Self-model subsystem | Capabilities, limitations, confidence, resource profile and measured performance |
+| Structural change candidates | Evolution subsystem | Proposed mechanism/architecture change, isolation, comparison, approval and rollback |
+
+Cross-domain references use stable IDs and explicit provenance. A consumer cannot mutate an owner's state by editing a shared object or directly writing its tables.
+
+## 4. Mechanism contracts
+
+### 4.1 Experience and observation
+
+**Purpose:** Capture what was observed or experienced without silently asserting that the observation is true or complete.
+
+**Inputs:** User interaction, environment observations, tool/provider receipts, sensor inputs when explicitly enabled, prior task outcomes and internal system events.
+
+**Outputs:** Durable or transient experience records, source metadata, capture limitations, sensitivity classification and references for downstream representation.
+
+**Invariants:**
+- Preserve source and capture time.
+- Distinguish direct observation, user assertion, model interpretation, external content and inferred result.
+- Preserve uncertainty, missing data and possible corruption.
+- Do not grant authority to untrusted content.
+- Apply retention and deletion policy before indexing or external use.
+
+### 4.2 Representation
+
+**Purpose:** Construct useful interpretations of experiences for downstream processing.
+
+**Inputs:** Experiences, available context, relevant memory/knowledge, modality-specific representations and processing constraints.
+
+**Outputs:** One or more representation hypotheses, entity/relationship references, feature structures, confidence/uncertainty and links to source evidence.
+
+**Invariants:**
+- A representation is not the source observation.
+- Multiple interpretations may coexist.
+- Later evidence may revise or supersede an interpretation without rewriting source history.
+- Transformations retain provenance and model/algorithm version.
+
+### 4.3 Context
+
+**Purpose:** Maintain the current relevant situation assembled from observations, representations, task state, memory and environment constraints.
+
+**Inputs:** New observations, representations, active goals, retrieved memories, device/environment state and task events.
+
+**Outputs:** Versioned context snapshots or deltas with temporal validity, relevance, source links and uncertainty.
+
+**Invariants:**
+- Context is task- and time-sensitive, not a universal global prompt.
+- Stale information is identified rather than silently reused.
+- Conflicting context is retained as conflict/uncertainty.
+- Sensitive context is filtered by purpose and authority before disclosure.
+
+### 4.4 Memory
+
+**Purpose:** Retain and retrieve experiences and associations across time.
+
+**Inputs:** Experiences, representations, context, retrieval queries, consolidation proposals, retention/deletion events.
+
+**Outputs:** Provenance-linked memory records, retrieval candidates, associations, consolidation candidates and deletion receipts.
+
+**Invariants:**
+- Storage is not proof of learning.
+- Retrieval includes provenance, relevance rationale and uncertainty.
+- Memory may be incomplete, stale or contradictory.
+- Retention, access and deletion rules are enforced independently of model preference.
+
+### 4.5 Knowledge and beliefs
+
+**Purpose:** Represent information and propositions with evidence, scope and revisable epistemic status.
+
+**Inputs:** Experiences, representations, memory retrieval, external sources, inference results and contradictory evidence.
+
+**Outputs:** Knowledge candidates, beliefs, evidence links, revision records, confidence estimates and unresolved conflicts.
+
+**Invariants:**
+- Evidence provenance is preserved.
+- Support and contradiction remain separately inspectable.
+- A belief revision creates history; it does not erase the prior state.
+- Repetition alone does not prove truth.
+- Confidence is calibrated and contextual; it is not automatically a probability.
+- External content is evidence, not privileged instruction.
+
+### 4.6 Prediction
+
+**Purpose:** Generate explicit expectations about possible states, events or consequences before the outcome is known.
+
+**Inputs:** Current context, beliefs, memory, candidate plans, capability knowledge, uncertainty and available compute.
+
+**Outputs:** Prediction records containing target, expected outcome, conditions, horizon, confidence, relevant evidence and version.
+
+**Invariants:**
+- Original prediction and evaluation criteria are immutable.
+- A prediction is stored before its outcome is observed when the test requires prospective evaluation.
+- Missing or ambiguous outcomes remain unevaluated.
+- Prediction confidence can be recalibrated from repeated evidence.
+
+### 4.7 Appraisal
+
+**Purpose:** Estimate the significance of current information and possible consequences relative to the system's current context, goals, constraints and learned experience.
+
+**Inputs:** Context, beliefs, predictions, active goals, uncertainty, prior outcomes and current resource/authority constraints.
+
+**Outputs:** Contextual appraisal state and rationale, including estimates relevant to urgency, relevance, novelty, opportunity, risk, conflict and expected consequence where applicable.
+
+**Invariants:**
+- Appraisal is a mechanism for evaluating context, not a fixed emotion label assigned to a stimulus.
+- No universal stimulus→emotion, success→reward, failure→rejection or similar hardcoded mapping is permitted.
+- Appraisal outputs are estimates with evidence and uncertainty, not unquestionable facts.
+- Governance risk classification remains a separate safety mechanism and cannot be overridden by learned appraisal.
+
+### 4.8 Attention
+
+**Purpose:** Allocate limited processing resources among competing observations, goals, predictions, memories and unresolved questions.
+
+**Inputs:** Appraisal, task relevance, novelty, uncertainty, predicted consequence, goal urgency, deadlines, resource budgets and interruption events.
+
+**Outputs:** Versioned attention allocations, selection/defer decisions, resource budgets and rationale.
+
+**Invariants:**
+- Attention allocation can adapt from measured outcomes.
+- A fixed priority list must not substitute for context-sensitive selection, although hard safety deadlines and resource limits remain explicit constraints.
+- Attention cannot suppress mandatory governance checks, safety denials or owner authority.
+- Preemption and starvation controls are observable and testable.
+
+### 4.9 Reasoning
+
+**Purpose:** Construct and evaluate hypotheses, explanations, alternatives and means to pursue goals using available evidence and mechanisms.
+
+**Inputs:** Context, beliefs, memory, predictions, appraisals, attention allocation, capability knowledge, goals and constraints.
+
+**Outputs:** Hypotheses, questions, candidate strategies, feasibility assessments, rationale and uncertainty.
+
+**Invariants:**
+- Separate known facts, assumptions, inferences and unknowns.
+- Consider contradictory evidence and alternative explanations.
+- Do not fabricate capabilities, permissions, interfaces or outcomes.
+- A reasoning proposal is not a decision, authorization or execution receipt.
+- Reasoning strategies may improve through evaluated experience; fixed task scripts are not the architecture.
+
+### 4.10 Goals
+
+**Purpose:** Represent owner objectives and derived objectives with explicit authority, priority, scope and lifecycle.
+
+**Inputs:** Owner instructions, persistent objectives, context, constraints, progress and approved proactive-autonomy policies.
+
+**Outputs:** Versioned goals, success conditions, priority rationale, dependencies, expiry and cancellation state.
+
+**Invariants:**
+- Owner authority and protected objectives cannot be silently rewritten by model output.
+- Derived goals retain lineage to the source objective or owner instruction.
+- Goal completion requires evidence, not a model assertion.
+- Goal revisions preserve prior versions and reasons.
+
+### 4.11 Planning
+
+**Purpose:** Construct, compare and adapt plans for achieving goals.
+
+**Inputs:** Goals, reasoning hypotheses, discovered capability descriptors, capability knowledge, permissions, resource budgets, predicted outcomes and current context.
+
+**Outputs:** Versioned plans with steps, dependencies, preconditions, expected effects, budgets, checkpoints, alternatives and stop conditions.
+
+**Invariants:**
+- Plans reference discovered/versioned capability descriptors; they do not invent an operation because it would be convenient.
+- Plans can be revised when new evidence, capability changes, denials or outcomes occur.
+- A plan is not authority to execute.
+- Hardcoded task→operation tables cannot substitute for planning.
+
+### 4.12 Decision
+
+**Purpose:** Select, defer, reject or request clarification for a proposed course of action.
+
+**Inputs:** Candidate plans/options, expected outcomes, uncertainty, goal relevance, resource constraints and governance results.
+
+**Outputs:** Decision record, rationale, rejected alternatives, unresolved questions and exact operation proposal when appropriate.
+
+**Invariants:**
+- The decision mechanism cannot grant permissions.
+- If a necessary fact is unknown, the system may defer or ask rather than invent.
+- Owner-reserved decisions remain with the owner.
+- A decision to act still passes the independent execution-time policy gate.
+
+### 4.13 Action and execution
+
+**Purpose:** Carry out an exact authorized operation through a registered capability adapter and report what actually occurred.
+
+**Inputs:** Exact operation proposal, capability descriptor/version, target, parameters, policy decision, approval reference, budget and cancellation state.
+
+**Outputs:** Durable operation lifecycle, dispatch receipt, observed effects, verification evidence, error/uncertainty state and audit reference.
+
+**Invariants:**
+- Policy is enforced independently at the execution boundary.
+- Android/OS permissions and AURIONS governance must both permit the operation.
+- Unknown or changed parameters invalidate matching approval.
+- Uncertain side effects are reconciled before retry.
+- No model, worker or capability provider can self-escalate authority.
+
+### 4.14 Outcome evaluation
+
+**Purpose:** Compare what was expected with what was observed and determine what the evidence supports.
+
+**Inputs:** Immutable prediction, plan expectations, operation receipts, independent observations, context changes and evaluation criteria.
+
+**Outputs:** Outcome classification, prediction error/uncertainty, causal attribution hypotheses, confidence and linked learning evidence.
+
+**Invariants:**
+- Actual observed effects are distinct from provider-reported success.
+- A missing receipt is not proof that an operation failed.
+- Attribution must consider confounding factors and uncertainty.
+- The evaluator cannot rewrite the original expectation to make it appear correct.
+
+### 4.15 Learning
+
+**Purpose:** Use evaluated experience to change future processing in a persistent, measurable and appropriately scoped way.
+
+**Learning domains are distinct:**
+1. **Episodic acquisition:** retaining a specific experience.
+2. **Knowledge/belief revision:** changing the represented state of what is believed based on evidence.
+3. **Capability learning:** improving knowledge of available interfaces, preconditions, effects, reliability and limits.
+4. **Strategy/mechanism learning:** changing a reusable method or mechanism and evaluating its performance.
+5. **Model training:** producing and evaluating a model artifact through the isolated worker pipeline.
+6. **Architecture evolution:** proposing and testing structural changes through the governed evolution lifecycle.
+
+**Inputs:** Outcome evaluations, prediction errors, repeated task evidence, held-out evaluations, capability-use history and explicit learning hypotheses.
+
+**Outputs:** Learning hypotheses, candidate parameter/strategy/knowledge updates, experiment records, evaluation results and accepted updates.
+
+**Invariants:**
+- Each update identifies what changes, why, evidence, scope, expected effect and rollback path.
+- Updates are versioned and attributable.
+- A failed experience does not automatically become a universal prohibition; a successful experience does not automatically become a universal rule.
+- Candidate changes are compared with a frozen baseline and tested on relevant unseen variations.
+- Learning cannot weaken security, privacy, owner authority or governance policy.
+- Model training and architecture evolution require their separate approval and validation paths.
+
+### 4.16 Self-model
+
+**Purpose:** Maintain an evidence-backed representation of AURIONS' own capabilities, limitations, confidence, resources, performance and current goals.
+
+**Inputs:** Capability discovery, execution history, outcome evaluation, benchmark results, failures, resource telemetry and learning reports.
+
+**Outputs:** Versioned self-model estimates with provenance, calibration and expiry.
+
+**Invariants:**
+- Self-claims are estimates, not authority.
+- Confidence must be compared with actual outcomes.
+- AURIONS cannot infer that it has a capability merely because a provider or model says it does.
+- The self-model cannot grant permissions or approve its own changes.
+
+### 4.17 Evolution
+
+**Purpose:** Propose, test and govern changes to mechanisms or architecture when evidence indicates a limitation or opportunity.
+
+**Inputs:** Self-model gaps, repeated failure patterns, evaluation results, resource constraints and owner objectives.
+
+**Outputs:** Change proposals, impact/risk analysis, isolated candidates, comparison results, approval requests, activation records and rollback evidence.
+
+**Invariants:**
+- Production code, protected governance and core authority cannot be changed by an unreviewed self-modification.
+- Candidates are isolated and cannot self-approve.
+- Changes preserve provenance, reproducibility and rollback.
+- AURIONS may propose foundational change, but protected owner authority and required approval remain enforced.
+
+## 5. Interaction contracts
+
+The following interactions must be explicit and testable. They are relationships, not a fixed order.
+
+| Interaction | Required information flow | Failure/uncertainty behaviour |
+|---|---|---|
+| Experience → representation | Source, timestamp, modality, sensitivity, provenance | Preserve raw evidence; allow multiple/failed interpretations |
+| Representation ↔ context | Entity, relation, temporal scope, confidence | Retain conflicting interpretations and stale context |
+| Context ↔ memory/knowledge | Retrieval query, relevance, provenance, validity scope | Do not treat missing retrieval as proof of absence |
+| Belief ↔ prediction | Proposition/evidence, assumptions, expected state, horizon | Preserve uncertainty; never rewrite prospective prediction |
+| Appraisal ↔ attention | Contextual significance, novelty, urgency, risk, resource cost | Reassess when evidence or budgets change |
+| Reasoning ↔ goals/planning | Candidate explanation/means, feasibility, constraints | Defer/ask when required inputs are unknown |
+| Planning ↔ capability discovery | Capability IDs/versions, schemas, preconditions, effects | Rediscover or replan when descriptor is stale/unavailable |
+| Decision ↔ governance | Exact proposed operation, target, parameters, data and effects | Deny/defer on mismatch, ambiguity or unavailable policy |
+| Action ↔ environment | Authorized exact invocation and execution context | Capture receipt; mark uncertain when effect cannot be confirmed |
+| Outcome ↔ prediction | Original expected outcome and independent observation | Preserve both even when evidence conflicts |
+| Outcome ↔ memory/learning | Evidence, attribution hypotheses, scope and confidence | Do not generalize beyond supported context |
+| Learning ↔ self-model | Accepted update, evaluation and performance evidence | Keep unvalidated candidates quarantined |
+| Self-model ↔ evolution | Repeated limitations/opportunities and impact | Propose isolated candidate; never self-activate |
+| Evolution ↔ governance | Exact change, risk, evidence, rollback and approval | No protected change without owner authority |
+
+## 6. Orchestration, concurrency and interruption
+
+The orchestrator manages:
+- Event correlation and causal lineage.
+- Work queues, priorities, deadlines and resource budgets.
+- Concurrency limits and backpressure.
+- Cancellation, preemption and safe checkpoints.
+- Dependency readiness and stale-input detection.
+- Retry classification and uncertain-operation reconciliation.
+- Durable progress and recovery after restart.
+- Observability without exposing sensitive content.
+
+It must not impose a single linear cognitive pipeline. A new observation can revise context while another task is running; a permission revocation can invalidate a plan; a deadline can preempt optional reasoning; a new outcome can trigger evaluation and memory updates. Every such transition must be explicit and traceable.
+
+A concurrent mechanism may consume a consistent versioned snapshot. If its inputs become stale before committing an update or dispatching an action, it must revalidate or abort safely.
+
+## 7. Persistent learning and behavioural change
+
+For a learning claim, the system must show a chain:
+
+1. A specific experience or outcome is captured with provenance.
+2. An interpretation/evaluation is linked to that evidence.
+3. A named mechanism or knowledge state proposes an update.
+4. The update records its hypothesis, scope, baseline and expected effect.
+5. The update is evaluated under the applicable standard.
+6. An accepted update is committed with a version and rollback reference.
+7. A later related task uses the updated state.
+8. A paired test shows a measurable difference attributable to the update.
+9. Related unseen variations test whether the change generalizes.
+10. Regression checks detect unacceptable collateral degradation.
+
+The chain must survive process restart where the state is intended to be durable. If a change affects only a transient prompt or untracked in-memory variable, it is not persistent learning.
+
+## 8. Prohibited hardcoded behavioural substitutes
+
+The following are architectural anti-patterns:
+- Fixed stimulus→emotion or stimulus→appraisal lookup tables presented as acquired internal state.
+- Fixed success/failure→reward/punishment or failure→avoidance mappings.
+- Fixed task→tool/action recipes as the primary planner.
+- A developer-authored closed Android operation list presented as AURIONS' discovered capabilities.
+- Hardcoded claims that an operation succeeded without independent outcome evidence.
+- Fixed confidence values that do not respond to calibration evidence.
+- Manually authored "learned" memories or self-model claims presented as experience-derived.
+- Rules that automatically convert one experience into a universal strategy without scope and evaluation.
+- A scripted cognitive cycle that always invokes every mechanism in the same order regardless of context.
+
+Explicit engineered constraints are not prohibited: schemas, safety invariants, permission boundaries, cryptographic protocols, resource ceilings, type validation, deterministic recovery logic and owner-protected authority rules are necessary. They constrain safe operation; they do not predetermine acquired behaviour.
+
+## 9. Required verification scenarios
+
+- **CM-001:** one experience supports multiple representations without changing the source record.
+- **CM-002:** context revision marks stale dependent reasoning inputs.
+- **CM-003:** contradictory evidence creates a belief revision while preserving prior evidence and history.
+- **CM-004:** predictions are stored before outcome and cannot be rewritten after observation.
+- **CM-005:** appraisal/attention allocations change in response to contextual evidence and resource constraints, not fixed stimulus mapping.
+- **CM-006:** a new observation can interrupt or replan an active task safely.
+- **CM-007:** a plan references discovered capability descriptors and fails safely when one is stale or unavailable.
+- **CM-008:** decision output cannot bypass independent governance.
+- **CM-009:** provider-reported success without verified postcondition remains unverified.
+- **CM-010:** an uncertain external/device effect is reconciled before retry.
+- **CM-011:** a learning update records evidence, hypothesis, scope, baseline, evaluation and rollback.
+- **CM-012:** an accepted strategy update changes a later related task and survives restart.
+- **CM-013:** the updated strategy is tested on related unseen variations and unrelated regression controls.
+- **CM-014:** one failure does not automatically become a universal prohibition.
+- **CM-015:** one success does not automatically become universal competence or permission.
+- **CM-016:** a self-model capability estimate is calibrated against measured execution outcomes.
+- **CM-017:** evolution candidates cannot self-approve or mutate protected governance.
+- **CM-018:** resource exhaustion/cancellation preserves committed state and produces a recoverable task status.
+- **CM-019:** no fixed task-to-action mapping is required to use a newly discovered compatible capability.
+- **CM-020:** a later experience can trigger revision of an earlier belief/representation without erasing its provenance.
+
+These tests require fixtures, exact steps, durable-state assertions, negative controls and reproducible evidence before they can be marked VALIDATED.
+
+## 10. Contract ownership and implementation mapping
+
+Concrete schema definitions belong in the implementation-ready contract set, not duplicated in this document. That contract set must map each mechanism to:
+- Owning C++ module/API.
+- Authoritative persistence domain/table or artifact.
+- Commands, queries, events and schema versions.
+- Input/output/error/cancellation semantics.
+- Provenance and sensitivity fields.
+- State transition ownership.
+- Allowed and forbidden dependencies.
+- Unit, integration, failure and acceptance tests.
+
+The Python worker boundary is limited to training, dataset preparation, experiments and evaluation. Workers return candidate artifacts and metrics; the C++ core validates them and retains authority over objectives, data permissions, release eligibility and production activation.
+
+## 11. Completion criteria
+
+This architecture remains IN PROGRESS until:
+1. Every mechanism has an explicit owner, state domain, inputs, outputs, invariants and error semantics.
+2. Interaction contracts map to concrete versioned schemas and authoritative persistence.
+3. Concurrency, interruption, stale context, cancellation and recovery are specified end-to-end.
+4. Learning types are distinct and their evidence requirements are enforceable.
+5. No-hardcoding invariants are traced into Android discovery, planning, action and test design.
+6. The canonical roadmap maps every mechanism to a work package and dependency.
+7. Every CM-* scenario is mapped to requirements and the canonical test catalogue.
+8. Architecture-wide consistency review finds no unresolved critical/high design contradiction.
+9. The exact final revision receives independent review and required findings are resolved.
+10. Owner planning-exit approval is obtained.
+
+**Current disposition:** IN PROGRESS. This document advances mechanism-level design but does not claim verified completeness, implementation or demonstrated learning.
