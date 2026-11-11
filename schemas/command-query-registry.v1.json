@@ -27,7 +27,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/experienceObserved",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -37,8 +41,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "representation.create",
@@ -57,7 +62,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/representationCreated",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -67,8 +76,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "context.assemble",
@@ -87,7 +97,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/contextAssemblyRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -97,8 +111,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "context.invalidate",
@@ -118,7 +133,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/contextInvalidationRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -128,8 +147,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "environment.observe",
@@ -149,7 +169,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/environmentObservationRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -159,8 +183,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "capability.discover",
@@ -180,7 +205,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityDiscoveryRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -190,8 +219,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "capability.verify",
@@ -211,7 +241,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityVerificationRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -221,8 +255,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "capability.invalidate",
@@ -242,7 +277,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityInvalidationRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -252,8 +291,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "capability.knowledge.propose",
@@ -272,7 +312,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityKnowledgeRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -282,8 +326,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "capability.knowledge.revise",
@@ -302,7 +347,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityKnowledgeRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -312,8 +361,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "memory.retrieve",
@@ -332,7 +382,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/memoryRetrievalQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -342,8 +396,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "belief.propose",
@@ -362,7 +417,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/beliefRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -372,8 +431,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "belief.revise",
@@ -392,7 +452,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/beliefRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -402,8 +466,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "prediction.create",
@@ -422,7 +487,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/predictionCreated",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -432,8 +501,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "prediction.evaluate",
@@ -452,7 +522,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/predictionEvaluationRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -462,8 +536,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "appraisal.evaluate",
@@ -482,7 +557,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/appraisalEvaluationRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -492,8 +571,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "attention.allocate",
@@ -512,7 +592,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/attentionAllocationRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -522,8 +606,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "reasoning.assess",
@@ -542,7 +627,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/reasoningAssessmentRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -552,8 +641,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "goal.create",
@@ -572,7 +662,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/goalRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -582,8 +676,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "goal.revise",
@@ -602,7 +697,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/goalRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -612,8 +711,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "goal.cancel",
@@ -633,7 +733,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/goalControlRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -643,8 +747,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "plan.propose",
@@ -663,7 +768,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/planRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -673,8 +782,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "plan.revise",
@@ -693,7 +803,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/planRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -703,8 +817,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "plan.checkpoint",
@@ -723,7 +838,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/planCheckpointRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -733,8 +852,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "decision.record",
@@ -753,7 +873,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/decisionRecorded",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -763,8 +887,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "operation.propose",
@@ -783,7 +908,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/operationProposal",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -793,8 +922,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "operation.cancel",
@@ -813,7 +943,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/operationControlRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -823,8 +957,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "operation.reconcile",
@@ -843,7 +978,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/operationControlRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -853,8 +992,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "approval.request",
@@ -873,7 +1013,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/approvalRequested",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -883,8 +1027,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "approval.revoke",
@@ -903,7 +1048,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/approvalRevocationRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -913,8 +1062,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "outcome.evaluate",
@@ -934,7 +1084,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/outcomeEvaluationRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -944,8 +1098,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "learning.update.propose",
@@ -964,7 +1119,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/learningUpdate",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -974,8 +1133,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "learning.experiment.submit",
@@ -995,7 +1155,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/learningExperimentRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -1005,8 +1169,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "learning.candidate.evaluate",
@@ -1026,7 +1191,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/learningCandidateEvaluationRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -1036,8 +1205,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "self_model.update.propose",
@@ -1056,7 +1226,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/selfModelUpdated",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -1066,8 +1240,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "evolution.change.propose",
@@ -1086,7 +1261,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionProposed",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -1096,8 +1275,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "evolution.candidate.evaluate",
@@ -1117,7 +1297,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionCandidateActionRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -1127,8 +1311,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "evolution.candidate.activate",
@@ -1148,7 +1333,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionCandidateActionRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -1158,8 +1347,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "evolution.candidate.rollback",
@@ -1179,7 +1369,11 @@
       "side_effect_contract": null,
       "error_code_bindings": [],
       "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionCandidateActionRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owning_aggregate_revision_and_transition_rules",
@@ -1189,8 +1383,9 @@
         "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
         "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "task.start",
@@ -1202,25 +1397,29 @@
       "persistence_stores": [
         "aurion_events.db"
       ],
-      "expected_revision_contract": null,
+      "expected_revision_contract": "taskControlRequest.expected_version MUST equal task_runs.revision; taskRunTransition.previous_revision MUST equal the prior revision and revision MUST advance by exactly one on a committed transition; see TS-001…TS-007.",
       "authorization_contract": null,
       "idempotency_contract": null,
-      "deadline_cancellation_contract": null,
-      "side_effect_contract": null,
+      "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
+      "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
       "error_code_bindings": [],
-      "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "emitted_event_bindings": [
+        "task.control.requested.v1",
+        "task.run.transitioned.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/taskControlRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "owning_aggregate_revision_and_transition_rules",
         "authorization_and_data_scope_rule",
         "idempotency_key_scope_and_canonical_digest_rule",
-        "deadline_and_cancellation_semantics",
-        "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
-        "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "task.pause",
@@ -1232,25 +1431,29 @@
       "persistence_stores": [
         "aurion_events.db"
       ],
-      "expected_revision_contract": null,
+      "expected_revision_contract": "taskControlRequest.expected_version MUST equal task_runs.revision; taskRunTransition.previous_revision MUST equal the prior revision and revision MUST advance by exactly one on a committed transition; see TS-001…TS-007.",
       "authorization_contract": null,
       "idempotency_contract": null,
-      "deadline_cancellation_contract": null,
-      "side_effect_contract": null,
+      "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
+      "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
       "error_code_bindings": [],
-      "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "emitted_event_bindings": [
+        "task.control.requested.v1",
+        "task.run.transitioned.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/taskControlRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "owning_aggregate_revision_and_transition_rules",
         "authorization_and_data_scope_rule",
         "idempotency_key_scope_and_canonical_digest_rule",
-        "deadline_and_cancellation_semantics",
-        "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
-        "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "task.resume",
@@ -1262,25 +1465,29 @@
       "persistence_stores": [
         "aurion_events.db"
       ],
-      "expected_revision_contract": null,
+      "expected_revision_contract": "taskControlRequest.expected_version MUST equal task_runs.revision; taskRunTransition.previous_revision MUST equal the prior revision and revision MUST advance by exactly one on a committed transition; see TS-001…TS-007.",
       "authorization_contract": null,
       "idempotency_contract": null,
-      "deadline_cancellation_contract": null,
-      "side_effect_contract": null,
+      "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
+      "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
       "error_code_bindings": [],
-      "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "emitted_event_bindings": [
+        "task.control.requested.v1",
+        "task.run.transitioned.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/taskControlRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "owning_aggregate_revision_and_transition_rules",
         "authorization_and_data_scope_rule",
         "idempotency_key_scope_and_canonical_digest_rule",
-        "deadline_and_cancellation_semantics",
-        "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
-        "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "task.cancel",
@@ -1292,25 +1499,29 @@
       "persistence_stores": [
         "aurion_events.db"
       ],
-      "expected_revision_contract": null,
+      "expected_revision_contract": "taskControlRequest.expected_version MUST equal task_runs.revision; taskRunTransition.previous_revision MUST equal the prior revision and revision MUST advance by exactly one on a committed transition; see TS-001…TS-007.",
       "authorization_contract": null,
       "idempotency_contract": null,
-      "deadline_cancellation_contract": null,
-      "side_effect_contract": null,
+      "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
+      "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
       "error_code_bindings": [],
-      "emitted_event_bindings": [],
-      "fixture_refs": [],
+      "emitted_event_bindings": [
+        "task.control.requested.v1",
+        "task.run.transitioned.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/taskControlRequest",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "owning_aggregate_revision_and_transition_rules",
         "authorization_and_data_scope_rule",
         "idempotency_key_scope_and_canonical_digest_rule",
-        "deadline_and_cancellation_semantics",
-        "per_attempt_side_effect_contract",
         "error_code_mapping_and_recovery_branches",
-        "emitted_event_mapping_and_outbox_transaction",
-        "positive_negative_conflict_replay_recovery_fixtures"
-      ]
+        "per_entry_conflict_replay_recovery_assertions"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "device.pair",
@@ -1333,7 +1544,8 @@
         "future_multi_device_phase_scope_and_owner_authorization",
         "request_and_response_schema",
         "all_command_semantics_and_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     },
     {
       "command_type": "device.revoke",
@@ -1356,7 +1568,8 @@
         "future_multi_device_phase_scope_and_owner_authorization",
         "request_and_response_schema",
         "all_command_semantics_and_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
     }
   ],
   "queries": [
@@ -1379,7 +1592,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/environmentObserved",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1389,7 +1607,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "capability.search",
@@ -1410,7 +1629,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityDescriptorRecord",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1420,7 +1644,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "capability.inspect",
@@ -1441,7 +1666,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityDescriptorRecord",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1451,7 +1681,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "capability.knowledge.inspect",
@@ -1472,7 +1703,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityKnowledgeRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1482,7 +1718,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "representation.inspect",
@@ -1503,7 +1740,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/representationCreated",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1513,7 +1755,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "context.get",
@@ -1534,7 +1777,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/contextSnapshot",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1544,7 +1792,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "memory.search",
@@ -1565,7 +1814,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/memoryRetrievalQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/memoryRetrieval",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1575,7 +1829,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "knowledge.search",
@@ -1596,7 +1851,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/knowledgeItem",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1606,7 +1866,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "belief.inspect",
@@ -1627,7 +1888,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/beliefRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1637,7 +1903,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "prediction.inspect",
@@ -1658,7 +1925,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/predictionCreated",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1668,7 +1940,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "appraisal.inspect",
@@ -1689,7 +1962,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/appraisalUpdated",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1699,7 +1977,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "attention.inspect",
@@ -1720,7 +1999,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/attentionAllocated",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1730,7 +2014,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "reasoning.inspect",
@@ -1751,7 +2036,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/reasoningHypothesisProposed",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1761,7 +2051,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "goal.get",
@@ -1782,7 +2073,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/goalRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1792,7 +2088,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "plan.get",
@@ -1813,7 +2110,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/planRevision",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1823,7 +2125,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "decision.inspect",
@@ -1844,7 +2147,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/decisionRecorded",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1854,7 +2162,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "task.status",
@@ -1875,7 +2184,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/taskRunStatus",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1885,7 +2199,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "operation.status",
@@ -1906,7 +2221,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1916,7 +2236,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "permission.inspect",
@@ -1937,7 +2258,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/permissionRecord",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1947,7 +2273,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "audit.lookup",
@@ -1968,7 +2295,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/auditRecord",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -1978,7 +2310,8 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     },
     {
       "query_type": "device.capabilities",
@@ -1999,7 +2332,12 @@
       "ordering_cursor_contract": null,
       "limits_contract": null,
       "freshness_cache_contract": null,
-      "fixture_refs": [],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityDescriptorRecord",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse"
+      ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "owner_device_scope_and_authorization_rule",
@@ -2009,13 +2347,16 @@
         "timeout_result_count_and_byte_limits",
         "cache_and_freshness_semantics",
         "positive_negative_redaction_and_consistency_fixtures"
-      ]
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
     }
   ],
   "dispatch_invariant": "No entry is eligible for production dispatch until every applicable binding is completed, validated, covered by fixtures, and registered by the owning runtime. Null means unresolved, never an implicit default.",
   "counts": {
     "mapped_command_types": 43,
     "deferred_command_types": 2,
-    "query_types": 21
+    "query_types": 21,
+    "command_envelope_bindings": 43,
+    "query_envelope_bindings": 21
   }
 }
