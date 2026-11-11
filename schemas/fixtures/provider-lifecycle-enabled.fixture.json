@@ -1,0 +1,42 @@
+{
+  "providerLifecycle": {
+    "provider_id": "provider:fixture.adapter.alpha",
+    "provider_version": "1.0.0",
+    "state": "enabled",
+    "origin_ref": "artifact:provider-manifest:fixture-01",
+    "artifact_integrity": {
+      "algorithm": "sha256",
+      "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "verified_at": "2026-11-11T08:00:00Z"
+    },
+    "interface_versions": [
+      {
+        "interface_id": "fixture.environment.observe",
+        "schema_version": "1.0"
+      }
+    ],
+    "permission_scopes": [
+      "fixture.permission.scope"
+    ],
+    "provenance_ref": "evidence:provider-validation:01",
+    "transition": {
+      "from_state": "validated",
+      "to_state": "enabled",
+      "cause": "separate governance grant and current platform permission were confirmed",
+      "actor_ref": "system:policy-enforcer",
+      "evidence_refs": [
+        "governance:decision:provider-enable:01",
+        "platform:permission-observation:01"
+      ],
+      "occurred_at": "2026-11-12T00:00:00Z"
+    },
+    "validation_evidence_refs": [
+      "evidence:manifest-check:01",
+      "evidence:interface-check:01"
+    ],
+    "trust_assessment_ref": "evidence:provider-trust:01",
+    "governance_decision_ref": "governance:decision:provider-enable:01",
+    "platform_permission_observation_ref": "platform:permission-observation:01",
+    "owner_approval_ref": null
+  }
+}
