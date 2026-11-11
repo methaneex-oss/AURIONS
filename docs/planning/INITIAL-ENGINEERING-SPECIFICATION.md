@@ -1211,7 +1211,7 @@ CREATE INDEX idx_disclosures_provider_time ON data_disclosures(provider_id,discl
 - Use non-null idempotency keys for operations that claim idempotency; enforce this at operation creation.
 - Verify STRICT, JSON functions, WAL and foreign-key behaviour on the actual SQLite runtime before adopting this DDL unchanged.
 
-### 26.5.1 Capability and cognitive-state schema extension — proposed migration
+### 26.5.1 Capability and cognitive-state schema extension — proposed migration v2
 
 The initial memory DDL did not include durable storage for the dynamic capability registry and several durable cognitive state domains introduced by the Android and cognitive mechanism architectures. That is a schema completeness gap; the registry must not be hidden inside an untyped blob or confused with governance permissions.
 
@@ -1234,7 +1234,8 @@ CREATE TABLE capability_descriptors (
   last_verified_at_ms INTEGER,
   expires_at_ms INTEGER,
   PRIMARY KEY(capability_id,descriptor_version),
-  CHECK(expires_at_ms IS NULL OR expires_at_ms>first_discovered_at_ms)
+  CHECK(expires_at_ms IS NULL OR expires_at_ms>first_discovered_at_ms),
+  CHECK(status<>'verified' OR last_verified_at_ms IS NOT NULL)
 ) STRICT;
 CREATE INDEX idx_capability_status_freshness
   ON capability_descriptors(device_scope,status,expires_at_ms);
@@ -1250,6 +1251,7 @@ CREATE TABLE capability_discovery_evidence (
   confidence REAL CHECK(confidence IS NULL OR confidence BETWEEN 0.0 AND 1.0),
   observed_at_ms INTEGER NOT NULL,
   details_json TEXT NOT NULL CHECK(json_valid(details_json)),
+  CHECK(source_experience_id IS NOT NULL OR evidence_id IS NOT NULL),
   FOREIGN KEY(capability_id,descriptor_version)
     REFERENCES capability_descriptors(capability_id,descriptor_version)
 ) STRICT;
@@ -1310,7 +1312,8 @@ CREATE TABLE appraisal_records (
   sensitivity INTEGER NOT NULL CHECK(sensitivity BETWEEN 0 AND 4),
   created_at_ms INTEGER NOT NULL,
   valid_until_ms INTEGER,
-  FOREIGN KEY(context_id,context_version) REFERENCES contexts(context_id,version)
+  FOREIGN KEY(context_id,context_version) REFERENCES contexts(context_id,version),
+  CHECK(valid_until_ms IS NULL OR valid_until_ms>created_at_ms)
 ) STRICT;
 
 CREATE TABLE reasoning_assessments (
@@ -1335,7 +1338,8 @@ CREATE TABLE decision_records (
   selected_option_ref TEXT,
   rationale_ref TEXT NOT NULL,
   uncertainty_json TEXT NOT NULL CHECK(json_valid(uncertainty_json)),
-  created_at_ms INTEGER NOT NULL
+  created_at_ms INTEGER NOT NULL,
+  CHECK(decision_type<>'selected' OR selected_option_ref IS NOT NULL)
 ) STRICT;
 
 CREATE TABLE outcome_evaluations (
@@ -1373,7 +1377,8 @@ CREATE TABLE evolution_proposals (
      'rejected','activated','rolled_back','deferred')),
   approval_ref TEXT,
   created_at_ms INTEGER NOT NULL,
-  updated_at_ms INTEGER NOT NULL
+  updated_at_ms INTEGER NOT NULL,
+  CHECK(state NOT IN ('approved','activated') OR approval_ref IS NOT NULL)
 ) STRICT;
 CREATE INDEX idx_evolution_state ON evolution_proposals(state,updated_at_ms);
 ```
@@ -1387,7 +1392,7 @@ CREATE INDEX idx_evolution_state ON evolution_proposals(state,updated_at_ms);
 - Self-model revisions and evolution proposals preserve evidence and version history. They cannot grant permissions or activate protected changes.
 - Cross-store operation IDs and approval references are validated by application services; no cross-file foreign keys are introduced.
 
-This migration must be reconciled with the final component contracts and tested for index coverage, JSON schema validation, retention/deletion, migrations and crash recovery before implementation.
+This migration must be reconciled with the final component contracts and tested for index coverage, JSON schema validation, retention/deletion, migrations and crash recovery before implementation. Application-level invariants still include descriptor JSON schema validation, exact evidence ownership, decision-to-plan/goal consistency, capability relationship validity, and the rule that no descriptor status or learned knowledge grants authority. The migration's CHECK constraints are necessary but not sufficient.
 
 ### 26.6 Migration protocol
 
