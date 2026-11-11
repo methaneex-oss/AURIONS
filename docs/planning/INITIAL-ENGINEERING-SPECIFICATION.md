@@ -922,7 +922,10 @@ CREATE TABLE learning_updates (
   evaluation_ref TEXT,
   decision_reason TEXT,
   created_at_ms INTEGER NOT NULL,
-  updated_at_ms INTEGER NOT NULL
+  updated_at_ms INTEGER NOT NULL,
+  CHECK(updated_at_ms>=created_at_ms),
+  CHECK(state NOT IN ('accepted','rolled_back') OR
+        (baseline_ref IS NOT NULL AND evaluation_ref IS NOT NULL))
 ) STRICT;
 CREATE INDEX idx_learning_state ON learning_updates(state,updated_at_ms);
 
@@ -1245,7 +1248,8 @@ CREATE TABLE artifacts (
   updated_at_ms INTEGER NOT NULL,
   deleted_at_ms INTEGER,
   CHECK(updated_at_ms>=created_at_ms),
-  CHECK(deleted_at_ms IS NULL OR deleted_at_ms>=created_at_ms)
+  CHECK(deleted_at_ms IS NULL OR deleted_at_ms>=created_at_ms),
+  CHECK(deletion_state NOT IN ('pending_deletion','deleted_active','backup_expiry_pending') OR deleted_at_ms IS NOT NULL)
 ) STRICT;
 CREATE INDEX idx_artifacts_hash ON artifacts(sha256);
 CREATE INDEX idx_artifacts_kind_status ON artifacts(artifact_kind,validation_state,availability_state);
