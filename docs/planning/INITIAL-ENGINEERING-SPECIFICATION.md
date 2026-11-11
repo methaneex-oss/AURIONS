@@ -522,7 +522,7 @@ Field rules:
 
 A receiver adds its own received_at_ms and processing metadata in its receiving store; the producer must not claim to know when another component received the message.
 
-**Timestamp convention:** wire format uses UTC RFC 3339; SQLite stores UTC Unix epoch milliseconds as previously proposed. Reject timestamps without timezone information. Clock skew is possible; causal ordering uses IDs, sequence and operation state, not wall-clock timestamps alone.
+**Timestamp convention:** wire format uses UTC RFC 3339; SQLite stores UTC Unix epoch milliseconds as previously proposed. Reject timestamps without timezone information. Clock skew is possible; causal ordering uses causation/correlation IDs, the receiving event store's monotonically assigned `event_sequence`, aggregate/domain revisions and operation state, not wall-clock timestamps alone. `event_sequence` is local to one event store and does not imply global ordering across independent devices or producers.
 
 **Identifier convention:** UUID text on the wire; 16-byte UUID BLOB in SQLite. IDs must not be reused.
 
@@ -960,7 +960,9 @@ CREATE TABLE schema_migrations (
 ) STRICT;
 
 CREATE TABLE events (
-  event_id BLOB PRIMARY KEY CHECK(length(event_id)=16),
+  -- Assigned by this event store at durable append; never supplied by the producer.
+  event_sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+  event_id BLOB NOT NULL UNIQUE CHECK(length(event_id)=16),
   message_id BLOB NOT NULL UNIQUE CHECK(length(message_id)=16),
   message_type TEXT NOT NULL,
   contract_version TEXT NOT NULL,
@@ -980,6 +982,7 @@ CREATE INDEX idx_events_correlation ON events(correlation_id,occurred_at_ms);
 
 CREATE TABLE event_consumers (
   consumer_id TEXT PRIMARY KEY,
+  -- Last committed local events.event_sequence consumed by this consumer.
   last_sequence INTEGER NOT NULL DEFAULT 0 CHECK(last_sequence>=0),
   updated_at_ms INTEGER NOT NULL
 ) STRICT;
