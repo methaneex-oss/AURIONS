@@ -157,3 +157,61 @@ This matrix is IN PROGRESS until:
 7. The exact revised baseline receives independent re-review and owner planning-exit approval.
 
 **Current disposition:** IN PROGRESS. This matrix makes cross-domain omissions explicit; it does not claim they are fixed, executed or validated.
+
+
+## 8. Scenario-to-contract and test traceability
+
+This section makes the architecture scenario IDs individually traceable to the existing contract-test catalogue and canonical payload definitions. The referenced payload fixtures prove payload shape only. They do **not** constitute an executable multi-step scenario fixture or a passing test. Every row below remains **SPECIFIED — scenario fixture and implementation execution outstanding** until a reproducible test records its inputs, state transitions, durable assertions, negative controls, build revision and result.
+
+### 8.1 Cognitive mechanism scenarios
+
+| Scenario | Required payload definitions | Related catalogue checks | Required scenario-level evidence |
+|---|---|---|---|
+| CM-001 | `experienceObserved`, `representationCreated` | CG-001, CG-002 | One immutable experience with multiple independently versioned representations; source record unchanged. |
+| CM-002 | `contextSnapshot`, `contextInvalidated`, `reasoningAssessmentRequest` | CG-002, DB-016 | Context revision invalidates dependent reasoning inputs; stale input is rejected or recomputed. |
+| CM-003 | `beliefRevision`, `evidenceItem` | CG-004 | Contradictory evidence creates a new revision; prior evidence and revisions remain retrievable. |
+| CM-004 | `predictionCreated`, `predictionEvaluation` | CG-005, CG-006 | Prediction and criteria are committed before outcome; evaluation cannot mutate the original prediction. |
+| CM-005 | `appraisalUpdated`, `attentionAllocated` | CG-007 | Allocation responds to changed evidence and resource state; no fixed stimulus mapping. |
+| CM-006 | `taskRunStatus`, `taskRunTransition`, `taskCheckpointDetails`, `contextSnapshot` | CG-010, OP-008, TS-004 | Interrupt/replan at safe points; preserve committed state and reconcile dispatched work. |
+| CM-007 | `planRevision`, `planStepContract`, `capabilityDescriptorRecord`, `capabilityKnowledgeRevision` | DB-011, CAP-002 | Plan binds exact descriptor version; stale/unavailable descriptor blocks dispatch and triggers revalidation. |
+| CM-008 | `decisionRecorded`, `permissionEvaluated`, `approvalDecision` | AU-001…AU-012, OP-001 | Decision cannot grant authority; gateway independently enforces current authorization. |
+| CM-009 | `operationLifecycleEvent`, `operationAttemptReceipt`, `outcomeObserved`, `outcomeEvaluation` | OP-003, OP-004 | Provider success without independent postcondition evidence remains unverified. |
+| CM-010 | `operationLifecycleEvent`, `operationAttemptReceipt`, `contractError` | OP-003, OP-004, OP-005 | Unknown/dispatched side effect is reconciled before retry; no duplicate effect. |
+| CM-011 | `learningUpdate`, `learningExperimentRequest`, `artifactManifest`, `learningExperimentCompleted` | LE-001…LE-008, DB-015 | Update links hypothesis, scope, evidence, frozen baseline, evaluation, regression and rollback artifacts. |
+| CM-012 | `learningUpdate`, `artifactManifest`, `planRevision` | CG-008, CG-010, LE-005…LE-007 | Accepted update persists across restart and changes a later related task under the declared evaluation protocol. |
+| CM-013 | `learningExperimentRequest`, `learningCandidateEvaluationRequest`, `artifactManifest` | CG-009, LE-002…LE-005 | Related unseen variations improve without unrelated regression; repeated seeded comparisons against frozen baseline. |
+| CM-014 | `capabilityKnowledgeRevision`, `evidenceItem` | CAP-003, NHC-004 | One failure revises only evidence-supported scope; prior knowledge and contradictory evidence remain. |
+| CM-015 | `capabilityKnowledgeRevision`, `permissionEvaluated`, `approvalDecision` | CAP-001, NHC-005 | Success cannot create universal competence, permission or owner authority. |
+| CM-016 | `selfModelUpdated`, `operationAttemptReceipt`, `outcomeEvaluation` | LE-004, CG-008 | Confidence/calibration is compared with measured outcomes over a defined sample and scope. |
+| CM-017 | `evolutionProposed`, `evolutionCandidateLifecycle`, `approvalDecision` | AU-001…AU-012, LE-007, LE-008 | Candidate cannot self-approve or mutate protected governance; activation and rollback are separately governed and audited. |
+| CM-018 | `taskRunStatus`, `taskRunTransition`, `taskCheckpointDetails`, `operationLifecycleEvent` | OP-005, OP-008, TS-004, TS-007 | Cancellation/resource exhaustion preserves committed state and produces a recoverable, truthful terminal or uncertain status. |
+| CM-019 | `capabilityDescriptorRecord`, `planStepContract` | CAP-004, NHC-001, NHC-007 | New compatible capability is represented and considered through generic mechanisms without a task-specific core branch. |
+| CM-020 | `beliefRevision`, `representationRevised`, `evidenceItem` | CG-004 | Later evidence revises earlier interpretation without rewriting source observation or provenance. |
+| CM-021 | `attentionAllocated`, `taskRunStatus`, `taskCheckpointDetails`, `contextSnapshot` | DB-017, TS-005 | Restart treats prior attention as history and reconstructs current allocation from current state and resources. |
+
+### 8.2 Android environment and capability scenarios
+
+| Scenario | Required payload definitions | Related catalogue checks | Required scenario-level evidence |
+|---|---|---|---|
+| AD-001 | `capabilityDescriptorRecord`, `permissionEvaluated`, `approvalDecision` | CAP-001, AU-001…AU-012 | Discovery is recorded while missing OS permission or AURIONS authorization independently blocks execution. |
+| AD-002 | `capabilityDescriptorRecord`, `discoveryResult`, `contractError` | CT-002, CT-005 | Unknown interface/schema is reported as unknown; no fabricated invocation or side effect. |
+| AD-003 | `discoveryRequest`, `discoveryResult`, `capabilityDescriptorRecord` | CAP-004, NHC-001, NHC-007 | New provider is represented through the generic discovery path without editing a task-to-action map. |
+| AD-004 | `capabilityDescriptorRecord`, `providerLifecycle`, `environmentObserved` | CAP-002, CT-002 | Provider/OS/app version change invalidates stale descriptor and forces revalidation. |
+| AD-005 | `permissionRecord`, `operationLifecycleEvent`, `providerLifecycle` | CAP-002, AU-001…AU-012, OP-005 | Revocation blocks queued/future work; in-flight side effects are safely cancelled or reconciled. |
+| AD-006 | `operationProposal`, `approvalRequested`, `approvalDecision` | OP-006, DB-013, AU-001…AU-012 | Any change to target, parameters, effects, data scope or descriptor version invalidates exact-operation approval. |
+| AD-007 | `operationAttemptReceipt`, `outcomeObserved`, `outcomeEvaluation` | OP-003, OP-004, CM-009 | Successful invocation with unverified postcondition is not reported as verified. |
+| AD-008 | `capabilityKnowledgeRevision`, `evidenceItem` | CAP-003, NHC-004 | Failure updates context-specific knowledge without universal prohibition or history erasure. |
+| AD-009 | `learningUpdate`, `planRevision`, `capabilityKnowledgeRevision` | CAP-004, NHC-008, LE-005 | Later related task adapts after evaluated feedback; unrelated controls remain within declared tolerance. |
+| AD-010 | `permissionEvaluated`, `approvalDecision`, `auditRecord` | NHC-005, NHC-008, AU-001…AU-012 | Repeated success cannot remove policy checks, reduce risk or create approval. |
+| AD-011 | `environmentObserved`, `capabilityDescriptorRecord`, `operationLifecycleEvent` | PR-17 | Network-isolated mobile workflow performs local discovery and a separately authorized operation. |
+| AD-012 | `planRevision`, `operationProposal`, `approvalDecision` | PR-18, AU-001…AU-012 | Cloud-originated proposal cannot execute until the device independently revalidates and authorizes it. |
+| AD-013 | `externalDisclosureRecord`, `environmentObserved` | AU-001…AU-012 | Sensitive observations remain local or are disclosed only through explicit scoped authorization and audit. |
+| AD-014 | `operationAttemptReceipt`, `operationLifecycleEvent`, `contractError` | OP-003, OP-004, DB-012, DB-014 | Crash around dispatch produces reconciled or explicitly uncertain state; blind retry is impossible. |
+| AD-015 | `capabilityDescriptorRecord`, `discoveryResult` | CAP-004, NHC-001, NHC-007 | New schema-compatible descriptor is accepted as data without adding a hardcoded behaviour branch. |
+
+### 8.3 Evidence boundary
+
+- The existing `schemas/fixtures/domain-payloads.fixture.json` provides payload-shape examples for the definitions referenced above. It does not prove the scenario sequences or durable-state assertions.
+- The existing test catalogue names the scenario and related contract checks. No executable AURIONS test runner or scenario fixture suite exists in this planning branch.
+- Scenario fixtures must be added with the owning implementation work package, using isolated test stores and deterministic provider fakes. They must include positive, negative, stale-version, replay, concurrency, cancellation and recovery controls as applicable.
+- A scenario may be marked VALIDATED only from a recorded test run tied to the exact implementation commit, fixture corpus, toolchain and environment. This matrix is **SPECIFIED**, not validated.
