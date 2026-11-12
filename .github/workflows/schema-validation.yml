@@ -9,6 +9,8 @@ on:
       - "scripts/probe_android_termux.sh"
       - "scripts/validate_governance.py"
       - "docs/governance/**"
+      - "docs/platform/**"
+      - "docs/reviews/**"
       - "docs/planning/README.md"
       - "docs/planning/PLANNING-COMPLETION-REGISTER.md"
       - "README.md"
@@ -20,6 +22,8 @@ on:
       - "scripts/validate_schemas.py"
       - "scripts/validate_sqlite_ddl.py"
       - "scripts/probe_android_termux.sh"
+      - "docs/platform/**"
+      - "docs/reviews/**"
       - ".github/workflows/schema-validation.yml"
   workflow_dispatch:
 
