@@ -56,40 +56,31 @@ These checks validate pointer existence and basic structural consistency only. T
 These counts were initially derived by parsing fetched JSON documents and did not, by themselves, constitute full JSON Schema Draft 2020-12 conformance. That initial limitation was subsequently superseded for the Python-host corpus by the full CI validation recorded under BR-007 and the later exact-head run below. C++ validator equivalence and runtime conformance remain open.
 
 ### Current fixture inventory and validation correction
-The current inventory contains 78 named positive domain-payload examples, eight separate world-interaction payload examples and 29 negative fixture files. The earlier bounded structural check had only covered 25 original negative fixtures plus three additions. That limitation is superseded: exact-head CI run [43292123964](https://github.com/methaneex-oss/AURIONS/actions/runs/43292123964) on `f2df90dda7e3ee1a49b8eaa3d94ac76f64e3a806` passed the complete current 29-negative-control corpus together with all 78 positive domain payloads and the eight schema meta-schema checks. This remains Python-host schema/fixture validation, not C++/Python equivalence, semantic event/handler correctness or runtime behaviour.
+The current machine-readable inventory contains 89 reusable domain-schema definitions, 81 positive domain/protocol/command/query payload examples, eleven world-interaction examples and 29 negative controls. The event registry contains 89 event entries. The scenario contract corpus contains all 39 canonical probes (INT-001…INT-003, CM-001…CM-021 and AD-001…AD-015), with 172 ordered steps and 45 negative controls. The Python-host validator checks ten top-level schema documents, eight registry/fixture pairs, the full positive/negative payload corpus, event producer/payload bindings and exact scenario inventory. Work-package graph integrity is separately enforced by `scripts/validate_planning_traceability.py`. Exact CI evidence is recorded under BR-004, BR-007 and BR-010 below. These checks remain structural/specification evidence, not runtime behavioural validation.
 
 ## 4. Builder findings — open and blocking
 
-### BR-001 — Command contracts are not dispatch-ready
+### BR-001 — Command contracts are specified but not dispatch-ready
 
 **Severity:** Critical  
-**Evidence:** All 45 command registry entries have unresolved bindings; 43 are mapped to request payload schemas and two are deferred.  
-**Required builder closure:**
-- Define the authoritative aggregate revision and legal state transitions for each mapped command.
-- Bind each command to exact owner/device/resource/data scope and risk semantics.
-- Define canonical idempotency scope, digest, duplicate replay and key-collision rejection.
-- Define deadline, cancellation safe points and dispatch-race outcomes.
-- Define per-command side-effect and reconciliation semantics.
-- Bind exact error codes/recovery branches and emitted immutable event bodies.
-- Define the local transaction/outbox boundary and per-entry conflict/replay/recovery assertions.
-- Keep deferred device pairing/revocation outside first-release dispatch until separately scoped and approved.
+**Current inventory:** 53 command records: 51 mapped to typed request/response and semantic contract bindings; two multi-device commands remain explicitly deferred. The 51 mapped commands have unique CC-001…CC-051 positive/negative acceptance assertions. Six previously identified command/event or command/query semantic mismatches have been resolved in the registry, fixtures and command matrix. The two deferred device commands are not silently promoted.
 
-**Current disposition:** OPEN. The registry is a design traceability baseline only; no command may be registered for production dispatch.
+**Remaining gates:** 47 mapped commands retain handler-level executable positive/negative/conflict/replay/crash/recovery tests; four retain per-entry conflict/replay/crash/recovery execution evidence; ten retain measured target-runtime resource budgets. The two deferred commands retain future multi-device scope/owner authorization and request/response-schema/semantic blockers. Owner acceptance of the first-release command subset and implementation authorization are also absent.
 
-### BR-002 — Query contracts are not dispatch-ready
+**Required closure:** Implement and execute owning handlers only after explicit implementation authorization; preserve aggregate revision, idempotency, deadline/cancellation, side-effect/reconciliation, event/outbox and error/recovery semantics. Do not infer dispatchability from CC cases or schema validation.
+
+**Current disposition:** OPEN. All 51 mapped commands remain design-only/non-dispatchable; two remain deferred by scope.
+
+### BR-002 — Query contracts are specified but not dispatch-ready
 
 **Severity:** Critical  
-**Evidence:** All 21 query entries have unresolved bindings.  
-**Required builder closure:**
-- Define owner/device/resource scope for every query.
-- Classify each returned field and define field-level redaction and denial behaviour.
-- Specify exact snapshot/eventual/local-committed guarantees for each owning store.
-- Define deterministic ordering, stable cursor semantics and mutation behaviour during pagination.
-- Set per-query timeout, row/result and byte budgets.
-- Define cacheability, freshness and invalidation rules.
-- Add positive and negative authorization/redaction/consistency fixtures.
+**Current inventory:** 29 read-only query entries have typed input/response/result schema bindings, owner/actor scope, classification/redaction, consistency, ordering/cursor, freshness/cache contracts and unique QCC-001…QCC-029 positive/negative/read-only acceptance assertions.
 
-**Current disposition:** OPEN. Read-only intent and schema bounds do not make query handlers safe or complete.
+**Remaining gates:** All 29 retain two unresolved bindings: measured endpoint resource budgets and handler-level executable positive/negative/redaction/consistency/read-only tests. Numeric budgets require target-runtime measurements. Concrete field-level projections, snapshot/cursor behaviour under concurrent mutation and owner acceptance of the first-release query subset must be verified in the owning runtime.
+
+**Required closure:** After implementation authorization, execute query handlers against owner-isolated fixtures, prove no domain mutation, prove redaction and denial across counts/snippets/facets/errors/timing, and measure row/byte/deadline limits on the selected target runtime.
+
+**Current disposition:** OPEN. All 29 queries remain design-only/non-dispatchable.
 
 ### BR-003 — Error registry remains a seed, not an operational recovery contract
 
@@ -99,22 +90,25 @@ The current inventory contains 78 named positive domain-payload examples, eight 
 
 **Current disposition:** OPEN. No registry entry is production-dispatchable.
 
-### BR-004 — Architecture scenarios are crosswalked, not executable
+### BR-004 — Canonical scenario specifications exist; runtime execution remains open
 
 **Severity:** High  
-**Evidence:** CM-001…CM-021 and AD-001…AD-015 have payload and catalogue crosswalks, but the repository explicitly says multi-step scenario fixtures/assertions are not yet present. CAP/AU/OP/DB/SY/LE scenario coverage also needs concrete execution-level fixtures.  
-**Required builder closure:** Specify reproducible multi-step fixture inputs, deterministic fakes, expected transitions, durable-state assertions, negative controls, restart/replay/concurrency/cancellation/fault controls and acceptance thresholds. Tests must prove persistent experience-dependent change against frozen baselines and unseen controls; memory writes or training loss alone are insufficient.
+**Builder closure:** Added `scenario-contracts.v1.schema.json` and `scenario-contracts.fixture.json` with all 39 canonical probes (INT-001…INT-003, CM-001…CM-021, AD-001…AD-015), 172 ordered steps and 45 negative controls. Every scenario carries restart/replay, concurrency, fault, held-out and acceptance-threshold requirements. CI enforces exact inventory, unique IDs, source scenario IDs, command/query/event references and the explicit non-executable/no-authority boundary.
 
-**Current disposition:** OPEN. Crosswalk presence is not behavioural verification.
+**Exact evidence:** Revision `4e509a194f206c52d41fda1f6d3b3599bc5c0375` passed GitHub Actions run [43320967492](https://github.com/methaneex-oss/AURIONS/actions/runs/43320967492), including scenario/schema/registry validation, governance integrity, host SQLite smoke tests and Android probe syntax.
 
-### BR-005 — Proposed persistence contracts: host DDL execution added; target/fault validation open
+**Remaining:** No production handlers or runtime scenario runner exist in this planning PR. The 39 scenarios are specified, not executed. INT-001 also exposes that the current command surface has no canonical learning-update acceptance/activation transition; no such command was invented. Persistent experience-dependent behavioural change, frozen-baseline comparisons and unseen generalization remain unproven.
+
+**Current disposition:** PARTIALLY CLOSED for complete machine-readable scenario specification coverage; BR-004 remains OPEN pending authorized runtime implementation and executed behavioural evidence.
+
+### BR-005 — Persistence contracts: host DDL smoke validated; target/fault validation open
 
 **Severity:** Critical  
-**Verified builder closure:** Added `scripts/validate_sqlite_ddl.py` and integrated it into the schema/governance GitHub Actions workflow. The SQLite DDL/migration smoke step most recently passed on exact PR head `f2df90dda7e3ee1a49b8eaa3d94ac76f64e3a806`, workflow run [43292123964](https://github.com/methaneex-oss/AURIONS/actions/runs/43292123964); this run also passed the other workflow steps. The script executed all three base schemas and five additive migrations in their documented per-store order using host SQLite; after each file it checked foreign-key enforcement, `PRAGMA foreign_key_check` and `PRAGMA integrity_check`. It also exercised an objective-record insert, event-store-assigned sequence allocation, rejection of ownerless new task rows, and rejection of task-owner reassignment. The workflow step completed successfully.
+**Verified builder closure:** `scripts/validate_sqlite_ddl.py` executes all three base schemas and five additive migrations in documented per-store order on host SQLite, checking foreign-key enforcement, `foreign_key_check`, `integrity_check`, objective insertion, event-store sequence allocation, ownerless task-row rejection and task-owner reassignment rejection. The latest full workflow including this step passed on exact head `996bcb5402d0881f2d653a2813ca790f043d002e`, run [43321331452](https://github.com/methaneex-oss/AURIONS/actions/runs/43321331452).
 
-**Remaining:** This is host-side syntax/migration-chain smoke evidence, not validation against the actual Termux/Android SQLite build. Complete canonical entity/index/constraint and referential-integrity reconciliation; pin and test the target SQLite version/compile options; add interrupted-migration, rollback/restart, crash, outbox/inbox, backup/restore, deletion/tombstone, disk-full/locked/corrupt-store and cross-store recovery tests. Validate runtime transaction boundaries and task receipt retention. Do not claim distributed atomicity across separate SQLite files.
+**Remaining:** This is host-side migration-chain smoke evidence, not validation against the actual Termux/Android SQLite build. Canonical entity/index/constraint and referential-integrity reconciliation, target SQLite version/compile options, interrupted migration/rollback/restart, crash, outbox/inbox, backup/restore, deletion/tombstone, disk-full/locked/corrupt-store and cross-store recovery tests remain outstanding. Runtime transaction boundaries and receipt retention must be verified; no distributed ACID guarantee is assumed across separate SQLite files.
 
-**Current disposition:** PARTIALLY CLOSED for host DDL execution and the listed smoke invariants; BR-005 remains OPEN pending target and fault/recovery evidence. SQL execution is now an automated gate, not a documentation-only claim.
+**Current disposition:** PARTIALLY CLOSED for host DDL execution and the listed smoke invariants; BR-005 remains OPEN pending target and fault/recovery evidence.
 
 ### BR-006 — Android platform baseline: validation procedure prepared; target evidence open
 
@@ -125,20 +119,23 @@ The current inventory contains 78 named positive domain-payload examples, eight 
 
 **Current disposition:** PARTIALLY CLOSED for the builder-owned procedure and collector; BR-006 remains OPEN pending owner-selected target and empirical evidence.
 
-### BR-007 — Validator and schema CI selection: partially closed
+### BR-007 — Python schema validation is verified; cross-language/toolchain validation remains open
 
 **Severity:** High  
-**Verified builder closure:** A pinned Python `jsonschema[format]==4.26.0` Draft 2020-12 validator is integrated into GitHub Actions. The current corpus passed eight schema meta-schema checks, seven registry/fixture pairs, all 78 positive domain payloads and all 29 negative controls. The exact current PR head `f2df90dda7e3ee1a49b8eaa3d94ac76f64e3a806` passed run [43292123964](https://github.com/methaneex-oss/AURIONS/actions/runs/43292123964). See [Schema Validation Results](SCHEMA-VALIDATION-RESULTS-2026-11-12.md).
+**Verified builder closure:** The pinned Python `jsonschema[format]==4.26.0` Draft 2020-12 validator checks ten top-level schema documents, eight registry/fixture pairs, 81 positive domain payloads, 29 negative controls, the 89-event registry and all 39 scenario contracts. CI also validates governance integrity, the work-package graph, host SQLite smoke tests and Android probe shell syntax. Exact full-workflow evidence: head `996bcb5402d0881f2d653a2813ca790f043d002e`, run [43321331452](https://github.com/methaneex-oss/AURIONS/actions/runs/43321331452) — PASS.
 
-**Remaining:** Host C++ validator comparison and result equivalence, Android/Termux dependency feasibility, C++/Python serialization compatibility, transitive SBOM/license/vulnerability review and integration with the eventual runtime toolchain.
+**Remaining:** C++ validator equivalence, Android/Termux dependency feasibility, C++/Python serialization compatibility, transitive SBOM/license/vulnerability review and integration with the eventual runtime toolchain.
 
-**Current disposition:** PARTIALLY CLOSED. Python-host schema/fixture validation is verified; BR-007 as a whole remains OPEN until the remaining compatibility and supply-chain gates are closed.
+**Current disposition:** PARTIALLY CLOSED. Python-host schema/fixture validation is verified; BR-007 remains OPEN until compatibility and supply-chain gates are closed.
 
-### BR-008 — Semantic cross-document reconciliation is incomplete
+### BR-008 — Semantic cross-document reconciliation is advanced but incomplete
 
 **Severity:** High  
-**Evidence:** Identifier-presence audits and table bindings exist, but semantic verification of all 84 event-to-payload mappings, command/query handlers, error mappings, canonical entities, DDL transitions, security invariants and product acceptance paths is explicitly outstanding.  
-**Required builder closure:** Reconcile every owner requirement and decision to its normative source, owning component, state transition, schema, command/query/event, persistence record, failure/recovery path, work package and acceptance evidence. Resolve contradictions and record unresolved assumptions with explicit owner/external dependencies. Re-fetch and compare the final PR diff after corrections.
+**Builder closure:** Added `SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md`, mapping foundational objective/world/evidence/belief/means/capability/interaction/operation/outcome/prediction/appraisal/attention/reasoning/goal/plan/learning/self-model concepts to owning components, durable representations, command/query/event surfaces, work packages and acceptance evidence. Six command/event or command/query classification mismatches were resolved. The current registries contain 53 commands (51 mapped, two deferred), 29 queries and 89 events. Event payload/fixture references validate; 51 events have explicit command-producer bindings and 38 have no command producer binding. A bidirectional validator enforces the command/event producer crosswalk, and the event semantics matrix records all 89 events without inventing unbound producers.
+
+**Remaining:** Full semantic review of every component transition and event consumer, including the 38 events without command producer bindings, cross-store saga/transaction ownership, field-level query projections, canonical entity/DDL transitions, security invariants and product acceptance paths. All 89 events still lack runtime handlers, consumer semantics, owner-transition closure and event-specific acceptance execution. The semantic report is a builder traceability proposal, not independent review or owner acceptance.
+
+**Required closure:** Reconcile each requirement/decision to normative source, owning component, state transition, schema, command/query/event, persistence record, failure/recovery path, work package and acceptance evidence. Resolve contradictions or record explicit owner/external gates. Re-fetch and compare the exact final PR diff.
 
 **Current disposition:** OPEN.
 
@@ -150,13 +147,14 @@ The current inventory contains 78 named positive domain-payload examples, eight 
 
 **Current disposition:** OPEN; implementation and platform integration evidence remain later gates.
 
-### BR-010 — Work-package and scaffold reconciliation is not complete
+### BR-010 — Work-package traceability is specified and structurally enforced; semantic/scaffold gates remain
 
 **Severity:** High  
-**Evidence:** WP-00…WP-16 and the dependency graph exist; PR #1 is a separate scaffold. A new builder crosswalk now maps all 17 packages to logical owners, prerequisites/inputs, outputs/contracts, acceptance IDs, failure/recovery evidence and external/owner gates. It is a planning proposal and has not been independently accepted. Target build evidence and post-approval PR #1 scaffold reconciliation remain outstanding.  
-**Required builder closure:** Complete each package's exact inputs/outputs, owned interfaces, acceptance evidence, failure/recovery tests and prerequisites; verify every dependency edge and the first-release path; reconcile PR #1 against the final approved contracts without silently expanding or changing its scope.
+**Builder closure:** The 17-package WP-00…WP-16 traceability matrix records logical owners, inputs, outputs/contracts, acceptance IDs, failure/recovery evidence and owner/external gates. Added `scripts/validate_planning_traceability.py` to CI. It enforces exact WP inventory in both roadmap and matrix, required row fields, valid dependency references, acyclicity, WP-15 depending exactly on WP-00…WP-13, WP-14 excluded from first-release prerequisites and WP-16 depending on WP-15. Exact code revision `4296fbff3105c0ebabab4ced1bef4fe96a1a0dfe` passed run [43321213661](https://github.com/methaneex-oss/AURIONS/actions/runs/43321213661).
 
-**Current disposition:** OPEN.
+**Remaining:** Structural graph validation does not prove semantic package readiness or owner acceptance. Confirm every package interface and acceptance/failure path against final approved product decisions; verify target build evidence; reconcile PR #1 against the final approved contracts only after planning exit, without changing or expanding its scope.
+
+**Current disposition:** PARTIALLY CLOSED for the builder-owned traceability artifact and graph integrity guard; BR-010 remains OPEN pending semantic package readiness, target evidence and post-planning PR #1 reconciliation.
 
 ## 5. Owner decisions and external evidence — not to be fabricated by the builder
 
