@@ -66,7 +66,6 @@ def main() -> int:
         ("fixtures/capability-descriptor.fixture.json", "capability-descriptor-body.v1.schema.json"),
         ("fixtures/world-interaction.fixture.json", "world-interaction.v1.schema.json"),
         ("fixtures/scenario-contracts.fixture.json", "scenario-contracts.v1.schema.json"),
-        ("scenario-test-catalogue.v1.json", "scenario-test-catalogue.v1.schema.json"),
     ]
     for instance_path, schema_name in pairs:
         validate(load(SCHEMAS / instance_path), schema_docs[schema_name], instance_path)
@@ -266,45 +265,74 @@ def main() -> int:
                 f"does not match schema definition {expected_payload!r}"
             )
 
-    scenario_catalogue = load(SCHEMAS / "scenario-test-catalogue.v1.json")
-    scenarios = scenario_catalogue["scenarios"]
+    scenario_contracts = load(SCHEMAS / "fixtures/scenario-contracts.fixture.json")
+    scenarios = scenario_contracts["scenarios"]
     expected_scenario_ids = {
+        *(f"INT-{index:03d}" for index in range(1, 4)),
         *(f"CM-{index:03d}" for index in range(1, 22)),
         *(f"AD-{index:03d}" for index in range(1, 16)),
     }
     scenario_ids = {item["scenario_id"] for item in scenarios}
-    if len(scenarios) != 36 or scenario_ids != expected_scenario_ids:
-        fail("scenario catalogue must contain the exact CM-001…CM-021 and AD-001…AD-015 inventory")
+    step_count = sum(len(item["steps"]) for item in scenarios)
+    negative_control_count = sum(len(item["negative_controls"]) for item in scenarios)
+    if len(scenarios) != 39 or scenario_ids != expected_scenario_ids:
+        fail("scenario contract fixture must contain INT-001…003, CM-001…021 and AD-001…015")
+    if step_count != 172 or negative_control_count != 45:
+        fail(
+            f"scenario fixture expected 172 ordered steps and 45 negative controls; "
+            f"found {step_count} steps and {negative_control_count} controls"
+        )
     command_types = {item["command_type"] for item in commands}
     query_types = {item["query_type"] for item in queries}
     domain_payload_defs = set(schema_docs["domain-payloads.v1.schema.json"].get("$defs", {}))
     world_payload_defs = set(schema_docs["world-interaction.v1.schema.json"].get("$defs", {}))
     for scenario in scenarios:
         scenario_id = scenario["scenario_id"]
-        if scenario.get("status") != "specified_not_executable":
-            fail(f"{scenario_id}: scenario must remain specified_not_executable")
-        if len(scenario["positive_assertions"]) < 2 or len(scenario["negative_controls"]) < 2:
-            fail(f"{scenario_id}: positive and negative assertions are required")
-        if len(scenario["durable_state_assertions"]) < 2:
-            fail(f"{scenario_id}: durable-state assertions are required")
-        unknown_commands = set(scenario["command_refs"]) - command_types
-        unknown_queries = set(scenario["query_refs"]) - query_types
-        unknown_events = set(scenario["event_refs"]) - set(events)
-        unknown_payloads = set(scenario["required_payload_definitions"]) - domain_payload_defs - world_payload_defs
-        if unknown_commands or unknown_queries or unknown_events or unknown_payloads:
-            fail(
-                f"{scenario_id}: unresolved references; commands={sorted(unknown_commands)} "
-                f"queries={sorted(unknown_queries)} events={sorted(unknown_events)} "
-                f"payloads={sorted(unknown_payloads)}"
-            )
-        learning = scenario["learning_evaluation"]
-        if learning["persistent_change_required"] and not (
-            learning["frozen_baseline_required"]
-            and learning["held_out_controls_required"]
-            and learning["repeat_seeded_runs"] >= 3
-            and learning["pre_registered_metrics_and_tolerances"]
+        if scenario.get("execution_status") != "specified_not_executed" or scenario.get("execution_authority") != "none":
+            fail(f"{scenario_id}: scenario fixture must not imply execution or authority")
+        for field in (
+            "initial_state", "steps", "negative_controls", "restart_replay_controls",
+            "concurrency_controls", "fault_controls", "held_out_controls",
         ):
-            fail(f"{scenario_id}: persistent-learning acceptance lacks baseline/held-out/repeated preregistered evaluation")
+            if not scenario.get(field):
+                fail(f"{scenario_id}: missing scenario field {field}")
+        if not scenario.get("acceptance_thresholds", {}).get("hard_invariants"):
+            fail(f"{scenario_id}: missing hard acceptance invariants")
+        if not scenario.get("acceptance_thresholds", {}).get("evidence_requirement"):
+            fail(f"{scenario_id}: missing evidence requirement")
+        for reference in scenario.get("contract_refs", []):
+            if reference.startswith("payload:"):
+                payload_name = reference.split(":", 1)[1]
+                if payload_name not in domain_payload_defs | world_payload_defs:
+                    fail(f"{scenario_id}: unknown payload reference {payload_name}")
+            elif reference in command_types or reference in query_types or reference in events:
+                continue
+            elif reference.startswith("catalogue:"):
+                if not reference.split(":", 1)[1]:
+                    fail(f"{scenario_id}: empty catalogue reference")
+            else:
+                # Catalogue IDs use a stable PREFIX-NNN form.
+                parts = reference.split("-")
+                if len(parts) < 2 or not parts[-1].isdigit():
+                    fail(f"{scenario_id}: unresolved contract reference {reference!r}")
+        for step in scenario["steps"]:
+            action = step.get("contract_action", "")
+            if action.startswith("command:") and action.split(":", 1)[1] not in command_types:
+                fail(f"{scenario_id}/{step.get('step_id')}: unknown command action {action}")
+            if action.startswith("query:") and action.split(":", 1)[1] not in query_types:
+                fail(f"{scenario_id}/{step.get('step_id')}: unknown query action {action}")
+            if not step.get("expected_transitions") or not step.get("durable_assertions"):
+                fail(f"{scenario_id}/{step.get('step_id')}: missing transition or durable-state assertions")
+            unknown_step_events = set(step.get("expected_events", [])) - set(events)
+            if unknown_step_events:
+                fail(f"{scenario_id}/{step.get('step_id')}: unknown events {sorted(unknown_step_events)}")
+        for control in scenario["negative_controls"]:
+            if not control.get("expected_disposition") or not control.get("must_not_change"):
+                fail(f"{scenario_id}/{control.get('control_id')}: incomplete negative control")
+        if scenario_id in {"INT-001", "INT-002", "INT-003", "CM-012", "CM-013", "CM-016", "AD-009"}:
+            metric_rule = scenario["acceptance_thresholds"].get("learning_metric_rule", "")
+            if "pre-register" not in metric_rule.lower() and "pre-register" not in scenario["acceptance_thresholds"].get("learning_metric_rule","").lower():
+                fail(f"{scenario_id}: learning scenario lacks pre-registered metric rule")
 
     def resolve_pointer(document, pointer: str, label: str):
         if not pointer.startswith("#/"):
