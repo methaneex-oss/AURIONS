@@ -90,6 +90,7 @@
       "required": [
         "objective_id",
         "owner_ref",
+        "version",
         "statement",
         "request_source_ref",
         "created_at",
@@ -136,6 +137,10 @@
         },
         "owner_ref": {
           "$ref": "#/$defs/ref"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
@@ -145,6 +150,7 @@
       "required": [
         "entity_id",
         "owner_ref",
+        "version",
         "identity_status",
         "description",
         "first_observed_at",
@@ -216,6 +222,10 @@
         },
         "owner_ref": {
           "$ref": "#/$defs/ref"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
@@ -225,6 +235,7 @@
       "required": [
         "relationship_id",
         "owner_ref",
+        "version",
         "subject_ref",
         "predicate",
         "object_ref",
@@ -278,6 +289,10 @@
         },
         "owner_ref": {
           "$ref": "#/$defs/ref"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
@@ -446,6 +461,7 @@
       "required": [
         "hypothesis_id",
         "owner_ref",
+        "version",
         "objective_ref",
         "actor_refs",
         "resource_refs",
@@ -456,7 +472,8 @@
         "evidence_refs",
         "confidence",
         "status",
-        "scope"
+        "scope",
+        "created_at"
       ],
       "properties": {
         "hypothesis_id": {
@@ -555,6 +572,13 @@
         },
         "owner_ref": {
           "$ref": "#/$defs/ref"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "$ref": "#/$defs/time"
         }
       }
     },
