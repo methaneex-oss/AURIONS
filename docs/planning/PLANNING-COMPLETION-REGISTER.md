@@ -479,3 +479,10 @@ The scenario suite is specified, not executed. Runtime scenario runner, producti
 All 89 event registry entries now specify producer origin/trigger boundary, owning component, intended consumers/purpose, owner transition, store-local ordering/idempotency, failure/recovery and scenario coverage. The event matrix carries the same consumer/transition summary. Source-level comparison found zero mismatches across 89 events, payload schema names, producer sets and 39-scenario references.
 
 Validator enforcement was added for all event fields, matrix summary parity, unresolved implementation boundaries and scenario coverage parity. This is a contract specification only; runtime consumers/handlers are not implemented. Exact-head CI is pending. All events remain non-dispatchable; BR-008 remains OPEN.
+
+
+## Exact-head verification — event consumer and owner-transition contracts (2026-11-12)
+
+Exact PR #2 head `9eea1f7a322e0c7c0cdbd99df2b1c43a109f1166` passed workflow [43322220591](https://github.com/methaneex-oss/AURIONS/actions/runs/43322220591). All workflow steps passed: schema/fixture, governance, work-package dependency graph, host SQLite and Android probe checks.
+
+CI now enforces 89 event producer/consumer/owner-transition specifications and their matrix parity, plus exact scenario coverage references across the 39-scenario fixture set. This is specification integrity only; runtime handlers/consumers and event-specific executed acceptance tests remain outstanding.
