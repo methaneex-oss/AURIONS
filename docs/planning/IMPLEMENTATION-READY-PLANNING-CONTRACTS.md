@@ -64,7 +64,7 @@ The receiver validates identity, version, size, schema, ownership, classificatio
 |---|---|---|---|
 | Experience | Raw observation metadata, source/provenance, capture lifecycle | Platform adapters, representation | Directly execute tools or set beliefs |
 | Representation | Typed modality-neutral representations and confidence/provenance | Experience, modality adapters | Decide authority or mutate governance |
-| Environment/discovery | Environment observations, discovery provenance, versioned capability descriptors and lifecycle | Platform adapters, capability provider contracts, governance queries | Treat discovery as permission, invent unavailable interfaces or execute operations |
+| Device/provider-specific environment discovery | Scoped observations, discovery provenance, versioned provider/interface descriptors and lifecycle | Platform adapters, provider contracts, governance queries | Treat discovery as permission, invent unavailable interfaces or claim this is the universal means model |
 | Context | Context assembly and relevance metadata | Representation, memory query interfaces | Persist foreign-domain records directly |
 | Memory | Episodic/semantic/working-memory persistence contracts and retrieval | Storage abstraction, provenance | Authorize actions or silently rewrite evidence |
 | Artifact registry | Immutable artifact metadata, content hashes, storage references, lineage and deletion state | Filesystem/object storage, memory DB, retention/deletion services | Treat filenames as trusted paths, merge authorization semantics during deduplication or expose unvalidated artifacts |
@@ -76,7 +76,7 @@ The receiver validates identity, version, size, schema, ownership, classificatio
 | Goals/planning | Goal state, plan graph, dependencies, budgets and checkpoints | Reasoning, scheduler, capability descriptions | Assume tool capability implies permission |
 | Decision | Candidate selection and rationale | Goals, plans, risk estimates | Bypass policy enforcement |
 | Governance | Identity, policies, permissions, approvals, audit | Secure key/identity provider, governance DB | Trust model-provided identity or self-grant |
-| Action gateway | Operation validation, dispatch, receipts and verification | Governance, capability adapters, event store | Execute without a fresh policy decision |
+| Programmatic execution gateway | Exact operation validation, dispatch, receipts, independent verification and reconciliation for integrations that invoke programmatic interfaces | Governance, applicable provider adapters, event store | Execute without a fresh policy decision or imply all means require this gateway |
 | Scheduler | Durable task runs, triggers, deadlines, budgets and cancellation | Goals/plans, operation store | Expand authority beyond task grant |
 | Learning/evaluation | Experience-dependent mechanism/capability updates, experiment provenance, datasets, metrics and candidate results | Outcome evaluation, memory/knowledge interfaces, isolated workers | Treat storage as learning, activate candidate or modify protected runtime state |
 | Self-model | Evidence-backed capability, limitation, confidence, resource and performance estimates | Discovery, outcomes, benchmarks, learning | Self-authorize or claim unverified capability |
@@ -88,7 +88,7 @@ The receiver validates identity, version, size, schema, ownership, classificatio
 
 ### 3.1 Dependency rules
 - Dependencies point toward stable domain interfaces; no component may import another component's private persistence schema.
-- Governance and action gateway are dependencies of execution, not of model reasoning.
+- Governance and the programmatic execution gateway are dependencies of consequential provider-backed execution, not of objective/world understanding, means reasoning, human-mediated interaction or all forms of deliberation.
 - Cognitive modules may exchange typed events and queries; no global mutable singleton state.
 - Event handlers MUST be idempotent and MUST NOT recursively create unbounded event cycles.
 - Cycles between module dependencies are prohibited. Feedback loops are represented as asynchronous events/state transitions, not cyclic compile-time dependencies.
@@ -741,7 +741,7 @@ This local cognitive/action acceptance subset is necessary but is not, by itself
 2. A conversation creates durable, provenance-linked experience records.
 3. A later session retrieves relevant memory and cites its source internally.
 4. A bounded objective can be represented as a plan with dependencies, budget and cancellation.
-5. At least one narrowly scoped local capability is executed through the action gateway after policy evaluation.
+5. At least one narrowly scoped owner-approved local interaction is executed through the applicable programmatic boundary after policy evaluation; the exact first action remains an owner decision.
 6. The system records dispatch receipt, observed outcome and verification evidence.
 7. A restart at each operation transition recovers or reconciles without duplicate side effects.
 8. An explicit denial is enforced even if the model recommends execution.
