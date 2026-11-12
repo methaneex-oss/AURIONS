@@ -298,6 +298,20 @@ def main() -> int:
     }
     if len(action_gateway_events) != 15 or operation_matrix_events != action_gateway_events:
         fail("operation lifecycle matrix must exactly cover the 15 Action Gateway internal events")
+    operation_rows = {}
+    for line in operation_matrix.splitlines():
+        if not line.startswith("| `operation."):
+            continue
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        if len(cells) != 4:
+            fail("operation lifecycle matrix row must have four cells")
+        operation_rows[cells[0].strip("`")] = (cells[2], cells[3])
+    for event_type in action_gateway_events:
+        if operation_rows.get(event_type) != (
+            events[event_type]["producer_trigger_contract"],
+            events[event_type]["owner_transition_contract"],
+        ):
+            fail(f"{event_type}: operation lifecycle matrix trigger/transition differs from event registry")
     for event_type in action_gateway_events:
         event = events[event_type]
         trigger = event.get("producer_trigger_contract", "")
@@ -322,6 +336,24 @@ def main() -> int:
     )
     if len(non_command_events) != 23 or ingress_matrix_events != non_command_events:
         fail("non-command event trigger matrix must exactly cover the 23 non-command/non-Action-Gateway events")
+    ingress_rows = {}
+    for line in ingress_matrix.splitlines():
+        if not line.startswith("| `") or line.count("|") < 4:
+            continue
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        if len(cells) != 4:
+            continue
+        event_type = cells[0].strip("`")
+        if event_type in non_command_events:
+            ingress_rows[event_type] = (cells[1], cells[2], cells[3])
+    for event_type in non_command_events:
+        event = events[event_type]
+        if ingress_rows.get(event_type) != (
+            event["producer_origin"],
+            event["producer_trigger_contract"],
+            event["owner_transition_contract"],
+        ):
+            fail(f"{event_type}: non-command trigger matrix differs from event registry")
     for event_type in non_command_events:
         event = events[event_type]
         trigger = event.get("producer_trigger_contract", "")
