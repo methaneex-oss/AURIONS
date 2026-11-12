@@ -210,3 +210,19 @@ Every role is accountable for its responsibilities.
 **The objective is not merely to build more. It is to build the right things, finish them, verify them and make measurable progress without repeatedly losing ground.**
 
 **Build completely. Review independently. Test rigorously. Correct properly. Deliver verifiable results.**
+
+## Mandatory pre-run governance gate — applies to every execution
+
+**This gate is mandatory for every run, without exception.** Before beginning any work in a run—whether a small edit, investigation, review, test, correction, documentation change, or large implementation—the person or agent performing that role must freshly retrieve and read the current authoritative governance standard and the applicable role-specific protocol. A copy read in an earlier run, remembered instructions, a summary, or a prior chat does not satisfy this gate.
+
+The gate applies independently to:
+
+- **Director:** before each direction-setting, scope, priority, approval or acceptance run.
+- **Builder:** before each implementation, investigation, documentation, self-review or correction run.
+- **Independent reviewer:** before each review or review-correction verification run.
+- **Tester:** before each test-planning, execution, failure-investigation or retest run.
+- **Supporting agents:** before each assigned run, including delegated research or validation.
+
+At the start of each run, the role must record the authoritative document revision (commit/blob identifier or equivalent), confirm that it has read the current requirements, and identify the applicable role duties and workflow gate. If the authoritative source cannot be retrieved or its current revision cannot be established, work must stop; do not proceed from memory. A material governance update discovered during a run requires the role to re-read the changed requirements before continuing.
+
+This is an execution precondition, not a reminder or documentation-only recommendation. No role may waive it because a task is small, urgent, routine, previously performed, or believed to be low risk. Automated checks may verify that this rule remains present, but cannot by themselves prove that a human or agent actually complied on a particular run; each run must retain its own evidence.
