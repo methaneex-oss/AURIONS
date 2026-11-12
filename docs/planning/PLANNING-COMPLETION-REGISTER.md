@@ -364,3 +364,16 @@ This closes the event registry's machine-enforced schema/fixture reference-integ
 Exact PR #2 head `031fc7a0e820c553a628f27f576a28c3b58d689b` passed GitHub Actions run [43309943595](https://github.com/methaneex-oss/AURIONS/actions/runs/43309943595). All steps passed: schema/positive-negative fixture validation (including event payload/fixture reference validation), governance integrity, host SQLite base/migration smoke tests and Android probe shell syntax. PR #2 remains open, draft and unmerged.
 
 This is the bounded verification state of that exact revision only. The planning baseline remains NOT READY; open command/query, recovery, scenario, semantic reconciliation, security implementation and package/scaffold findings remain distinct from passing structural CI. No independent-review/tester handoff or implementation authorization is implied.
+
+
+## Builder work — query semantics and registry bindings (2026-11-12)
+
+The builder completed the query-side semantic specification increment for all 21 existing query registry entries:
+- Added `QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md` with exact owner/actor/device scope, classification/redaction, consistency, deterministic ordering/cursor, freshness/cache rules and query-specific acceptance tests.
+- Populated all seven corresponding semantic contract fields in each machine-readable query entry.
+- Retained two explicit unresolved gates per query: measured endpoint resource budgets and handler-level executable positive/negative/redaction/consistency/read-only tests.
+- Extended `scripts/validate_schemas.py` to enforce populated fields, read-only status, exact unresolved gate declarations and one-to-one coverage of all 21 query entries in the matrix.
+
+Exact code revision `f27123b389d232654ee0edf0df4b2101a78a2a8d` passed GitHub Actions run [43317444472](https://github.com/methaneex-oss/AURIONS/actions/runs/43317444472), including the new query contract integrity guard and all existing schema, event, governance, host SQLite and Android shell checks.
+
+This closes BR-002's **design/specification and registry-binding portion only**. BR-002 remains OPEN pending target-measured resource budgets and actual handler-level executable tests. All 21 queries remain non-dispatchable. The first-release query subset is still proposed pending owner acceptance; no implementation authorization is implied.
