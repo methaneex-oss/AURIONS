@@ -110,3 +110,12 @@ The fixture contains 28 ordered steps, nine negative controls, and explicit rest
 Exact scenario-fixture code revision `a27260dfcd3ec7a7a77ca725b437f2565bd762ae` passed GitHub Actions run [43320550842](https://github.com/methaneex-oss/AURIONS/actions/runs/43320550842), including schema/fixture validation, governance integrity, host SQLite migration smoke tests and Android probe shell syntax.
 
 **Evidence boundary:** This closes the initial machine-readable integrated scenario-specification subtask only. It does not provide a runtime scenario runner, production handlers, executed durable-state assertions or learning evidence. Full individual CM-001…CM-021 and AD-001…AD-015 instantiation remains outstanding; INT-001 explicitly records that the current registry lacks a canonical learning-update acceptance/activation transition. BR-004 remains OPEN.
+
+
+## BR-004 builder increment — complete canonical scenario fixture inventory (2026-11-12)
+
+Expanded the integrated scenario contract corpus from three INT scenarios to all 39 canonical probes: INT-001…INT-003, CM-001…CM-021 and AD-001…AD-015. The corpus now contains 172 ordered steps and 45 negative controls, with restart/replay, concurrency, fault, held-out and acceptance-threshold requirements on every scenario. The schema and validator require the exact 39-ID inventory, unique scenario/step/control IDs, known source scenario IDs and non-executable/no-authority status.
+
+Exact revision `4e509a194f206c52d41fda1f6d3b3599bc5c0375` passed GitHub Actions run [43320967492](https://github.com/methaneex-oss/AURIONS/actions/runs/43320967492). All workflow steps passed: Draft 2020-12 schemas/fixtures (including all 39 scenario contracts and their registry references), governance integrity, host SQLite base/migration smoke tests and Android probe shell syntax.
+
+**Evidence boundary:** This completes the builder's machine-readable scenario-specification coverage subtask. It does not create an AURIONS runtime scenario runner, production handlers or executed durable-state/learning tests. Runtime implementation remains unauthorized. INT-001 retains the explicit learning-update acceptance/activation gap; no command was invented. BR-004 remains OPEN overall until executable scenarios and behavioural evidence exist.
