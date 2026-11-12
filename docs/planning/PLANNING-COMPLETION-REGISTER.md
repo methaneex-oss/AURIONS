@@ -119,6 +119,16 @@ The canonical matrix is the single mechanism-to-component/persistence/event/test
 - Record every finding with severity, disposition and evidence; no silent assumptions.
 
 ### B-08 — Finalize planning baseline and review package
+- A main-builder pre-review audit is recorded at [MAIN-BUILDER-PRE-REVIEW-AUDIT-2026-11-12.md](../reviews/MAIN-BUILDER-PRE-REVIEW-AUDIT-2026-11-12.md). Its verdict is NOT READY; it is a closure ledger, not a final builder review or independent review.
+- The audit parsed the current domain schema, positive fixture, command/query registry and error registry. It found 86 reusable schema definitions, 78 named positive fixture examples, 45 command records (43 mapped and two deferred), 21 query records, and 35 error codes all still marked seed. All 45 command entries and all 21 query entries have unresolved bindings. These are structural counts, not conformance or runtime evidence.
+- The implementation-contract introduction was corrected in commit `d616036d9b7a6b9276bcb7a20af515ea6b9f828a` to distinguish schema-definition count from positive-fixture count.
+- Builder closure still includes command/query per-entry semantics, error recovery, executable multi-step scenarios, DDL execution/fault tests, Android target validation protocol and evidence, validator/toolchain/CI decision, security/key lifecycle evidence, semantic requirement/event/DDL reconciliation and work-package/scaffold traceability.
+- Correct stale and contradictory documentation.
+- Publish the canonical completion matrix and unresolved-gate register.
+- Re-fetch and verify the exact branch revision, file contents, PR metadata and status.
+- Prepare the exact final revision for independent re-review.
+- Do not merge PRs or authorize implementation without the required review and owner approval.
+
 - Correct stale and contradictory documentation.
 - Publish the canonical completion matrix and unresolved-gate register.
 - Re-fetch and verify the exact branch revision, file contents, PR metadata and status.
