@@ -8,6 +8,7 @@
 - **Implementation authorization:** Not granted.
 - **Last builder audit:** 2026-11-12 (task-run revision/event reconciliation, schema/fixture crosswalk and repository contract scan).
 - **Authority:** Existing owner decision register in `INITIAL-ENGINEERING-SPECIFICATION.md`; this register tracks completion and does not replace owner decisions.
+- **Governance integration evidence:** [Governance Standard Validation Results](../reviews/GOVERNANCE-STANDARD-VALIDATION-RESULTS-2026-11-12.md) — CI verified the mandatory role/workflow document structure and repository entry-point links; this does not prove human compliance or close technical findings.
 
 ## 1. Completion semantics
 
