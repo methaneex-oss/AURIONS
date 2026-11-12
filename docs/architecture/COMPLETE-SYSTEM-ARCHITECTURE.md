@@ -145,7 +145,7 @@ Images, audio and other modalities follow the same capture → provenance → re
 
 OS, application, web, hardware and provider integrations use adapters registered with the capability/tool gateway. Each declares identity/version, operation schemas, data access, side effects, permissions, network destinations, budgets, cancellation, idempotency and verification.
 
-The gateway enforces authorization immediately before execution and records outcome evidence. Android integration must validate the general mechanisms described in the dedicated Android capability architecture. Any selected scenario is a test fixture for those mechanisms, not a predefined capability catalogue or fixed first action. External communications, purchases, account changes, destructive operations and protected governance changes retain existing approval requirements.
+The gateway enforces authorization immediately before execution and records outcome evidence. Android integration must validate its platform-specific realization under the foundational open-world interaction architecture; it does not define the general means model. Any selected scenario is a test fixture for those mechanisms, not a predefined capability catalogue or fixed first action. External communications, purchases, account changes, destructive operations and protected governance changes retain existing approval requirements.
 
 ## 10. Technology stack and decision status
 
