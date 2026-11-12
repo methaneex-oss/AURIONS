@@ -384,13 +384,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "owning_domain_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Representation subsystem receives a new source observation/evidence item or transformation result, validates provenance and owner scope, and commits a successor representation revision against the expected current revision.",
       "owning_component": "Representation subsystem",
       "consumer_contracts": [
         {
@@ -646,13 +645,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "platform_provider_ingress",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when a trusted platform/provider ingress reports revocation for the exact provider identity and descriptor version; the adapter authenticates the source and verifies descriptor identity before recording the revocation.",
       "owning_component": "Capability registry and knowledge subsystem",
       "consumer_contracts": [
         {
@@ -723,13 +721,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "memory_consolidation",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the memory-consolidation worker completes an owner-scoped memory record/link after validating source provenance, retention classification and the destination memory revision; the memory record and event/outbox commit atomically.",
       "owning_component": "Memory subsystem",
       "consumer_contracts": [
         {
@@ -1291,13 +1288,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "governance_evaluator",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the governance evaluator computes effective platform permission for the exact app/package, operation and target at the final pre-dispatch authorization boundary; it records the result and source evidence. This is not emitted by a read-only query.",
       "owning_component": "Governance permission evaluator",
       "consumer_contracts": [
         {
@@ -1364,13 +1360,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "owner_governance_interface",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the authenticated owner-governance interface returns a signed/validated decision bound to one approval request ID, exact operation digest, owner session, one-time nonce and expiry; governance verifies identity, scope and replay before recording the decision. Model text cannot emit this event.",
       "owning_component": "Governance approval subsystem",
       "consumer_contracts": [
         {
@@ -2077,13 +2072,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "observation_ingress",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when an independent observation ingress commits postcondition evidence for an exact operation/objective from a source distinct from the provider receipt; provenance, observed time, scope and limitations are validated before append.",
       "owning_component": "Outcome evaluation subsystem",
       "consumer_contracts": [
         {
@@ -2148,13 +2142,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "learning_supervisor",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Learning supervisor consumes an authenticated owner/governance acceptance decision bound to the exact quarantined learning-candidate digest, evaluation protocol, baseline and held-out results; it records acceptance only after all required gates pass. This event does not activate the candidate; the public acceptance command remains an API gap.",
       "owning_component": "Learning and evaluation subsystem",
       "consumer_contracts": [
         {
@@ -2182,13 +2175,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "learning_supervisor",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Learning supervisor consumes a terminal worker-job result, verifies job/attempt identity, input/config/code/data hashes, budget/deadline and artifact manifest, then commits the experiment completion record. Failed or incomplete validation cannot emit completion.",
       "owning_component": "Learning and evaluation subsystem",
       "consumer_contracts": [
         {
@@ -2216,13 +2208,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "self_model_manager",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Self-model manager commits a successor active self-model revision only after an explicit governance acceptance for the exact proposed revision, evidence set and expected predecessor revision; stale or model-generated self-approval is rejected.",
       "owning_component": "Self-model subsystem",
       "consumer_contracts": [
         {
@@ -2390,13 +2381,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "sync_engine",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Synchronization engine selects a locally committed owner-scoped change after export authorization, classification and policy checks, then persists an immutable outbound envelope/digest and export ledger. Export does not imply remote receipt or application.",
       "owning_component": "Synchronization subsystem",
       "consumer_contracts": [
         {
@@ -2424,13 +2414,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "sync_engine",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Synchronization engine receives a remote envelope, verifies peer identity/signature, owner scope, schema version, classification, causation and expected aggregate revision, then atomically applies the idempotent change and event/outbox.",
       "owning_component": "Synchronization subsystem",
       "consumer_contracts": [
         {
@@ -2458,13 +2447,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "sync_engine",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Synchronization engine validates an authorized deletion tombstone and applies it at the owning aggregate sequence before later changes; replay and restore consult the tombstone before accepting content.",
       "owning_component": "Synchronization subsystem",
       "consumer_contracts": [
         {
@@ -2492,13 +2480,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "sync_engine",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Synchronization engine receives a valid remote revision whose base/expected revision conflicts with the current local aggregate; it persists both source revisions and an unresolved conflict record without selecting a winner.",
       "owning_component": "Synchronization subsystem",
       "consumer_contracts": [
         {
@@ -2526,13 +2513,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "sync_engine",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Synchronization engine receives an authenticated owner-authorized resolution bound to the exact conflict ID and both source revisions, validates the resolution rationale and expected conflict revision, then appends the resolution.",
       "owning_component": "Synchronization subsystem",
       "consumer_contracts": [
         {
@@ -2560,13 +2546,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "artifact_registry",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Artifact registry validates an immutable manifest's content digest, provenance, owner, classification, format, size and storage reference, then commits the manifest and registration event atomically. Registration is not trust or activation.",
       "owning_component": "Artifact registry",
       "consumer_contracts": [
         {
@@ -2594,13 +2579,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "artifact_registry",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Artifact registry receives failed signature/provenance/format/policy validation or untrusted worker output and atomically marks the exact artifact revision quarantined while preserving forensic metadata.",
       "owning_component": "Artifact registry",
       "consumer_contracts": [
         {
@@ -2628,13 +2612,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "artifact_registry",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Artifact registry completes deletion only after retention policy permits it, required owning stores acknowledge tombstones, content references are removed, and restore/sync replay cannot resurrect the artifact.",
       "owning_component": "Artifact registry",
       "consumer_contracts": [
         {
@@ -2662,13 +2645,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "egress_governance",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the egress-governance boundary releases an exact outbound data digest only after validating recipient, purpose, data classes, owner authorization and approval reference; it appends the disclosure audit record atomically with the release ledger.",
       "owning_component": "Egress governance subsystem",
       "consumer_contracts": [
         {
@@ -2696,13 +2678,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "retention_worker",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Retention worker accepts an authenticated owner-scoped deletion request after policy/scope validation, creates a durable deletion job and records the request before contacting each owning store.",
       "owning_component": "Retention subsystem",
       "consumer_contracts": [
         {
@@ -2730,13 +2711,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "retention_worker",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Retention worker confirms every required owning store has acknowledged deletion/tombstone state and restore/sync safeguards prevent resurrection; partial acknowledgement remains pending or failed.",
       "owning_component": "Retention subsystem",
       "consumer_contracts": [
         {
@@ -2799,13 +2779,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "worker_supervisor",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Worker supervisor receives a progress checkpoint from the isolated worker, verifies job/attempt identity and resource budget, and persists the checkpoint.",
       "owning_component": "Worker supervisor",
       "consumer_contracts": [
         {
@@ -2833,13 +2812,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "worker_supervisor",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Worker supervisor receives a terminal success result, verifies job/attempt identity, deadline, resource budget and output manifest/digests, then stores outputs as untrusted/quarantined artifacts before completion.",
       "owning_component": "Worker supervisor",
       "consumer_contracts": [
         {
@@ -2867,13 +2845,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "worker_supervisor",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Worker supervisor receives a terminal worker failure, deadline expiry or crash report, records the exact attempt/error and quarantines any partial artifacts.",
       "owning_component": "Worker supervisor",
       "consumer_contracts": [
         {
