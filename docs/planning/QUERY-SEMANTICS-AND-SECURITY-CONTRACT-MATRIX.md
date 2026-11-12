@@ -1,7 +1,7 @@
 # Query Semantics and Security Contract Matrix
 
 **Status:** Builder contract proposal; not owner-approved as a product/API release and not dispatchable.  
-**Scope:** BR-002 — all 21 query registry entries.  
+**Scope:** BR-002 — all 29 query registry entries, including the foundational objective/world/means/interaction surface proposed by the open-world architecture.  
 **Authority boundary:** This document completes query-side semantic design where it can be determined from the existing architecture. It does not select the first Android action, settle cloud/mobile history topology, authorize implementation, or promote any query to runtime dispatch.
 
 ## 1. Normative query invariants
@@ -115,12 +115,21 @@ Domain-specific assertions:
 - `audit.lookup`: filtering/redaction cannot disclose another owner or secret-bearing audit payload.
 - `device.capabilities`: query reads last evidenced descriptor state only; it does not probe, request permissions or imply the capability is authorized.
 
+| `QCC-022` | `objective.inspect` | Returns exact owner-scoped objective revision, status, success criteria, constraints and uncertainty. | Cross-owner or stale objective ID returns no existence disclosure; query never mutates objective or derived goals. |
+| `QCC-023` | `world.entity.search` | Returns owner-scoped entities with provisional identity status, evidence lineage and temporal/context scope. | Cross-owner filters, expired identity or missing evidence do not leak records/counts or promote provisional identity. |
+| `QCC-024` | `world.entity.inspect` | Returns one exact entity revision with attributes, evidence and validity scope. | Unknown/cross-owner entity is indistinguishable; no live observation or identity merge occurs. |
+| `QCC-025` | `world.relationship.search` | Returns contextual/time-bounded relationships with epistemic status, confidence and evidence lineage. | Contradictory/expired relationships remain qualified; cross-owner subject/object filters reveal no records. |
+| `QCC-026` | `situation.inspect` | Returns one partial situation snapshot including state claims, unknowns, conflicts and source revisions. | Stale/cross-owner snapshot is not reported as complete/current; query does not trigger sensing or reassembly. |
+| `QCC-027` | `means.affordance.search` | Returns context-scoped affordance hypotheses with preconditions, effects, authority requirements and limitations. | Hypothesis is never represented as guaranteed capability, permission or executable API; stale context is surfaced. |
+| `QCC-028` | `interaction.inspect` | Returns exact interaction proposal with proposal, authorization and execution-binding states separated. | Proposal is never shown as authorized/dispatched without independent evidence; protected target/recipient data is redacted. |
+| `QCC-029` | `interaction.outcome.inspect` | Returns independently observed outcomes, evidence, unresolved effects and attribution uncertainty. | Provider receipt alone is not outcome; uncertain attribution remains explicit and cross-owner effects are hidden. |
+
 ## 4. Remaining measured and external gates
 
 The semantic contract matrix is specified. The following cannot be claimed complete without evidence:
 1. Per-query numerical timeout/row/byte budgets calibrated on the target runtime and representative data.
 2. Concrete field-level classification annotations in each result schema and owning domain projection.
-3. Handler-level executable tests for all 21 query entries, including database read-only assertions.
+3. Handler-level executable tests for all 29 query entries, including database read-only assertions.
 4. Target SQLite snapshot/cursor behaviour and concurrency tests.
 5. Owner approval of the proposed first-release workflow/query subset.
 
