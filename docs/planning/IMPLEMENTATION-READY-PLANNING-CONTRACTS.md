@@ -763,7 +763,7 @@ These tests protect the foundational rule that mechanisms are engineered while b
 - **NHC-007 — New capability regression:** add a compatible capability descriptor after the planner and core are built; the system must process it through generic contracts without recompiling a task catalogue or adding a task-specific dispatch branch.
 - **NHC-008 — Evidence-based strategy adaptation:** after a scoped strategy update passes its evaluation gate, a later related task must show the expected change; related unseen variations and unrelated regression controls must be included.
 
-NHC-006 requires architecture/code review plus targeted static searches and behavioural fixtures; a text search alone is not proof of absence. Record inspected paths, exceptions, reviewer, revision and evidence. NHC-001…NHC-008 are required planning acceptance tests and remain unvalidated until executed against implementation.
+NHC-006 requires architecture/code review plus targeted static searches and behavioural fixtures; a text search alone is not proof of absence. Record inspected paths, exceptions, reviewer, revision and evidence. NHC-001…NHC-016 are required planning acceptance tests and remain unvalidated until executed against implementation.
 
 
 ### 10.8 Security, key lifecycle and supply-chain tests
