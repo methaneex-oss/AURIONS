@@ -348,3 +348,12 @@ The builder extended `scripts/validate_schemas.py` so the 84-entry event registr
 A bounded inspection of the exact branch data resolved all 84 payload schema references and all referenced fixture pointers. The updated Python validator has not yet been confirmed by an exact-head CI run; its state is **IMPLEMENTED — UNVERIFIED**. Earlier CI run [43296040114](https://github.com/methaneex-oss/AURIONS/actions/runs/43296040114) predates this change and does not verify it.
 
 BR-008 remains OPEN. The guard does not establish event semantic suitability, owner state transitions, handler/consumer correctness, persistence transaction behaviour or integrated cognition. Overall planning remains NOT READY; no implementation authorization or handoff is implied.
+
+
+## Builder correction and verification — event binding validation (2026-11-12)
+
+The event payload/fixture reference validator initially failed in runs [43309518687](https://github.com/methaneex-oss/AURIONS/actions/runs/43309518687) and [43309698482](https://github.com/methaneex-oss/AURIONS/actions/runs/43309698482). The builder inspected both failures, corrected relative schema-ID resolution and restored the leading `#` in local JSON Pointer references. A focused local Draft 2020-12 test passed for valid and invalid payloads.
+
+Corrected code revision `2cfad2ce1a7a2e64be71697859541a0182b8424d` passed exact-head GitHub Actions run [43309812492](https://github.com/methaneex-oss/AURIONS/actions/runs/43309812492). All workflow steps passed: schema/fixture validation, governance integrity, host SQLite DDL/migration smoke tests and Android probe shell syntax.
+
+This closes the event registry's machine-enforced schema/fixture reference-integrity subtask only. BR-008 remains OPEN for semantic and runtime verification; all event entries remain design-only/non-dispatchable. The failed runs are retained in the evidence trail. Overall planning remains NOT READY.
