@@ -27,13 +27,16 @@
       "minLength": 1
     },
     "events": {
-      "type": "array",
-      "minItems": 84,
-      "items": {
+      "type": "object",
+      "minProperties": 84,
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_.]+\\.v1$"
+      },
+      "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "event_type",
           "event_version",
           "payload_schema_ref",
           "fixture_refs",
@@ -41,10 +44,6 @@
           "unresolved_bindings"
         ],
         "properties": {
-          "event_type": {
-            "type": "string",
-            "pattern": "^[a-z][a-z0-9_.]+\\.v1$"
-          },
           "event_version": {
             "const": "1.0"
           },
