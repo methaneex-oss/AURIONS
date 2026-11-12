@@ -134,7 +134,7 @@
       "properties": {
         "scenario_id": {
           "type": "string",
-          "pattern": "^INT-[0-9]{3}$"
+          "pattern": "^(?:INT|CM|AD)-[0-9]{3}$"
         },
         "title": {
           "type": "string",
