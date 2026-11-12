@@ -40,8 +40,9 @@ def main() -> int:
             fail(f"{name}: missing or incorrect Draft 2020-12 dialect declaration")
         Draft202012Validator.check_schema(schema)
         resource = Resource.from_contents(schema)
-        if schema.get("$id"):
-            registry = registry.with_resource(schema["$id"], resource)
+        schema_id = schema.get("$id", "")
+        if schema_id.startswith("urn:"):
+            registry = registry.with_resource(schema_id, resource)
 
     def validate(instance, schema, label: str) -> None:
         validator = Draft202012Validator(
@@ -137,8 +138,16 @@ def main() -> int:
     for filename, (schema_name, definition) in negative_cases.items():
         instance = load(negative_dir / filename)
         schema = schema_docs[schema_name]
-        target = ({"$ref": f"{schema['$id']}#/$defs/{definition}"}
-                  if definition else schema)
+        if definition and schema_name == "world-interaction.v1.schema.json":
+            target = {
+                "$schema": Draft202012Validator.META_SCHEMA["$id"],
+                "$defs": schema["$defs"],
+                "$ref": f"#/$defs/{definition}",
+            }
+        elif definition:
+            target = {"$ref": f"{schema['$id']}#/$defs/{definition}"}
+        else:
+            target = schema
         try:
             validate(instance, target, f"negative control {filename}")
         except AssertionError:
