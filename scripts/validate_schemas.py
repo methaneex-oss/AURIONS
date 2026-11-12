@@ -82,6 +82,12 @@ def main() -> int:
     if not command_matrix_path.is_file():
         fail("missing per-command transition and recovery contract matrix")
     command_matrix = command_matrix_path.read_text(encoding="utf-8")
+    error_registry = load(SCHEMAS / "error-registry.v1.json")
+    known_error_codes = {entry["error_code"] for entry in error_registry["entries"]}
+    event_registry = load(SCHEMAS / "event-registry.v1.json")
+    known_event_types = set(event_registry["events"])
+    command_acceptance_ids = set()
+    mapped_command_types = set()
     for item in commands:
         command_type = item["command_type"]
         if not item.get("unresolved_bindings"):
@@ -93,15 +99,46 @@ def main() -> int:
         matrix_row = f"| `{command_type}` |"
         if matrix_row not in command_matrix:
             fail(f"{command_type}: missing per-command transition matrix row")
-    matrix_command_rows = [
-        line for line in command_matrix.splitlines()
+        if item["dispatch_status"] == "deferred_by_scope":
+            if item.get("acceptance_case_id") or item.get("error_code_bindings") or item.get("emitted_event_bindings"):
+                fail(f"{command_type}: deferred command must not have active contract bindings")
+            continue
+        mapped_command_types.add(command_type)
+        for field in (
+            "expected_revision_contract",
+            "authorization_contract",
+            "idempotency_contract",
+            "deadline_cancellation_contract",
+            "side_effect_contract",
+        ):
+            if not isinstance(item.get(field), str) or not item[field].strip():
+                fail(f"{command_type}: missing populated {field}")
+        if not item.get("error_code_bindings"):
+            fail(f"{command_type}: missing command-specific error bindings")
+        unknown_errors = set(item["error_code_bindings"]) - known_error_codes
+        if unknown_errors:
+            fail(f"{command_type}: unknown error bindings {sorted(unknown_errors)}")
+        unknown_events = set(item.get("emitted_event_bindings", [])) - known_event_types
+        if unknown_events:
+            fail(f"{command_type}: unknown event bindings {sorted(unknown_events)}")
+        case_id = item.get("acceptance_case_id")
+        if not isinstance(case_id, str) or not case_id.startswith("CC-") or case_id in command_acceptance_ids:
+            fail(f"{command_type}: missing or duplicate command acceptance case ID")
+        command_acceptance_ids.add(case_id)
+        if f"| `{case_id}` | `{command_type}` |" not in command_matrix:
+            fail(f"{command_type}: acceptance case {case_id} missing from matrix catalogue")
+        if item.get("dispatch_status") != "design_only_not_dispatchable":
+            fail(f"{command_type}: mapped command unexpectedly dispatchable")
+    matrix_command_rows = {
+        line.split("|", 2)[1].strip().strip("`")
+        for line in command_matrix.splitlines()
         if line.startswith("| `") and line.count("|") >= 4
-    ]
-    if len(matrix_command_rows) != len(commands):
-        fail(
-            f"command transition matrix expected {len(commands)} rows, "
-            f"found {len(matrix_command_rows)}"
-        )
+        and line.split("|", 2)[1].strip().strip("`") in {item["command_type"] for item in commands}
+    }
+    if matrix_command_rows != {item["command_type"] for item in commands}:
+        fail("command transition matrix rows do not exactly match registry inventory")
+    if len(command_acceptance_ids) != len(mapped_command_types):
+        fail("every mapped command must have exactly one unique acceptance case")
 
     query_contract_fields = (
         "authorization_contract",
