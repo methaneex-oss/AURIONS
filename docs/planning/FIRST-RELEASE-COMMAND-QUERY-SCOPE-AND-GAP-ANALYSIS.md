@@ -182,3 +182,31 @@ Next builder steps, in order:
 6. Keep all entries `design_only_not_dispatchable` until their own implementation and verification gates pass.
 
 This analysis is a builder artifact only. It is not an independent review, tester result, product approval, implementation authorization or director acceptance.
+
+
+## 10. Builder self-review and bounded structural verification (2026-11-12)
+
+The builder re-fetched the current command/query registry, domain payload schema, world-interaction schema, event registry, error registry, and all six existing base/migration SQL files, then ran a bounded cross-artifact inspection against the exact branch revision.
+
+**Checks executed and results:**
+
+| Check | Result |
+|---|---|
+| Command/query registry parse | PASS — 45 commands and 21 queries parsed |
+| Mapped command request/response schema references | PASS — all references resolve to declared definitions in the domain/world schema set |
+| Query input/response/result schema references | PASS — all references resolve to declared definitions |
+| Registry-to-proposed-DDL table references | PASS — every referenced table name was found in the six retrieved SQL files |
+| Event registry structure | PASS — 84 event names present; every entry has a payload-schema reference and at least one fixture reference |
+| Error registry structure | PASS — 35 entries; every entry has a handler-mapping reference and at least one fixture reference |
+| First-release existing P0 command-name crosswalk | PASS — all referenced existing command names occur in the registry |
+
+These are bounded source-level cross-reference checks executed against retrieved artifacts. They are not committed executable tests, do not parse or execute SQL, do not validate foreign-key/runtime behaviour, and do not prove that the referenced handlers, events or queries work.
+
+**Self-review found the decisive closure gap remains:**
+
+- 39 of 43 mapped commands still carry the eight unresolved semantic categories: aggregate transition/revision, exact owner/resource/risk scope, idempotency/replay/collision, deadline/cancellation, side-effect/reconciliation, error/recovery, emitted event/outbox and per-entry executable assertions.
+- The four task-control commands carry the narrower remaining gap: per-entry conflict/replay/recovery execution evidence. Their generic twelve-case specification is not a substitute for command-specific executed tests.
+- All 21 queries still carry all seven unresolved categories: owner/field scope, classification/redaction, consistency/snapshot, deterministic ordering/cursor, timeout/row/byte limits, freshness/cache, and positive/negative executable fixtures.
+- The proposed objective/world/means/interaction interfaces are not yet canonical registry entries with request/response contracts, authoritative aggregate/persistence bindings, event mappings and executable acceptance tests.
+
+**Builder verdict for this increment:** The scope analysis is internally cross-referenced at the structural level, but it does not close BR-001 or BR-002. Both remain OPEN and blocking. The registry remains design-only/non-dispatchable. Do not hand off for independent review or final testing until the remaining builder-owned technical contracts and self-review are complete. Owner-reserved product/topology/action decisions remain explicitly outside builder authority.
