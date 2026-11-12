@@ -306,10 +306,11 @@ def main() -> int:
         query_type = item["query_type"]
         for fixture_ref in item["fixture_refs"]:
             leaf = fixture_ref.rsplit("/", 1)[-1]
+            input_schema_leaf = item["input_schema"].rsplit("/", 1)[-1]
             selected = (
-                item["envelope_schema"] if fixture_ref == item["envelope_schema"]
-                else item["response_schema"] if fixture_ref == item["response_schema"]
-                else item["input_schema"] if fixture_ref == item["input_schema"]
+                item["envelope_schema"] if leaf == "queryEnvelope"
+                else item["response_schema"] if leaf == "queryResponse"
+                else item["input_schema"] if leaf == input_schema_leaf
                 else item["result_item_schema"]
             )
             validate_bound_fixture(fixture_ref, selected, query_type)
