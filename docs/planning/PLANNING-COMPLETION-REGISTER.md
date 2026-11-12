@@ -424,3 +424,16 @@ All events remain design-only/non-dispatchable. Consumer semantics, owner transi
 ## BR-002 follow-on — expanded open-world query inventory (2026-11-12)
 
 The query registry expanded from 21 to 29 entries with objective/world entity/relationship/situation/affordance/interaction inspection. Added unique QCC-022…QCC-029 positive/negative acceptance assertions and read-only invariants for the eight new queries. All 29 query entries now have acceptance IDs and remain design-only/non-dispatchable. These are specifications, not handler tests; BR-002 remains OPEN.
+
+
+## BR-001 / BR-002 / BR-008 builder increment — foundational world/interaction API reconciliation (2026-11-12)
+
+Before this run, the builder freshly retrieved/read the mandatory governance standard (blob `951b9009cbedcf8907b365d611d89559d5a17385`) and Builder Operating Protocol (blob `179b02aaef051173b96f54812f451ede1a2eae0d`); EBT-01 and the fresh-read gate were confirmed.
+
+Added eight design-only command contracts and eight read-only query contracts for objectives, entities/actors, relationships, situation snapshots, affordance hypotheses, interaction proposals and interaction outcomes. Bound commands to world-interaction payload schemas, exact proposed memory-store tables, owner/actor scope, revision/append-only semantics, idempotency, deadline/cancellation, side-effect/outbox and event bindings; added CC-044…CC-051. Bound queries to owner-scoped typed result schemas, classification/redaction, consistency, ordering/cursor, freshness/cache and QCC-022…QCC-029 acceptance assertions.
+
+Added `objective.revised.v1`, objective/relationship successor fixtures, registry counts (53 commands / 29 queries / 89 events), expanded schema/validator inventory checks, and validation of all mapped command/query schema and fixture references. Reconciled the cognitive ownership matrix and first-release gap analysis; added `SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md`.
+
+All seven new world-domain table names were found in the proposed memory base/migration SQL. This is source-level table-name/store reconciliation only. Exact-head CI is pending; do not claim this increment verified until the workflow passes.
+
+This closes the missing open-world API specification/registry-binding subtask only. All commands and events remain non-dispatchable; all queries remain read-only and non-dispatchable. BR-001/002 remain open for owner scope acceptance, measured budgets, handler implementation and executable tests. BR-008 remains open for full semantic/consumer and integrated scenario verification. No implementation authorization or handoff is implied.
