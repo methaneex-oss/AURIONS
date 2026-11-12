@@ -172,6 +172,8 @@ Until then, planning remains IN PROGRESS or BLOCKED as recorded above. No implem
 
 ## 7. Builder audit findings through 2026-11-12
 
+> **Historical record notice:** Entries in this section and the dated append-only records below preserve the state at their cited revisions. Their inventory counts and dispositions are not current if superseded by later builder increments. The current status is in Sections 2–4 above; use the latest dated increment and exact-head CI evidence for current counts and claims.
+
 The following findings were identified during the current cross-document pass. Corrections are recorded; unresolved items remain open rather than being labelled complete.
 
 | ID | Severity | Finding | Disposition | Remaining evidence/work |
