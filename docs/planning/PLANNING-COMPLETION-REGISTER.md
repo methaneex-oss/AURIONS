@@ -437,3 +437,10 @@ Added `objective.revised.v1`, objective/relationship successor fixtures, registr
 All seven new world-domain table names were found in the proposed memory base/migration SQL. This is source-level table-name/store reconciliation only. Exact-head CI is pending; do not claim this increment verified until the workflow passes.
 
 This closes the missing open-world API specification/registry-binding subtask only. All commands and events remain non-dispatchable; all queries remain read-only and non-dispatchable. BR-001/002 remain open for owner scope acceptance, measured budgets, handler implementation and executable tests. BR-008 remains open for full semantic/consumer and integrated scenario verification. No implementation authorization or handoff is implied.
+
+
+## Exact-head verification — open-world command/query reconciliation (2026-11-12)
+
+Exact PR #2 head `29d2346958d0a57b072fd3309d698484a34d277b` passed workflow [43320073556](https://github.com/methaneex-oss/AURIONS/actions/runs/43320073556). All steps passed: Draft 2020-12 schema and fixture validation (including command/query payload/result references and 89 event bindings), registry/acceptance integrity (51 mapped commands, two deferred, 29 queries, 51 CC cases and 29 QCC cases), governance integrity, host SQLite smoke tests and Android probe syntax.
+
+This closes the open-world command/query **specification and structural registry-integrity** increment only. No handler/consumer or integrated cognitive scenario test was executed. BR-001, BR-002 and BR-008 remain OPEN; no dispatchability or implementation authorization is implied.
