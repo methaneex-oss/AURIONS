@@ -498,3 +498,24 @@ This verifies the current revision's bounded CI checks. It does not close BR-001
 **Machine-enforced integrity:** Extended `scripts/validate_schemas.py` to require all seven query contract fields, exact unresolved-gate declarations, read-only status, and one matching matrix row per registry query. Exact-head workflow run [43317444472](https://github.com/methaneex-oss/AURIONS/actions/runs/43317444472) passed all steps, including the new query registry/matrix integrity guard, event schema/fixture binding checks, governance integrity, host SQLite smoke tests and Android shell syntax.
 
 **What this does and does not close:** The semantic specification and registry binding portion of BR-002 is now completed at the design level. BR-002 remains OPEN overall because numerical resource budgets require target-runtime measurements and all 21 handlers need executable read-only, authorization, redaction, pagination, consistency and fault tests. No query is dispatchable. The first-release query subset remains proposed pending owner acceptance; no owner decision or implementation authorization is inferred.
+
+
+## BR-001 builder increment — per-command semantic registry binding (2026-11-12)
+
+**Mandatory fresh governance gate completed before this run:**
+- Project Directorship and Team Operating Standard — freshly retrieved/read; blob `951b9009cbedcf8907b365d611d89559d5a17385`.
+- Builder Operating Protocol — freshly retrieved/read; blob `179b02aaef051173b96f54812f451ede1a2eae0d`.
+- EBT-01, autonomous correction, scope discipline, self-review/testing and the mandatory fresh-read-before-every-run gate were confirmed.
+
+**Starting repository state:** PR #2 head `915de64cb39e6aff0681712e6a588184e821e822`, open/draft/unmerged. Exact-head workflow run [43317770089](https://github.com/methaneex-oss/AURIONS/actions/runs/43317770089) passed the existing checks before this increment.
+
+**Corrections and implementation:**
+- Populated all 43 mapped command entries with machine-readable aggregate revision/transition semantics, authenticated owner/actor scope and risk/permission requirements, canonical RFC 8785 idempotency/digest/replay rules, deadline/cancellation behaviour, side-effect/reconciliation classification, per-command typed error bindings and exact emitted-event bindings where unambiguous.
+- Kept `device.pair` and `device.revoke` deferred with no fabricated schema, authority or event bindings.
+- Explicitly withheld ambiguous event bindings for `memory.retrieve`, `goal.cancel`, `approval.revoke`, `capability.knowledge.propose`, `learning.candidate.evaluate` and `self_model.update.propose`. These remain named blockers rather than being forced onto semantically incompatible events.
+- Added unique acceptance-case IDs CC-001…CC-043 and positive/negative assertions for all mapped commands; task-control cases supplement existing TC-001…TC-012 assertions.
+- Extended the command registry schema for acceptance-case IDs and strengthened `scripts/validate_schemas.py` to enforce all required command semantic fields, known error/event references, exact registry/matrix inventory, non-dispatchable status and one-to-one acceptance-case coverage.
+
+**Evidence boundary:** These are specified and machine-bound acceptance criteria. No production handlers exist in this planning PR and no command handler acceptance test was executed. The command matrix still identifies the six event/classification blockers and the first-release command subset remains proposed pending owner acceptance. All mapped commands remain design-only/non-dispatchable.
+
+**BR-001 disposition:** Specification/registry-binding subtask is completed for the 43 mapped commands. BR-001 remains OPEN pending resolution of the six semantic binding blockers, owner acceptance of the first-release subset, implementation authorization, handler implementation and executed per-command positive/negative/replay/crash/recovery tests. No dispatchability, implementation authorization or owner decision is inferred.
