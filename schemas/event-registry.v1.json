@@ -2,7 +2,7 @@
   "registry_id": "aurions.event-registry",
   "registry_version": "1.0",
   "status": "design_baseline_not_dispatchable",
-  "source_catalogue": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#event-catalogue",
+  "source_catalogue": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md",
   "events": [
     {
       "event_type": "experience.observed.v1",
