@@ -6,6 +6,7 @@
 ## 1. State transition rules
 
 The operation lifecycle is an append-only, versioned state machine. A transition is committed only by the Action Gateway after checking the expected operation revision. Each emitted event is committed with the owning operation mutation and outbox record in one transaction. Provider invocation is a separate boundary. The state `succeeded` is a provider-reported result, not independently verified world outcome.
+The command-bound event `operation.reconciled.v1` is an evidence-bearing reconciliation result, not a persistent lifecycle state; it records the reconciliation decision and leaves the operation in the state supported by that evidence (or uncertain if unresolved).
 
 | Event | Allowed predecessor state(s) | Exact producer trigger | Owner transition contract |
 |---|---|---|---|
