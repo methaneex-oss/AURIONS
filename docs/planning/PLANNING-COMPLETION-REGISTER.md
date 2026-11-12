@@ -316,3 +316,9 @@ Added EHR-001…EHR-035 to `docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md`, wit
 The new validation passed in GitHub Actions run [43291982511](https://github.com/methaneex-oss/AURIONS/actions/runs/43291982511) on code revision `07a7219942579d604d933891b9fcb373cf8a4dc9`. Schema/fixture, governance, host SQLite migration and Android probe syntax steps all passed.
 
 **Evidence boundary:** EHR cases are specified, not executed. BR-003 remains OPEN until actual handlers and per-code durable-state/replay/fault tests exist. All 35 error registry entries remain `seed` and non-dispatchable.
+
+## Builder inspection — PR #1 WP-00 scaffold baseline (2026-11-12)
+
+Inspected PR #1 at exact head `742232599a5dc37f48ea33cd9fef77924e060a38` (nine files; open/draft/unmerged). It contains a dependency-free C++ static library/version function, one smoke test, CTest/CMake, hosted CI, ignore rules and scope documentation. Hosted configure/build/test run [43104192873](https://github.com/methaneex-oss/AURIONS/actions/runs/43104192873) passed for that head. It does not demonstrate local reproducible build, Termux/ARM64 build, target ABI, dependency/license inventory or offline reproducibility. C++20 is provisional; CI uses a major-tag action and `ubuntu-latest`.
+
+No PR #1 changes were made. It remains separate and must not merge until the planning baseline is accepted, then be reconciled/rebased and retested. BR-010 remains OPEN.
