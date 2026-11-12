@@ -400,3 +400,10 @@ All 43 mapped command entries now have semantic registry bindings; two device co
 Resolved six command/event or command/query classification gaps: memory retrieval is the audited command distinct from read-only memory search; goal cancellation uses an explicit terminal cancelled goal revision; and four new event payloads/fixtures were added for approval revocation, proposed capability knowledge, learning-candidate evaluation and proposed self-model revision. Bound all six command entries to unambiguous events. Event inventory increased from 84 to 88 and the validator count guard was updated.
 
 Exact revision `bde408f8d3c0709a0e848376caa8ccb97dec6bb7` passed workflow [43318729147](https://github.com/methaneex-oss/AURIONS/actions/runs/43318729147), including schema/fixture, command/event/error registry, governance, host SQLite and Android shell checks. New events remain design-only/non-dispatchable. Handler/consumer tests and architecture-wide semantic reconciliation remain outstanding; BR-001 and BR-008 remain OPEN.
+
+
+## BR-002 builder increment — per-query acceptance specification (2026-11-12)
+
+Freshly read the current mandatory governance standard and Builder Operating Protocol (blobs `951b9009cbedcf8907b365d611d89559d5a17385` and `179b02aaef051173b96f54812f451ede1a2eae0d`); EBT-01 and the fresh-read gate were confirmed.
+
+The 21 query registry entries now each have a unique QCC-001…QCC-021 positive assertion, negative/stale/security assertion and read-only invariant. The schema and validator enforce these fields, unique IDs and exact matrix/registry coverage. Shared QRY-001…QRY-014 remain the cross-query test requirements. These are acceptance specifications, not executed handlers. Numerical budgets and target-runtime cursor/concurrency evidence remain outstanding; all queries remain design-only/non-dispatchable. BR-002 remains OPEN.
