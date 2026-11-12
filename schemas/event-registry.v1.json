@@ -3,9 +3,8 @@
   "registry_version": "1.0",
   "status": "design_baseline_not_dispatchable",
   "source_catalogue": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md",
-  "events": [
-    {
-      "event_type": "experience.observed.v1",
+  "events": {
+    "experience.observed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/experienceObserved",
       "fixture_refs": [
@@ -19,8 +18,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "evidence.recorded.v1",
+    "evidence.recorded.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evidenceItem",
       "fixture_refs": [
@@ -34,8 +32,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "objective.created.v1",
+    "objective.created.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/objective",
       "fixture_refs": [
@@ -49,8 +46,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "world.entity.observed.v1",
+    "world.entity.observed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/entity",
       "fixture_refs": [
@@ -64,8 +60,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "world.relationship.revised.v1",
+    "world.relationship.revised.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/relationship",
       "fixture_refs": [
@@ -79,8 +74,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "situation.snapshot.created.v1",
+    "situation.snapshot.created.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/situation",
       "fixture_refs": [
@@ -94,8 +88,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "means.affordance.proposed.v1",
+    "means.affordance.proposed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/affordanceHypothesis",
       "fixture_refs": [
@@ -109,8 +102,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "interaction.proposed.v1",
+    "interaction.proposed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/interactionProposal",
       "fixture_refs": [
@@ -124,8 +116,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "interaction.outcome.observed.v1",
+    "interaction.outcome.observed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/interactionOutcome",
       "fixture_refs": [
@@ -139,8 +130,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "representation.created.v1",
+    "representation.created.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/representationCreated",
       "fixture_refs": [
@@ -154,8 +144,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "representation.revised.v1",
+    "representation.revised.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/representationRevised",
       "fixture_refs": [
@@ -169,8 +158,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "context.assembled.v1",
+    "context.assembled.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/contextSnapshot",
       "fixture_refs": [
@@ -184,8 +172,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "context.invalidated.v1",
+    "context.invalidated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/contextInvalidated",
       "fixture_refs": [
@@ -199,8 +186,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "environment.observed.v1",
+    "environment.observed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/environmentObserved",
       "fixture_refs": [
@@ -214,8 +200,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "capability.discovered.v1",
+    "capability.discovered.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
       "fixture_refs": [
@@ -229,8 +214,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "capability.verified.v1",
+    "capability.verified.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
       "fixture_refs": [
@@ -244,8 +228,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "capability.invalidated.v1",
+    "capability.invalidated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
       "fixture_refs": [
@@ -259,8 +242,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "capability.revoked.v1",
+    "capability.revoked.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
       "fixture_refs": [
@@ -274,8 +256,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "capability.knowledge.revised.v1",
+    "capability.knowledge.revised.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityKnowledgeRevision",
       "fixture_refs": [
@@ -289,8 +270,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "memory.recorded.v1",
+    "memory.recorded.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/memoryRecord",
       "fixture_refs": [
@@ -304,8 +284,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "memory.retrieved.v1",
+    "memory.retrieved.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/memoryRetrieval",
       "fixture_refs": [
@@ -319,8 +298,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "belief.proposed.v1",
+    "belief.proposed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/beliefRevision",
       "fixture_refs": [
@@ -334,8 +312,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "belief.revised.v1",
+    "belief.revised.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/beliefRevision",
       "fixture_refs": [
@@ -349,8 +326,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "prediction.created.v1",
+    "prediction.created.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/predictionCreated",
       "fixture_refs": [
@@ -364,8 +340,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "prediction.evaluated.v1",
+    "prediction.evaluated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/predictionEvaluation",
       "fixture_refs": [
@@ -379,8 +354,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "appraisal.updated.v1",
+    "appraisal.updated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/appraisalUpdated",
       "fixture_refs": [
@@ -394,8 +368,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "attention.allocated.v1",
+    "attention.allocated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/attentionAllocated",
       "fixture_refs": [
@@ -409,8 +382,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "reasoning.hypothesis.proposed.v1",
+    "reasoning.hypothesis.proposed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/reasoningHypothesisProposed",
       "fixture_refs": [
@@ -424,8 +396,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "decision.recorded.v1",
+    "decision.recorded.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/decisionRecorded",
       "fixture_refs": [
@@ -439,8 +410,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "outcome.evaluated.v1",
+    "outcome.evaluated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/outcomeEvaluation",
       "fixture_refs": [
@@ -454,8 +424,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "goal.created.v1",
+    "goal.created.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision",
       "fixture_refs": [
@@ -469,8 +438,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "goal.revised.v1",
+    "goal.revised.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision",
       "fixture_refs": [
@@ -484,8 +452,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "plan.proposed.v1",
+    "plan.proposed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/planRevision",
       "fixture_refs": [
@@ -499,8 +466,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "plan.revised.v1",
+    "plan.revised.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/planRevision",
       "fixture_refs": [
@@ -514,8 +480,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "plan.checkpointed.v1",
+    "plan.checkpointed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/taskCheckpointDetails",
       "fixture_refs": [
@@ -529,8 +494,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "permission.evaluated.v1",
+    "permission.evaluated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/permissionEvaluated",
       "fixture_refs": [
@@ -544,8 +508,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "approval.requested.v1",
+    "approval.requested.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/approvalRequested",
       "fixture_refs": [
@@ -559,8 +522,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "approval.decided.v1",
+    "approval.decided.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/approvalDecision",
       "fixture_refs": [
@@ -574,8 +536,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.proposed.v1",
+    "operation.proposed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -589,8 +550,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.validating.v1",
+    "operation.validating.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -604,8 +564,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.awaiting_approval.v1",
+    "operation.awaiting_approval.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -619,8 +578,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.ready.v1",
+    "operation.ready.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -634,8 +592,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.dispatched.v1",
+    "operation.dispatched.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -649,8 +606,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.running.v1",
+    "operation.running.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -664,8 +620,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.succeeded.v1",
+    "operation.succeeded.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -679,8 +634,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.failed.v1",
+    "operation.failed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -694,8 +648,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.rejected.v1",
+    "operation.rejected.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -709,8 +662,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.expired.v1",
+    "operation.expired.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -724,8 +676,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.revoked.v1",
+    "operation.revoked.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -739,8 +690,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.cancel_requested.v1",
+    "operation.cancel_requested.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -754,8 +704,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.cancelled.v1",
+    "operation.cancelled.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -769,8 +718,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.uncertain.v1",
+    "operation.uncertain.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -784,8 +732,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.reconciling.v1",
+    "operation.reconciling.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -799,8 +746,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.reconciled.v1",
+    "operation.reconciled.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -814,8 +760,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.compensation_required.v1",
+    "operation.compensation_required.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -829,8 +774,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.compensating.v1",
+    "operation.compensating.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -844,8 +788,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.compensated.v1",
+    "operation.compensated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -859,8 +802,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "operation.manual_intervention.v1",
+    "operation.manual_intervention.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
       "fixture_refs": [
@@ -874,8 +816,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "outcome.observed.v1",
+    "outcome.observed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/outcomeObserved",
       "fixture_refs": [
@@ -889,8 +830,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "learning.update.proposed.v1",
+    "learning.update.proposed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/learningUpdate",
       "fixture_refs": [
@@ -904,8 +844,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "learning.update.accepted.v1",
+    "learning.update.accepted.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/learningUpdate",
       "fixture_refs": [
@@ -919,8 +858,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "learning.experiment.completed.v1",
+    "learning.experiment.completed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/learningExperimentCompleted",
       "fixture_refs": [
@@ -934,8 +872,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "self_model.updated.v1",
+    "self_model.updated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/selfModelUpdated",
       "fixture_refs": [
@@ -949,8 +886,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "evolution.proposed.v1",
+    "evolution.proposed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionProposed",
       "fixture_refs": [
@@ -964,8 +900,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "evolution.candidate.evaluated.v1",
+    "evolution.candidate.evaluated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateLifecycle",
       "fixture_refs": [
@@ -979,8 +914,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "candidate.activated.v1",
+    "candidate.activated.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateLifecycle",
       "fixture_refs": [
@@ -994,8 +928,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "candidate.rolled_back.v1",
+    "candidate.rolled_back.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateLifecycle",
       "fixture_refs": [
@@ -1009,8 +942,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "sync.change.exported.v1",
+    "sync.change.exported.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/syncChange",
       "fixture_refs": [
@@ -1024,8 +956,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "sync.change.applied.v1",
+    "sync.change.applied.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/syncChange",
       "fixture_refs": [
@@ -1039,8 +970,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "sync.tombstone.applied.v1",
+    "sync.tombstone.applied.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/syncChange",
       "fixture_refs": [
@@ -1054,8 +984,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "sync.conflict.detected.v1",
+    "sync.conflict.detected.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/syncConflictRecord",
       "fixture_refs": [
@@ -1069,8 +998,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "sync.conflict.resolved.v1",
+    "sync.conflict.resolved.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/syncConflictRecord",
       "fixture_refs": [
@@ -1084,8 +1012,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "artifact.registered.v1",
+    "artifact.registered.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/artifactManifest",
       "fixture_refs": [
@@ -1099,8 +1026,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "artifact.quarantined.v1",
+    "artifact.quarantined.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/artifactManifest",
       "fixture_refs": [
@@ -1114,8 +1040,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "artifact.deleted.v1",
+    "artifact.deleted.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/artifactManifest",
       "fixture_refs": [
@@ -1129,8 +1054,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "disclosure.recorded.v1",
+    "disclosure.recorded.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/externalDisclosureRecord",
       "fixture_refs": [
@@ -1144,8 +1068,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "retention.deletion.requested.v1",
+    "retention.deletion.requested.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/retentionDeletionEvent",
       "fixture_refs": [
@@ -1159,8 +1082,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "retention.deletion.completed.v1",
+    "retention.deletion.completed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/retentionDeletionEvent",
       "fixture_refs": [
@@ -1174,8 +1096,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "worker.job.requested.v1",
+    "worker.job.requested.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/workerRequest",
       "fixture_refs": [
@@ -1189,8 +1110,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "worker.job.progressed.v1",
+    "worker.job.progressed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/workerProgress",
       "fixture_refs": [
@@ -1204,8 +1124,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "worker.job.completed.v1",
+    "worker.job.completed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/workerResult",
       "fixture_refs": [
@@ -1219,8 +1138,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "worker.job.failed.v1",
+    "worker.job.failed.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/workerFailure",
       "fixture_refs": [
@@ -1234,8 +1152,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "task.control.requested.v1",
+    "task.control.requested.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/taskControlRequest",
       "fixture_refs": [
@@ -1249,8 +1166,7 @@
         "event_specific_acceptance"
       ]
     },
-    {
-      "event_type": "task.run.transitioned.v1",
+    "task.run.transitioned.v1": {
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/taskRunTransition",
       "fixture_refs": [
@@ -1264,5 +1180,5 @@
         "event_specific_acceptance"
       ]
     }
-  ]
+  }
 }
