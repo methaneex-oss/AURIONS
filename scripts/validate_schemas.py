@@ -251,6 +251,64 @@ def main() -> int:
                 fail(f"{label}: unresolved JSON Pointer segment {part!r}")
         return value
 
+    def resolve_schema_reference(reference: str, label: str):
+        schema_path, separator, pointer = reference.partition("#")
+        if not separator or not schema_path.startswith("schemas/"):
+            fail(f"{label}: malformed schema reference {reference!r}")
+        schema_name = Path(schema_path).name
+        document = schema_docs.get(schema_name)
+        if document is None:
+            fail(f"{label}: schema file {schema_path!r} is not in the validated schema set")
+        target = resolve_pointer(document, "#" + pointer, f"{label} schema")
+        if not isinstance(target, dict):
+            fail(f"{label}: schema pointer does not resolve to a schema object")
+        return document, pointer
+
+    def validate_bound_fixture(reference: str, selected_schema_ref: str, label: str):
+        fixture_path, separator, fixture_pointer = reference.partition("#")
+        if not separator or not fixture_path.startswith("schemas/fixtures/"):
+            fail(f"{label}: malformed fixture reference {reference!r}")
+        if fixture_path not in fixture_cache:
+            path = ROOT / fixture_path
+            if not path.is_file():
+                fail(f"{label}: fixture file does not exist: {fixture_path}")
+            fixture_cache[fixture_path] = load(path)
+        payload = resolve_pointer(
+            fixture_cache[fixture_path], "#" + fixture_pointer, f"{label} fixture"
+        )
+        schema_document, schema_pointer = resolve_schema_reference(selected_schema_ref, label)
+        wrapper = {
+            "$schema": schema_document["$schema"],
+            "$defs": schema_document.get("$defs", {}),
+            "$ref": "#" + schema_pointer,
+        }
+        validate(payload, wrapper, f"{label} fixture {reference}")
+
+    for item in commands:
+        if item["dispatch_status"] == "deferred_by_scope":
+            continue
+        command_type = item["command_type"]
+        for fixture_ref in item["fixture_refs"]:
+            leaf = fixture_ref.rsplit("/", 1)[-1]
+            selected = (
+                item["envelope_schema"] if leaf == "commandEnvelope"
+                else item["response_schema"] if leaf == "commandResponse"
+                else item["request_schema"]
+            )
+            validate_bound_fixture(fixture_ref, selected, command_type)
+
+    for item in queries:
+        query_type = item["query_type"]
+        for fixture_ref in item["fixture_refs"]:
+            leaf = fixture_ref.rsplit("/", 1)[-1]
+            selected = (
+                item["envelope_schema"] if leaf == "queryEnvelope"
+                else item["response_schema"] if leaf == "queryResponse"
+                else item["input_schema"] if leaf == "domainQuery"
+                else item["result_item_schema"]
+            )
+            validate_bound_fixture(fixture_ref, selected, query_type)
+
     fixture_cache = {}
     for event_type, item in events.items():
         if item.get("dispatch_status") != "design_only_not_dispatchable":
