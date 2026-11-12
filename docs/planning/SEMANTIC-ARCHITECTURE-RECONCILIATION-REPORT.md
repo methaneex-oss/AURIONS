@@ -96,3 +96,17 @@ The following remain unverified and keep BR-008 OPEN:
 - Independent review of the final planning revision and owner planning-exit acceptance.
 
 **Disposition:** This report closes a builder-owned semantic traceability and registry-binding increment. It does not close BR-008 overall, establish implemented cognition or authorize runtime work. PR #2 remains draft/unmerged; no independent-review or tester handoff is implied.
+
+
+## BR-004 builder increment — integrated scenario contract fixtures (2026-11-12)
+
+Added `schemas/scenario-contracts.v1.schema.json` and `schemas/fixtures/scenario-contracts.fixture.json` with three integrated scenario specifications:
+- INT-001: provenance, contradictory evidence, immutable prediction, independently observed outcome and quarantined learning-candidate evaluation.
+- INT-002: owner objective, uncertain world state, unknown and changing means, human-mediated options, generic discovery and stale-plan invalidation.
+- INT-003: exact-operation approval, independent OS permission, provider effect with lost receipt, crash/restart, reconciliation, revocation and no-blind-retry.
+
+The fixture contains 28 ordered steps, nine negative controls, and explicit restart/replay, concurrency, fault, held-out and acceptance-threshold requirements. The validator now enforces scenario schema conformance, unique scenario/step/control IDs, known source scenario IDs, command/query/event references, and the non-executable/no-authority status.
+
+Exact scenario-fixture code revision `a27260dfcd3ec7a7a77ca725b437f2565bd762ae` passed GitHub Actions run [43320550842](https://github.com/methaneex-oss/AURIONS/actions/runs/43320550842), including schema/fixture validation, governance integrity, host SQLite migration smoke tests and Android probe shell syntax.
+
+**Evidence boundary:** This closes the initial machine-readable integrated scenario-specification subtask only. It does not provide a runtime scenario runner, production handlers, executed durable-state assertions or learning evidence. Full individual CM-001…CM-021 and AD-001…AD-015 instantiation remains outstanding; INT-001 explicitly records that the current registry lacks a canonical learning-update acceptance/activation transition. BR-004 remains OPEN.
