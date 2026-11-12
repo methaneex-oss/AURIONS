@@ -136,10 +136,16 @@ def main() -> int:
         )
         if not isinstance(payload_definition, dict):
             fail(f"{event_type}: payload schema reference does not resolve to a schema object")
-        schema_id = payload_schema.get("$id")
-        if not schema_id:
-            fail(f"{event_type}: referenced schema has no stable $id")
-        payload_ref = {"$ref": schema_id + "#" + schema_pointer}
+        if not payload_schema.get("$schema"):
+            fail(f"{event_type}: referenced schema has no dialect declaration")
+        # Validate against a local wrapper carrying the source schema's full
+        # $defs. This avoids resolving a relative file-name $id as though it
+        # were a registered absolute URI, while preserving internal refs.
+        payload_validation_schema = {
+            "$schema": payload_schema["$schema"],
+            "$defs": payload_schema.get("$defs", {}),
+            "$ref": schema_pointer,
+        }
 
         fixture_refs = item.get("fixture_refs", [])
         if not fixture_refs:
@@ -158,7 +164,7 @@ def main() -> int:
                 "#" + fixture_pointer,
                 f"{event_type} fixture {fixture_ref}",
             )
-            validate(fixture_payload, payload_ref, f"{event_type} fixture {fixture_ref}")
+            validate(fixture_payload, payload_validation_schema, f"{event_type} fixture {fixture_ref}")
 
     error_registry = load(SCHEMAS / "error-registry.v1.json")
     error_cases = load(FIXTURES / "error-handler-cases.fixture.json")["cases"]
