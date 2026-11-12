@@ -156,3 +156,21 @@ Each registry query now has a unique acceptance ID, one domain-specific positive
 | `QCC-021` | `device.capabilities` | Returns last evidenced descriptor state for one authenticated paired device with probe time/expiry. | No live probe, pairing, permission prompt or authorization inference occurs during read. |
 
 The catalogue is a test specification, not evidence of executed handlers. Execution must assert response fields, owner/actor isolation, deterministic redaction, snapshot/cursor behaviour and unchanged domain-store/event/outbox state using deterministic stores and fault injection.
+
+
+## 6. Open-world objective and interaction query acceptance cases (QCC-022…QCC-029)
+
+The registry has expanded from 21 to 29 queries to cover owner objectives, world entities/relationships, situations, affordances and interaction/outcome inspection. The eight new queries have query-specific positive and negative acceptance criteria below; all retain the same QRY-001…QRY-014 security, pagination, resource and read-only test obligations.
+
+| Acceptance ID | Query | Positive assertion | Negative / stale / security assertion |
+|---|---|---|---|
+| `QCC-022` | `objective.inspect` | Returns the owner-controlled objective and exact revision, constraints, success criteria and lifecycle state; derived goals/plans are linked separately. | A derived goal or plan cannot be substituted for an owner objective; query cannot create, revise or reinterpret owner intent. |
+| `QCC-023` | `world.entity.search` | Returns owner-visible entity hypotheses/records with identity provenance, source confidence and context-bound status. | Unverified entity hypotheses, cross-owner identities or expired source observations are not presented as established current-world facts. |
+| `QCC-024` | `world.entity.inspect` | Returns the exact entity record/revision and its source observations, identity links and uncertainty. | Conflicting identity evidence remains explicit; query cannot merge entities or assert identity from name similarity. |
+| `QCC-025` | `world.relationship.search` | Returns relationships with direction, relation type, source evidence, validity interval and confidence/context. | Inferred or stale relationship is not represented as directly observed fact; query does not create/modify relationships. |
+| `QCC-026` | `situation.inspect` | Returns a situation snapshot with participating entities, relevant relations, temporal/spatial context and evidence lineage. | Incomplete, contradictory or stale context is disclosed; query cannot silently infer a complete situation. |
+| `QCC-027` | `means.affordance.search` | Returns context-specific affordance hypotheses with required conditions, constraints, supporting evidence and verification status. | Affordance is not treated as a granted capability or authorization; unknown conditions prevent executable classification. |
+| `QCC-028` | `interaction.inspect` | Returns exact interaction proposal/attempt lifecycle, target, means, authorization reference and separately observed effects. | Proposal, approval, dispatch receipt and observed effect remain distinct; uncertain dispatch is not represented as completed. |
+| `QCC-029` | `interaction.outcome.inspect` | Returns outcome assessment linked to independent observations, expected effects and uncertainty. | Provider receipt alone is not outcome evidence; missing or contradictory observation remains unknown/inconclusive. |
+
+These cases are design acceptance criteria only. They do not imply an entity resolver, situation builder, affordance evaluator or interaction runtime has been implemented.
