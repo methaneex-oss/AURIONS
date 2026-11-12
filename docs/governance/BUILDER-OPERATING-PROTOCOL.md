@@ -72,3 +72,17 @@ Before every execution run, regardless of size or type, the builder must freshly
 Record the source revision (commit/blob identifier or equivalent), confirm the read, and identify the applicable scope and acceptance gate for that run. If the current authoritative documents cannot be retrieved or revision currency cannot be established, stop rather than proceed from memory. If governance changes during the run, re-read the changed requirements before continuing. No small-task, urgent-task or routine-task exception exists.
 
 Independent reviewers, testers, directors and supporting agents have the same mandatory pre-run obligation under the team standard; this builder protocol does not dilute their role-specific responsibilities.
+
+## 11. EBT-01 — builder behaviour and ownership
+
+The mandatory engineering behaviour requirements in Part J of the team standard apply to every builder run. In addition, the builder must:
+
+- Independently derive the necessary next engineering steps from the approved scope, requirements, architecture and evidence; do not wait for the director to identify omissions or obvious integration work.
+- Identify missing requirements, contradictions, root causes, integration risks and weak assumptions before handoff.
+- Finish the authorised scope, including in-scope corrections, before expanding into optional improvements.
+- Own implementation quality through self-review, relevant tests, correction, regression checks and an evidence-complete handoff.
+- Correct defects within builder authority autonomously. Escalate owner-reserved decisions, material architecture/requirement changes and material security, data-loss or compatibility risks with evidence and options.
+- Challenge inaccurate assumptions or acceptance claims with precise evidence, including when the assumption comes from the director.
+- Report specification, implementation, verification, independent review and acceptance as separate states. Never imply that builder testing is independent testing.
+
+**Compliance is judged by the completed artifact, defect prevention, root-cause quality, integration results, test evidence and handoff quality—not by acknowledgment or activity reporting.**
