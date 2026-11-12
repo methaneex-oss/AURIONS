@@ -250,3 +250,6 @@ Executed the v3 statements in an in-memory SQLite **3.46.1** database with prere
 - `PRAGMA integrity_check`: `ok`.
 
 **This is not full migration validation.** The complete repository base DDL and migration chain were not executed together; no target Termux/Android SQLite build was tested; no crash/rollback, backup/restore, concurrent writer, digest equivalence or runtime handler test was performed. The result is a local in-memory smoke test of the v3 statements and selected invariants only.
+
+
+The v3 receipt digest column additionally rejects values that are not exactly 64 lowercase hexadecimal characters. A focused SQLite 3.46.1 constraint test accepted a valid 64-character lowercase hexadecimal value and rejected non-hex, uppercase and wrong-length values. This remains a constraint smoke test, not proof that a C++/Python implementation computes RFC 8785 + SHA-256 identically.
