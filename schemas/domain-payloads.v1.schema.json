@@ -1190,7 +1190,8 @@
             "paused",
             "completed",
             "abandoned",
-            "blocked"
+            "blocked",
+            "cancelled"
           ]
         },
         "priority": {
@@ -5794,6 +5795,148 @@
           }
         }
       ]
+    },
+    "approvalRevoked": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approval_request_id",
+        "revocation_id",
+        "owner_session_ref",
+        "reason_ref",
+        "policy_version_ref",
+        "revoked_at",
+        "operation_reconciliation_required"
+      ],
+      "properties": {
+        "approval_request_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "revocation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "owner_session_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "policy_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revoked_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "operation_reconciliation_required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "learningCandidateEvaluated": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evaluation_id",
+        "candidate_artifact_ref",
+        "baseline_artifact_ref",
+        "dataset_manifest_ref",
+        "evaluation_protocol_ref",
+        "regression_suite_ref",
+        "metrics_ref",
+        "regression_results_ref",
+        "unseen_controls_ref",
+        "status",
+        "evaluated_at"
+      ],
+      "properties": {
+        "evaluation_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "candidate_artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseline_artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataset_manifest_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evaluation_protocol_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "regression_suite_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metrics_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "regression_results_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unseen_controls_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "inconclusive"
+          ]
+        },
+        "evaluated_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "selfModelUpdateProposed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "self_model_revision_id",
+        "revision_number",
+        "claims",
+        "confidence",
+        "evidence_refs",
+        "created_at",
+        "status"
+      ],
+      "properties": {
+        "self_model_revision_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "revision_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "claims": {
+          "type": "object"
+        },
+        "confidence": {
+          "type": "object"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "status": {
+          "const": "proposed"
+        }
+      }
     }
   }
 }
