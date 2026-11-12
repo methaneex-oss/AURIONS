@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aurions.local/schemas/scenario-test-catalogue.v1.schema.json",
+  "title": "AURIONS Scenario Test Catalogue",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "catalogue_id",
+    "version",
+    "status",
+    "scenario_count",
+    "harness_contract",
+    "scenarios"
+  ],
+  "properties": {
+    "catalogue_id": {
+      "const": "aurions.scenario-test-catalogue"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "status": {
+      "const": "specified_not_executable"
+    },
+    "scenario_count": {
+      "const": 36
+    },
+    "harness_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "isolated_stores",
+        "deterministic_clock",
+        "fake_adapters",
+        "restart_fault_injection",
+        "durable_state_assertions",
+        "event_outbox_assertions",
+        "no_real_external_effects",
+        "learning_evaluation_protocol"
+      ],
+      "properties": {
+        "isolated_stores": {
+          "const": true
+        },
+        "deterministic_clock": {
+          "const": true
+        },
+        "fake_adapters": {
+          "type": "array",
+          "minItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "identity",
+              "governance",
+              "permission",
+              "provider",
+              "worker",
+              "artifact_store",
+              "clock",
+              "event_bus",
+              "memory_store"
+            ]
+          }
+        },
+        "restart_fault_injection": {
+          "const": true
+        },
+        "durable_state_assertions": {
+          "const": true
+        },
+        "event_outbox_assertions": {
+          "const": true
+        },
+        "no_real_external_effects": {
+          "const": true
+        },
+        "learning_evaluation_protocol": {
+          "type": "string",
+          "minLength": 20
+        }
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 36,
+      "maxItems": 36,
+      "items": {
+        "$ref": "#/$defs/scenario"
+      }
+    }
+  },
+  "$defs": {
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_id",
+        "family",
+        "required_payload_definitions",
+        "related_catalogue_checks",
+        "command_refs",
+        "query_refs",
+        "event_refs",
+        "required_scenario_evidence",
+        "positive_assertions",
+        "negative_controls",
+        "durable_state_assertions",
+        "fault_injections",
+        "learning_evaluation",
+        "status"
+      ],
+      "properties": {
+        "scenario_id": {
+          "type": "string",
+          "pattern": "^(CM|AD)-[0-9]{3}$"
+        },
+        "family": {
+          "enum": [
+            "cognitive",
+            "android"
+          ]
+        },
+        "required_payload_definitions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "related_catalogue_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "command_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "query_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "event_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "required_scenario_evidence": {
+          "type": "string",
+          "minLength": 20
+        },
+        "positive_assertions": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 12
+          }
+        },
+        "negative_controls": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 12
+          }
+        },
+        "durable_state_assertions": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 12
+          }
+        },
+        "fault_injections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "learning_evaluation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "persistent_change_required",
+            "frozen_baseline_required",
+            "held_out_controls_required",
+            "repeat_seeded_runs",
+            "pre_registered_metrics_and_tolerances"
+          ],
+          "properties": {
+            "persistent_change_required": {
+              "type": "boolean"
+            },
+            "frozen_baseline_required": {
+              "type": "boolean"
+            },
+            "held_out_controls_required": {
+              "type": "boolean"
+            },
+            "repeat_seeded_runs": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "pre_registered_metrics_and_tolerances": {
+              "type": "boolean"
+            }
+          }
+        },
+        "status": {
+          "const": "specified_not_executable"
+        }
+      }
+    }
+  }
+}
