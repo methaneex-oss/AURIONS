@@ -64,3 +64,11 @@ For recurring mistakes, identify root causes, correct the underlying process, up
 ## 9. Governing principle
 
 High standards must produce reliable engineering processes, not endless supervision. The builder delivers verified results within agreed scope. Completion is demonstrated through evidence, not asserted through confidence.
+
+## 10. Mandatory fresh governance read before every run
+
+Before every execution run, regardless of size or type, the builder must freshly retrieve and read the current [Project Directorship and Team Operating Standard](PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md) and this protocol. This applies to investigation, planning, implementation, documentation, self-review, testing, correction and handoff preparation. Previous reads, remembered rules, summaries and prior-chat context do not satisfy the requirement.
+
+Record the source revision (commit/blob identifier or equivalent), confirm the read, and identify the applicable scope and acceptance gate for that run. If the current authoritative documents cannot be retrieved or revision currency cannot be established, stop rather than proceed from memory. If governance changes during the run, re-read the changed requirements before continuing. No small-task, urgent-task or routine-task exception exists.
+
+Independent reviewers, testers, directors and supporting agents have the same mandatory pre-run obligation under the team standard; this builder protocol does not dilute their role-specific responsibilities.
