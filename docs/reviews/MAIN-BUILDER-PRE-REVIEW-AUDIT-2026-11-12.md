@@ -643,3 +643,12 @@ Added a Draft 2020-12 schema and three integrated scenario fixtures (INT-001…I
 Exact code/fixture revision `a27260dfcd3ec7a7a77ca725b437f2565bd762ae` passed GitHub Actions run [43320550842](https://github.com/methaneex-oss/AURIONS/actions/runs/43320550842). All steps passed: schema/fixture validation, governance integrity, host SQLite base/migration smoke tests and Android probe shell syntax.
 
 **Evidence boundary:** This is a machine-readable scenario specification, not a runtime test. No production handler or AURIONS scenario runner exists in this planning PR. Full individual CM-001…CM-021 and AD-001…AD-015 fixtures remain outstanding. INT-001 also exposes the missing canonical learning-update acceptance/activation transition; no activation command was invented. BR-004 remains OPEN.
+
+
+## BR-004 builder increment — full canonical scenario fixture coverage (2026-11-12)
+
+Expanded the machine-readable scenario corpus to all 39 canonical probes: INT-001…INT-003, CM-001…CM-021 and AD-001…AD-015. It now contains 172 ordered steps and 45 negative controls, with restart/replay, concurrency, fault, held-out and acceptance-threshold requirements for every scenario. The schema and validator enforce the exact inventory and all source/step/control references, and prevent the fixture from implying execution or authority.
+
+Exact code/fixture revision `4e509a194f206c52d41fda1f6d3b3599bc5c0375` passed GitHub Actions run [43320967492](https://github.com/methaneex-oss/AURIONS/actions/runs/43320967492). All workflow steps passed, including scenario/schema/registry validation, governance integrity, host SQLite migrations and Android probe syntax.
+
+**Evidence boundary:** All 39 scenarios are specified as machine-readable test contracts, not executed. No production handlers or runtime scenario runner exist in this planning PR. BR-004 remains OPEN for executable integration/behavioural evidence; no implementation authorization is inferred.
