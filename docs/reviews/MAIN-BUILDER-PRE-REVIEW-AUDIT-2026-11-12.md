@@ -578,3 +578,32 @@ During reconciliation, the branch advanced with `objective.revised.v1` and `obje
 The branch's objective/world/means/interaction contract increment expanded the query registry from 21 to 29 entries. The eight added queries are `objective.inspect`, `world.entity.search`, `world.entity.inspect`, `world.relationship.search`, `situation.inspect`, `means.affordance.search`, `interaction.inspect` and `interaction.outcome.inspect`. Added QCC-022…QCC-029 domain-specific positive and negative assertions plus read-only invariants for these eight entries, and appended the corresponding query acceptance catalogue. The current registry now has 29 queries and all 29 have unique QCC IDs; all 29 remain design-only/non-dispatchable.
 
 These additions specify query behaviour only. They do not implement entity resolution, situation construction, affordance evaluation or interaction runtime. BR-002 remains OPEN for concrete projection/redaction, target-runtime numerical budgets, SQLite snapshot/cursor/concurrency tests, owner acceptance, implementation authorization and executed query-handler tests. Exact-head CI for the updated 29-query registry must be checked before this increment is called verified.
+
+
+## BR-001 / BR-002 / BR-008 builder increment — foundational world and interaction contract binding (2026-11-12)
+
+**Mandatory governance gate:** freshly retrieved and read before this builder run:
+- Project Directorship and Team Operating Standard — blob `951b9009cbedcf8907b365d611d89559d5a17385`.
+- Builder Operating Protocol — blob `179b02aaef051173b96f54812f451ede1a2eae0d`.
+EBT-01, autonomous correction, builder self-review/testing and mandatory per-run fresh governance retrieval were confirmed.
+
+**Starting PR #2 head:** `23851f6d73c7da98a4c2844bea2fa337ea95bedd`; open, draft and unmerged.
+
+**Architecture gap addressed:** the open-world architecture and cognitive ownership matrix defined objectives, entities/actors, relationships, situations, affordance hypotheses, interaction proposals and outcomes, but the command/query registry did not expose these foundational domain interfaces. Payload definitions and event names alone were insufficient.
+
+**Changes made:**
+- Added eight design-only commands: `objective.create`, `objective.revise`, `world.entity.observe`, `world.relationship.revise`, `situation.snapshot.create`, `means.affordance.propose`, `interaction.propose`, `interaction.outcome.record`.
+- Added eight read-only queries: `objective.inspect`, `world.entity.search`, `world.entity.inspect`, `world.relationship.search`, `situation.inspect`, `means.affordance.search`, `interaction.inspect`, `interaction.outcome.inspect`.
+- Bound all new commands to the existing `world-interaction.v1.schema.json` definitions, exact proposed SQLite tables in `aurion_memory.db`, owner/actor scope, revision/append-only semantics, idempotency, deadline/cancellation, local transaction/outbox, error/event bindings and CC-044…CC-051 acceptance assertions.
+- Bound all new queries to typed `domainQuery`/response/result schemas, exact proposed tables, owner scope, classification/redaction, consistency, deterministic ordering/cursor, freshness/cache and QCC-022…QCC-029 positive/negative/read-only assertions.
+- Added `objective.revised.v1` and expanded event inventory to 89. Added successor-version objective and relationship fixtures so revise commands are not represented by version-1 create examples.
+- Reconciled the first-release gap analysis and cognitive ownership matrix to the registry, and added `SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md` covering domain ownership, concept separation, event/command/query bindings, persistence and remaining authority/evidence gates.
+- Extended `scripts/validate_schemas.py` to require the 53-command/29-query/89-event inventory, exact acceptance-catalogue coverage and to resolve/validate every mapped command and query request/response/result/envelope fixture against its declared schema.
+
+**Persistence cross-check:** re-fetched the memory base schema and migrations v3/v4. All seven new world-domain table bindings (`objective_records`, `world_entities`, `world_relationships`, `situation_snapshots`, `affordance_hypotheses`, `interaction_proposals`, `interaction_outcomes`) exist in the proposed memory DDL. This is source-level name/store reconciliation; it is not target SQLite execution or semantic transaction verification.
+
+**Current inventory:** 53 command records (51 mapped, two device commands deferred), 29 query records and 89 event records. All mapped commands and all queries remain design-only/non-dispatchable. CC-001…CC-051 and QCC-001…QCC-029 are acceptance criteria, not executed handlers.
+
+**Verification state:** The current changes are committed but exact-head CI is pending at the time of this audit entry. Do not claim the new command/query fixture-reference validator or expanded inventory passed until GitHub Actions reports success on the exact final revision.
+
+**Disposition:** This closes the builder's missing open-world API specification/registry-binding subtask. BR-001 and BR-002 remain OPEN for owner acceptance of first-release scope, measured endpoint budgets where applicable, handler implementation and executable positive/negative/replay/crash/recovery/read-only tests. BR-008 remains OPEN for full semantic/consumer review and integrated scenario evidence. No owner-reserved decision, implementation authorization, dispatchability or independent-review/tester handoff is implied.
