@@ -120,3 +120,10 @@ Expanded the integrated scenario contract corpus from three INT scenarios to all
 Exact revision `4e509a194f206c52d41fda1f6d3b3599bc5c0375` passed GitHub Actions run [43320967492](https://github.com/methaneex-oss/AURIONS/actions/runs/43320967492). All workflow steps passed: Draft 2020-12 schemas/fixtures (including all 39 scenario contracts and their registry references), governance integrity, host SQLite base/migration smoke tests and Android probe shell syntax.
 
 **Evidence boundary:** This completes the builder's machine-readable scenario-specification coverage subtask. It does not create an AURIONS runtime scenario runner, production handlers or executed durable-state/learning tests. Runtime implementation remains unauthorized. INT-001 retains the explicit learning-update acceptance/activation gap; no command was invented. BR-004 remains OPEN overall until executable scenarios and behavioural evidence exist.
+
+
+## BR-008 builder increment — exact event producer matrix parity (2026-11-12)
+
+The schema validator now compares producer origin, exact trigger contract and owner-transition contract field-for-field between the event registry and both trigger matrices. Coverage is exact: 15 Action Gateway internal events plus 23 other non-command events. All 89 event entries now retain only the unresolved runtime-handler and event-specific-acceptance-execution gates.
+
+Exact HEAD 2f4218c669ced79920af16ff122e5ab7080124b4 passed CI run [43323863934](https://github.com/methaneex-oss/AURIONS/actions/runs/43323863934). This closes specification parity only; owner acceptance, runtime handlers and executed event behaviour remain open.
