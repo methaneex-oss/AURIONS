@@ -273,3 +273,17 @@ The mandatory Project Directorship and Team Operating Standard is recorded in `d
 Automated check: `scripts/validate_governance.py` verifies all nine standard sections, all ten workflow stages in order, builder-protocol alignment and the three repository entry-point links. GitHub Actions run [43220114110](https://github.com/methaneex-oss/AURIONS/actions/runs/43220114110) passed on commit `2d70cb885dbaaf823b1e545d39d3203ea027682d`, including both schema/fixture validation and governance integrity validation. The evidence report is [GOVERNANCE-STANDARD-VALIDATION-RESULTS-2026-11-12.md](GOVERNANCE-STANDARD-VALIDATION-RESULTS-2026-11-12.md).
 
 **Boundary:** this closes only the governance-documentation integration task. It does not prove human compliance, independent reviewer impartiality, system behaviour, technical planning closure, implementation authorization, independent review, tester acceptance or director acceptance. BR-001…BR-010 and the overall NOT READY disposition remain in force.
+
+## Governance enforcement follow-up — mandatory fresh read before every run (2026-11-12)
+
+**Status: VERIFIED COMPLETE for rule integration and repository integrity validation; actual compliance remains per-run evidence.**
+
+The owner clarified that the governance standard must be revisited before every execution run, regardless of size. The authoritative standard now contains a mandatory pre-run gate applying to directors, builders, independent reviewers, testers and supporting agents. It requires a fresh retrieval/read of the current authoritative standard and applicable role protocol, records the source revision, rejects reliance on memory/prior summaries, and stops work if the current source cannot be established. The Builder Operating Protocol contains the corresponding builder-specific obligation.
+
+The governance validator now checks the required gate language in both documents. GitHub Actions run 43258978357 completed successfully, including JSON Schema/fixture validation and the governance integrity step, on commit 9c539bfceedb8febcd13481107d381d458a1b63d.
+
+**Evidence boundary:** CI proves that the mandatory rule remains present and structurally checked. It cannot prove that each agent/person actually read the current documents on a particular run. Each run must record its own governance source revision and read confirmation. This follow-up does not close BR-001…BR-010, authorize implementation, or change the overall NOT READY disposition.
+
+## Current builder run — next technical closure target
+
+The current command/query registry was re-fetched and parsed after the governance change. It contains 45 command records and 21 query records. The four task-control commands (task.start, task.pause, task.resume, task.cancel) have had their generic unresolved bindings narrowed by prior task-control work, but retain per-entry conflict/replay/recovery assertions; the wider first-release command/query subset remains unresolved. The next builder work must follow BR-001/BR-002 and the ordered closure plan: establish a bounded first-release command/query subset from the approved product workflows, then define each handler's owning aggregate transitions, revision/concurrency checks, exact authorization/data scope, idempotency, deadline/cancellation, side-effect/reconciliation, error/event/outbox bindings and executable positive/negative fixtures. Do not mark any command/query dispatchable merely because generic text is added.
