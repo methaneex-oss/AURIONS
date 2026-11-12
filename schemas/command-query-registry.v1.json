@@ -568,7 +568,9 @@
         "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
         "runtime.internal.INTERNAL_FAILURE"
       ],
-      "emitted_event_bindings": [],
+      "emitted_event_bindings": [
+        "capability.knowledge.proposed.v1"
+      ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/capabilityKnowledgeRevision",
@@ -576,8 +578,7 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests",
-        "capability_knowledge_proposal_event_schema_and_consumer_binding"
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [
@@ -691,7 +692,9 @@
         "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
         "runtime.internal.INTERNAL_FAILURE"
       ],
-      "emitted_event_bindings": [],
+      "emitted_event_bindings": [
+        "memory.retrieved.v1"
+      ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/memoryRetrievalQuery",
@@ -699,8 +702,7 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests",
-        "command_query_classification_and_retrieval_audit_policy"
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [
@@ -1309,7 +1311,9 @@
         "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
         "runtime.internal.INTERNAL_FAILURE"
       ],
-      "emitted_event_bindings": [],
+      "emitted_event_bindings": [
+        "goal.revised.v1"
+      ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/goalControlRequest",
@@ -1317,8 +1321,7 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests",
-        "goal_cancel_event_schema_and_consumer_binding"
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [
@@ -1873,7 +1876,9 @@
         "governance.authorization.APPROVAL_MISMATCH",
         "governance.authorization.APPROVAL_REVOKED"
       ],
-      "emitted_event_bindings": [],
+      "emitted_event_bindings": [
+        "approval.revoked.v1"
+      ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/approvalRevocationRequest",
@@ -1881,8 +1886,7 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests",
-        "approval_revocation_event_schema_and_consumer_binding"
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [
@@ -2131,7 +2135,9 @@
         "evidence.precondition.PRECONDITION_FALSE",
         "evidence.precondition.PRECONDITION_UNKNOWN"
       ],
-      "emitted_event_bindings": [],
+      "emitted_event_bindings": [
+        "learning.candidate.evaluated.v1"
+      ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/learningCandidateEvaluationRequest",
@@ -2140,7 +2146,6 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests",
-        "learning_candidate_evaluation_event_schema_and_consumer_binding",
         "measured_target_runtime_resource_budget"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
@@ -2197,7 +2202,9 @@
         "evidence.precondition.PRECONDITION_FALSE",
         "evidence.precondition.PRECONDITION_UNKNOWN"
       ],
-      "emitted_event_bindings": [],
+      "emitted_event_bindings": [
+        "self_model.update.proposed.v1"
+      ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/selfModelUpdated",
@@ -2205,8 +2212,7 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests",
-        "self_model_proposal_vs_applied_event_semantics"
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [
