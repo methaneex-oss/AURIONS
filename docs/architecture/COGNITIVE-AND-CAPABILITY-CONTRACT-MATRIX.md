@@ -19,7 +19,7 @@
 
 | Domain | Authoritative owner / persistence | Contract family | Work package | Verification required |
 |---|---|---|---|---|
-| Objective interpretation | Goal/objective subsystem; versioned objective state and source lineage in memory domain | `objective.created.v1`; objective revision/query contract | WP-06 / WP-10 | Owner intent, objective/plan distinction, ambiguity and success-evidence tests |
+| Objective interpretation | Objective subsystem; versioned `objective_records` distinct from derived `goals` | `objective.created.v1`; objective revision/query contract | WP-06 / WP-10 | Owner intent, objective/plan distinction, ambiguity and success-evidence tests |
 | Entities and actors | World-model subsystem; `world_entities` | `world.entity.observed.v1`; entity revision/query contract | WP-06 | Novel entity, provisional identity, owner isolation and provenance tests |
 | Relationships | World-model subsystem; `world_relationships` | `world.relationship.revised.v1`; relationship query contract | WP-06 | Contextual relation, contradiction, temporal validity and revision tests |
 | Situation snapshots | Context/world-understanding subsystem; `situation_snapshots` plus existing versioned `contexts` | `situation.snapshot.created.v1`; situation query/invalidation contract | WP-06 / WP-07 | Partial observation, unknowns, conflicts, stale context and exogenous change tests |
