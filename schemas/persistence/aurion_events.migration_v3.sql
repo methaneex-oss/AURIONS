@@ -1,4 +1,4 @@
--- AURIONS proposed SQLite DDL. NOT EXECUTED OR VALIDATED.
+-- AURIONS proposed SQLite DDL. Host-side CI smoke execution verified; target Termux/Android validation pending.
 -- Store: aurion_events.db
 -- Migration: v3 — owner binding and idempotent task-control receipts.
 -- Prerequisite: aurion_events.base.sql and aurion_events.migration_v2.sql.
