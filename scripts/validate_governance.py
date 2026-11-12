@@ -66,6 +66,33 @@ def main() -> int:
     if "Project Directorship and Team Operating Standard" not in builder:
         fail("builder protocol does not defer role/workflow authority to team operating standard")
 
+    # The fresh-read gate is a mandatory precondition for every role and every run.
+    required_pre_run_standard = [
+        "Mandatory pre-run governance gate",
+        "This gate is mandatory for every run, without exception.",
+        "Director:",
+        "Builder:",
+        "Independent reviewer:",
+        "Tester:",
+        "Supporting agents:",
+        "A copy read in an earlier run, remembered instructions, a summary, or a prior chat does not satisfy this gate.",
+        "If the authoritative source cannot be retrieved or its current revision cannot be established, work must stop",
+        "No role may waive it because a task is small, urgent, routine, previously performed, or believed to be low risk.",
+    ]
+    for phrase in required_pre_run_standard:
+        if phrase not in standard:
+            fail(f"team operating standard missing mandatory pre-run rule: {phrase}")
+
+    required_pre_run_builder = [
+        "Mandatory fresh governance read before every run",
+        "Before every execution run, regardless of size or type",
+        "Previous reads, remembered rules, summaries and prior-chat context do not satisfy the requirement.",
+        "If the current authoritative documents cannot be retrieved or revision currency cannot be established, stop",
+    ]
+    for phrase in required_pre_run_builder:
+        if phrase not in builder:
+            fail(f"builder protocol missing mandatory pre-run rule: {phrase}")
+
     entrypoints = {
         "README.md": read("README.md"),
         "docs/planning/README.md": read("docs/planning/README.md"),
@@ -79,7 +106,7 @@ def main() -> int:
 
     print(
         "PASS: nine governance sections, ten ordered workflow stages, "
-        "builder-protocol alignment and three project entry-point links."
+        "builder-protocol alignment, mandatory fresh-read gate and three project entry-point links."
     )
     return 0
 
