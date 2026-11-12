@@ -472,3 +472,10 @@ Removed the duplicate 36-scenario catalogue and strengthened validation of the c
 The initial guard incorrectly classified INT-002/INT-003 as learning scenarios; the builder corrected the classification after inspecting their acceptance rules. Exact revision `377ff4ad01b81f2e79b2c60d85c9b946f9c095fe` passed workflow [43321607903](https://github.com/methaneex-oss/AURIONS/actions/runs/43321607903), including all schema, governance, work-package graph, SQLite and Android shell checks.
 
 The scenario suite is specified, not executed. Runtime scenario runner, production handlers and behavioural evidence remain absent. BR-004 remains OPEN.
+
+
+## BR-008 builder increment — event consumer/owner-transition specifications (2026-11-12)
+
+All 89 event registry entries now specify producer origin/trigger boundary, owning component, intended consumers/purpose, owner transition, store-local ordering/idempotency, failure/recovery and scenario coverage. The event matrix carries the same consumer/transition summary. Source-level comparison found zero mismatches across 89 events, payload schema names, producer sets and 39-scenario references.
+
+Validator enforcement was added for all event fields, matrix summary parity, unresolved implementation boundaries and scenario coverage parity. This is a contract specification only; runtime consumers/handlers are not implemented. Exact-head CI is pending. All events remain non-dispatchable; BR-008 remains OPEN.
