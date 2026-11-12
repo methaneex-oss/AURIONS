@@ -2,7 +2,8 @@
 
 - **Branch:** `docs/complete-system-architecture`
 - **Purpose:** Track planning-layer completion using evidence, not document existence or optimistic labels.
-- **Mandatory execution standard:** [Builder Operating Protocol](../governance/BUILDER-OPERATING-PROTOCOL.md); completion claims must satisfy its implementation, testing, correction and evidence requirements.
+- **Mandatory governance standard:** [Project Directorship and Team Operating Standard](../governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md) (effective 2026-11-12), governing role authority, milestone workflow, handoffs, scope control and director acceptance.
+- **Mandatory builder standard:** [Builder Operating Protocol](../governance/BUILDER-OPERATING-PROTOCOL.md); builders must satisfy its self-review, testing, correction and evidence requirements.
 - **Current phase:** Architecture planning and technical design, with implementation planning in progress.
 - **Implementation authorization:** Not granted.
 - **Last builder audit:** 2026-11-12 (task-run revision/event reconciliation, schema/fixture crosswalk and repository contract scan).
