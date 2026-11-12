@@ -9,7 +9,7 @@
 - `command_producer_binding_status: bound` means at least one command producer is explicitly declared. It does **not** establish the complete event producer set; platform ingress, internal domain transitions, workers, sync and owner interactions are not assumed or excluded.
 - `command_producer_binding_status: unresolved` means no command producer is currently bound. It does **not** mean the event is invalid or that no producer exists.
 - All 89 events now carry proposed producer-origin/trigger, owning-component, consumer-contract, owner-transition, ordering/idempotency, failure/recovery and scenario-reference specifications. These are builder contracts, not owner acceptance or runtime evidence.
-- 38 events have no command producer binding. Fifteen Action Gateway lifecycle events now have exact internal state-transition triggers in OPERATION-LIFECYCLE-TRANSITION-MATRIX.md; the remaining 23 events retain an exact internal/platform/worker/sync/retention producer-trigger gate.
+- 38 events have no command producer binding. Fifteen Action Gateway lifecycle events now have exact internal state-transition triggers in OPERATION-LIFECYCLE-TRANSITION-MATRIX.md; the remaining The 23 other non-command events now have exact ingress/internal producer triggers in EVENT-INGRESS-AND-INTERNAL-PRODUCER-TRIGGER-MATRIX.md.
 - All events remain `design_only_not_dispatchable`. A producer/consumer specification does not create a runtime handler, authorization or dispatch permission; event-specific acceptance execution remains open.
 
 ## 2. Inventory
@@ -110,7 +110,7 @@
 
 Before an event can be considered implementation-ready, its owning component must implement and execute evidence for the following contracts (the intended consumer and owner-transition specification is now present in the registry):
 
-1. **Production trigger and owner:** verify the exact state transition or trusted ingress that creates the event. For 51 events the command producer is bound; 15 of the 38 non-command events have exact Action Gateway state triggers; 23 non-command events still require exact trigger resolution. Verify authenticated owner/actor and scope.
+1. **Production trigger and owner:** verify the exact state transition or trusted ingress that creates the event. For 51 events the command producer is bound; 15 of the 38 non-command events have exact Action Gateway state triggers; The 23 other non-command events have exact ingress/internal triggers in the companion matrix. Verify authenticated owner/actor and scope.
 2. **Aggregate and revision:** authoritative aggregate, expected/current revision rule, event sequence allocation, causation/correlation identifiers and ordering scope.
 3. **Atomicity:** execute the owning-store transaction that commits aggregate mutation with immutable event/outbox; cross-store work must use durable saga semantics, not a distributed-transaction claim.
 4. **Consumer implementation:** implement the named consumers, accepted event/schema versions, idempotency key, duplicate/replay behaviour, ordering/gap recovery, poison-message quarantine and bounded retry/reconciliation.
@@ -129,4 +129,4 @@ Before an event can be considered implementation-ready, its owning component mus
 
 ## 5. Decision and implementation boundary
 
-This matrix does not invent a public command producer for the 38 unbound events or an exact producer trigger for the remaining 23, change event names or payloads, promote dispatch status, select a runtime topology, or authorize production implementation. Consumer/owner-transition entries are proposed contracts pending owner review and runtime validation. Where an event requires an owner-reserved product, platform or authority decision, the dependency remains explicit for the owner.
+This matrix does not invent public command producers for the 38 non-command events, change event names or payloads, promote dispatch status, select a runtime topology, or authorize production implementation. Their exact trusted ingress/internal triggers are specified in the companion trigger matrices. Consumer/owner-transition entries are proposed contracts pending owner review and runtime validation. Where an event requires an owner-reserved product, platform or authority decision, the dependency remains explicit for the owner.
