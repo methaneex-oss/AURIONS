@@ -39,3 +39,5 @@ jobs:
         run: python scripts/validate_schemas.py
       - name: Validate mandatory governance contract and entry points
         run: python scripts/validate_governance.py
+      - name: Execute SQLite DDL and migration smoke tests
+        run: python scripts/validate_sqlite_ddl.py
