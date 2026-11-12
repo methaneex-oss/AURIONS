@@ -1,14 +1,15 @@
-# AURIONS — Android Environment and Capability Architecture
+# AURIONS — Android Platform Interaction Realization
 
-- **Status:** Builder design in progress; this document is a proposed architecture, not an implemented or platform-validated capability.
-- **Applies to:** Offline-capable Android operation and the Android device agent used by AURIONS.
+- **Status:** Platform-specific realization; IN PROGRESS and not platform-validated.
+- **Applies to:** The Android context only. It does not define AURIONS's general model of the world, objectives, possible means or interaction.
+- **Governing architecture:** [Open-World Interaction and Means Architecture](OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) is foundational and takes precedence. This document specifies only one Android realization beneath it.
 - **Authority:** Owner-approved mission and foundational principles in the initial engineering specification.
 - **Governing principle:** Engineer the mechanisms; let behaviour and capability use be acquired through experience.
 - **Scope warning:** Examples of phone operations are illustrative test scenarios only. They are not a fixed capability catalogue, product boundary or predetermined first action.
 
-## 1. Purpose
+## 1. Purpose\n> **Scope and precedence correction:** This document is not the system-wide capability architecture. Its observer, discovery broker, registry and execution gateway are Android-specific implementation mechanisms. They must be interpreted as one possible source and realization of means under the open-world, objective-led architecture. They do not constrain AURIONS to devices, apps, APIs, registered tools or platform adapters. A task may be pursued through other actors, resources, contexts or means, or through no external interaction at all. Android-specific discovery evidence must not be generalized beyond its observed scope.\n
 
-AURIONS must be able to build and maintain an evidence-based understanding of the Android environment in which it operates. It must discover what interfaces and capabilities are actually available to its installation and owner, understand their constraints, reason about which discovered means could advance an objective, use them only through authorized boundaries, observe what happened, and improve its future capability knowledge and use through experience.
+Within the broader open-world interaction architecture, the Android realization must build and maintain an evidence-based understanding of the Android context when that context is relevant to an objective. It must discover what interfaces and capabilities are actually available to its installation and owner, understand their constraints, reason about which discovered means could advance an objective, use them only through authorized boundaries, observe what happened, and improve its future capability knowledge and use through experience.
 
 This is not a conventional phone assistant implemented as a developer-authored menu of operations. Nor is it a promise that Android exposes every system or application capability to third-party software. The operating system, application interfaces, device configuration, user grants and security model define the real boundary. AURIONS must discover and represent that boundary rather than assume or bypass it.
 
