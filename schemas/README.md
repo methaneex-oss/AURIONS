@@ -1,8 +1,8 @@
 # AURIONS contract schemas
 
-- [`persistence/`](./persistence/README.md): machine-readable proposed SQLite base schemas and additive migrations; unexecuted and pending target validation.
+- [`persistence/`](./persistence/README.md): machine-readable proposed SQLite base schemas and additive migrations; host SQLite execution/migration smoke checks passed in CI, while target SQLite and fault/recovery validation remain open.
 
-This directory is the proposed canonical machine-readable schema source. The initial schema dialect is JSON Schema Draft 2020-12. A validator candidate and an explicit no-code-generation baseline are documented in Section 12.1 of the implementation-ready contracts; neither has been integrated into the runtime or CI, and Android target feasibility remains unverified.
+This directory is the canonical planning source for machine-readable contracts. The initial schema dialect is JSON Schema Draft 2020-12. A pinned Python-host validator (`jsonschema[format]==4.26.0`) and fixture checks are integrated into GitHub Actions. C++ validator equivalence, C++/Python conformance, runtime integration and Android/Termux feasibility remain unverified.
 
 - `message-envelope.v1.schema.json`: common versioned message envelope.
 - `command-query-registry.v1.schema.json`: schema for the command/query registry baseline.
@@ -32,7 +32,7 @@ Rules:
 3. New contexts, actors, resources, relationships and interaction forms must be representable without adding task-specific branches to the cognitive core. New capability providers are only one such extension case.
 4. Unknown or unsupported semantics remain unknown; extension fields cannot change authority or policy.
 5. Schemas are versioned. Breaking changes require a new major schema version and compatibility tests.
-6. The schemas are planning artifacts until validated by the selected C++/Python toolchain. The repository now has a pinned Python Draft 2020-12 validation job; this does not establish C++ equivalence or runtime integration.
+6. The schemas are planning contracts, not runtime dispatch authorization. The repository's pinned Python-host Draft 2020-12 validation job passes the current corpus; C++ validator equivalence, C++/Python conformance and runtime integration remain open.
 7. The existing domain fixture set contains 78 positive domain/protocol/command/query payloads; the separate world-interaction fixture adds eight context-independent contract examples. The negative corpus now contains 29 intentionally invalid fixtures. These totals describe files/examples, not full conformance or semantic coverage.
 8. The command/query registry is a design traceability baseline, not a runtime dispatch registry. Production registration is prohibited while any entry has unresolved bindings, and the registry does not replace per-handler state, authorization, idempotency, side-effect, event, error, redaction or recovery contracts.
 9. A pinned Python `jsonschema[format]==4.26.0` Draft 2020-12 validator and GitHub Actions workflow now validate all top-level schema documents, seven registry/fixture pairs, all 78 positive domain payloads and all 29 negative controls. The first full run exposed incorrect relative external `$ref` identifiers; those were corrected to canonical URNs. Successful run evidence is recorded in `docs/reviews/SCHEMA-VALIDATION-RESULTS-2026-11-12.md`. This is Python-host validation only: C++ validator equivalence, Android/Termux dependency feasibility, runtime registration, command/query/event semantic completeness and production handlers remain unverified.
