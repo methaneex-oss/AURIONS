@@ -44,17 +44,17 @@
 | `experience.observed.v1` | `experience.submit` | `experienceObserved` | UNRESOLVED |
 | `goal.created.v1` | `goal.create` | `goalRevision` | UNRESOLVED |
 | `goal.revised.v1` | `goal.cancel`, `goal.revise` | `goalRevision` | UNRESOLVED |
-| `interaction.outcome.observed.v1` | UNRESOLVED — no command producer bound | `interactionOutcome` | UNRESOLVED |
-| `interaction.proposed.v1` | UNRESOLVED — no command producer bound | `interactionProposal` | UNRESOLVED |
+| `interaction.outcome.observed.v1` | `interaction.outcome.record` | `interactionOutcome` | UNRESOLVED |
+| `interaction.proposed.v1` | `interaction.propose` | `interactionProposal` | UNRESOLVED |
 | `learning.candidate.evaluated.v1` | `learning.candidate.evaluate` | `learningCandidateEvaluated` | UNRESOLVED |
 | `learning.experiment.completed.v1` | UNRESOLVED — no command producer bound | `learningExperimentCompleted` | UNRESOLVED |
 | `learning.update.accepted.v1` | UNRESOLVED — no command producer bound | `learningUpdate` | UNRESOLVED |
 | `learning.update.proposed.v1` | `learning.update.propose` | `learningUpdate` | UNRESOLVED |
-| `means.affordance.proposed.v1` | UNRESOLVED — no command producer bound | `affordanceHypothesis` | UNRESOLVED |
+| `means.affordance.proposed.v1` | `means.affordance.propose` | `affordanceHypothesis` | UNRESOLVED |
 | `memory.recorded.v1` | UNRESOLVED — no command producer bound | `memoryRecord` | UNRESOLVED |
 | `memory.retrieved.v1` | `memory.retrieve` | `memoryRetrieval` | UNRESOLVED |
-| `objective.created.v1` | UNRESOLVED — no command producer bound | `objective` | UNRESOLVED |
-| `objective.revised.v1` | UNRESOLVED — no command producer bound | `objective` | UNRESOLVED |
+| `objective.created.v1` | `objective.create` | `objective` | UNRESOLVED |
+| `objective.revised.v1` | `objective.revise` | `objective` | UNRESOLVED |
 | `operation.awaiting_approval.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
 | `operation.cancel_requested.v1` | `operation.cancel` | `operationLifecycleEvent` | UNRESOLVED |
 | `operation.cancelled.v1` | `operation.cancel` | `operationLifecycleEvent` | UNRESOLVED |
@@ -90,7 +90,7 @@
 | `retention.deletion.requested.v1` | UNRESOLVED — no command producer bound | `retentionDeletionEvent` | UNRESOLVED |
 | `self_model.update.proposed.v1` | `self_model.update.propose` | `selfModelUpdateProposed` | UNRESOLVED |
 | `self_model.updated.v1` | UNRESOLVED — no command producer bound | `selfModelUpdated` | UNRESOLVED |
-| `situation.snapshot.created.v1` | UNRESOLVED — no command producer bound | `situation` | UNRESOLVED |
+| `situation.snapshot.created.v1` | `situation.snapshot.create` | `situation` | UNRESOLVED |
 | `sync.change.applied.v1` | UNRESOLVED — no command producer bound | `syncChange` | UNRESOLVED |
 | `sync.change.exported.v1` | UNRESOLVED — no command producer bound | `syncChange` | UNRESOLVED |
 | `sync.conflict.detected.v1` | UNRESOLVED — no command producer bound | `syncConflictRecord` | UNRESOLVED |
@@ -102,8 +102,8 @@
 | `worker.job.failed.v1` | UNRESOLVED — no command producer bound | `workerFailure` | UNRESOLVED |
 | `worker.job.progressed.v1` | UNRESOLVED — no command producer bound | `workerProgress` | UNRESOLVED |
 | `worker.job.requested.v1` | `learning.experiment.submit` | `workerRequest` | UNRESOLVED |
-| `world.entity.observed.v1` | UNRESOLVED — no command producer bound | `entity` | UNRESOLVED |
-| `world.relationship.revised.v1` | UNRESOLVED — no command producer bound | `relationship` | UNRESOLVED |
+| `world.entity.observed.v1` | `world.entity.observe` | `entity` | UNRESOLVED |
+| `world.relationship.revised.v1` | `world.relationship.revise` | `relationship` | UNRESOLVED |
 
 ## 3. Required closure per event
 
@@ -120,10 +120,10 @@ Before an event can be considered implementation-ready, its owning component mus
 ## 4. Current measured gap
 
 - Total registered events: **89**.
-- Events with one or more explicit command producers: **43**.
-- Events with no command producer binding: **46**.
+- Events with one or more explicit command producers: **51**.
+- Events with no command producer binding: **38**.
 - All events still carry the unresolved bindings `runtime_handler`, `consumer_semantics`, `owner_transition` and `event_specific_acceptance`.
-- The command producer crosswalk is now machine-enforced against `schemas/command-query-registry.v1.json`; it is not semantic or runtime validation.
+- The command producer crosswalk is machine-enforced against `schemas/command-query-registry.v1.json`; it is not semantic or runtime validation.
 - No event is dispatchable. No handler/consumer implementation, transaction execution, replay/restart test or independent review is claimed.
 
 ## 5. Decision and implementation boundary
