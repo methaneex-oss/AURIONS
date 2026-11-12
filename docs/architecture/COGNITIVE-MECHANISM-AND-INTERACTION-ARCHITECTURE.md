@@ -9,7 +9,7 @@
 
 AURIONS must not consist of a collection of isolated subsystems that merely expose names such as memory, prediction, reasoning or learning. The mechanisms must exchange evidence and state through explicit contracts and interact in a continuing, conditional, interruptible process.
 
-The central requirement is **persistent experience-dependent adaptation**: observations and consequences must be capable of changing the system's future representations, beliefs, predictions, attention allocation, strategies, plans and capability selection. Changes must be traceable to evidence, evaluated in context and retained across restart when they are durable.
+The central requirement is **persistent experience-dependent adaptation**: observations and consequences must be capable of changing the system's future representations, beliefs, predictions, attention allocation, strategies, plans and context-dependent means/affordance reasoning. Changes must be traceable to evidence, evaluated in context and retained across restart when they are durable.
 
 The system must not claim that it has learned merely because it stored a conversation, changed a memory record, revised a belief, executed a training job or lowered training loss. Those are distinct events and need distinct evidence.
 
