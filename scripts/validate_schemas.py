@@ -185,8 +185,8 @@ def main() -> int:
 
     event_registry = load(SCHEMAS / "event-registry.v1.json")
     events = event_registry["events"]
-    if len(events) != 84:
-        fail(f"event registry expected 84 entries, found {len(events)}")
+    if len(events) != 88:
+        fail(f"event registry expected 88 entries, found {len(events)}")
 
     def resolve_pointer(document, pointer: str, label: str):
         if not pointer.startswith("#/"):
