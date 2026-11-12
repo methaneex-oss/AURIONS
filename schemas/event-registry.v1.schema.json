@@ -28,7 +28,7 @@
     },
     "events": {
       "type": "object",
-      "minProperties": 88,
+      "minProperties": 89,
       "propertyNames": {
         "type": "string",
         "pattern": "^[a-z][a-z0-9_.]+\\.v1$"
