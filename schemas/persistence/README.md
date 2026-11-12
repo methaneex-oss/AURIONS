@@ -2,7 +2,7 @@
 
 **Status: proposed planning artifacts only. None of these scripts has been executed, applied to a user database, or validated against the target Termux/Android SQLite build.**
 
-These files are the machine-readable DDL source for the three independent SQLite stores. Memory migration v4 proposes owner-scoped, versioned persistence for objective records (distinct from derived goals), open-world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The explanatory source specification in `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md` Section 26 links to these files; do not maintain a second inline SQL copy there.
+These files are the machine-readable DDL source for the three independent SQLite stores. Memory migration v4 proposes owner-scoped, versioned persistence for objective records (distinct from derived goals), owner/scope details for existing evidence records, open-world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The explanatory source specification in `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md` Section 26 links to these files; do not maintain a second inline SQL copy there.
 
 ## Base schemas and migration order
 
@@ -33,4 +33,4 @@ References:
 6. Confirm the 43 command and 21 query registry mappings against table ownership, read/write semantics, outbox boundaries and transaction scope.
 7. Reconcile world-interaction schema references with memory v4 columns and event/operation references; prove that device-specific capability descriptors are not required for non-device means.\n8. Record exact SQLite source/version/compile options and Termux/Android device/build identity.
 
-The static DDL table and foreign-key ownership crosswalk is not SQL execution. The v4 design is a first persistence mapping, not proof of complete semantic ownership: event bindings, canonical ID format, entity/evidence referential integrity, cross-store interaction-operation linkage, retention/deletion policy and query contracts still require closure. Until all tests pass, the DDL and migration set remain **IN PROGRESS**.
+The static DDL table and foreign-key ownership crosswalk is not SQL execution. The v4 design is a first persistence mapping, not proof of complete semantic ownership: event bindings, canonical ID format, entity/evidence referential integrity (including evidence-details linkage to existing evidence IDs), cross-store interaction-operation linkage, retention/deletion policy and query contracts still require closure. Until all tests pass, the DDL and migration set remain **IN PROGRESS**.
