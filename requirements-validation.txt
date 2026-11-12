@@ -1,0 +1,2 @@
+# Validation-only development dependencies.
+jsonschema[format]==4.26.0
