@@ -70,10 +70,12 @@
           "$ref": "#/$defs/entityCollection"
         },
         "objectiveRevision": {
-          "$ref": "#/$defs/objectiveRevision"
+          "description": "Optional successor revision of the objective represented in the same fixture; revision lineage is illustrative and remains non-dispatchable.",
+          "$ref": "#/$defs/objective"
         },
         "relationshipRevision": {
-          "$ref": "#/$defs/relationshipRevision"
+          "description": "Optional successor revision of a relationship represented in the same fixture; revision lineage is illustrative and remains non-dispatchable.",
+          "$ref": "#/$defs/relationship"
         }
       }
     }
