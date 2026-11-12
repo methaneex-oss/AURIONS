@@ -339,3 +339,12 @@ The builder audit records this as completion of the missing **specification subt
 **Starting evidence:** PR #2 was open/draft/unmerged at `a11934f3177880125a67fbb6830ba59a7672c166`; exact-head workflow run [43296040114](https://github.com/methaneex-oss/AURIONS/actions/runs/43296040114) passed schema/fixture, governance, host SQLite and Android shell-syntax steps. The security increment and audit update produced subsequent commits; exact final-head CI is pending and must be recorded only after GitHub reports it.
 
 **Current planning disposition remains NOT READY.** BR-001…BR-004 and BR-008…BR-010 remain OPEN; BR-005…BR-007 remain PARTIALLY CLOSED within their stated evidence limits. No owner decision, planning-exit approval, implementation authorization, independent-review handoff or tester handoff is implied.
+
+
+## Builder increment — event registry binding integrity (2026-11-12)
+
+The builder extended `scripts/validate_schemas.py` so the 84-entry event registry gate resolves every payload schema reference and fixture JSON Pointer, validates each referenced fixture against its event payload schema, and rejects missing references or empty fixture lists. Events remain design-only/non-dispatchable. This is a structural contract-integrity guard, not handler or consumer verification.
+
+A bounded inspection of the exact branch data resolved all 84 payload schema references and all referenced fixture pointers. The updated Python validator has not yet been confirmed by an exact-head CI run; its state is **IMPLEMENTED — UNVERIFIED**. Earlier CI run [43296040114](https://github.com/methaneex-oss/AURIONS/actions/runs/43296040114) predates this change and does not verify it.
+
+BR-008 remains OPEN. The guard does not establish event semantic suitability, owner state transitions, handler/consumer correctness, persistence transaction behaviour or integrated cognition. Overall planning remains NOT READY; no implementation authorization or handoff is implied.
