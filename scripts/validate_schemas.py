@@ -198,8 +198,8 @@ def main() -> int:
 
     event_registry = load(SCHEMAS / "event-registry.v1.json")
     events = event_registry["events"]
-    if len(events) != 88:
-        fail(f"event registry expected 88 entries, found {len(events)}")
+    if len(events) != 89:
+        fail(f"event registry expected 89 entries, found {len(events)}")
 
     # Reconcile event producer declarations bidirectionally with command
     # emissions. An event with no command producer remains explicitly
