@@ -789,6 +789,16 @@ Cross-store capability descriptor and approval references are validated by appli
 
 These additions close specification mismatches only. They have not been executed, benchmarked or validated against the target SQLite build. They require migration fixtures for fresh install, upgrade, interruption, invalid references, duplicate attempts, uncertain dispatch, stale checkpoint invalidation, recovery and rollback.
 
+
+
+**Memory database — proposed migration v4: objective/world/means and interaction lineage**
+
+Canonical machine-readable DDL: [`schemas/persistence/aurion_memory.migration_v4.sql`](../../schemas/persistence/aurion_memory.migration_v4.sql). This is a proposed additive migration and has not been executed or validated. It persists owner-scoped, versioned objective records (distinct from derived goals), owner/scope details for existing evidence records, world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The corresponding context-independent payload contracts are defined in `schemas/world-interaction.v1.schema.json`; event names and payload/fixture references are in `schemas/event-registry.v1.json`.
+
+This migration does not make a device capability descriptor mandatory for possible means. The world/means records are context-independent; the existing device/provider capability descriptor tables remain one specific integration evidence source. The `execution_operation_ref` on an interaction proposal is a cross-store reference only, not a foreign key or proof of execution. Application-level validation must resolve owner scope, stable identifiers, evidence lineage, revision/temporal validity, authority decisions and cross-store operation state. No distributed transaction across the three SQLite files is implied.
+
+Required v4 validation includes fresh install and upgrade paths, owner isolation, revision/temporal validity, evidence-details linkage, referential-integrity and stale-reference checks, interaction proposal versus authorization separation, cross-store operation reconciliation, retention/deletion propagation, crash/rollback and restore. The new schema and DDL remain IN PROGRESS until those checks are executed on the pinned SQLite baseline.
+
 ### 26.6 Migration protocol
 
 Each DB has its own monotonic migration version and checksum. There is no cross-file atomic migration.
