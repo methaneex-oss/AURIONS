@@ -4273,7 +4273,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-022",
+      "acceptance_positive_assertion": "Returns the owner-controlled objective and exact revision, constraints, success criteria and lifecycle state; derived goals/plans are linked separately.",
+      "acceptance_negative_assertion": "A derived goal or plan cannot be substituted for an owner objective; query cannot create, revise or reinterpret owner intent.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "world.entity.search",
@@ -4314,7 +4318,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-023",
+      "acceptance_positive_assertion": "Returns owner-visible entity hypotheses/records with identity provenance, source confidence and context-bound status.",
+      "acceptance_negative_assertion": "Unverified entity hypotheses, cross-owner identities or expired source observations are not presented as established current-world facts.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "world.entity.inspect",
@@ -4355,7 +4363,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-024",
+      "acceptance_positive_assertion": "Returns the exact entity record/revision and its source observations, identity links and uncertainty.",
+      "acceptance_negative_assertion": "Conflicting identity evidence remains explicit; query cannot merge entities or assert identity from name similarity.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "world.relationship.search",
@@ -4396,7 +4408,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-025",
+      "acceptance_positive_assertion": "Returns relationships with direction, relation type, source evidence, validity interval and confidence/context.",
+      "acceptance_negative_assertion": "Inferred or stale relationship is not represented as directly observed fact; query does not create/modify relationships.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "situation.inspect",
@@ -4437,7 +4453,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-026",
+      "acceptance_positive_assertion": "Returns a situation snapshot with participating entities, relevant relations, temporal/spatial context and evidence lineage.",
+      "acceptance_negative_assertion": "Incomplete, contradictory or stale context is disclosed; query cannot silently infer a complete situation.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "means.affordance.search",
@@ -4478,7 +4498,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-027",
+      "acceptance_positive_assertion": "Returns context-specific affordance hypotheses with required conditions, constraints, supporting evidence and verification status.",
+      "acceptance_negative_assertion": "Affordance is not treated as a granted capability or authorization; unknown conditions prevent executable classification.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "interaction.inspect",
@@ -4519,7 +4543,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-028",
+      "acceptance_positive_assertion": "Returns exact interaction proposal/attempt lifecycle, target, means, authorization reference and separately observed effects.",
+      "acceptance_negative_assertion": "Proposal, approval, dispatch receipt and observed effect remain distinct; uncertain dispatch is not represented as completed.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "interaction.outcome.inspect",
@@ -4560,7 +4588,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-029",
+      "acceptance_positive_assertion": "Returns outcome assessment linked to independent observations, expected effects and uncertainty.",
+      "acceptance_negative_assertion": "Provider receipt alone is not outcome evidence; missing or contradictory observation remains unknown/inconclusive.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     }
   ],
   "dispatch_invariant": "No entry is eligible for production dispatch until every applicable binding is completed, validated, covered by fixtures, and registered by the owning runtime. Null means unresolved, never an implicit default. Table bindings reference proposed DDL names only; they do not imply the DDL has been executed or that application-level invariants are implemented.",
