@@ -226,3 +226,18 @@ An in-memory SQLite 3.46.1 smoke test of the v3 statements against prerequisite-
 
 
 The v3 receipt digest column additionally rejects values that are not exactly 64 lowercase hexadecimal characters. A focused SQLite 3.46.1 constraint test accepted a valid 64-character lowercase hexadecimal value and rejected non-hex, uppercase and wrong-length values. This remains a constraint smoke test, not proof that a C++/Python implementation computes RFC 8785 + SHA-256 identically.
+
+
+## 8. Builder validation increment — JSON Schema corpus
+
+**Status:** VERIFIED COMPLETE for the Python-host schema/fixture validation subtask only.
+
+The repository now pins `jsonschema[format]==4.26.0` in `requirements-validation.txt`, provides `scripts/validate_schemas.py`, and runs it through `.github/workflows/schema-validation.yml`. Successful CI run #7 on revision `cda9023de34172679f8d5a01dddbdf54457956de` passed:
+- 8 Draft 2020-12 schema meta-schema checks.
+- 7 registry/fixture schema pairs.
+- 78 positive domain payloads validated against same-named reusable definitions.
+- 29 negative controls rejected as intended.
+
+The test-development failures were investigated and corrected: the pip cache dependency path was explicit, and external schema references were normalized to canonical URNs. The final result is recorded in `docs/reviews/SCHEMA-VALIDATION-RESULTS-2026-11-12.md`.
+
+**Not closed:** C++ validator equivalence, C++/Python serialization compatibility, Android/Termux dependency feasibility, runtime contract/handler validation, and semantic completeness of the registries. No registry is made dispatchable by schema validation.
