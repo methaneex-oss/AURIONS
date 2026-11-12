@@ -116,6 +116,8 @@ def main() -> int:
                 fail(f"{command_type}: missing populated {field}")
         if not item.get("error_code_bindings"):
             fail(f"{command_type}: missing command-specific error bindings")
+        if not item.get("emitted_event_bindings"):
+            fail(f"{command_type}: mapped command has no explicit emitted-event binding")
         unknown_errors = set(item["error_code_bindings"]) - known_error_codes
         if unknown_errors:
             fail(f"{command_type}: unknown error bindings {sorted(unknown_errors)}")
