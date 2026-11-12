@@ -54,7 +54,7 @@
 | `memory.recorded.v1` | UNRESOLVED — no command producer bound | `memoryRecord` | UNRESOLVED |
 | `memory.retrieved.v1` | `memory.retrieve` | `memoryRetrieval` | UNRESOLVED |
 | `objective.created.v1` | `objective.create` | `objective` | UNRESOLVED |
-| `objective.revised.v1` | `objective.revise` | `objective` | UNRESOLVED |
+| `objective.revised.v1` | `objective.revise` | `objectiveRevision` | UNRESOLVED |
 | `operation.awaiting_approval.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
 | `operation.cancel_requested.v1` | `operation.cancel` | `operationLifecycleEvent` | UNRESOLVED |
 | `operation.cancelled.v1` | `operation.cancel` | `operationLifecycleEvent` | UNRESOLVED |
@@ -103,7 +103,7 @@
 | `worker.job.progressed.v1` | UNRESOLVED — no command producer bound | `workerProgress` | UNRESOLVED |
 | `worker.job.requested.v1` | `learning.experiment.submit` | `workerRequest` | UNRESOLVED |
 | `world.entity.observed.v1` | `world.entity.observe` | `entity` | UNRESOLVED |
-| `world.relationship.revised.v1` | `world.relationship.revise` | `relationship` | UNRESOLVED |
+| `world.relationship.revised.v1` | `world.relationship.revise` | `relationshipRevision` | UNRESOLVED |
 
 ## 3. Required closure per event
 
