@@ -2911,7 +2911,7 @@
       ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
-        "schemas/fixtures/world-interaction.fixture.json#/definitions/objective",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/objectiveRevision",
         "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
       ],
       "dispatch_status": "design_only_not_dispatchable",
@@ -3021,7 +3021,7 @@
       ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
-        "schemas/fixtures/world-interaction.fixture.json#/definitions/relationship",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/relationshipRevision",
         "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
       ],
       "dispatch_status": "design_only_not_dispatchable",
