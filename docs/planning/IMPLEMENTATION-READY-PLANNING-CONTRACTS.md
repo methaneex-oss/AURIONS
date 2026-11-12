@@ -224,7 +224,7 @@ Every event includes the common envelope and an immutable event body. Initial ev
 
 #### Event-body schema binding
 
-Every event body MUST validate against exactly one versioned payload schema before persistence or publication. The common envelope's `message_type` selects the event contract; the payload schema does not grant authority. The following binding table is the canonical event-to-body mapping for the current event catalogue:
+Every event body MUST validate against exactly one versioned payload schema before persistence or publication. The common envelope's `message_type` selects the event contract; the payload schema does not grant authority. The following table is the human-readable event-to-body mapping. The machine-readable companion `schemas/event-registry.v1.json`, validated by `schemas/event-registry.v1.schema.json`, records all 84 event names, payload schema references and body-fixture references. The registry is a design baseline only: every entry remains non-dispatchable with unresolved runtime handler, consumer semantics, owner transition and event-specific acceptance bindings.
 
 | Event family | Payload definition |
 |---|---|
@@ -265,7 +265,7 @@ Every event body MUST validate against exactly one versioned payload schema befo
 | `task.run.transitioned.v1` | `taskRunTransition` |
 | `worker.job.requested.v1` / `worker.job.progressed.v1` / `worker.job.completed.v1` / `worker.job.failed.v1` | `workerRequest` / `workerProgress` / `workerResult` / `workerFailure` |
 
-Payload definitions are in `schemas/domain-payloads.v1.schema.json` and `schemas/world-interaction.v1.schema.json`. The common envelope is in `schemas/message-envelope.v1.schema.json`; provider/interface-specific capability descriptor bodies use `schemas/capability-descriptor-body.v1.schema.json`. The latter are not the universal model of possible means. Event-to-payload binding MUST be enforced by the event validator, not by a model-authored type claim. Any new event requires a new explicit mapping and compatible schema/fixture before it can be published.
+Payload definitions are in `schemas/domain-payloads.v1.schema.json` and `schemas/world-interaction.v1.schema.json`; exact event-to-payload and body-fixture references are also recorded in `schemas/event-registry.v1.json`. The common envelope is in `schemas/message-envelope.v1.schema.json`; provider/interface-specific capability descriptor bodies use `schemas/capability-descriptor-body.v1.schema.json`. The latter are not the universal model of possible means. Event-to-payload binding MUST be enforced by the event validator, not by a model-authored type claim. Any new event requires a new explicit mapping and compatible schema/fixture before it can be published.
 
 Events are append-only facts. Each durable append receives an `event_sequence` from the receiving event store inside the same local transaction as the event record; producers never supply or predict it. The sequence is monotonically increasing and unique within that one event store, not a global cross-device order. Consumers persist `last_sequence` only after the corresponding state change and event receipt are committed. Duplicate `message_id` with identical content is acknowledged without a second append; the same ID with a different payload digest is a protocol-integrity error. Corrections are new compensating events with causation links; do not rewrite history to conceal a prior outcome.
 
@@ -274,7 +274,7 @@ Event-stream acceptance checks:
 - **EV-002:** duplicate message ID with identical digest does not create a second event or apply twice; same ID with a different digest is rejected and audited.
 - **EV-003:** consumer checkpoint advances only after its owning state change and receipt commit; restart resumes after the last committed sequence without skipping or replaying side effects.
 - **EV-004:** timestamps are not used as the sole ordering mechanism; causation/correlation and domain revisions are retained, and no global order is inferred across independent event stores.
-- **EV-005:** the eight objective/world/means event families each bind to exactly one context-independent payload definition; an unknown or mismatched body is rejected before append, and a textual catalogue entry alone never enables dispatch.
+- **EV-005:** every event-registry entry resolves to exactly one payload schema and at least one body fixture; event names are unique; an unknown or mismatched body is rejected before append, and a registry entry alone never enables dispatch.
 - **EV-006:** world-entity, relationship, situation, affordance, interaction-proposal and outcome events preserve owner scope, provenance, revision/temporal validity and cross-record reference checks; replay cannot silently convert provisional claims or proposals into verified facts or authorization.
 - **TS-001:** every accepted task control request is durably recorded as `task.control.requested.v1`; rejected/stale requests do not mutate task state.
 - **TS-002:** every committed task state transition emits `task.run.transitioned.v1` in the same event-store transaction as the `task_runs` projection update.
