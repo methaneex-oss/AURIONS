@@ -105,6 +105,15 @@ The NHC regression family is a release-spanning architectural invariant, not a s
 | NHC-006 | WP-06, WP-15 | Removing or changing an illustrative platform/tool example does not alter the open-world model or define its boundary. |
 | NHC-007 | WP-02, WP-12, WP-15 | An accepted evidence-backed update persists across restart and changes a later related task with traceable evaluation provenance. |
 | NHC-008 | WP-04, WP-11, WP-13 | Repeated successful actions cannot weaken authorization, risk classification, approval or owner authority. |
+| NHC-009 | WP-06, WP-07, WP-08 | Entity identity and relationships remain provisional, contextual and evidence-linked; contradiction/expiry creates revision rather than silent overwrite. |
+| NHC-010 | WP-06, WP-09, WP-10, WP-11 | A human-mediated or non-device means can be considered without a device capability descriptor or platform adapter. |
+| NHC-011 | WP-06, WP-10, WP-11 | A task can compose means across multiple contexts while preserving each context's identity, state ownership, provenance and authority. |
+| NHC-012 | WP-04, WP-11 | An interaction proposal cannot dispatch until the independent authority boundary approves its exact actor, targets, effects, parameters and scope. |
+| NHC-013 | WP-06, WP-09, WP-10 | With no sufficiently evidenced or authorized means, the system asks, observes, waits, delegates or stops rather than inventing an operation. |
+| NHC-014 | WP-06, WP-09, WP-10, WP-12 | Exogenous changes or stale evidence invalidate a means hypothesis and trigger reassessment without assuming the objective itself changed. |
+| NHC-015 | WP-07, WP-11, WP-12 | Provider receipt, independently observed effect and causal attribution remain distinct; uncertain outcomes cannot become verified success. |
+| NHC-016 | WP-06, WP-10 | Objective, derived goal and plan remain distinct versioned concepts; replanning cannot silently rewrite the requested outcome or success criteria. |
+
 
 A work package cannot claim its no-hardcoding obligation is met by passing only its local unit tests. The integration suite must execute the relevant NHC tests against unseen objectives, entities, relationships, contexts and means—including non-device/human-mediated cases—and unseen task variations, not merely a new capability descriptor. Explicit schemas, protocols, permission checks, resource limits and safety invariants are engineered constraints, not hardcoded behavioural substitutes.
 
