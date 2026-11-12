@@ -85,10 +85,10 @@ Machine-enforced CI currently checks:
 - All 51 mapped command entries have semantic fields, known error/event bindings and unique CC-001…CC-051 acceptance IDs; the two device commands are deferred.
 - All 29 queries have owner scope, classification/redaction, consistency, ordering/cursor, limits/freshness and unique QCC-001…QCC-029 assertions; all remain read-only.
 - Every event payload-schema and fixture reference resolves and each referenced fixture validates against its declared payload schema.
-- Command and query request/response/result fixture references are validated against their declared schemas. The event producer/consumer matrix is checked bidirectionally against command producer bindings and payload schema definition names.
+- Command and query request/response/result fixture references are validated against their declared schemas. The event producer/consumer matrix is checked bidirectionally against command producer bindings, payload schema definition names, intended consumer/owner-transition summaries and scenario coverage references.
 - Governance integrity, host SQLite base/migration smoke checks and Android probe shell syntax.
 
-The following remain unverified and keep BR-008 OPEN:
+The 89 event entries now carry provider-independent producer-origin, owning-component, intended-consumer, owner-transition, ordering/idempotency and failure/recovery specifications. This is a proposed contract, not evidence that runtime consumers exist. The following remain unverified and keep BR-008 OPEN:
 - Full semantic review of every component transition and every event consumer, including event-only internal producers and cross-store sagas.
 - Production handler implementation and executable command/query tests, including authorization, redaction, concurrency, idempotency, crash/restart, replay and no-blind-retry assertions.
 - Executable multi-step CM-001…CM-021 and AD-001…AD-015 scenarios with deterministic fakes, durable state assertions, unseen controls and measurable learning acceptance.
