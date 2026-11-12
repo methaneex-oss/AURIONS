@@ -144,7 +144,7 @@ def main() -> int:
         payload_validation_schema = {
             "$schema": payload_schema["$schema"],
             "$defs": payload_schema.get("$defs", {}),
-            "$ref": schema_pointer,
+            "$ref": "#" + schema_pointer,
         }
 
         fixture_refs = item.get("fixture_refs", [])
