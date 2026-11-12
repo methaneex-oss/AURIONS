@@ -153,7 +153,7 @@ The current PR file inventory contains 78 named positive domain-payload examples
 ### BR-010 — Work-package and scaffold reconciliation is not complete
 
 **Severity:** High  
-**Evidence:** WP-00…WP-16 and the dependency graph exist; PR #1 is a separate scaffold. The roadmap still requires component-to-work-package traceability, measurable exits, target build evidence and post-approval scaffold reconciliation.  
+**Evidence:** WP-00…WP-16 and the dependency graph exist; PR #1 is a separate scaffold. A new builder crosswalk now maps all 17 packages to logical owners, prerequisites/inputs, outputs/contracts, acceptance IDs, failure/recovery evidence and external/owner gates. It is a planning proposal and has not been independently accepted. Target build evidence and post-approval PR #1 scaffold reconciliation remain outstanding.  
 **Required builder closure:** Complete each package's exact inputs/outputs, owned interfaces, acceptance evidence, failure/recovery tests and prerequisites; verify every dependency edge and the first-release path; reconcile PR #1 against the final approved contracts without silently expanding or changing its scope.
 
 **Current disposition:** OPEN.
@@ -367,3 +367,17 @@ Applicable duties: builder scope ownership, independent professional judgment, c
 **Exact final revision for this increment:** `7b913e829acb5ef51f988a20ca637a45605bc81a`. GitHub Actions run [43291121578](https://github.com/methaneex-oss/AURIONS/actions/runs/43291121578) completed successfully. The job's schema/positive-negative fixture validation, governance integrity validation, SQLite DDL/migration smoke tests and Android probe shell syntax steps all passed.
 
 **Disposition:** This closes a stale-evidence reconciliation and adds a structural integrity guard. BR-003 remains OPEN because the runtime handlers, per-code recovery execution, fault/replay tests and production registration gate are not satisfied. BR-008 remains OPEN because semantic correctness across all event, command/query, entity, persistence, security and product paths is not established by reference consistency. BR-010 remains OPEN because complete package-level ownership/IO/exit traceability and PR #1 scaffold reconciliation remain outstanding. Overall builder disposition remains NOT READY; no independent-review or tester handoff is issued.
+
+## Builder increment — work-package traceability and stale planning-index reconciliation (2026-11-12)
+
+**Exact starting revision:** `35edf0345f3d1b4b8a7a5fbf5624051f6de99624`. Before this run, the builder freshly retrieved and read the current Project Directorship and Team Operating Standard (blob `951b9009cbedcf8907b365d611d89559d5a17385`) and Builder Operating Protocol (blob `179b02aaef051173b96f54812f451ede1a2eae0d`).
+
+**Builder work performed:**
+- Added `docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md`, covering all 17 canonical work packages (WP-00…WP-16) with logical accountable owners, prerequisites/inputs, owned outputs/contracts, acceptance evidence, failure/recovery cases and external/owner gates.
+- Linked the matrix from the canonical roadmap and planning index.
+- Reconciled planning/schema index statements with current evidence: 29 negative fixtures, Python-host Draft 2020-12 CI validation, and host SQLite migration smoke checks. The index no longer describes those completed host checks as wholly unexecuted.
+- Preserved explicit boundaries: this matrix is a builder planning crosswalk, not owner approval, implementation authorization, target-device validation, PR #1 reconciliation or acceptance of any work package.
+
+**Exact revision tested:** `35edf0345f3d1b4b8a7a5fbf5624051f6de99624`. GitHub Actions run [43291566387](https://github.com/methaneex-oss/AURIONS/actions/runs/43291566387) completed successfully. Schema/fixture validation, governance integrity, host SQLite DDL/migration smoke checks and Android probe shell syntax all passed.
+
+**BR-010 disposition:** the builder-owned traceability artifact now exists, but BR-010 remains OPEN until logical ownership/contracts are reconciled against final approved product decisions, package-specific executable evidence is present, target build gates are met and PR #1 is reconciled after planning exit. BR-008 remains OPEN pending semantic validation of the full architecture. No independent-review or tester handoff is issued.
