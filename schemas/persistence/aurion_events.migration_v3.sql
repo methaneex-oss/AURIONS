@@ -45,7 +45,7 @@ CREATE TABLE task_command_receipts (
     ('task.start','task.pause','task.resume','task.cancel')),
   command_version TEXT NOT NULL CHECK(length(command_version)>0), -- Version syntax is enforced by the versioned contract validator.
   idempotency_key TEXT NOT NULL CHECK(length(idempotency_key)>0),
-  request_digest TEXT NOT NULL CHECK(length(request_digest)=64),
+  request_digest TEXT NOT NULL CHECK(length(request_digest)=64 AND request_digest NOT GLOB '*[^0-9a-f]*'),
   task_run_id BLOB NOT NULL CHECK(length(task_run_id)=16),
   command_response_json TEXT NOT NULL CHECK(json_valid(command_response_json)),
   recorded_at_ms INTEGER NOT NULL,
