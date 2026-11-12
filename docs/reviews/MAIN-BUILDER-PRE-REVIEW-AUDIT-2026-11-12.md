@@ -682,3 +682,20 @@ The first execution of the new guard failed because it incorrectly classified IN
 Exact corrected revision `377ff4ad01b81f2e79b2c60d85c9b946f9c095fe` passed GitHub Actions run [43321607903](https://github.com/methaneex-oss/AURIONS/actions/runs/43321607903). All workflow steps passed: schema/fixture validation, governance integrity, work-package dependency graph validation, host SQLite base/migration smoke tests and Android probe shell syntax.
 
 **Evidence boundary:** The 39 scenarios now have detailed machine-readable test specifications, including 172 steps, 45 negative controls, restart/replay/concurrency/fault and held-out controls. They remain `specified_not_executed`. There is no production handler set or runtime scenario runner in this planning PR. BR-004 remains OPEN for executed integration/behavioural evidence; no implementation authorization is inferred.
+
+
+## BR-008 builder increment — per-event consumer and owner-transition specification (2026-11-12)
+
+The builder added explicit event semantics to all 89 event registry entries:
+- Producer origin and trigger boundary, distinguishing command-produced events from internal/platform/worker/sync/retention transitions.
+- Owning component and intended consumer contracts with each consumer's purpose.
+- Event-specific owner transition semantics, including proposal-only, observation, revision, invalidation, approval, operation lifecycle, task safe-point, worker quarantine, sync conflict/tombstone and retention deletion rules.
+- Store-local ordering, aggregate revision, deduplication, gap handling and idempotent replay contract.
+- Failure/recovery contract for atomic outbox, at-least-once delivery, poison quarantine, restart replay and cross-store saga reconciliation.
+- Exact scenario references derived from the canonical 39-scenario fixture set.
+
+The event producer/consumer matrix now lists the consumer/transition summary for every event. A bounded source comparison found exact parity for all 89 event rows, command producers, payload schema definition names and scenario coverage references.
+
+The validator now requires these event fields, exact matrix-summary parity, correct unresolved-binding boundaries and scenario-reference parity. It does not claim runtime consumer implementation. Unbound internal events retain an explicit exact-producer-trigger blocker; all events retain runtime-handler and executed event-specific acceptance blockers.
+
+**Verification state:** The registry/matrix changes are committed, but exact-head CI is pending. Do not mark the event consumer/transition contract guard verified until the exact current head passes. BR-008 remains OPEN; no event is dispatchable.
