@@ -88,10 +88,11 @@ Machine-enforced CI currently checks:
 - Command and query request/response/result fixture references are validated against their declared schemas. The event producer/consumer matrix is checked bidirectionally against command producer bindings, payload schema definition names, intended consumer/owner-transition summaries and scenario coverage references.
 - Governance integrity, host SQLite base/migration smoke checks and Android probe shell syntax.
 
-The 89 event entries now carry provider-independent producer-origin, owning-component, intended-consumer, owner-transition, ordering/idempotency and failure/recovery specifications. This is a proposed contract, not evidence that runtime consumers exist. The following remain unverified and keep BR-008 OPEN:
-- Full semantic review of every component transition and every event consumer, including event-only internal producers and cross-store sagas.
-- Production handler implementation and executable command/query tests, including authorization, redaction, concurrency, idempotency, crash/restart, replay and no-blind-retry assertions.
-- Executable multi-step CM-001…CM-021 and AD-001…AD-015 scenarios with deterministic fakes, durable state assertions, unseen controls and measurable learning acceptance.
+The 89 event entries now carry producer-origin/trigger, owning-component, consumer-contract, owner-transition, ordering/idempotency, failure/recovery and scenario-reference specifications. This is a proposed contract, not evidence that runtime consumers exist. 51 events have command producer bindings; 38 have no command producer and retain an exact producer-trigger gate. The following remain unverified and keep BR-008 OPEN:
+- Independent semantic review of all 89 proposed event consumer/owner-transition contracts, resolution or explicit owner-gating of the 38 exact producer triggers, and cross-store saga/transaction ownership.
+- Production handler implementation and executable command/query/event tests, including authorization, redaction, concurrency, idempotency, crash/restart, replay and no-blind-retry assertions.
+- Execute all 39 INT/CM/AD scenario specifications with deterministic fakes, durable-state assertions, unseen controls and pre-registered learning acceptance metrics. The fixture corpus is specified and CI-validated, not executed.
+- The learning-update acceptance event exists, but the canonical public acceptance/activation command and its relationship to the separate evolution activation path remain unresolved.
 - Target SQLite/Termux behaviour, migration interruption/restore, device permissions/lifecycle/resources, C++ validator equivalence and C++/Python conformance.
 - Independent review of the final planning revision and owner planning-exit acceptance.
 
