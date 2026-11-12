@@ -297,3 +297,13 @@ The task-control contract now records distinct positive and negative assertions 
 The four command registry entries now distinguish the previously missing per-entry assertion specification from the remaining gap: per-entry conflict/replay/recovery **execution evidence**. They remain design_only_not_dispatchable. The generic TC-001…TC-012 cases remain specified, not executed runtime tests. The migration chain, receipt-retention horizon, lifecycle implementation, executable command-specific tests and full builder closure remain open. No command was made dispatchable.
 
 This is a bounded BR-001 builder increment only. It does not close BR-001 overall or change the NOT READY planning disposition.
+
+## EBT-01 — mandatory engineering behaviour transition (2026-11-12)
+
+**Builder disposition: governance integration implemented; actual team-wide behavioural compliance not yet demonstrated.**
+
+Owner directive EBT-01 is now incorporated as Part J of the authoritative team standard and Section 11 of the Builder Operating Protocol. It requires independent professional judgment, complete role ownership, scope discipline, evidence-state separation, evidence-backed professional disagreement, autonomous correction within authority and behavioural evaluation through completed outcomes. The governance validator now checks the presence of the EBT-01 standard and builder requirements. The planning completion register records the evidence boundary.
+
+**Builder's own conduct in this increment:** the builder did not wait for the owner to separately request a validator change. After integrating EBT-01 into the standard and builder protocol, it identified that the existing governance validator would otherwise allow the behavioural rule to be removed without detection, so it added explicit EBT-01 integrity assertions. This is evidence of one autonomous engineering correction in this run; it is not proof of sustained or team-wide compliance.
+
+**Remaining evidence:** run CI against the final revision; inspect the actual workflow result; then evaluate role behaviour through later completed builder handoffs, independent review findings, tester-generated test evidence and director acceptance. Documentation and presence checks alone cannot prove behavioural transformation. No technical finding is closed, implementation is not authorized, and PR #2 remains draft/open/unmerged.
