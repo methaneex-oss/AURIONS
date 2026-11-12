@@ -31,6 +31,7 @@ References:
 4. Test empty install, every supported upgrade, interrupted migration before/after commit, checksum mismatch, restore, disk-full, busy/locked, read-only/corrupt DB and process crash.
 5. Verify all indexes, uniqueness/idempotency constraints, owner-scope query plans and target-device timings.
 6. Confirm the 43 command and 21 query registry mappings against table ownership, read/write semantics, outbox boundaries and transaction scope.
-7. Reconcile world-interaction schema references with memory v4 columns and event/operation references; prove that device-specific capability descriptors are not required for non-device means.\n8. Record exact SQLite source/version/compile options and Termux/Android device/build identity.
+7. Reconcile world-interaction schema references with memory v4 columns and event/operation references; prove that device-specific capability descriptors are not required for non-device means.
+8. Record exact SQLite source/version/compile options and Termux/Android device/build identity.
 
 The static DDL table and foreign-key ownership crosswalk is not SQL execution. The v4 design is a first persistence mapping, not proof of complete semantic ownership: event bindings, canonical ID format, entity/evidence referential integrity (including evidence-details linkage to existing evidence IDs), cross-store interaction-operation linkage, retention/deletion policy and query contracts still require closure. Until all tests pass, the DDL and migration set remain **IN PROGRESS**.
