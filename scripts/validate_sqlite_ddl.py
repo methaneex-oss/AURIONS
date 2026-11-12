@@ -94,7 +94,7 @@ def test_events() -> None:
         "task_run_id", "task_definition_ref", "state", "priority",
         "budget_json", "created_at_ms", "updated_at_ms",
     )
-    values = (b"\\x01" * 16, "task-definition", "queued", 1.0, "{}", 1, 1)
+    values = (bytes([1]) * 16, "task-definition", "queued", 1.0, "{}", 1, 1)
     placeholders = ",".join("?" for _ in required)
     try:
         db.execute(
@@ -114,7 +114,7 @@ def test_events() -> None:
     try:
         db.execute(
             "UPDATE task_runs SET owner_id='owner-2' WHERE task_run_id=?",
-            (b"\\x01" * 16,),
+            (bytes([1]) * 16,),
         )
     except sqlite3.IntegrityError as exc:
         if "task_runs.owner_id_immutable" not in str(exc):
@@ -128,8 +128,8 @@ def test_events() -> None:
          producer_instance_id,correlation_id,occurred_at_ms,recorded_at_ms,
          payload_json,payload_digest,sensitivity,retention_class)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-        (b"\\x02" * 16, b"\\x03" * 16, "test.event.v1", "1.0",
-         "ddl-smoke", b"\\x04" * 16, b"\\x05" * 16, 1, 1, "{}", "a" * 64,
+        (bytes([2]) * 16, bytes([3]) * 16, "test.event.v1", "1.0",
+         "ddl-smoke", bytes([4]) * 16, bytes([5]) * 16, 1, 1, "{}", "a" * 64,
          0, "operational"),
     )
     sequence = db.execute("SELECT event_sequence FROM events").fetchone()[0]
