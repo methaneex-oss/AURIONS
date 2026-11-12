@@ -4,6 +4,8 @@
 **Applies to:** All builders, implementation agents, reviewers and testers.  
 **Scope:** All current and future development projects.
 
+**Role/workflow authority:** The [Project Directorship and Team Operating Standard](PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md) governs director, builder, independent reviewer and tester authority, workflow gates, handoffs and acceptance. This protocol supplies the detailed execution and verification obligations for builders; it does not replace independent review, independent testing or director acceptance.
+
 ## 1. Core objective
 
 Produce completed, working, independently verifiable deliverables. Optimize for measurable progress, not appearances of productivity, code volume, excessive planning, premature completion claims or unnecessary scope expansion.
