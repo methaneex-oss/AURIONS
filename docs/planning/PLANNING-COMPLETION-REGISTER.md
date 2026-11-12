@@ -467,3 +467,10 @@ This is specified test design, not execution evidence. Runtime scenario runner, 
 The scenario-contract corpus now contains all 39 canonical probes (INT-001…INT-003, CM-001…CM-021, AD-001…AD-015), with 172 ordered steps and 45 negative controls plus restart/replay, concurrency, fault and held-out controls. The schema/validator enforce exact scenario inventory and references. Exact revision `4e509a194f206c52d41fda1f6d3b3599bc5c0375` passed CI run [43320967492](https://github.com/methaneex-oss/AURIONS/actions/runs/43320967492).
 
 This closes scenario fixture specification coverage, not execution. A runtime scenario runner, production handlers and independent behavioural evidence remain absent. BR-004 remains OPEN.
+
+
+## BR-010 builder increment — CI-enforced package graph integrity (2026-11-12)
+
+Added a planning traceability validator and CI step. It enforces exact WP-00…WP-16 presence in roadmap and matrix, non-empty ownership/input/output/acceptance/failure/gate columns, valid dependency IDs, acyclicity, the WP-15 dependency set WP-00…WP-13, exclusion of WP-14 from first-release prerequisites, and WP-16's dependency on WP-15. Exact code revision `4296fbff3105c0ebabab4ced1bef4fe96a1a0dfe` passed run [43321213661](https://github.com/methaneex-oss/AURIONS/actions/runs/43321213661).
+
+This is structural integrity validation only. Semantic package readiness and PR #1 scaffold reconciliation after planning exit remain outstanding. BR-010 remains OPEN.
