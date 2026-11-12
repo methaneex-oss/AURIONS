@@ -298,3 +298,13 @@ A new check in `scripts/validate_schemas.py` reconciles all 35 error-code mappin
 The final revision for this increment, `7b913e829acb5ef51f988a20ca637a45605bc81a`, passed GitHub Actions run [43291121578](https://github.com/methaneex-oss/AURIONS/actions/runs/43291121578), including schema/fixture validation, governance validation, host SQLite DDL/migration smoke tests and Android probe shell syntax.
 
 **Evidence boundary:** BR-003 remains OPEN pending actual per-code recovery/fault/replay tests and production handlers. BR-008 remains OPEN pending semantic cross-document verification. BR-010 remains OPEN pending full package traceability and scaffold reconciliation. Overall planning remains NOT READY; this update does not authorize implementation or trigger independent review.
+
+## Builder increment — work-package traceability and planning-index reconciliation (2026-11-12)
+
+The builder freshly read the current governance standard (blob `951b9009cbedcf8907b365d611d89559d5a17385`) and Builder Operating Protocol (blob `179b02aaef051173b96f54812f451ede1a2eae0d`) before this run.
+
+Added `docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md` with all 17 canonical packages mapped to logical owners, inputs/prerequisites, outputs/contracts, acceptance IDs, failure/recovery evidence and owner/external gates. Linked it from the canonical roadmap and planning index. Reconciled stale index claims about negative fixture count, host schema validation and host SQLite DDL/migration execution.
+
+Workflow run [43291566387](https://github.com/methaneex-oss/AURIONS/actions/runs/43291566387) passed on revision `35edf0345f3d1b4b8a7a5fbf5624051f6de99624`, including schema/fixture validation, governance integrity, host SQLite migration smoke tests and Android probe shell syntax.
+
+**Evidence boundary:** BR-010 remains OPEN pending independent/owner validation of package boundaries, package-specific executable evidence, target build validation and post-planning PR #1 reconciliation. BR-008 remains OPEN pending semantic architecture-wide reconciliation. No implementation authorization or independent-review handoff is implied.
