@@ -306,12 +306,32 @@ def main() -> int:
         if len(cells) != 4:
             fail("operation lifecycle matrix row must have four cells")
         operation_rows[cells[0].strip("`")] = (cells[2], cells[3])
+    operation_states = set(
+        schema_docs["domain-payloads.v1.schema.json"]["$defs"]["operationLifecycleEvent"]
+        ["properties"]["state"]["enum"]
+    )
+    for event_type in events:
+        if event_type.startswith("operation."):
+            target_state = event_type.removeprefix("operation.").removesuffix(".v1")
+            if target_state not in operation_states:
+                fail(f"{event_type}: event target state is absent from operation lifecycle schema")
     for event_type in action_gateway_events:
         if operation_rows.get(event_type) != (
             events[event_type]["producer_trigger_contract"],
             events[event_type]["owner_transition_contract"],
         ):
             fail(f"{event_type}: operation lifecycle matrix trigger/transition differs from event registry")
+        cells = next(
+            [cell.strip() for cell in line.split("|")[1:-1]]
+            for line in operation_matrix.splitlines()
+            if line.startswith(f"| `{event_type}` |")
+        )
+        predecessor_states = {state.strip() for state in cells[1].split(",")}
+        if not predecessor_states or not predecessor_states <= operation_states:
+            fail(f"{event_type}: predecessor state is absent from operation lifecycle schema")
+        target_state = event_type.removeprefix("operation.").removesuffix(".v1")
+        if target_state in predecessor_states:
+            fail(f"{event_type}: self-transition is not permitted")
     for event_type in action_gateway_events:
         event = events[event_type]
         trigger = event.get("producer_trigger_contract", "")
