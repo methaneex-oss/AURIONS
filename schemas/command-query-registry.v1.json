@@ -2819,6 +2819,446 @@
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [],
       "aggregate_binding_status": "deferred_by_scope"
+    },
+    {
+      "command_type": "objective.create",
+      "command_version": "1.0",
+      "request_schema": "schemas/world-interaction.v1.schema.json#/$defs/objective",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Objective subsystem",
+      "aggregate": "objective_records",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": "Create one immutable owner objective at version 1; payload owner_ref must match authenticated owner. Duplicate objective_id is a conflict; objective intent and success criteria are not a derived goal or plan.",
+      "authorization_contract": "Authenticate owner_id and actor_identity outside payload. Payload owner_ref must equal authenticated owner; load all referenced objectives, entities, relationships, situations, means and evidence under that owner before mutation. Deny missing/cross-owner references without existence disclosure. No platform/device capability is inferred from world-model records.",
+      "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest is SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload. Same scope+digest replays without duplicate record/event/outbox; different digest conflicts without disclosing original receipt.",
+      "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt is replayed. Local cancellation is possible only before commit; correction after commit is a new linked record/revision.",
+      "side_effect_contract": "Local owner-intent write only. No action, provider call or authorization grant. Owning memory-store mutation, immutable event and outbox commit in one local transaction; no cross-database ACID assumption and no provider/worker I/O inside the SQLite write transaction.",
+      "error_code_bindings": [
+        "contract.schema.SCHEMA_MALFORMED",
+        "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
+        "contract.schema.SCHEMA_CONDITION_UNSUPPORTED",
+        "governance.authorization.POLICY_DENIED",
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.DEPENDENCY_VERSION_STALE",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED",
+        "operation.budget.RESOURCE_BUDGET_EXCEEDED",
+        "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
+        "runtime.internal.INTERNAL_FAILURE",
+        "evidence.precondition.EVIDENCE_INSUFFICIENT",
+        "evidence.precondition.PRECONDITION_FALSE",
+        "evidence.precondition.PRECONDITION_UNKNOWN"
+      ],
+      "emitted_event_bindings": [
+        "objective.created.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/objective",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "objective_records"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "CC-044"
+    },
+    {
+      "command_type": "objective.revise",
+      "command_version": "1.0",
+      "request_schema": "schemas/world-interaction.v1.schema.json#/$defs/objective",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Objective subsystem",
+      "aggregate": "objective_records",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": "Require the current owner-scoped objective; payload version must be exactly current version + 1 and source objective_id must match. Append revision lineage; preserve original request source and prior success criteria.",
+      "authorization_contract": "Authenticate owner_id and actor_identity outside payload. Payload owner_ref must equal authenticated owner; load all referenced objectives, entities, relationships, situations, means and evidence under that owner before mutation. Deny missing/cross-owner references without existence disclosure. No platform/device capability is inferred from world-model records.",
+      "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest is SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload. Same scope+digest replays without duplicate record/event/outbox; different digest conflicts without disclosing original receipt.",
+      "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt is replayed. Local cancellation is possible only before commit; correction after commit is a new linked record/revision.",
+      "side_effect_contract": "Local owner-intent revision only. Revisions that materially change scope/success criteria require renewed plan/dependency evaluation; no existing operation is silently rewritten. Owning memory-store mutation, immutable event and outbox commit in one local transaction; no cross-database ACID assumption and no provider/worker I/O inside the SQLite write transaction.",
+      "error_code_bindings": [
+        "contract.schema.SCHEMA_MALFORMED",
+        "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
+        "contract.schema.SCHEMA_CONDITION_UNSUPPORTED",
+        "governance.authorization.POLICY_DENIED",
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.DEPENDENCY_VERSION_STALE",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED",
+        "operation.budget.RESOURCE_BUDGET_EXCEEDED",
+        "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
+        "runtime.internal.INTERNAL_FAILURE",
+        "evidence.precondition.EVIDENCE_INSUFFICIENT",
+        "evidence.precondition.PRECONDITION_FALSE",
+        "evidence.precondition.PRECONDITION_UNKNOWN"
+      ],
+      "emitted_event_bindings": [
+        "objective.revised.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/objective",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "objective_records"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "CC-045"
+    },
+    {
+      "command_type": "world.entity.observe",
+      "command_version": "1.0",
+      "request_schema": "schemas/world-interaction.v1.schema.json#/$defs/entity",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "World-model subsystem",
+      "aggregate": "world_entities",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": "Append observation evidence to an entity identity. New entity starts at version 1; an existing entity update must name exact entity ID and next version current+1, preserving provisional identity and all evidence lineage.",
+      "authorization_contract": "Authenticate owner_id and actor_identity outside payload. Payload owner_ref must equal authenticated owner; load all referenced objectives, entities, relationships, situations, means and evidence under that owner before mutation. Deny missing/cross-owner references without existence disclosure. No platform/device capability is inferred from world-model records.",
+      "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest is SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload. Same scope+digest replays without duplicate record/event/outbox; different digest conflicts without disclosing original receipt.",
+      "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt is replayed. Local cancellation is possible only before commit; correction after commit is a new linked record/revision.",
+      "side_effect_contract": "Local evidence/model write only. It records an observation already obtained; it does not trigger sensing or assert ground truth. Owning memory-store mutation, immutable event and outbox commit in one local transaction; no cross-database ACID assumption and no provider/worker I/O inside the SQLite write transaction.",
+      "error_code_bindings": [
+        "contract.schema.SCHEMA_MALFORMED",
+        "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
+        "contract.schema.SCHEMA_CONDITION_UNSUPPORTED",
+        "governance.authorization.POLICY_DENIED",
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.DEPENDENCY_VERSION_STALE",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED",
+        "operation.budget.RESOURCE_BUDGET_EXCEEDED",
+        "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
+        "runtime.internal.INTERNAL_FAILURE",
+        "evidence.precondition.EVIDENCE_INSUFFICIENT",
+        "evidence.precondition.PRECONDITION_FALSE",
+        "evidence.precondition.PRECONDITION_UNKNOWN"
+      ],
+      "emitted_event_bindings": [
+        "world.entity.observed.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/entity",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "world_entities"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "CC-046"
+    },
+    {
+      "command_type": "world.relationship.revise",
+      "command_version": "1.0",
+      "request_schema": "schemas/world-interaction.v1.schema.json#/$defs/relationship",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "World-model subsystem",
+      "aggregate": "world_relationships",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": "Require exact relationship_id and next version current+1; append contextual/time-scoped relation evidence and preserve prior/contradictory revisions. Both subject and object must resolve within owner scope.",
+      "authorization_contract": "Authenticate owner_id and actor_identity outside payload. Payload owner_ref must equal authenticated owner; load all referenced objectives, entities, relationships, situations, means and evidence under that owner before mutation. Deny missing/cross-owner references without existence disclosure. No platform/device capability is inferred from world-model records.",
+      "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest is SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload. Same scope+digest replays without duplicate record/event/outbox; different digest conflicts without disclosing original receipt.",
+      "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt is replayed. Local cancellation is possible only before commit; correction after commit is a new linked record/revision.",
+      "side_effect_contract": "Local world-model write only. Relationship claims remain epistemically qualified; no external interaction or authority follows. Owning memory-store mutation, immutable event and outbox commit in one local transaction; no cross-database ACID assumption and no provider/worker I/O inside the SQLite write transaction.",
+      "error_code_bindings": [
+        "contract.schema.SCHEMA_MALFORMED",
+        "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
+        "contract.schema.SCHEMA_CONDITION_UNSUPPORTED",
+        "governance.authorization.POLICY_DENIED",
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.DEPENDENCY_VERSION_STALE",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED",
+        "operation.budget.RESOURCE_BUDGET_EXCEEDED",
+        "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
+        "runtime.internal.INTERNAL_FAILURE",
+        "evidence.precondition.EVIDENCE_INSUFFICIENT",
+        "evidence.precondition.PRECONDITION_FALSE",
+        "evidence.precondition.PRECONDITION_UNKNOWN"
+      ],
+      "emitted_event_bindings": [
+        "world.relationship.revised.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/relationship",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "world_relationships"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "CC-047"
+    },
+    {
+      "command_type": "situation.snapshot.create",
+      "command_version": "1.0",
+      "request_schema": "schemas/world-interaction.v1.schema.json#/$defs/situation",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Context/world-understanding subsystem",
+      "aggregate": "situation_snapshots",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": "Create an immutable situation snapshot at version 1 from exact owner-scoped objective/entity/evidence revisions. Persist unknowns and conflicts; do not assert a complete world state.",
+      "authorization_contract": "Authenticate owner_id and actor_identity outside payload. Payload owner_ref must equal authenticated owner; load all referenced objectives, entities, relationships, situations, means and evidence under that owner before mutation. Deny missing/cross-owner references without existence disclosure. No platform/device capability is inferred from world-model records.",
+      "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest is SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload. Same scope+digest replays without duplicate record/event/outbox; different digest conflicts without disclosing original receipt.",
+      "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt is replayed. Local cancellation is possible only before commit; correction after commit is a new linked record/revision.",
+      "side_effect_contract": "Local snapshot write only. It performs no sensing and cannot mutate objective, entity or evidence records. Owning memory-store mutation, immutable event and outbox commit in one local transaction; no cross-database ACID assumption and no provider/worker I/O inside the SQLite write transaction.",
+      "error_code_bindings": [
+        "contract.schema.SCHEMA_MALFORMED",
+        "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
+        "contract.schema.SCHEMA_CONDITION_UNSUPPORTED",
+        "governance.authorization.POLICY_DENIED",
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.DEPENDENCY_VERSION_STALE",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED",
+        "operation.budget.RESOURCE_BUDGET_EXCEEDED",
+        "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
+        "runtime.internal.INTERNAL_FAILURE",
+        "evidence.precondition.EVIDENCE_INSUFFICIENT",
+        "evidence.precondition.PRECONDITION_FALSE",
+        "evidence.precondition.PRECONDITION_UNKNOWN"
+      ],
+      "emitted_event_bindings": [
+        "situation.snapshot.created.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/situation",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "situation_snapshots"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "CC-048"
+    },
+    {
+      "command_type": "means.affordance.propose",
+      "command_version": "1.0",
+      "request_schema": "schemas/world-interaction.v1.schema.json#/$defs/affordanceHypothesis",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Means-reasoning subsystem",
+      "aggregate": "affordance_hypotheses",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": "Create an immutable context-scoped affordance hypothesis at version 1 with actor/resource/objective/evidence references, preconditions, expected effects and limitations. Revisions are new linked hypotheses, not overwrites.",
+      "authorization_contract": "Authenticate owner_id and actor_identity outside payload. Payload owner_ref must equal authenticated owner; load all referenced objectives, entities, relationships, situations, means and evidence under that owner before mutation. Deny missing/cross-owner references without existence disclosure. No platform/device capability is inferred from world-model records.",
+      "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest is SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload. Same scope+digest replays without duplicate record/event/outbox; different digest conflicts without disclosing original receipt.",
+      "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt is replayed. Local cancellation is possible only before commit; correction after commit is a new linked record/revision.",
+      "side_effect_contract": "Local hypothesis write only. It is not a capability grant, platform permission, executable API or dispatch authorization. Owning memory-store mutation, immutable event and outbox commit in one local transaction; no cross-database ACID assumption and no provider/worker I/O inside the SQLite write transaction.",
+      "error_code_bindings": [
+        "contract.schema.SCHEMA_MALFORMED",
+        "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
+        "contract.schema.SCHEMA_CONDITION_UNSUPPORTED",
+        "governance.authorization.POLICY_DENIED",
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.DEPENDENCY_VERSION_STALE",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED",
+        "operation.budget.RESOURCE_BUDGET_EXCEEDED",
+        "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
+        "runtime.internal.INTERNAL_FAILURE",
+        "evidence.precondition.EVIDENCE_INSUFFICIENT",
+        "evidence.precondition.PRECONDITION_FALSE",
+        "evidence.precondition.PRECONDITION_UNKNOWN"
+      ],
+      "emitted_event_bindings": [
+        "means.affordance.proposed.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/affordanceHypothesis",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "affordance_hypotheses"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "CC-049"
+    },
+    {
+      "command_type": "interaction.propose",
+      "command_version": "1.0",
+      "request_schema": "schemas/world-interaction.v1.schema.json#/$defs/interactionProposal",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Interaction-control subsystem",
+      "aggregate": "interaction_proposals",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": "Create one immutable proposal bound to exact objective, actor, target, means-hypothesis and precondition-evidence references. Proposal ID is unique; changes create a superseding proposal with lineage.",
+      "authorization_contract": "Authenticate owner_id and actor_identity outside payload. Payload owner_ref must equal authenticated owner; load all referenced objectives, entities, relationships, situations, means and evidence under that owner before mutation. Deny missing/cross-owner references without existence disclosure. The proposal is not authorization; exact effect, target, recipient and risk are independently evaluated by governance before any later operation.",
+      "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest is SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload. Same scope+digest replays without duplicate record/event/outbox; different digest conflicts without disclosing original receipt.",
+      "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt is replayed. Local cancellation is possible only before commit; correction after commit is a new linked record/revision.",
+      "side_effect_contract": "Proposal-only local write. MUST NOT dispatch, contact a target, invoke a provider or treat risk assessment as authorization. Consequential execution remains a separate operation and governance path. Owning memory-store mutation, immutable event and outbox commit in one local transaction; no cross-database ACID assumption and no provider/worker I/O inside the SQLite write transaction.",
+      "error_code_bindings": [
+        "contract.schema.SCHEMA_MALFORMED",
+        "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
+        "contract.schema.SCHEMA_CONDITION_UNSUPPORTED",
+        "governance.authorization.POLICY_DENIED",
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.DEPENDENCY_VERSION_STALE",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED",
+        "operation.budget.RESOURCE_BUDGET_EXCEEDED",
+        "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
+        "runtime.internal.INTERNAL_FAILURE",
+        "evidence.precondition.EVIDENCE_INSUFFICIENT",
+        "evidence.precondition.PRECONDITION_FALSE",
+        "evidence.precondition.PRECONDITION_UNKNOWN"
+      ],
+      "emitted_event_bindings": [
+        "interaction.proposed.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/interactionProposal",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "interaction_proposals"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "CC-050"
+    },
+    {
+      "command_type": "interaction.outcome.record",
+      "command_version": "1.0",
+      "request_schema": "schemas/world-interaction.v1.schema.json#/$defs/interactionOutcome",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
+      "owning_component": "Outcome subsystem",
+      "aggregate": "interaction_outcomes",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "expected_revision_contract": "Append immutable independently observed outcome for one exact interaction proposal; preserve observed time, evidence, unresolved effects and attribution hypotheses. Duplicate outcome ID conflicts.",
+      "authorization_contract": "Authenticate owner_id and actor_identity outside payload. Payload owner_ref must equal authenticated owner; load all referenced objectives, entities, relationships, situations, means and evidence under that owner before mutation. Deny missing/cross-owner references without existence disclosure. No platform/device capability is inferred from world-model records.",
+      "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest is SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload. Same scope+digest replays without duplicate record/event/outbox; different digest conflicts without disclosing original receipt.",
+      "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt is replayed. Local cancellation is possible only before commit; correction after commit is a new linked record/revision.",
+      "side_effect_contract": "Local evidence write only. Provider receipt alone is not observed outcome; uncertain effects and attribution remain explicit. Owning memory-store mutation, immutable event and outbox commit in one local transaction; no cross-database ACID assumption and no provider/worker I/O inside the SQLite write transaction.",
+      "error_code_bindings": [
+        "contract.schema.SCHEMA_MALFORMED",
+        "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
+        "contract.schema.SCHEMA_CONDITION_UNSUPPORTED",
+        "governance.authorization.POLICY_DENIED",
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.DEPENDENCY_VERSION_STALE",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED",
+        "operation.budget.RESOURCE_BUDGET_EXCEEDED",
+        "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
+        "runtime.internal.INTERNAL_FAILURE",
+        "evidence.precondition.EVIDENCE_INSUFFICIENT",
+        "evidence.precondition.PRECONDITION_FALSE",
+        "evidence.precondition.PRECONDITION_UNKNOWN"
+      ],
+      "emitted_event_bindings": [
+        "interaction.outcome.observed.v1"
+      ],
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/interactionOutcome",
+        "schemas/fixtures/domain-payloads.fixture.json#/commandResponse"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "handler_level_per_entry_positive_negative_conflict_replay_crash_recovery_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "interaction_outcomes"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "CC-051"
     }
   ],
   "queries": [
@@ -3793,16 +4233,344 @@
       "acceptance_positive_assertion": "Returns last evidenced descriptor state for one authenticated paired device with probe time/expiry.",
       "acceptance_negative_assertion": "No live probe, pairing, permission prompt or authorization inference occurs during read.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
+    },
+    {
+      "query_type": "objective.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/world-interaction.v1.schema.json#/$defs/objective",
+      "owning_component": "Objective subsystem",
+      "aggregate": "objective_records",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": "Derive owner_id and actor_identity from authenticated execution context; caller filters are selectors only. Apply owner scope before joins, counts, ranking, projection and pagination. Deny missing owner scope and conceal cross-owner existence.",
+      "data_classification": "OWNER_PRIVATE; redact sensitive success-evidence refs and private constraints unless purpose permits.",
+      "redaction_contract": "Deterministic schema-aware allowlist/redaction before serialization; counts, snippets, facets, errors and timing must not leak protected records. Apply query-specific field restrictions and return explicit redaction metadata.",
+      "consistency_contract": "local_committed; one owning-memory-store read transaction. Unsupported consistency modes are refused; no implicit cross-store snapshot.",
+      "ordering_cursor_contract": "single-record lookup; no cursor",
+      "limits_contract": "Effective deadline, maximum rows, serialized bytes and expensive-field budget are mandatory but remain unmeasured against the target runtime; query stays non-dispatchable until measured and pinned. No silent truncation or partial result.",
+      "freshness_cache_contract": "Return object version and source/evidence lineage. Immutable records may be cached by owner/object revision/schema/classification-policy version; mutable state is not cached without an exact revision and invalidation watermark. No authorization decision uses cached data.",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/objective"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "objective_records"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+    },
+    {
+      "query_type": "world.entity.search",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/world-interaction.v1.schema.json#/$defs/entity",
+      "owning_component": "World-model subsystem",
+      "aggregate": "world_entities",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": "Derive owner_id and actor_identity from authenticated execution context; caller filters are selectors only. Apply owner scope before joins, counts, ranking, projection and pagination. Deny missing owner scope and conceal cross-owner existence.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact precise identifiers, sensitive attributes, location and unrelated actors.",
+      "redaction_contract": "Deterministic schema-aware allowlist/redaction before serialization; counts, snippets, facets, errors and timing must not leak protected records. Apply query-specific field restrictions and return explicit redaction metadata.",
+      "consistency_contract": "snapshot; one owning-memory-store read transaction. Unsupported consistency modes are refused; no implicit cross-store snapshot.",
+      "ordering_cursor_contract": "snapshot; last_observed_at DESC, entity_id ASC; cursor binds owner/actor scope, query/version, normalized filters, sort version, snapshot watermark and expiry",
+      "limits_contract": "Effective deadline, maximum rows, serialized bytes and expensive-field budget are mandatory but remain unmeasured against the target runtime; query stays non-dispatchable until measured and pinned. No silent truncation or partial result.",
+      "freshness_cache_contract": "Return object version and source/evidence lineage. Immutable records may be cached by owner/object revision/schema/classification-policy version; mutable state is not cached without an exact revision and invalidation watermark. No authorization decision uses cached data.",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/entity"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "world_entities"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+    },
+    {
+      "query_type": "world.entity.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/world-interaction.v1.schema.json#/$defs/entity",
+      "owning_component": "World-model subsystem",
+      "aggregate": "world_entities",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": "Derive owner_id and actor_identity from authenticated execution context; caller filters are selectors only. Apply owner scope before joins, counts, ranking, projection and pagination. Deny missing owner scope and conceal cross-owner existence.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; field allowlist by purpose; hide cross-owner existence.",
+      "redaction_contract": "Deterministic schema-aware allowlist/redaction before serialization; counts, snippets, facets, errors and timing must not leak protected records. Apply query-specific field restrictions and return explicit redaction metadata.",
+      "consistency_contract": "local_committed; one owning-memory-store read transaction. Unsupported consistency modes are refused; no implicit cross-store snapshot.",
+      "ordering_cursor_contract": "single-record lookup; no cursor",
+      "limits_contract": "Effective deadline, maximum rows, serialized bytes and expensive-field budget are mandatory but remain unmeasured against the target runtime; query stays non-dispatchable until measured and pinned. No silent truncation or partial result.",
+      "freshness_cache_contract": "Return object version and source/evidence lineage. Immutable records may be cached by owner/object revision/schema/classification-policy version; mutable state is not cached without an exact revision and invalidation watermark. No authorization decision uses cached data.",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/entity"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "world_entities"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+    },
+    {
+      "query_type": "world.relationship.search",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/world-interaction.v1.schema.json#/$defs/relationship",
+      "owning_component": "World-model subsystem",
+      "aggregate": "world_relationships",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": "Derive owner_id and actor_identity from authenticated execution context; caller filters are selectors only. Apply owner scope before joins, counts, ranking, projection and pagination. Deny missing owner scope and conceal cross-owner existence.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact actor/resource refs and sensitive predicates by purpose.",
+      "redaction_contract": "Deterministic schema-aware allowlist/redaction before serialization; counts, snippets, facets, errors and timing must not leak protected records. Apply query-specific field restrictions and return explicit redaction metadata.",
+      "consistency_contract": "snapshot; one owning-memory-store read transaction. Unsupported consistency modes are refused; no implicit cross-store snapshot.",
+      "ordering_cursor_contract": "snapshot; valid_from DESC, relationship_id ASC; cursor binds owner/actor scope, query/version, normalized filters, sort version, snapshot watermark and expiry",
+      "limits_contract": "Effective deadline, maximum rows, serialized bytes and expensive-field budget are mandatory but remain unmeasured against the target runtime; query stays non-dispatchable until measured and pinned. No silent truncation or partial result.",
+      "freshness_cache_contract": "Return object version and source/evidence lineage. Immutable records may be cached by owner/object revision/schema/classification-policy version; mutable state is not cached without an exact revision and invalidation watermark. No authorization decision uses cached data.",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/relationship"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "world_relationships"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+    },
+    {
+      "query_type": "situation.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/world-interaction.v1.schema.json#/$defs/situation",
+      "owning_component": "Context/world-understanding subsystem",
+      "aggregate": "situation_snapshots",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": "Derive owner_id and actor_identity from authenticated execution context; caller filters are selectors only. Apply owner scope before joins, counts, ranking, projection and pagination. Deny missing owner scope and conceal cross-owner existence.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; disclose unknowns/conflicts but redact precise location and protected evidence.",
+      "redaction_contract": "Deterministic schema-aware allowlist/redaction before serialization; counts, snippets, facets, errors and timing must not leak protected records. Apply query-specific field restrictions and return explicit redaction metadata.",
+      "consistency_contract": "local_committed; one owning-memory-store read transaction. Unsupported consistency modes are refused; no implicit cross-store snapshot.",
+      "ordering_cursor_contract": "single-record lookup; no cursor",
+      "limits_contract": "Effective deadline, maximum rows, serialized bytes and expensive-field budget are mandatory but remain unmeasured against the target runtime; query stays non-dispatchable until measured and pinned. No silent truncation or partial result.",
+      "freshness_cache_contract": "Return object version and source/evidence lineage. Immutable records may be cached by owner/object revision/schema/classification-policy version; mutable state is not cached without an exact revision and invalidation watermark. No authorization decision uses cached data.",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/situation"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "situation_snapshots"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+    },
+    {
+      "query_type": "means.affordance.search",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/world-interaction.v1.schema.json#/$defs/affordanceHypothesis",
+      "owning_component": "Means-reasoning subsystem",
+      "aggregate": "affordance_hypotheses",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": "Derive owner_id and actor_identity from authenticated execution context; caller filters are selectors only. Apply owner scope before joins, counts, ranking, projection and pagination. Deny missing owner scope and conceal cross-owner existence.",
+      "data_classification": "SENSITIVE; redact provider/device details; never expose hypothesis as authority or guaranteed capability.",
+      "redaction_contract": "Deterministic schema-aware allowlist/redaction before serialization; counts, snippets, facets, errors and timing must not leak protected records. Apply query-specific field restrictions and return explicit redaction metadata.",
+      "consistency_contract": "snapshot; one owning-memory-store read transaction. Unsupported consistency modes are refused; no implicit cross-store snapshot.",
+      "ordering_cursor_contract": "snapshot; created_at DESC, hypothesis_id ASC; cursor binds owner/actor scope, query/version, normalized filters, sort version, snapshot watermark and expiry",
+      "limits_contract": "Effective deadline, maximum rows, serialized bytes and expensive-field budget are mandatory but remain unmeasured against the target runtime; query stays non-dispatchable until measured and pinned. No silent truncation or partial result.",
+      "freshness_cache_contract": "Return object version and source/evidence lineage. Immutable records may be cached by owner/object revision/schema/classification-policy version; mutable state is not cached without an exact revision and invalidation watermark. No authorization decision uses cached data.",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/affordanceHypothesis"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "affordance_hypotheses"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+    },
+    {
+      "query_type": "interaction.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/world-interaction.v1.schema.json#/$defs/interactionProposal",
+      "owning_component": "Interaction-control subsystem",
+      "aggregate": "interaction_proposals",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": "Derive owner_id and actor_identity from authenticated execution context; caller filters are selectors only. Apply owner scope before joins, counts, ranking, projection and pagination. Deny missing owner scope and conceal cross-owner existence.",
+      "data_classification": "SENSITIVE; redact target, recipient, parameters and authority references unless exact purpose is authorized.",
+      "redaction_contract": "Deterministic schema-aware allowlist/redaction before serialization; counts, snippets, facets, errors and timing must not leak protected records. Apply query-specific field restrictions and return explicit redaction metadata.",
+      "consistency_contract": "local_committed; one owning-memory-store read transaction. Unsupported consistency modes are refused; no implicit cross-store snapshot.",
+      "ordering_cursor_contract": "single-record lookup; no cursor",
+      "limits_contract": "Effective deadline, maximum rows, serialized bytes and expensive-field budget are mandatory but remain unmeasured against the target runtime; query stays non-dispatchable until measured and pinned. No silent truncation or partial result.",
+      "freshness_cache_contract": "Return object version and source/evidence lineage. Immutable records may be cached by owner/object revision/schema/classification-policy version; mutable state is not cached without an exact revision and invalidation watermark. No authorization decision uses cached data.",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/interactionProposal"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "interaction_proposals"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+    },
+    {
+      "query_type": "interaction.outcome.inspect",
+      "query_version": "1.0",
+      "input_schema": "schemas/domain-payloads.v1.schema.json#/$defs/domainQuery",
+      "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
+      "result_item_schema": "schemas/world-interaction.v1.schema.json#/$defs/interactionOutcome",
+      "owning_component": "Outcome subsystem",
+      "aggregate": "interaction_outcomes",
+      "persistence_stores": [
+        "aurion_memory.db"
+      ],
+      "read_only": true,
+      "authorization_contract": "Derive owner_id and actor_identity from authenticated execution context; caller filters are selectors only. Apply owner scope before joins, counts, ranking, projection and pagination. Deny missing owner scope and conceal cross-owner existence.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact observed effects, third-party identity and causal evidence by purpose.",
+      "redaction_contract": "Deterministic schema-aware allowlist/redaction before serialization; counts, snippets, facets, errors and timing must not leak protected records. Apply query-specific field restrictions and return explicit redaction metadata.",
+      "consistency_contract": "snapshot; one owning-memory-store read transaction. Unsupported consistency modes are refused; no implicit cross-store snapshot.",
+      "ordering_cursor_contract": "snapshot; observed_at DESC, outcome_id ASC; cursor binds owner/actor scope, query/version, normalized filters, sort version, snapshot watermark and expiry",
+      "limits_contract": "Effective deadline, maximum rows, serialized bytes and expensive-field budget are mandatory but remain unmeasured against the target runtime; query stays non-dispatchable until measured and pinned. No silent truncation or partial result.",
+      "freshness_cache_contract": "Return object version and source/evidence lineage. Immutable records may be cached by owner/object revision/schema/classification-policy version; mutable state is not cached without an exact revision and invalidation watermark. No authorization decision uses cached data.",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
+        "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
+        "schemas/fixtures/domain-payloads.fixture.json#/queryResponse",
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/interactionOutcome"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
+      ],
+      "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
+      "table_bindings": [
+        {
+          "store": "aurion_memory.db",
+          "tables": [
+            "interaction_outcomes"
+          ]
+        }
+      ],
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
     }
   ],
   "dispatch_invariant": "No entry is eligible for production dispatch until every applicable binding is completed, validated, covered by fixtures, and registered by the owning runtime. Null means unresolved, never an implicit default. Table bindings reference proposed DDL names only; they do not imply the DDL has been executed or that application-level invariants are implemented.",
   "counts": {
-    "mapped_command_types": 43,
+    "mapped_command_types": 51,
     "deferred_command_types": 2,
-    "query_types": 21,
-    "command_envelope_bindings": 45,
-    "query_envelope_bindings": 21,
-    "proposed_ddl_mapped_commands": 43,
-    "proposed_ddl_mapped_queries": 21
+    "query_types": 29,
+    "command_envelope_bindings": 53,
+    "query_envelope_bindings": 29,
+    "proposed_ddl_mapped_commands": 51,
+    "proposed_ddl_mapped_queries": 29
   }
 }
