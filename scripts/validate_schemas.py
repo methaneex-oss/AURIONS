@@ -153,6 +153,9 @@ def main() -> int:
     if not query_matrix_path.is_file():
         fail("missing per-query semantic contract matrix")
     query_matrix = query_matrix_path.read_text(encoding="utf-8")
+    query_acceptance_ids = set()
+    query_types = {item["query_type"] for item in queries}
+    matrix_query_types = set()
     for item in queries:
         query_type = item["query_type"]
         if not item.get("unresolved_bindings"):
@@ -169,19 +172,29 @@ def main() -> int:
             "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests",
         }:
             fail(f"{query_type}: unresolved ledger does not match the verified query contract boundary")
+        for field in (
+            "acceptance_positive_assertion",
+            "acceptance_negative_assertion",
+            "read_only_invariant",
+        ):
+            if not isinstance(item.get(field), str) or not item[field].strip():
+                fail(f"{query_type}: missing populated {field}")
+        case_id = item.get("acceptance_case_id")
+        if not isinstance(case_id, str) or not case_id.startswith("QCC-") or case_id in query_acceptance_ids:
+            fail(f"{query_type}: missing or duplicate query acceptance case ID")
+        query_acceptance_ids.add(case_id)
         matrix_row = f"| `{query_type}` |"
         if matrix_row not in query_matrix:
             fail(f"{query_type}: missing per-query matrix row")
+        case_row = f"| `{case_id}` | `{query_type}` |"
+        if case_row not in query_matrix:
+            fail(f"{query_type}: acceptance case {case_id} missing from query matrix")
+        matrix_query_types.add(query_type)
 
-    matrix_query_rows = [
-        line for line in query_matrix.splitlines()
-        if line.startswith("| `") and line.count("|") >= 5
-    ]
-    if len(matrix_query_rows) != len(queries):
-        fail(
-            f"query contract matrix expected {len(queries)} rows, "
-            f"found {len(matrix_query_rows)}"
-        )
+    if matrix_query_types != query_types:
+        fail("query contract matrix rows do not exactly match registry inventory")
+    if len(query_acceptance_ids) != len(queries):
+        fail("every query must have exactly one unique acceptance case")
 
     event_registry = load(SCHEMAS / "event-registry.v1.json")
     events = event_registry["events"]
