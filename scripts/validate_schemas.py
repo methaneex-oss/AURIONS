@@ -75,7 +75,7 @@ def main() -> int:
     for name, payload in domain_fixture.items():
         if name not in domain_schema["$defs"]:
             fail(f"domain fixture {name}: no same-named schema definition")
-        validate(payload, {"$ref": f"domain-payloads.v1.schema.json#/$defs/{name}"},
+        validate(payload, {"$ref": f"{domain_schema['$id']}#/$defs/{name}"},
                  f"positive domain fixture {name}")
 
     # Additional focused positive fixtures.
@@ -86,11 +86,11 @@ def main() -> int:
     ]:
         payload = load(FIXTURES / fixture_name)
         if definition:
-            validate(payload, {"$ref": f"domain-payloads.v1.schema.json#/$defs/{definition}"},
+            validate(payload, {"$ref": f"{domain_schema['$id']}#/$defs/{definition}"},
                      fixture_name)
         else:
             for name, value in payload.items():
-                validate(value, {"$ref": f"domain-payloads.v1.schema.json#/$defs/{name}"},
+                validate(value, {"$ref": f"{domain_schema['$id']}#/$defs/{name}"},
                          f"{fixture_name}:{name}")
 
     # Negative controls are explicit: each must fail its intended schema.
@@ -137,7 +137,7 @@ def main() -> int:
     for filename, (schema_name, definition) in negative_cases.items():
         instance = load(negative_dir / filename)
         schema = schema_docs[schema_name]
-        target = ({"$ref": f"{schema_name}#/$defs/{definition}"}
+        target = ({"$ref": f"{schema['$id']}#/$defs/{definition}"}
                   if definition else schema)
         try:
             validate(instance, target, f"negative control {filename}")
