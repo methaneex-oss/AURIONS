@@ -1,6 +1,6 @@
 # AURIONS — System Architecture and Technology Baseline
 
-**Status:** Proposed architecture baseline for owner review. This document establishes system-wide architectural coverage and boundaries; it is not a complete set of implementation-ready contracts or an implementation authorization. It expands the imported engineering specification, does not lock unmeasured framework choices, and does not claim any capability is implemented.
+**Status:** Proposed architecture baseline for owner review. The foundational [Open-World Interaction and Means Architecture](OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) governs how AURIONS understands objectives, changing situations and possible interactions. This document establishes system-wide implementation boundaries beneath that model; it is not a complete set of implementation-ready contracts or an implementation authorization. It expands the imported engineering specification, does not lock unmeasured framework choices, and does not claim any capability is implemented.
 
 ## 1. Architectural objective
 
@@ -9,33 +9,34 @@ AURIONS is intended to be one persistent, adaptive intelligence system accessibl
 Foundational principle: **Engineer the mechanisms; let behaviour be acquired through experience.**
 
 The architecture must provide:
-- One coherent system identity, with distinct authenticated device identities and scoped capabilities.
-- A durable cognitive/runtime core independent of UI sessions.
-- Multiple interchangeable interfaces and platform adapters.
-- Local-first operation and policy-controlled remote resources.
-- Explicit state ownership, capability boundaries, failure recovery and auditability.
-- Multi-device contracts designed early, with distributed implementation deferred until the single-device core is reliable.
-- A mechanism-based cognitive architecture; learned behaviour must not be replaced by hardcoded stimulus-response conclusions.
+- One coherent system identity and explicit identities/authority for relevant actors, owners, organizations, runtimes and resources; device identities are one possible identity class.
+- A durable cognitive/runtime core independent of UI sessions, devices and any one deployment context.
+- Objective-led understanding of relevant situations, entities, relationships, evidence, uncertainty and possible means.
+- Context-specific observation and interaction mechanisms that may involve digital, physical, social, institutional, human-mediated or mixed contexts.
+- Multiple interfaces and integrations without making any platform, connector or capability registry the definition of intelligence.
+- Local-first operation and policy-controlled remote resources where applicable.
+- Explicit state ownership, authority, consent, effect verification, failure recovery and auditability.
+- Multi-device contracts designed early, with distributed implementation deferred until the single-runtime core is reliable.
+- A mechanism-based cognitive architecture; learned behaviour must not be replaced by hardcoded stimulus-response or task-to-action conclusions.
 
 ## 2. System layers and responsibility ownership
 
-The detailed mechanism interactions, state ownership, invariants, learning distinctions and cognitive-cycle verification scenarios are defined in [Cognitive Mechanism and Interaction Architecture](COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). The high-level layer map below must be reconciled with that mechanism contract; it is not a substitute for it.
+The foundational objective/world/means distinctions are defined in [Open-World Interaction and Means Architecture](OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md). The detailed mechanism interactions, state ownership, invariants, learning distinctions and cognitive-cycle verification scenarios are defined in [Cognitive Mechanism and Interaction Architecture](COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). The layer map below expresses implementation responsibilities, not a device-first or fixed pipeline model.
 
 
-| Layer | Responsibilities | Primary owner/boundary |
+| Responsibility | What it owns | Boundary / realization |
 |---|---|---|
-| User experience | Text, voice, visual status, task views, notifications, settings, accessibility | Platform UI clients; no direct domain DB writes |
-| Application/platform adapter | App lifecycle, OS APIs, permissions, local files, sensors, notifications, background constraints | Android/desktop/device adapters |
-| Device agent | Device identity, capability discovery, local execution, resource reporting, operation receipts | Per-device runtime; least privilege |
-| Core runtime | Orchestration, event dispatch, task scheduler, budgets, cancellation, recovery | C++ runtime |
-| Cognitive mechanisms | Experience, representation, context, beliefs, prediction, attention/appraisal, reasoning, goals, planning, decision, self-model | C++ domain modules with explicit interfaces |
-| Memory and knowledge | Experiences, retrieval, knowledge, evidence, beliefs, revision and retention | Domain-owned persistence interfaces |
-| Learning and evolution | Dataset provenance, experiments, evaluation, candidate generation, controlled release and rollback | C++ authority + isolated Python workers |
-| Model/inference services | Model routing, local/remote inference adapters, embeddings/reranking when justified | Model-independent inference interface |
-| Tool/integration gateway | Capability registry, adapters, operation lifecycle, verification and side-effect handling | C++ action gateway + independent governance |
-| Persistence/artifacts | SQLite stores, migrations, immutable artifacts, backups, encryption and deletion | Domain-owned stores/artifact registry |
-| Connectivity/synchronization | Pairing, authenticated transport, replication, conflicts, offline queues and revocation | Sync subsystem/service when justified |
-| Cross-cutting governance | Identity, authentication, authorization, privacy, audit, secrets, observability, updates and recovery | Independent enforcement interfaces |
+| Objective and intent understanding | Requested outcome, source/authority, scope, constraints, ambiguity and success evidence | Cognitive core; no task-to-action lookup table |
+| Situation and world understanding | Relevant entities, actors, relationships, contexts, state claims, observations, time and uncertainty | Cognitive/world-model mechanisms; open-ended representation |
+| Knowledge, memory and prediction | Experiences, evidence, beliefs, causal/predictive models, retrieval and revision lineage | Domain-owned persistence and cognitive mechanisms |
+| Means and affordance reasoning | Context-dependent hypotheses about actors/resources/interactions, prerequisites, effects and confidence | Cognitive reasoning; may consume integrations but is not bounded by a registry |
+| Deliberation and control | Attention, reasoning, goals, plans, decisions, interruption, budgets and recovery | C++ core mechanisms and runtime coordination |
+| Authority and governance | Identity, consent, permissions, policy, privacy, risk, approval, revocation and audit | Independent enforcement boundaries closest to affected resource |
+| Interaction realization | Context-specific observation, communication, protocol execution, effect enforcement and receipts | Trusted integrations/providers; includes but is not limited to device agents |
+| Outcome evaluation and learning | Independent observation, attribution, memory revision, experiments and competence evaluation | C++ authority with isolated workers where justified |
+| User experience | Text, voice, visual status, task views, notifications, settings and accessibility | UI clients; no direct domain DB writes |
+| Persistence and synchronization | Durable state, artifacts, migrations, backup, recovery, conflict and deletion | Domain-owned stores and explicit replication contracts |
+| Model and inference services | Model-independent inference, routing and optional local/remote compute | Replaceable provider boundary; no authority grant |
 
 These are logical ownership boundaries, not a mandate for one process/service per row. Retain a modular monolith at the centre. Split components only when lifecycle, security, resource isolation, platform integration or distribution gives a concrete reason.
 
@@ -73,21 +74,19 @@ The CLI is the first user-facing interface and must support the first-release wo
 ### UI contract
 UI clients communicate through versioned application commands/queries and event subscriptions. Every operation carries a durable operation ID and exposes explicit lifecycle status. The UI must display permissions, external data disclosures, progress, blocked states and recovery needs. No UI can bypass the action gateway or write cognitive state directly.
 
-## 5. Device agents and capability model
+## 5. Context-specific interaction realizations and discovered means
 
-Each device agent maintains an evidence-backed, versioned representation of capabilities discoverable in its actual environment. Capability descriptions are dynamic data, not a developer-authored closed operation catalogue. A descriptor records provenance, interface/schema, preconditions, effects, required platform grants, AURIONS policy requirements, risk, reversibility, resource constraints, availability, cancellation, idempotency and verification evidence.
+AURIONS does not assume that all possible means are device capabilities or that every interaction is mediated by a device agent. Possible means may involve actors, resources, institutions, services, interfaces, physical objects, human-mediated processes or combinations not known at design time. Their representation and evaluation are governed by the [open-world interaction architecture](OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md).
 
-Discovery, capability knowledge, authorization and execution are separate mechanisms. Discovering an interface does not grant permission or authorize use. Unknown interfaces remain unknown; stale descriptors are revalidated; revoked grants invalidate dependent plans. The architecture must support new discoverable providers without adding hardcoded task-to-action branches to the cognitive core.
+A provider, connector, device agent or capability registry may expose evidence about one class of possible interaction. Such records are contextual, versioned and evidence-backed; they are not the complete action space or the definition of what AURIONS can reason about. Descriptors record source/provenance, interface semantics, preconditions, expected effects, authority requirements, risk, reversibility, resource constraints, availability, cancellation, idempotency and verification evidence where applicable.
 
-The device agent checks local platform permissions and policy at execution time. Model reasoning cannot grant permissions.
+Discovery, belief about a possible means, technical access, permission, consent, authorization and execution are distinct. Discovering an interface does not grant permission or authorize use. Unknown interfaces remain unknown; stale evidence is revalidated; revoked authority invalidates dependent proposals. AURIONS may instead ask, wait, delegate, observe, use another evidenced means, or conclude that no currently supportable route exists. The cognitive core must not contain hardcoded task-to-action branches.
 
-### Android environment understanding and capability discovery
+### Android as one concrete context
 
-The Android integration must not be designed as a fixed list of phone operations derived from illustrative owner examples. AURIONS needs mechanisms to perceive and represent the supported device environment; discover available system capabilities, application interfaces, resources and constraints; understand permission and execution requirements; and maintain provenance for what it has discovered.
+The Android integration is one platform-specific realization. It must observe and represent only what is actually discoverable in its supported Android/Termux context; maintain provenance and limitations; and enforce Android OS permissions separately from AURIONS governance. It cannot assume root, unrestricted shell/filesystem access, arbitrary background execution or universal application control. Its capability descriptors do not generalize to desktop, iOS, cloud, physical or human-mediated contexts.
 
-The architecture must support capability descriptions and discovery results as data that can be evaluated, related, revised and learned from experience. Reasoning and planning should select among discovered capabilities to pursue an objective rather than relying on hardcoded task-to-action mappings. The platform adapter exposes constrained interfaces; the independent governance boundary decides whether a proposed operation is authorized, and Android's own permission model remains authoritative.
-
-Examples such as launching an application, adjusting volume or manipulating files are scenarios for validating the general mechanisms. They are not an exhaustive capability catalogue, a fixed first-release scope or a preselected first action. The first end-to-end Android action scenario remains an owner decision. Capability discovery must not imply unrestricted root, shell, filesystem or privileged OS access.
+Examples such as launching an application, adjusting volume or manipulating files are illustrative test scenarios only. They are not an exhaustive capability catalogue, a fixed first-release scope or a preselected first action. The first end-to-end Android action scenario remains an owner decision.
 
 ## 6. Multi-device identity, communication and synchronization
 
@@ -341,4 +340,4 @@ The companion [Implementation-Ready Planning Contracts](../planning/IMPLEMENTATI
 
 The supplement is a proposed engineering baseline, not proof of implementation or validation. Its Section 15 separates specified design from empirical evidence gates and owner-reserved decisions. The architecture remains unapproved for implementation until those gates are satisfied or explicitly staged/accepted by the owner, the independent review is complete, and the owner authorizes transition.
 
-- Added a dedicated Android environment/capability architecture and reconciled the implementation sequence to the canonical roadmap; this does not close planning or validation gates.
+- Added a dedicated Android environment/capability architecture, subsequently subordinated it as one context-specific realization, and introduced the foundational open-world interaction architecture; dependent contracts and validation remain in progress.
