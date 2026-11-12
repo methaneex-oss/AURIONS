@@ -85,11 +85,48 @@ def main() -> int:
             "design_only_not_dispatchable", "deferred_by_scope"
         }:
             fail(f"{item['command_type']}: unsafe dispatch status")
+    query_contract_fields = (
+        "authorization_contract",
+        "data_classification",
+        "redaction_contract",
+        "consistency_contract",
+        "ordering_cursor_contract",
+        "limits_contract",
+        "freshness_cache_contract",
+    )
+    query_matrix_path = ROOT / "docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md"
+    if not query_matrix_path.is_file():
+        fail("missing per-query semantic contract matrix")
+    query_matrix = query_matrix_path.read_text(encoding="utf-8")
     for item in queries:
+        query_type = item["query_type"]
         if not item.get("unresolved_bindings"):
-            fail(f"{item['query_type']}: missing explicit unresolved-binding ledger")
+            fail(f"{query_type}: missing explicit unresolved-binding ledger")
         if item.get("dispatch_status") != "design_only_not_dispatchable":
-            fail(f"{item['query_type']}: unsafe dispatch status")
+            fail(f"{query_type}: unsafe dispatch status")
+        if item.get("read_only") is not True:
+            fail(f"{query_type}: query must remain read-only")
+        for field in query_contract_fields:
+            if not isinstance(item.get(field), str) or not item[field].strip():
+                fail(f"{query_type}: missing populated {field}")
+        if set(item["unresolved_bindings"]) != {
+            "measured_endpoint_resource_budgets",
+            "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests",
+        }:
+            fail(f"{query_type}: unresolved ledger does not match the verified query contract boundary")
+        matrix_row = f"| `{query_type}` |"
+        if matrix_row not in query_matrix:
+            fail(f"{query_type}: missing per-query matrix row")
+
+    matrix_query_rows = [
+        line for line in query_matrix.splitlines()
+        if line.startswith("| `") and line.count("|") >= 5
+    ]
+    if len(matrix_query_rows) != len(queries):
+        fail(
+            f"query contract matrix expected {len(queries)} rows, "
+            f"found {len(matrix_query_rows)}"
+        )
 
     event_registry = load(SCHEMAS / "event-registry.v1.json")
     events = event_registry["events"]
