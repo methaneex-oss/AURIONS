@@ -462,6 +462,16 @@ Explicit engineered constraints are not prohibited: schemas, safety invariants, 
 - **CM-020:** a later experience can trigger revision of an earlier belief/representation without erasing its provenance.
 - **CM-021:** after restart, prior attention allocations are treated as historical; current allocation is reconstructed from current goals, task/checkpoint state, context, permissions and resource availability.
 
+
+- **CM-022:** an objective's requested outcome, source, constraints and success evidence persist independently from derived goals and plans; revising a plan does not rewrite the objective.
+- **CM-023:** a newly encountered entity and relationship remain provisional when evidence is indirect; conflicting or expired evidence revises the situation without erasing history.
+- **CM-024:** the means-reasoning mechanism can consider a human-mediated or non-device route without inventing a platform adapter or capability descriptor.
+- **CM-025:** when no sufficiently evidenced or authorized means exists, AURIONS can ask, observe, wait, delegate or stop without fabricating an executable action.
+- **CM-026:** an affordance/means hypothesis is scoped to its context, preconditions and evidence; changing context or stale evidence lowers validity and triggers reassessment rather than universal reuse.
+- **CM-027:** an interaction proposal remains non-executable until an independent authority boundary approves the exact actor, target, effects, scope and parameters; a proposal cannot authorize itself.
+- **CM-028:** an interaction outcome distinguishes provider receipt, independent observation, unresolved effects and causal-attribution hypotheses; uncertain outcomes are not promoted to verified success.
+- **CM-029:** a task spanning distinct contexts preserves separate identities, state ownership, provenance and authority; shared contracts do not imply shared access or atomic state.
+
 These tests require fixtures, exact steps, durable-state assertions, negative controls and reproducible evidence before they can be marked VALIDATED.
 
 ## 10. Contract ownership and implementation mapping
