@@ -66,28 +66,29 @@ This is a valid ordering, not a required serial schedule. Independent packages m
 
 - Work packages describe dependency constraints, not a rigid serial waterfall. Independent tasks may proceed concurrently once their contracts and prerequisites are stable.
 - Governance is established before any action gateway or external disclosure path can be considered complete.
-- Capability discovery and environment representation precede reliable capability selection and execution.
+- Objective and situation understanding, evidence provenance and context-sensitive means reasoning precede any justified interaction. Platform/provider discovery is only one possible evidence source.
 - Experience, representation and provenance precede claims about memory or learning.
 - Prediction and observed outcome must be independently represented; the system cannot rewrite a prediction after seeing the result.
 - Learning evaluation depends on a stable baseline, data provenance and repeatable task fixtures.
-- Android integration is a first-release platform requirement because offline-capable mobile is a concurrent first-release target. The capability architecture remains broader than the first-release set of validated scenarios.
+- Android integration is a first-release platform realization because offline-capable mobile is a concurrent first-release target. It must implement the relevant general observation/interaction boundaries without defining the system's world or means model.
 - Cloud and offline mobile share contracts and the authoritative cognitive core. Cloud must not become a hidden dependency for offline mobile or a remote bypass of local authorization.
 - General multi-device synchronization, voice/continuous sensing and broad external integrations remain later expansions unless the owner changes scope. If the owner accepts the builder's Option B recommendation, only the explicitly approved first-release continuity subset moves into WP-15; broad device handoff remains WP-16.
 - No WP can use a fixed task-to-action catalogue as a substitute for discovery, reasoning or learning.
 
 ## 4. First-release scope boundary
 
-The first release demonstrates the real end-to-end cognitive and operational loop with a deliberately bounded, evidence-backed subset of available capabilities. The subset is selected through architecture, platform feasibility, permission and owner approval—not hardcoded as the complete future capability scope.
+The first release demonstrates the real end-to-end cognitive and interaction loop with deliberately bounded, evidence-backed objectives and means. Any consequential interaction is selected from the situation and evidence, and bounded by actual feasibility, authority, consent and owner approval—not hardcoded as the complete future action space.
 
 The first-release acceptance scenario must verify general mechanisms:
-- Environment and capability discovery.
-- Capability representation with provenance and constraints.
-- Objective decomposition and planning using discovered interfaces.
-- Independent local authorization and platform permission checks.
+- Objective interpretation and explicit success evidence, distinct from derived goals and plans.
+- Relevant situation understanding: entities, actors, relationships, observations, unknowns and contradictions.
+- Context-dependent means/affordance hypotheses with provenance, preconditions, expected effects and uncertainty; these may be device-based, non-device or human-mediated.
+- Deliberation over supported options, including ask/observe/wait/delegate/stop when no justified route exists.
+- Independent authority/consent checks at the boundary of the affected resource; apply platform permission checks only where that context requires them.
 - Execution, verification and uncertain-outcome recovery.
 - Outcome evaluation and persistent use of evidence in a later related task.
 - Offline operation without cloud dependency.
-- Shared contracts and consistent cognitive semantics across CLI, cloud and mobile contexts.
+- Shared contracts and consistent cognitive semantics across CLI, cloud and mobile contexts without assuming shared mutable state or universal reachability.
 
 No specific Android operation is selected by this roadmap. The separate first permitted local action remains an owner-reserved acceptance decision.
 
