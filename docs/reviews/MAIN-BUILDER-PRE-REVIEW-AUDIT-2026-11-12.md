@@ -40,6 +40,13 @@ The following checks were performed against repository content fetched from the 
 
 The command registry inspection found unresolved per-command revision/transition, scope/risk, idempotency/replay, cancellation/deadline, side-effect/reconciliation, error mapping, emitted-event/outbox and conflict/replay/recovery assertions. The query registry inspection found unresolved per-query owner/device scope, classification/redaction, consistency, ordering/cursors, timeout/byte/result bounds, freshness/cache and redaction/consistency fixtures.
 
+Additional reference-integrity checks on those parsed artifacts found:
+- No JSON parse failures in the fetched domain schema, domain fixture, command/query registry or error registry.
+- Every command request/response/envelope schema reference resolves to a declared domain-schema definition; every command fixture pointer resolves to one of the 78 fixture entries.
+- Every query input/response/result/envelope schema reference resolves; every query fixture pointer resolves.
+- All 35 error entries have a handler-contract reference and a fixture pointer whose index is within the 35-case fixture array.
+- These checks validate pointer existence and basic structural consistency only. They do not prove that a binding is semantically correct, that a handler exists, or that any recovery branch executes.
+
 These counts were derived by parsing the fetched JSON documents. They are not a full JSON Schema Draft 2020-12 conformance result.
 
 ## 4. Builder findings — open and blocking
