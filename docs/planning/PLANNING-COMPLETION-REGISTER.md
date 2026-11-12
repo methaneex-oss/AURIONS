@@ -357,3 +357,10 @@ The event payload/fixture reference validator initially failed in runs [43309518
 Corrected code revision `2cfad2ce1a7a2e64be71697859541a0182b8424d` passed exact-head GitHub Actions run [43309812492](https://github.com/methaneex-oss/AURIONS/actions/runs/43309812492). All workflow steps passed: schema/fixture validation, governance integrity, host SQLite DDL/migration smoke tests and Android probe shell syntax.
 
 This closes the event registry's machine-enforced schema/fixture reference-integrity subtask only. BR-008 remains OPEN for semantic and runtime verification; all event entries remain design-only/non-dispatchable. The failed runs are retained in the evidence trail. Overall planning remains NOT READY.
+
+
+## Exact final builder revision verification — 2026-11-12
+
+Exact PR #2 head `031fc7a0e820c553a628f27f576a28c3b58d689b` passed GitHub Actions run [43309943595](https://github.com/methaneex-oss/AURIONS/actions/runs/43309943595). All steps passed: schema/positive-negative fixture validation (including event payload/fixture reference validation), governance integrity, host SQLite base/migration smoke tests and Android probe shell syntax. PR #2 remains open, draft and unmerged.
+
+This is the bounded verification state of that exact revision only. The planning baseline remains NOT READY; open command/query, recovery, scenario, semantic reconciliation, security implementation and package/scaffold findings remain distinct from passing structural CI. No independent-review/tester handoff or implementation authorization is implied.
