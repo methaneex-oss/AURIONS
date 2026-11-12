@@ -287,3 +287,13 @@ The governance validator now checks the required gate language in both documents
 ## Current builder run — next technical closure target
 
 The current command/query registry was re-fetched and parsed after the governance change. It contains 45 command records and 21 query records. The four task-control commands (task.start, task.pause, task.resume, task.cancel) have had their generic unresolved bindings narrowed by prior task-control work, but retain per-entry conflict/replay/recovery assertions; the wider first-release command/query subset remains unresolved. The next builder work must follow BR-001/BR-002 and the ordered closure plan: establish a bounded first-release command/query subset from the approved product workflows, then define each handler's owning aggregate transitions, revision/concurrency checks, exact authorization/data scope, idempotency, deadline/cancellation, side-effect/reconciliation, error/event/outbox bindings and executable positive/negative fixtures. Do not mark any command/query dispatchable merely because generic text is added.
+
+## Task-control command contract increment — per-command acceptance assertions (2026-11-12)
+
+**Status: SPECIFIED; execution evidence remains OPEN.**
+
+The task-control contract now records distinct positive and negative assertions for task.start, task.pause, task.resume and task.cancel, including valid source states, prerequisites/checkpoint/dependency validation, safe-point handling, pending semantics, operation reconciliation and terminal immutability. It also explicitly requires same-digest replay, key-collision rejection and before/after-commit crash injection independently for each command path.
+
+The four command registry entries now distinguish the previously missing per-entry assertion specification from the remaining gap: per-entry conflict/replay/recovery **execution evidence**. They remain design_only_not_dispatchable. The generic TC-001…TC-012 cases remain specified, not executed runtime tests. The migration chain, receipt-retention horizon, lifecycle implementation, executable command-specific tests and full builder closure remain open. No command was made dispatchable.
+
+This is a bounded BR-001 builder increment only. It does not close BR-001 overall or change the NOT READY planning disposition.
