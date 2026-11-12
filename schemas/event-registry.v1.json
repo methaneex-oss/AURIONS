@@ -1498,6 +1498,20 @@
         "self_model.update.propose"
       ],
       "command_producer_binding_status": "bound"
+    },
+    "objective.revised.v1": {
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/objective",
+      "fixture_refs": [
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/objective"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
     }
   }
 }
