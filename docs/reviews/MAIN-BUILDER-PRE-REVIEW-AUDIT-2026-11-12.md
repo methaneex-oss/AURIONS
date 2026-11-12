@@ -233,6 +233,8 @@ Added an explicit interpretation addendum to `INITIAL-ENGINEERING-SPECIFICATION.
 
 ## 11. Builder follow-up after the initial audit
 
+> **Historical record notice:** Dated entries below preserve evidence and status at their cited revisions. Older counts, dispositions and open-work lists are historical snapshots and may be superseded by later increments. The current findings and closure order are Sections 4–8 above; use the latest dated evidence and exact-head CI result for current status.
+
 At revision `d7c72b3214fc7ec20fdfd798ec214de348464b5d`, the owner-mandated Builder Operating Protocol was added and linked from the project entry points and completion register.
 
 Subsequent task-control work adds proposed events migration v3, owner-scoped task-control authorization and idempotency semantics for `task.start`, `task.pause`, `task.resume` and `task.cancel`, plus twelve specified acceptance cases. The task-control entries now remove the two generic unresolved bindings for owner/device scope and idempotency; they retain per-entry conflict/replay/recovery assertions and remain non-dispatchable.
