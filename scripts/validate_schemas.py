@@ -116,6 +116,59 @@ def main() -> int:
         if case_by_code[item["error_code"]]["handler_contract_ref"] != item["handler_mapping_ref"]:
             fail(f"{item['error_code']}: handler mapping and fixture disagree")
 
+    # Reconcile the machine registry against the normative per-code mapping
+    # table. This verifies mapping integrity, not that a runtime handler exists.
+    import re
+
+    matrix_path = ROOT / "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md"
+    matrix_rows = {}
+    for line_number, line in enumerate(
+        matrix_path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.startswith("| `") or "[EH-" not in line:
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 5:
+            fail(f"error-handler matrix line {line_number}: expected five cells")
+        code = cells[0].strip("`")
+        handler_match = re.fullmatch(r"\[EH-(\d{3})\]\(#eh-\d{3}\)", cells[1])
+        fixture_match = re.search(r"EHC-(\d{3})", cells[4])
+        if not handler_match or not fixture_match:
+            fail(f"error-handler matrix line {line_number}: malformed handler/fixture reference")
+        if code in matrix_rows:
+            fail(f"{code}: duplicate code-level handler mapping")
+        matrix_rows[code] = {
+            "handler_ref": (
+                "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-"
+                + handler_match.group(1)
+            ),
+            "side_effect": cells[2].strip("`"),
+            "retry": cells[3].strip("`"),
+            "fixture_ref": (
+                "schemas/fixtures/error-handler-cases.fixture.json#/cases/"
+                + str(int(fixture_match.group(1)) - 1)
+            ),
+        }
+    if len(matrix_rows) != 35:
+        fail(f"error-handler matrix expected 35 code mappings, found {len(matrix_rows)}")
+    registry_by_code = {item["error_code"]: item for item in error_registry["entries"]}
+    if set(matrix_rows) != set(registry_by_code):
+        fail(
+            "error-handler mapping inventory mismatch: "
+            f"matrix_only={sorted(set(matrix_rows) - set(registry_by_code))}; "
+            f"registry_only={sorted(set(registry_by_code) - set(matrix_rows))}"
+        )
+    for code, row in matrix_rows.items():
+        item = registry_by_code[code]
+        if item["handler_mapping_ref"] != row["handler_ref"]:
+            fail(f"{code}: machine registry handler differs from code-level matrix")
+        if item["default_side_effect_state"] != row["side_effect"]:
+            fail(f"{code}: default side-effect state differs from code-level matrix")
+        if item["default_retry_posture"] != row["retry"]:
+            fail(f"{code}: default retry posture differs from code-level matrix")
+        if row["fixture_ref"] not in item["fixture_refs"]:
+            fail(f"{code}: machine registry omits code-level matrix fixture")
+
     # Every positive domain fixture is validated against the correspondingly
     # named reusable definition, not merely parsed as JSON.
     domain_schema = schema_docs["domain-payloads.v1.schema.json"]
