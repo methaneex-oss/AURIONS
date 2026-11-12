@@ -281,11 +281,6 @@ def main() -> int:
         if not event["command_producers"] and event["producer_origin"] == "command":
             fail(f"{event_type}: unbound event cannot claim command producer origin")
         expected_unresolved = ["runtime_handler", "event_specific_acceptance_execution"]
-        if (
-            not event["command_producers"]
-            and event["producer_origin"] != "action_gateway_internal_transition"
-        ):
-            expected_unresolved.append("exact_internal_producer_trigger")
         if set(event.get("unresolved_bindings", [])) != set(expected_unresolved):
             fail(f"{event_type}: unresolved event bindings do not match implementation evidence boundary")
 
@@ -311,6 +306,30 @@ def main() -> int:
             or "exact_internal_producer_trigger" in event.get("unresolved_bindings", [])
         ):
             fail(f"{event_type}: Action Gateway internal producer trigger is still generic/unresolved")
+
+    non_command_events = {
+        event_type for event_type, event in events.items()
+        if not event.get("command_producers")
+        and event.get("producer_origin") != "action_gateway_internal_transition"
+    }
+    ingress_matrix_path = ROOT / "docs/planning/EVENT-INGRESS-AND-INTERNAL-PRODUCER-TRIGGER-MATRIX.md"
+    if not ingress_matrix_path.is_file():
+        fail("missing non-command event ingress/internal producer trigger matrix")
+    ingress_matrix = ingress_matrix_path.read_text(encoding="utf-8")
+    ingress_matrix_events = set(
+        re.findall(r"`([a-z][a-z0-9_.]+\.v1)`", ingress_matrix)
+    )
+    if len(non_command_events) != 23 or ingress_matrix_events != non_command_events:
+        fail("non-command event trigger matrix must exactly cover the 23 non-command/non-Action-Gateway events")
+    for event_type in non_command_events:
+        event = events[event_type]
+        trigger = event.get("producer_trigger_contract", "")
+        if (
+            "No public command producer is bound" in trigger
+            or "exact runtime trigger remains unimplemented" in trigger
+            or "exact_internal_producer_trigger" in event.get("unresolved_bindings", [])
+        ):
+            fail(f"{event_type}: non-command producer trigger is still generic/unresolved")
 
     scenario_contracts = load(SCHEMAS / "fixtures/scenario-contracts.fixture.json")
     scenarios = scenario_contracts["scenarios"]
