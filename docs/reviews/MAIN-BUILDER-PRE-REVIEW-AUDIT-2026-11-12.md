@@ -107,13 +107,14 @@ The current PR file inventory contains 78 named positive domain-payload examples
 
 **Current disposition:** OPEN. Crosswalk presence is not behavioural verification.
 
-### BR-005 — Proposed persistence contracts have not been executed
+### BR-005 — Proposed persistence contracts: host DDL execution added; target/fault validation open
 
 **Severity:** Critical  
-**Evidence:** Six proposed SQLite base/migration files and static table/FK inventories exist; no DDL or migration execution has occurred.  
-**Required builder closure:** Complete canonical-entity-to-DDL and index/constraint reconciliation; pin the actual SQLite version/compile options available in the selected Termux/Android target; execute each store's migration sequence; run integrity, foreign-key, rollback/restart, crash, outbox/inbox, backup/restore, deletion/tombstone and cross-store fault tests. Do not claim distributed atomicity across separate SQLite files.
+**Verified builder closure:** Added `scripts/validate_sqlite_ddl.py` and integrated it into the schema/governance GitHub Actions workflow. On exact PR head `cfc1c7f91204d53fe8de5ab022e2609d9eda937d`, workflow run [43288000757](https://github.com/methaneex-oss/AURIONS/actions/runs/43288000757) passed the SQLite DDL/migration smoke step. The script executed all three base schemas and five additive migrations in their documented per-store order using host SQLite; after each file it checked foreign-key enforcement, `PRAGMA foreign_key_check` and `PRAGMA integrity_check`. It also exercised an objective-record insert, event-store-assigned sequence allocation, rejection of ownerless new task rows, and rejection of task-owner reassignment. The workflow step completed successfully.
 
-**Current disposition:** OPEN and partly dependent on target environment evidence. SQL execution must not be replaced with prose or static parsing.
+**Remaining:** This is host-side syntax/migration-chain smoke evidence, not validation against the actual Termux/Android SQLite build. Complete canonical entity/index/constraint and referential-integrity reconciliation; pin and test the target SQLite version/compile options; add interrupted-migration, rollback/restart, crash, outbox/inbox, backup/restore, deletion/tombstone, disk-full/locked/corrupt-store and cross-store recovery tests. Validate runtime transaction boundaries and task receipt retention. Do not claim distributed atomicity across separate SQLite files.
+
+**Current disposition:** PARTIALLY CLOSED for host DDL execution and the listed smoke invariants; BR-005 remains OPEN pending target and fault/recovery evidence. SQL execution is now an automated gate, not a documentation-only claim.
 
 ### BR-006 — Android platform baseline and capability feasibility remain unvalidated
 
