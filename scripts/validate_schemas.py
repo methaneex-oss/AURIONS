@@ -401,8 +401,8 @@ def main() -> int:
     # Validate integrated scenario contracts as design fixtures, not runtime tests.
     scenario_document = load(FIXTURES / "scenario-contracts.fixture.json")
     scenarios = scenario_document["scenarios"]
-    if len(scenarios) != 3:
-        fail(f"scenario contract fixture expected 3 integrated scenarios, found {len(scenarios)}")
+    if len(scenarios) != 39:
+        fail(f"scenario contract fixture expected 39 scenarios, found {len(scenarios)}")
     known_commands = {item["command_type"] for item in commands}
     known_queries = {item["query_type"] for item in queries}
     known_scenario_ids = {
@@ -442,6 +442,18 @@ def main() -> int:
                 )
         if scenario["execution_status"] != "specified_not_executed" or scenario["execution_authority"] != "none":
             fail(f"{scenario_id}: scenario fixture cannot imply execution or authority")
+
+    required_scenario_ids = {
+        *(f"INT-{number:03d}" for number in range(1, 4)),
+        *(f"CM-{number:03d}" for number in range(1, 22)),
+        *(f"AD-{number:03d}" for number in range(1, 16)),
+    }
+    if scenario_ids != required_scenario_ids:
+        fail(
+            "scenario fixture inventory mismatch: "
+            f"missing={sorted(required_scenario_ids - scenario_ids)}; "
+            f"unexpected={sorted(scenario_ids - required_scenario_ids)}"
+        )
 
     error_registry = load(SCHEMAS / "error-registry.v1.json")
     error_cases = load(FIXTURES / "error-handler-cases.fixture.json")["cases"]
