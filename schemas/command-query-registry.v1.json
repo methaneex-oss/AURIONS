@@ -2334,13 +2334,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact raw sensor payload, precise location and unrelated actors.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; observed_at DESC, observation_id ASC; snapshot watermark cursor. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; observed_at DESC, observation_id ASC; snapshot watermark cursor. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "No current-state cache; immutable history only by revision. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2349,13 +2349,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2381,13 +2376,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact provider internals and device identifiers.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; descriptor revision DESC, descriptor_id ASC; cursor bound to snapshot. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; descriptor revision DESC, descriptor_id ASC; cursor bound to snapshot. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Exact descriptor version only; expiry and invalidation watermark. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2396,13 +2391,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2427,13 +2417,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact provider diagnostics and secret configuration.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "local_committed; one record, no cursor. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "local_committed; one record, no cursor. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Immutable descriptor revision only; return verification freshness. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2442,13 +2432,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2473,13 +2458,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; preserve provenance, redact protected evidence payloads.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; revision DESC, knowledge_revision_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; revision DESC, knowledge_revision_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Immutable revision only; invalidate on successor or tombstone. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2488,13 +2473,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2521,13 +2501,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE; source evidence classified independently and redacted by purpose.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "local_committed for exact ID; collection revision DESC, representation_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "local_committed for exact ID; collection revision DESC, representation_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Immutable revision only; never substitute another revision. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2536,13 +2516,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2567,13 +2542,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact private memory/environment fragments and restricted policy data.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; context revision DESC, context_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; context revision DESC, context_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Cache immutable revision only while every dependency revision matches. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2582,13 +2557,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2613,13 +2583,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; snippets, scores and links are private; raw embeddings excluded by default.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; relevance DESC, created_at DESC, memory_id ASC; cursor binds query digest and snapshot. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; relevance DESC, created_at DESC, memory_id ASC; cursor binds query digest and snapshot. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Return index/source watermark; eventual only if requested and labeled; invalidate on memory/retention revision. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/memoryRetrievalQuery",
@@ -2628,13 +2598,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2660,13 +2625,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE; source classification inherited; no inference presented as observed fact.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; relevance DESC, revision DESC, knowledge_item_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; relevance DESC, revision DESC, knowledge_item_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Immutable item revision only; evidence changes/tombstones invalidate. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2675,13 +2640,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2710,13 +2670,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE; retain contradiction lineage, redact protected evidence content.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; belief_id ASC, revision DESC; no cursor for single ID. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; belief_id ASC, revision DESC; no cursor for single ID. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Revision-bound only; new evidence/revision invalidates. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2725,13 +2685,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2759,13 +2714,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE; target/context may be SENSITIVE.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; prediction revision DESC, prediction_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; prediction revision DESC, prediction_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Immutable prediction revision; evaluation watermark must be current. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2774,13 +2729,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2806,13 +2756,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; internal valuation/context not exposed to unrelated principals.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; appraisal time DESC, appraisal_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; appraisal time DESC, appraisal_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Revision-bound; dependent context/evidence changes invalidate. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2821,13 +2771,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2852,13 +2797,13 @@
         "aurion_events.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE; task/context labels may be SENSITIVE.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "local_committed for current allocation; event history store sequence ASC, event_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "local_committed for current allocation; event history store sequence ASC, event_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "No current-state cache; immutable history may be snapshot-cached. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2867,13 +2812,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2898,13 +2838,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact protected artifact contents and provider diagnostics.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; assessment revision DESC, assessment_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; assessment revision DESC, assessment_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Immutable revision only; check artifact availability/retention. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2913,13 +2853,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2944,13 +2879,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE; criteria/context may be SENSITIVE.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "local_committed for one goal ID; history goal_id ASC, revision DESC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "local_committed for one goal ID; history goal_id ASC, revision DESC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Revision-bound only; mutation invalidates. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -2959,13 +2894,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -2991,13 +2921,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact private operation parameters and protected target details.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; plan revision DESC, plan_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; plan revision DESC, plan_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Immutable plan revision only; executability requires dependency/policy/permission revalidation. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -3006,13 +2936,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -3040,13 +2965,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact secret policy internals and protected alternatives.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot; decision time DESC, decision_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot; decision time DESC, decision_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Immutable decision revision; approval/policy status re-read from governance. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -3055,13 +2980,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -3086,13 +3006,13 @@
         "aurion_events.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE; task payload/checkpoint and worker diagnostics may be SENSITIVE.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "local_committed; one task ID or history by revision DESC; no eventual mode. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "local_committed; one task ID or history by revision DESC; no eventual mode. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "No current-state cache; checkpoint artifacts revision-bound and retention-checked. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -3101,13 +3021,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -3134,13 +3049,13 @@
         "aurion_events.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact credentials, raw provider payload and secret target parameters.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "local_committed; attempts by attempt_number ASC then event sequence ASC; no eventual mode. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "local_committed; attempts by attempt_number ASC then event sequence ASC; no eventual mode. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "No cache for current state/revocation/approval; historical immutable receipts revision-bound. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -3149,13 +3064,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -3184,13 +3094,13 @@
         "aurion_governance.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "SECURITY_RESTRICTED; redact approval nonces, policy internals, keys and unrelated identities.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "local_committed; no eventual mode; collection cursor only for explicitly authorized audit use. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "local_committed; no eventual mode; collection cursor only for explicitly authorized audit use. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Never cache for enforcement; re-read policy, grants and OS permission. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -3199,13 +3109,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -3234,13 +3139,13 @@
         "aurion_governance.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "SECURITY_RESTRICTED; purpose-specific field allowlist; redact secrets, key material and unrelated owners.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "snapshot in governance store; event sequence/time plus audit_record_id tie-breaker. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "snapshot in governance store; event sequence/time plus audit_record_id tie-breaker. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "No cache for investigations/authorization; stable-snapshot pagination only. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -3249,13 +3154,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
@@ -3281,13 +3181,13 @@
         "aurion_memory.db"
       ],
       "read_only": true,
-      "authorization_contract": "Every query requires owner_id, actor_identity and explicit scope; the owning domain applies authorization and data classification before returning results. Per-query owner/device scope and field-level redaction remain unresolved.",
-      "data_classification": null,
-      "redaction_contract": null,
-      "consistency_contract": "queryEnvelope.consistency is limited to snapshot, eventual or local_committed; each owning domain must define what the selected mode guarantees and when it can be refused or downgraded.",
-      "ordering_cursor_contract": null,
-      "limits_contract": "queryEnvelope.max_results and domainQuery.limit are bounded to 1..10000 by schema; per-query timeout, byte and stricter result limits remain unresolved.",
-      "freshness_cache_contract": null,
+      "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
+      "data_classification": "OWNER_PRIVATE + SENSITIVE; redact hardware identifiers, app inventory and raw OS/provider details unless purpose permits.",
+      "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
+      "consistency_contract": "local_committed; descriptor revision DESC, descriptor_id ASC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "ordering_cursor_contract": "local_committed; descriptor revision DESC, descriptor_id ASC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
+      "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
+      "freshness_cache_contract": "Exact descriptor version with probe time, expiry and invalidation on permission/device/provider changes. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/queryEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/domainQuery",
@@ -3296,13 +3196,8 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_query_owner_device_scope_and_field_redaction",
-        "data_classification_and_field_redaction",
-        "per_query_consistency_and_snapshot_semantics",
-        "deterministic_ordering_and_cursor_semantics",
-        "timeout_result_count_and_byte_limits",
-        "cache_and_freshness_semantics",
-        "positive_negative_redaction_and_consistency_fixtures"
+        "measured_endpoint_resource_budgets",
+        "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope",
       "table_bindings": [
