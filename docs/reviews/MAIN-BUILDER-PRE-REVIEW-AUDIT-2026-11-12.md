@@ -177,21 +177,22 @@ A learning claim must retain the full evidence chain: captured experience and pr
 
 ## 7. Required order of closure
 
-1. Close semantic ownership and transitions for the first-release command/query/event subset without pretending all 43 commands and 21 queries are immediately needed by the first release. Explicitly mark deferred interfaces and prevent their dispatch.
-2. Complete code-specific error/recovery mappings and executable contract fixtures.
-3. Complete the multi-step scenario/test specifications and trace every first-release requirement to those tests.
-4. Reconcile persistence entities, migrations and transaction/recovery semantics; prepare runnable validation scripts and target protocol.
-5. Complete validator/toolchain decision and full corpus conformance/CI plan.
-6. Complete Android baseline protocol, security/data-flow review and remaining work-package traceability.
-7. Run a complete architecture-wide semantic reconciliation; fix all builder findings.
-8. Only after builder-owned work is closed, perform a separate final builder review of the exact resulting revision. Any unresolved owner or empirical gate must be explicitly isolated and must not be described as complete.
-9. Only then request the main independent reviewer to assess that exact revision. Do not merge PR #2 or authorize implementation by implication.
+1. The command/query specification increment is now substantially bound: 51 mapped commands have CC cases and semantic fields; 29 queries have QCC cases and read-only contracts. Remaining handler tests, measured resource budgets, owner acceptance of first-release subsets and deferred multi-device scope must stay explicit. Event consumers/owner transitions remain unresolved.
+2. The 35 error codes have EHR-001…EHR-035 specification coverage, but owning handlers and executable recovery/no-blind-retry tests remain absent.
+3. All 39 canonical INT/CM/AD scenario specifications are now machine-readable and CI-validated (172 steps, 45 negative controls). Execution requires authorized runtime implementation; no behavioural result may be inferred from fixture validation.
+4. Host SQLite base schemas and migration chain execute in CI with bounded integrity smoke assertions. Target Termux/Android SQLite, migration interruption, crash, restore, deletion, disk-full/locked/corrupt-store and cross-store recovery evidence remain open.
+5. Python-host Draft 2020-12 validation is CI-enforced across ten schema documents, eight registry/fixture pairs, 81 positive domain payloads, 29 negative controls and the scenario corpus. C++ equivalence, C++/Python conformance, target feasibility and supply-chain review remain open.
+6. Android baseline collection protocol and provider-independent security boundary/trust-map specifications exist. Actual target-device measurements, platform/key-provider choices and security enforcement tests remain external or implementation gates.
+7. Work-package traceability covers WP-00…WP-16 and its dependency graph is machine-validated. Semantic package readiness and PR #1 reconciliation remain gated on planning exit and owner acceptance.
+8. Complete the architecture-wide semantic reconciliation, especially event consumer ownership, event-only producers, cross-store sagas, canonical entity/DDL transitions and product acceptance traceability. Resolve builder-owned contradictions and explicitly isolate owner/external gates.
+9. Only after builder-owned planning work is closed, perform a separate final builder review of the exact resulting revision. Any unresolved owner or empirical gate must be explicitly isolated and must not be described as complete.
+10. Only then request the main independent reviewer to assess that exact revision. Do not merge PR #2 or authorize implementation by implication.
 
 ## 8. Builder verdict
 
-**NOT READY.** The current branch contains substantial planning artifacts, but the evidence above proves that several contracts are still deliberately non-dispatchable, scenario crosswalks are not executable tests, proposed DDL is unexecuted, and platform/security/toolchain validation is outstanding. Calling the planning phase complete now would be inaccurate and would force the next builder to guess.
+**NOT READY.** The current branch has materially stronger machine-readable contracts, complete scenario specification coverage, Python-host schema validation, host SQLite migration smoke tests and a CI-enforced work-package graph. However, those are planning/structural and bounded host-test results—not production handlers, executed cognitive scenarios, validated learning, target Android evidence or full event-consumer semantics. Most contracts remain deliberately non-dispatchable; owner decisions and implementation authorization are not granted. Calling the planning phase complete or handing it to independent review now would still be premature.
 
-This audit is a closure ledger, not an independent review and not a claim that the builder work is finished. The next builder action is to resolve the builder-owned findings above and update the canonical completion register with evidence. The main independent reviewer has not been requested by this audit.
+This audit is a closure ledger, not an independent review and not a claim that the builder work is finished. The next builder action is to complete the remaining semantic reconciliation and update the canonical completion register with exact evidence. The main independent reviewer has not been requested by this audit.
 
 
 ## Additional builder finding — open-world architecture correction (2026-11-12)
