@@ -2626,7 +2626,10 @@
         "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
         "runtime.internal.INTERNAL_FAILURE"
       ],
-      "emitted_event_bindings": [],
+      "emitted_event_bindings": [
+        "task.control.requested.v1",
+        "task.run.transitioned.v1"
+      ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/taskControlRequest",
@@ -2683,7 +2686,10 @@
         "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
         "runtime.internal.INTERNAL_FAILURE"
       ],
-      "emitted_event_bindings": [],
+      "emitted_event_bindings": [
+        "task.control.requested.v1",
+        "task.run.transitioned.v1"
+      ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/taskControlRequest",
@@ -2740,7 +2746,10 @@
         "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
         "runtime.internal.INTERNAL_FAILURE"
       ],
-      "emitted_event_bindings": [],
+      "emitted_event_bindings": [
+        "task.control.requested.v1",
+        "task.run.transitioned.v1"
+      ],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/taskControlRequest",
