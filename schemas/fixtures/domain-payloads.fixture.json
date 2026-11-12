@@ -1308,5 +1308,42 @@
     "failure_ref": null,
     "reconciliation_ref": null,
     "occurred_at": "2026-11-11T08:10:00Z"
+  },
+  "approvalRevoked": {
+    "approval_request_id": "ab000000-0000-4000-8000-000000000002",
+    "revocation_id": "ab100000-0000-4000-8000-000000000002",
+    "owner_session_ref": "session:fixture:owner",
+    "reason_ref": "urn:fixture:approval:revocation-reason",
+    "policy_version_ref": "policy:fixture:v1",
+    "revoked_at": "2026-11-11T08:03:00Z",
+    "operation_reconciliation_required": true
+  },
+  "learningCandidateEvaluated": {
+    "evaluation_id": "ad300000-0000-4000-8000-000000000001",
+    "candidate_artifact_ref": "artifact:candidate:fixture",
+    "baseline_artifact_ref": "artifact:baseline:fixture",
+    "dataset_manifest_ref": "artifact:heldout-dataset:fixture",
+    "evaluation_protocol_ref": "artifact:evaluation-protocol:fixture",
+    "regression_suite_ref": "artifact:regression-suite:fixture",
+    "metrics_ref": "artifact:candidate-metrics:fixture",
+    "regression_results_ref": "artifact:regression-results:fixture",
+    "unseen_controls_ref": "artifact:unseen-controls:fixture",
+    "status": "inconclusive",
+    "evaluated_at": "2026-11-11T08:03:00Z"
+  },
+  "selfModelUpdateProposed": {
+    "self_model_revision_id": "a7000000-0000-4000-8000-000000000002",
+    "revision_number": 2,
+    "claims": {
+      "capability": "candidate claim awaiting validation"
+    },
+    "confidence": {
+      "calibration": "evidence pending"
+    },
+    "evidence_refs": [
+      "artifact:observed:2"
+    ],
+    "created_at": "2026-11-11T08:03:00Z",
+    "status": "proposed"
   }
 }
