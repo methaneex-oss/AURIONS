@@ -223,3 +223,6 @@ Registry entries for those four commands now carry the task-specific authorizati
 ### Migration v3 smoke-test evidence
 
 An in-memory SQLite 3.46.1 smoke test of the v3 statements against prerequisite-compatible task/event tables passed selected invariants: legacy NULL-owner preservation and verified backfill, rejection of new ownerless task rows, rejection of reassignment after owner binding, unique receipt-scope enforcement, empty foreign-key check and `integrity_check=ok`. The complete base DDL/migration chain, target SQLite, crash/rollback, restore, concurrency, canonical digest equivalence and runtime handlers remain untested. Status remains IN PROGRESS.
+
+
+The v3 receipt digest column additionally rejects values that are not exactly 64 lowercase hexadecimal characters. A focused SQLite 3.46.1 constraint test accepted a valid 64-character lowercase hexadecimal value and rejected non-hex, uppercase and wrong-length values. This remains a constraint smoke test, not proof that a C++/Python implementation computes RFC 8785 + SHA-256 identically.
