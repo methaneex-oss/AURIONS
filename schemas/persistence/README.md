@@ -1,6 +1,6 @@
 # AURIONS proposed SQLite DDL
 
-**Status: proposed planning artifacts only. None of these scripts has been executed, applied to a user database, or validated against the target Termux/Android SQLite build.**
+**Status: proposed planning artifacts only. The complete base/migration chain has now been executed in host-side CI smoke tests; these scripts have not been applied to a user database or validated against the target Termux/Android SQLite build.**
 
 These files are the machine-readable DDL source for the three independent SQLite stores. Memory migration v4 proposes owner-scoped, versioned persistence for objective records (distinct from derived goals), owner/scope details for existing evidence records, open-world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The explanatory source specification in `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md` Section 26 links to these files; do not maintain a second inline SQL copy there.
 
@@ -22,6 +22,12 @@ References:
 - [SQLite STRICT tables](https://sqlite.org/stricttables.html)
 - [SQLite 3.38.0 release notes](https://sqlite.org/releaselog/3_38_0.html)
 - [SQLite JSON functions](https://sqlite.org/json1.html)
+
+## Host-side DDL execution evidence (2026-11-12)
+
+The workflow runs `scripts/validate_sqlite_ddl.py` after schema and governance validation. Successful run [43288000757](https://github.com/methaneex-oss/AURIONS/actions/runs/43288000757) on exact PR head `cfc1c7f91204d53fe8de5ab022e2609d9eda937d` executed all eight SQL files in the order above on host SQLite. It checked foreign-key enforcement, foreign-key integrity and database integrity after each file, then exercised selected objective insert, event sequence allocation and task-owner trigger invariants.
+
+This result establishes host-side DDL execution for that exact revision only. It does not establish target Termux/Android SQLite compatibility, crash/rollback/restore safety, concurrency behaviour, complete application-level invariants, cross-store recovery or runtime handler correctness. The automated check must remain enabled on future SQL and validator changes.
 
 ## Required validation before implementation approval
 
