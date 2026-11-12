@@ -43,7 +43,17 @@
           "dispatch_status",
           "unresolved_bindings",
           "command_producers",
-          "command_producer_binding_status"
+          "command_producer_binding_status",
+          "producer_origin",
+          "producer_trigger_contract",
+          "owning_component",
+          "consumer_contracts",
+          "owner_transition_contract",
+          "consumer_transition_summary",
+          "ordering_idempotency_contract",
+          "failure_recovery_contract",
+          "acceptance_scenario_refs",
+          "specification_status"
         ],
         "properties": {
           "event_version": {
@@ -86,6 +96,84 @@
               "bound",
               "unresolved"
             ]
+          },
+          "producer_origin": {
+            "enum": [
+              "command",
+              "owner_governance_interface",
+              "platform_provider_ingress",
+              "artifact_registry",
+              "memory_consolidation",
+              "egress_governance",
+              "retention_worker",
+              "action_gateway_internal_transition",
+              "governance_evaluator",
+              "observation_ingress",
+              "learning_supervisor",
+              "self_model_manager",
+              "evolution_manager",
+              "sync_engine",
+              "worker_supervisor",
+              "scheduler_internal_transition",
+              "owning_domain_internal_transition"
+            ]
+          },
+          "producer_trigger_contract": {
+            "type": "string",
+            "minLength": 20
+          },
+          "owning_component": {
+            "type": "string",
+            "minLength": 3
+          },
+          "consumer_contracts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "component",
+                "purpose"
+              ],
+              "properties": {
+                "component": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "purpose": {
+                  "type": "string",
+                  "minLength": 20
+                }
+              }
+            }
+          },
+          "owner_transition_contract": {
+            "type": "string",
+            "minLength": 30
+          },
+          "consumer_transition_summary": {
+            "type": "string",
+            "minLength": 30
+          },
+          "ordering_idempotency_contract": {
+            "type": "string",
+            "minLength": 30
+          },
+          "failure_recovery_contract": {
+            "type": "string",
+            "minLength": 30
+          },
+          "acceptance_scenario_refs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^(INT|CM|AD)-[0-9]{3}$"
+            }
+          },
+          "specification_status": {
+            "const": "specified_not_runtime_validated"
           }
         }
       }
