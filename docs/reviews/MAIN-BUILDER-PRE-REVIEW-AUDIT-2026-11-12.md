@@ -528,3 +528,17 @@ The command-contract increment is present at exact PR #2 head `cb31aedcc5d1d522a
 The machine validator now enforces all 43 mapped command semantic bindings, 43 unique CC acceptance cases, known error/event references, exact command inventory and non-dispatchable status. The two device commands remain deferred.
 
 **BR-001 remains OPEN** despite closure of the first-pass specification/registry-binding subtask. Six semantic command/event or command/query classification mismatches remain explicit. The 43 CC cases are acceptance criteria, not executed handler tests; there are no production command handlers in this planning PR. Owner acceptance of the first-release command subset and implementation authorization remain absent. No command is dispatchable; no independent-review/tester handoff is issued.
+
+
+## BR-001 / BR-008 builder increment — command/event semantic mismatches resolved (2026-11-12)
+
+The builder resolved the six event/classification mismatches recorded in the command matrix:
+- `memory.retrieve` is now explicitly the auditable retrieval command that writes a retrieval record/event; `memory.search` remains the read-only query.
+- `goal.cancel` writes a terminal `cancelled` goal revision and emits `goal.revised.v1`; the goal revision schema now permits the terminal state.
+- Added dedicated payload/event contracts and fixtures for `approval.revoked.v1`, `capability.knowledge.proposed.v1`, `learning.candidate.evaluated.v1` and `self_model.update.proposed.v1`.
+- Bound the six commands to their correct event names in the machine registry and removed the corresponding unresolved mismatch entries.
+- Expanded the event registry from 84 to 88 entries and updated the event-count guard. The new entries remain design-only/non-dispatchable.
+
+Exact revision `bde408f8d3c0709a0e848376caa8ccb97dec6bb7` passed GitHub Actions run [43318729147](https://github.com/methaneex-oss/AURIONS/actions/runs/43318729147). Schema/fixture validation passed, including all event payload/fixture references and new payloads; command/query/event/error registry integrity passed; governance, host SQLite smoke tests and Android probe syntax passed.
+
+This closes the six **specification-level command/event binding gaps**. It does not establish event consumer semantics or handler execution. BR-001 and BR-008 remain OPEN pending executable handler/consumer tests, full architecture semantic reconciliation, owner acceptance of first-release scope, target-platform evidence and implementation authorization. No command/event is dispatchable.
