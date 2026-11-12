@@ -4,6 +4,8 @@
 **Scope:** BR-001 — 51 mapped command entries. The two device pairing/revocation entries remain deferred. The two device pairing/revocation entries remain deferred.  
 **Normative distinction:** A command requests a domain transition. Acceptance is not completion; a proposal is not authorization; a provider receipt is not an observed outcome.
 
+**Operation lifecycle reference:** The exact internal Action Gateway event triggers and predecessor-state boundaries are specified in [OPERATION-LIFECYCLE-TRANSITION-MATRIX.md](OPERATION-LIFECYCLE-TRANSITION-MATRIX.md). They remain design-only and require runtime implementation and executed recovery evidence.
+
 ## 1. Shared command execution contract
 
 ### 1.1 Authentication and authorization
