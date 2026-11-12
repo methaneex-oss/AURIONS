@@ -507,3 +507,19 @@ All 89 events still lack runtime handlers and event-specific acceptance executio
 The validator now compares producer origin, exact trigger contract and owner-transition contract field-for-field for all 15 Action Gateway events and all 23 other non-command events. The 89-event unresolved ledger contains only runtime_handler and event_specific_acceptance_execution; exact producer-trigger specifications are structurally complete.
 
 Exact HEAD 2f4218c669ced79920af16ff122e5ab7080124b4 passed CI run 43323863934, including event/scenario schema validation, governance integrity, work-package graph, host SQLite smoke tests and Android probe syntax. This is specification/structural evidence only; runtime and independent review remain open.
+
+
+## Builder run verification — exact revision and remaining work (2026-11-12)
+
+Fresh governance gate re-read:
+- Project Directorship and Team Operating Standard — blob 951b9009cbedcf8907b365d611d89559d5a17385.
+- Builder Operating Protocol — blob 179b02aaef051173b96f54812f451ede1a2eae0d.
+EBT-01 and mandatory fresh-read gate confirmed.
+
+Exact revision 7c81d2629cfe40701f3319f33c19c0ec2ebf2ee0 passed GitHub Actions run 43324236645. All steps passed: schema/registry/fixture/event/scenario validation, governance integrity, work-package graph, host SQLite migration smoke tests and Android probe syntax.
+
+Current verified inventory: 10 schema documents; 8 registry/fixture pairs; 89 reusable domain-schema definitions; 81 positive payloads; 29 negative controls; 11 world-interaction examples; 53 command records (51 mapped, two deferred); 29 queries; 89 events; 35 error codes; 39 scenario specifications (172 steps, 45 negative controls); 17 work packages. All 89 event producer/consumer specs and exact producer-trigger matrices match the registry; only runtime-handler and event-specific-acceptance-execution gates remain in the event ledger.
+
+PR #2 remains open/draft/unmerged with 99 changed files; PR #1 remains a separate open/draft/unmerged nine-file scaffold. No implementation authorization, merge or reviewer/tester handoff was made.
+
+The builder specification/structural-validation increment is verified, but the overall builder phase remains NOT READY for planning exit or independent review. The next builder-owned task is a final semantic reconciliation of cross-store saga/transaction ownership, canonical entity/DDL transitions, query field projections, product acceptance and owner decision traceability, followed by a separate exact-revision builder review. Runtime and target-platform work remains unauthorized or externally gated.
