@@ -2097,7 +2097,7 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_entry_conflict_replay_recovery_assertions"
+        "per_entry_conflict_replay_recovery_execution_evidence"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [
@@ -2148,7 +2148,7 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_entry_conflict_replay_recovery_assertions"
+        "per_entry_conflict_replay_recovery_execution_evidence"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [
@@ -2198,7 +2198,7 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_entry_conflict_replay_recovery_assertions"
+        "per_entry_conflict_replay_recovery_execution_evidence"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [
@@ -2249,7 +2249,7 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_entry_conflict_replay_recovery_assertions"
+        "per_entry_conflict_replay_recovery_execution_evidence"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [
