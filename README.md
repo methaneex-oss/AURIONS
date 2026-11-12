@@ -16,7 +16,8 @@ Implementation has not been authorized. PR #1 is a proposed foundation scaffold,
 
 ## Start here
 
-- [Mandatory Builder Operating Protocol](docs/governance/BUILDER-OPERATING-PROTOCOL.md) — required execution, verification and accountability standard for builders, reviewers and testers.
+- [Mandatory Project Directorship and Team Operating Standard](docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md) — role authority, milestone gates, handoffs, scope/change control and final acceptance across current and future projects.
+- [Mandatory Builder Operating Protocol](docs/governance/BUILDER-OPERATING-PROTOCOL.md) — builder execution, self-review, testing, correction and evidence requirements.
 
 - [Planning documentation index](docs/planning/README.md)
 - [Owner decision traceability matrix](docs/planning/OWNER-DECISION-TRACEABILITY-MATRIX.md)
