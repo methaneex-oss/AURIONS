@@ -222,3 +222,8 @@ A bounded custom structural validator was run against the new world-interaction 
 ## Machine-readable event registry added (2026-11-12)
 
 Added `schemas/event-registry.v1.schema.json` and `schemas/event-registry.v1.json` with all 84 documented event types keyed by event name, making duplicate names structurally unrepresentable, plus payload-schema references and body-fixture references. A bounded structural check accepted the registry against its schema, confirmed 84 unique object keys, and resolved every fixture pointer. All entries remain explicitly `design_only_not_dispatchable`; runtime handler/consumer ownership, owner transitions, event-specific acceptance and machine-enforced payload validation remain open. This registry is not a production dispatch registry.
+
+
+## Source-specification and persistence-chain reconciliation (2026-11-12)
+
+Added an explicit interpretation addendum to `INITIAL-ENGINEERING-SPECIFICATION.md` so earlier Android/device/capability terminology cannot be misread as the universal architecture. The source specification now references the foundational open-world model, separates device-specific integrations from general possible means, and records the proposed memory migration v4 without altering owner decisions. Migration v4 was reconciled to include eight tables: `objective_records`, `evidence_details`, `world_entities`, `world_relationships`, `situation_snapshots`, `affordance_hypotheses`, `interaction_proposals` and `interaction_outcomes`. The DDL remains proposed/unexecuted; canonical ID encoding, cross-record referential integrity, event/handler semantics, retention/deletion and cross-store recovery remain open.
