@@ -45,7 +45,13 @@ Additional reference-integrity checks on those parsed artifacts found:
 - Every command request/response/envelope schema reference resolves to a declared domain-schema definition; every command fixture pointer resolves to one of the 78 fixture entries.
 - Every query input/response/result/envelope schema reference resolves; every query fixture pointer resolves.
 - All 35 error entries have a handler-contract reference and a fixture pointer whose index is within the 35-case fixture array.
-- These checks validate pointer existence and basic structural consistency only. They do not prove that a binding is semantically correct, that a handler exists, or that any recovery branch executes.
+- A second static crosswalk pass additionally found:
+- The 76 named event types in the event catalogue each appear exactly once in the event-body binding table, including the grouped `operation.*.v1` family; no missing, duplicate or extra event name was found.
+- Every event-body payload name in that table resolves to a definition in `domain-payloads.v1.schema.json`.
+- The six proposed SQL files contain 57 distinct table declarations (35 memory, 13 events/recovery and 9 governance). All 51 distinct table names referenced by the command/query registry exist in the declared owning store.
+- This does not verify event-to-payload semantic suitability, SQL syntax, foreign-key enforcement, indexes, transaction semantics, migrations or runtime behaviour.
+
+These checks validate pointer existence and basic structural consistency only. They do not prove that a binding is semantically correct, that a handler exists, or that any recovery branch executes.
 
 These counts were derived by parsing the fetched JSON documents. They are not a full JSON Schema Draft 2020-12 conformance result.
 
