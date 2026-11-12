@@ -324,3 +324,12 @@ The artifact does not make a product decision or select the owner-reserved first
 The builder performed a bounded cross-artifact inspection of the current command/query registry, domain/world schemas, event registry, error registry and six proposed base/migration SQL files. The scope analysis now records the checks and their limitations. All existing registry schema references resolve; all referenced table names were found; all 84 event entries carry payload and fixture references; all 35 error entries carry handler mapping and fixture references; and the analysis's existing P0 command names occur in the registry.
 
 This is not semantic closure. Self-review confirmed 39/43 mapped commands still have eight unresolved semantic categories, the four task-control commands still lack per-entry executed recovery evidence, and all 21 queries retain seven unresolved categories. Proposed objective/world/means/interaction APIs remain unbound proposals. BR-001 and BR-002 remain OPEN and blocking. The checks did not execute SQL or runtime tests and are not independent review/tester evidence. Builder handoff remains premature.
+
+
+## Builder run governance gate record — 2026-11-12
+
+Before this builder self-review/verification run, the current authoritative documents were freshly retrieved and read:
+- Project Directorship and Team Operating Standard — blob `951b9009cbedcf8907b365d611d89559d5a17385`.
+- Builder Operating Protocol — blob `179b02aaef051173b96f54812f451ede1a2eae0d`.
+
+Applicable duties: builder scope ownership, independent professional judgment, complete self-review, actual relevant verification, root-cause correction within authority, evidence-complete handoff, and separation of builder verification from independent review/tester acceptance. This run was limited to the existing BR-001/BR-002 builder analysis and self-review; it did not make owner-reserved decisions or authorize implementation.
