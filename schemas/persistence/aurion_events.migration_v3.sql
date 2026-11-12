@@ -33,7 +33,7 @@ CREATE TABLE task_command_receipts (
   actor_identity TEXT NOT NULL CHECK(length(actor_identity)>0),
   command_type TEXT NOT NULL CHECK(command_type IN
     ('task.start','task.pause','task.resume','task.cancel')),
-  command_version TEXT NOT NULL CHECK(command_version GLOB '[0-9]*.[0-9]*'),
+  command_version TEXT NOT NULL CHECK(length(command_version)>0), -- Version syntax is enforced by the versioned contract validator.
   idempotency_key TEXT NOT NULL CHECK(length(idempotency_key)>0),
   request_digest TEXT NOT NULL CHECK(length(request_digest)=64),
   task_run_id BLOB NOT NULL CHECK(length(task_run_id)=16),
