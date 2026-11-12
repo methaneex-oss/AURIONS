@@ -36,7 +36,8 @@
 | Self-model | Self-model subsystem; `self_model_revisions` | self-model update proposal/query; `self_model.updated.v1` | WP-13 | CM-016 |
 | Evolution | Evolution subsystem; `evolution_proposals`, candidate artifacts, governance approval and activation audit | evolution proposal/evaluate/approve/activate/rollback | WP-13 | CM-017, protected-change tests |
 
-\n> **Scope correction:** The following matrix is only the Android-specific realization. It does not define the complete ownership model for world understanding, entity/actor relationships, task semantics, non-device means, human-mediated interaction or other contexts. Those concepts are governed by the open-world architecture and must be reconciled into authoritative contracts before implementation. An Android capability descriptor is not the universal representation of an affordance or possible means.\n\n## 3. Android-specific interaction realization ownership matrix
+
+> **Scope correction:** The following matrix is only the Android-specific realization. It does not define the complete ownership model for world understanding, entity/actor relationships, task semantics, non-device means, human-mediated interaction or other contexts. Those concepts are governed by the open-world architecture and must be reconciled into authoritative contracts before implementation. An Android capability descriptor is not the universal representation of an affordance or possible means.\n\n## 3. Android-specific interaction realization ownership matrix
 
 | Mechanism | Owner | Durable state / authority | Contract family | Verification |
 |---|---|---|---|---|
