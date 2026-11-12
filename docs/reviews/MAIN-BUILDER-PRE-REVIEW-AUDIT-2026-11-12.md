@@ -542,3 +542,14 @@ The builder resolved the six event/classification mismatches recorded in the com
 Exact revision `bde408f8d3c0709a0e848376caa8ccb97dec6bb7` passed GitHub Actions run [43318729147](https://github.com/methaneex-oss/AURIONS/actions/runs/43318729147). Schema/fixture validation passed, including all event payload/fixture references and new payloads; command/query/event/error registry integrity passed; governance, host SQLite smoke tests and Android probe syntax passed.
 
 This closes the six **specification-level command/event binding gaps**. It does not establish event consumer semantics or handler execution. BR-001 and BR-008 remain OPEN pending executable handler/consumer tests, full architecture semantic reconciliation, owner acceptance of first-release scope, target-platform evidence and implementation authorization. No command/event is dispatchable.
+
+
+## BR-002 builder increment — per-query acceptance specification (2026-11-12)
+
+**Fresh governance gate:** Project Directorship and Team Operating Standard and Builder Operating Protocol were freshly retrieved/read before this builder run; current blob SHAs were `951b9009cbedcf8907b365d611d89559d5a17385` and `179b02aaef051173b96f54812f451ede1a2eae0d`. EBT-01 and the mandatory fresh-read gate were confirmed.
+
+**Starting state:** PR #2 was open/draft/unmerged. Its 21 query entries already had semantic authorization, classification, redaction, consistency, ordering/cursor, resource-limit and freshness/cache contracts, plus shared QRY-001…QRY-014 security/read-only/pagination test requirements. The gap was that the machine registry did not assign a unique query-specific positive/negative acceptance case to each query.
+
+**Changes:** Added QCC-001…QCC-021 to the 21 query registry entries. Each entry now has a domain-specific positive assertion, a negative/stale/security assertion and a read-only invariant. Added the matching catalogue to `QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md`; extended the registry schema and validator to enforce unique QCC IDs, all three populated assertions, exact query inventory coverage and matching matrix rows. Every query remains `design_only_not_dispatchable`.
+
+**Evidence boundary:** QCC and QRY cases are specified acceptance criteria, not executed query-handler tests. No production query handlers exist in this planning PR. Numeric row/byte/deadline budgets remain blocked on target-runtime measurement. BR-002 remains OPEN pending measured resource budgets, concrete field-level result-schema classification/projection, target SQLite snapshot/cursor/concurrency verification, owner acceptance of the first-release query subset, implementation authorization and executed handler tests. No query was made dispatchable.
