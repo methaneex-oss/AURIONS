@@ -8,10 +8,13 @@ on:
       - "scripts/validate_sqlite_ddl.py"
       - "scripts/probe_android_termux.sh"
       - "scripts/validate_governance.py"
+      - "scripts/validate_planning_traceability.py"
       - "docs/governance/**"
       - "docs/platform/**"
       - "docs/reviews/**"
       - "docs/planning/README.md"
+      - "docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md"
+      - "docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md"
       - "docs/planning/PLANNING-COMPLETION-REGISTER.md"
       - "README.md"
       - ".github/workflows/schema-validation.yml"
@@ -22,6 +25,9 @@ on:
       - "scripts/validate_schemas.py"
       - "scripts/validate_sqlite_ddl.py"
       - "scripts/probe_android_termux.sh"
+      - "scripts/validate_planning_traceability.py"
+      - "docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md"
+      - "docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md"
       - "docs/platform/**"
       - "docs/reviews/**"
       - ".github/workflows/schema-validation.yml"
@@ -47,6 +53,8 @@ jobs:
         run: python scripts/validate_schemas.py
       - name: Validate mandatory governance contract and entry points
         run: python scripts/validate_governance.py
+      - name: Validate work-package traceability and dependency graph
+        run: python scripts/validate_planning_traceability.py
       - name: Execute SQLite DDL and migration smoke tests
         run: python scripts/validate_sqlite_ddl.py
       - name: Validate Android probe shell syntax
