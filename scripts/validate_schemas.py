@@ -289,15 +289,6 @@ def main() -> int:
     if not operation_matrix_path.is_file():
         fail("missing operation lifecycle transition matrix")
     operation_matrix = operation_matrix_path.read_text(encoding="utf-8")
-    operation_matrix_events = set(
-        re.findall(r"`(operation\.[a-z_]+\.v1)`", operation_matrix)
-    )
-    action_gateway_events = {
-        event_type for event_type, event in events.items()
-        if event.get("producer_origin") == "action_gateway_internal_transition"
-    }
-    if len(action_gateway_events) != 15 or operation_matrix_events != action_gateway_events:
-        fail("operation lifecycle matrix must exactly cover the 15 Action Gateway internal events")
     operation_rows = {}
     for line in operation_matrix.splitlines():
         if not line.startswith("| `operation."):
@@ -306,6 +297,13 @@ def main() -> int:
         if len(cells) != 4:
             fail("operation lifecycle matrix row must have four cells")
         operation_rows[cells[0].strip("`")] = (cells[2], cells[3])
+    operation_matrix_events = set(operation_rows)
+    action_gateway_events = {
+        event_type for event_type, event in events.items()
+        if event.get("producer_origin") == "action_gateway_internal_transition"
+    }
+    if len(action_gateway_events) != 15 or operation_matrix_events != action_gateway_events:
+        fail("operation lifecycle matrix must exactly cover the 15 Action Gateway internal events")
     operation_states = set(
         schema_docs["domain-payloads.v1.schema.json"]["$defs"]["operationLifecycleEvent"]
         ["properties"]["state"]["enum"]
