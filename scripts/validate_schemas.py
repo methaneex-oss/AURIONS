@@ -65,6 +65,7 @@ def main() -> int:
         ("fixtures/message-envelope.fixture.json", "message-envelope.v1.schema.json"),
         ("fixtures/capability-descriptor.fixture.json", "capability-descriptor-body.v1.schema.json"),
         ("fixtures/world-interaction.fixture.json", "world-interaction.v1.schema.json"),
+        ("fixtures/scenario-contracts.fixture.json", "scenario-contracts.v1.schema.json"),
     ]
     for instance_path, schema_name in pairs:
         validate(load(SCHEMAS / instance_path), schema_docs[schema_name], instance_path)
@@ -394,6 +395,51 @@ def main() -> int:
                 f"{event_type} fixture {fixture_ref}",
             )
             validate(fixture_payload, payload_validation_schema, f"{event_type} fixture {fixture_ref}")
+
+    # Validate integrated scenario contracts as design fixtures, not runtime tests.
+    scenario_document = load(FIXTURES / "scenario-contracts.fixture.json")
+    scenarios = scenario_document["scenarios"]
+    if len(scenarios) != 3:
+        fail(f"scenario contract fixture expected 3 integrated scenarios, found {len(scenarios)}")
+    known_commands = {item["command_type"] for item in commands}
+    known_queries = {item["query_type"] for item in queries}
+    known_scenario_ids = {
+        *(f"CM-{number:03d}" for number in range(1, 30)),
+        *(f"AD-{number:03d}" for number in range(1, 16)),
+    }
+    scenario_ids = set()
+    for scenario in scenarios:
+        scenario_id = scenario["scenario_id"]
+        if scenario_id in scenario_ids:
+            fail(f"{scenario_id}: duplicate integrated scenario ID")
+        scenario_ids.add(scenario_id)
+        unknown_sources = set(scenario["source_scenario_ids"]) - known_scenario_ids
+        if unknown_sources:
+            fail(f"{scenario_id}: unknown source scenario IDs {sorted(unknown_sources)}")
+        step_ids = [step["step_id"] for step in scenario["steps"]]
+        if len(step_ids) != len(set(step_ids)):
+            fail(f"{scenario_id}: duplicate step IDs")
+        control_ids = [item["control_id"] for item in scenario["negative_controls"]]
+        if len(control_ids) != len(set(control_ids)):
+            fail(f"{scenario_id}: duplicate negative-control IDs")
+        for step in scenario["steps"]:
+            kind, separator, name = step["contract_action"].partition(":")
+            if not separator:
+                fail(f"{scenario_id}/{step['step_id']}: malformed contract action")
+            if kind == "command" and name not in known_commands:
+                fail(f"{scenario_id}/{step['step_id']}: unknown command {name}")
+            if kind == "query" and name not in known_queries:
+                fail(f"{scenario_id}/{step['step_id']}: unknown query {name}")
+            if kind == "event" and name not in known_event_types:
+                fail(f"{scenario_id}/{step['step_id']}: unknown event action {name}")
+            unknown_events = set(step["expected_events"]) - known_event_types
+            if unknown_events:
+                fail(
+                    f"{scenario_id}/{step['step_id']}: unknown expected events "
+                    f"{sorted(unknown_events)}"
+                )
+        if scenario["execution_status"] != "specified_not_executed" or scenario["execution_authority"] != "none":
+            fail(f"{scenario_id}: scenario fixture cannot imply execution or authority")
 
     error_registry = load(SCHEMAS / "error-registry.v1.json")
     error_cases = load(FIXTURES / "error-handler-cases.fixture.json")["cases"]
