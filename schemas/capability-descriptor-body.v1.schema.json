@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:aurions:schema:capability-descriptor-body:1",
   "title": "AURIONS discovered capability descriptor body",
-  "description": "Evidence-backed description of an interface discovered in an environment. It is data, not executable code, permission, authorization, or a developer-authored capability catalogue.",
+  "description": "Extensible evidence-backed descriptor body for one provider/interface-specific means of interaction. A descriptor may inform a context-dependent affordance hypothesis; it is not the universal representation of possible means, an exhaustive action catalogue, or an authority grant. Non-device and human-mediated means need not have a descriptor.",
   "type": "object",
   "required": [
     "descriptor_schema_version",
