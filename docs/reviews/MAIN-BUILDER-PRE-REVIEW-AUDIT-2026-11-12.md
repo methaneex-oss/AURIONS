@@ -23,9 +23,9 @@ The reviewed scope included the planning completion register, implementation-rea
 
 ## 3. Reproducible structural checks performed
 
-The following checks were performed against repository content fetched from the named branch:
+The following table is the **initial audit-pass snapshot**, before later builder increments recorded below. Where a later exact-head CI result or builder increment supersedes an initial limitation, the later evidence is authoritative for that bounded check:
 
-| Check | Observed result | Interpretation |
+| Check | Initial audit-pass result | Interpretation |
 |---|---:|---|
 | Reusable definitions in `domain-payloads.v1.schema.json` | 86 | Definition inventory, not number of scenario tests. |
 | Named entries in `domain-payloads.fixture.json` | 78 | Positive payload-shape examples, not multi-step behavioural scenarios. |
@@ -53,10 +53,10 @@ Additional reference-integrity checks on those parsed artifacts found:
 
 These checks validate pointer existence and basic structural consistency only. They do not prove that a binding is semantically correct, that a handler exists, or that any recovery branch executes.
 
-These counts were derived by parsing the fetched JSON documents. They are not a full JSON Schema Draft 2020-12 conformance result.
+These counts were initially derived by parsing fetched JSON documents and did not, by themselves, constitute full JSON Schema Draft 2020-12 conformance. That initial limitation was subsequently superseded for the Python-host corpus by the full CI validation recorded under BR-007 and the later exact-head run below. C++ validator equivalence and runtime conformance remain open.
 
-### Current fixture inventory correction
-The current PR file inventory contains 78 named positive domain-payload examples, eight separate world-interaction payload examples and 29 negative fixture files. The earlier bounded-check evidence covers the original 25 negative fixtures and three later additions; it does not establish that every one of the current 28 has been rerun after all subsequent edits. The register was corrected to preserve that evidence boundary. A fresh full negative-corpus run remains a builder validation task.
+### Current fixture inventory and validation correction
+The current inventory contains 78 named positive domain-payload examples, eight separate world-interaction payload examples and 29 negative fixture files. The earlier bounded structural check had only covered 25 original negative fixtures plus three additions. That limitation is superseded: exact-head CI run [43292123964](https://github.com/methaneex-oss/AURIONS/actions/runs/43292123964) on `f2df90dda7e3ee1a49b8eaa3d94ac76f64e3a806` passed the complete current 29-negative-control corpus together with all 78 positive domain payloads and the eight schema meta-schema checks. This remains Python-host schema/fixture validation, not C++/Python equivalence, semantic event/handler correctness or runtime behaviour.
 
 ## 4. Builder findings — open and blocking
 
@@ -110,7 +110,7 @@ The current PR file inventory contains 78 named positive domain-payload examples
 ### BR-005 — Proposed persistence contracts: host DDL execution added; target/fault validation open
 
 **Severity:** Critical  
-**Verified builder closure:** Added `scripts/validate_sqlite_ddl.py` and integrated it into the schema/governance GitHub Actions workflow. On exact PR head `cfc1c7f91204d53fe8de5ab022e2609d9eda937d`, workflow run [43288000757](https://github.com/methaneex-oss/AURIONS/actions/runs/43288000757) passed the SQLite DDL/migration smoke step. The script executed all three base schemas and five additive migrations in their documented per-store order using host SQLite; after each file it checked foreign-key enforcement, `PRAGMA foreign_key_check` and `PRAGMA integrity_check`. It also exercised an objective-record insert, event-store-assigned sequence allocation, rejection of ownerless new task rows, and rejection of task-owner reassignment. The workflow step completed successfully.
+**Verified builder closure:** Added `scripts/validate_sqlite_ddl.py` and integrated it into the schema/governance GitHub Actions workflow. The SQLite DDL/migration smoke step most recently passed on exact PR head `f2df90dda7e3ee1a49b8eaa3d94ac76f64e3a806`, workflow run [43292123964](https://github.com/methaneex-oss/AURIONS/actions/runs/43292123964); this run also passed the other workflow steps. The script executed all three base schemas and five additive migrations in their documented per-store order using host SQLite; after each file it checked foreign-key enforcement, `PRAGMA foreign_key_check` and `PRAGMA integrity_check`. It also exercised an objective-record insert, event-store-assigned sequence allocation, rejection of ownerless new task rows, and rejection of task-owner reassignment. The workflow step completed successfully.
 
 **Remaining:** This is host-side syntax/migration-chain smoke evidence, not validation against the actual Termux/Android SQLite build. Complete canonical entity/index/constraint and referential-integrity reconciliation; pin and test the target SQLite version/compile options; add interrupted-migration, rollback/restart, crash, outbox/inbox, backup/restore, deletion/tombstone, disk-full/locked/corrupt-store and cross-store recovery tests. Validate runtime transaction boundaries and task receipt retention. Do not claim distributed atomicity across separate SQLite files.
 
@@ -128,7 +128,7 @@ The current PR file inventory contains 78 named positive domain-payload examples
 ### BR-007 — Validator and schema CI selection: partially closed
 
 **Severity:** High  
-**Verified builder closure:** A pinned Python `jsonschema[format]==4.26.0` Draft 2020-12 validator is integrated into GitHub Actions. The current corpus passed eight schema meta-schema checks, seven registry/fixture pairs, all 78 positive domain payloads and all 29 negative controls. See [Schema Validation Results](SCHEMA-VALIDATION-RESULTS-2026-11-12.md) and the linked successful workflow run.
+**Verified builder closure:** A pinned Python `jsonschema[format]==4.26.0` Draft 2020-12 validator is integrated into GitHub Actions. The current corpus passed eight schema meta-schema checks, seven registry/fixture pairs, all 78 positive domain payloads and all 29 negative controls. The exact current PR head `f2df90dda7e3ee1a49b8eaa3d94ac76f64e3a806` passed run [43292123964](https://github.com/methaneex-oss/AURIONS/actions/runs/43292123964). See [Schema Validation Results](SCHEMA-VALIDATION-RESULTS-2026-11-12.md).
 
 **Remaining:** Host C++ validator comparison and result equivalence, Android/Termux dependency feasibility, C++/Python serialization compatibility, transitive SBOM/license/vulnerability review and integration with the eventual runtime toolchain.
 
