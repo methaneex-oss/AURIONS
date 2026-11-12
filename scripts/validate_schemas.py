@@ -74,10 +74,10 @@ def main() -> int:
     command_registry = load(SCHEMAS / "command-query-registry.v1.json")
     commands = command_registry["commands"]
     queries = command_registry["queries"]
-    if len(commands) != 45 or len({item["command_type"] for item in commands}) != 45:
-        fail("command registry must contain 45 unique command types")
-    if len(queries) != 21 or len({item["query_type"] for item in queries}) != 21:
-        fail("query registry must contain 21 unique query types")
+    if len(commands) != 53 or len({item["command_type"] for item in commands}) != 53:
+        fail("command registry must contain 53 unique command types")
+    if len(queries) != 29 or len({item["query_type"] for item in queries}) != 29:
+        fail("query registry must contain 29 unique query types")
     command_matrix_path = ROOT / "docs/planning/COMMAND-TRANSITION-AND-RECOVERY-CONTRACT-MATRIX.md"
     if not command_matrix_path.is_file():
         fail("missing per-command transition and recovery contract matrix")
