@@ -1,4 +1,4 @@
--- AURIONS proposed SQLite DDL. NOT EXECUTED OR VALIDATED.
+-- AURIONS proposed SQLite DDL. Host-side CI smoke execution verified; target Termux/Android validation pending.
 -- Store: aurion_memory.db
 -- Proposed migration v4: open-world entity, situation, means and interaction lineage.
 -- Cross-store references are stable textual references; no cross-database foreign keys.
