@@ -136,7 +136,7 @@ The semantic contract matrix is specified. The following cannot be claimed compl
 Until those gates pass, the machine registry must retain all query entries as `design_only_not_dispatchable`. This matrix does not change registry dispatch status or imply implementation authorization.
 
 
-## 5. Per-query acceptance catalogue (QCC-001…QCC-021)
+## 5. Per-query acceptance catalogue (QCC-001…QCC-029)
 
 Each registry query now has a unique acceptance ID, one domain-specific positive assertion, one negative/staleness/security assertion and an explicit read-only invariant. These supplement QRY-001…QRY-014, which remain the shared cross-query security and pagination test set.
 
