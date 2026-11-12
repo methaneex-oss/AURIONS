@@ -15,115 +15,115 @@
 
 | Event type | Command producer binding | Payload schema | Consumer / owner transition |
 |---|---|---|---|
-| `appraisal.updated.v1` | `appraisal.evaluate` | `appraisalUpdated` | UNRESOLVED |
-| `approval.decided.v1` | UNRESOLVED — no command producer bound | `approvalDecision` | UNRESOLVED |
-| `approval.requested.v1` | `approval.request` | `approvalRequested` | UNRESOLVED |
-| `approval.revoked.v1` | `approval.revoke` | `approvalRevoked` | UNRESOLVED |
-| `artifact.deleted.v1` | UNRESOLVED — no command producer bound | `artifactManifest` | UNRESOLVED |
-| `artifact.quarantined.v1` | UNRESOLVED — no command producer bound | `artifactManifest` | UNRESOLVED |
-| `artifact.registered.v1` | UNRESOLVED — no command producer bound | `artifactManifest` | UNRESOLVED |
-| `attention.allocated.v1` | `attention.allocate` | `attentionAllocated` | UNRESOLVED |
-| `belief.proposed.v1` | `belief.propose` | `beliefRevision` | UNRESOLVED |
-| `belief.revised.v1` | `belief.revise` | `beliefRevision` | UNRESOLVED |
-| `candidate.activated.v1` | `evolution.candidate.activate` | `evolutionCandidateLifecycle` | UNRESOLVED |
-| `candidate.rolled_back.v1` | `evolution.candidate.rollback` | `evolutionCandidateLifecycle` | UNRESOLVED |
-| `capability.discovered.v1` | `capability.discover` | `capabilityDescriptorRecord` | UNRESOLVED |
-| `capability.invalidated.v1` | `capability.invalidate` | `capabilityDescriptorRecord` | UNRESOLVED |
-| `capability.knowledge.proposed.v1` | `capability.knowledge.propose` | `capabilityKnowledgeRevision` | UNRESOLVED |
-| `capability.knowledge.revised.v1` | `capability.knowledge.revise` | `capabilityKnowledgeRevision` | UNRESOLVED |
-| `capability.revoked.v1` | UNRESOLVED — no command producer bound | `capabilityDescriptorRecord` | UNRESOLVED |
-| `capability.verified.v1` | `capability.verify` | `capabilityDescriptorRecord` | UNRESOLVED |
-| `context.assembled.v1` | `context.assemble` | `contextSnapshot` | UNRESOLVED |
-| `context.invalidated.v1` | `context.invalidate` | `contextInvalidated` | UNRESOLVED |
-| `decision.recorded.v1` | `decision.record` | `decisionRecorded` | UNRESOLVED |
-| `disclosure.recorded.v1` | UNRESOLVED — no command producer bound | `externalDisclosureRecord` | UNRESOLVED |
-| `environment.observed.v1` | `environment.observe` | `environmentObserved` | UNRESOLVED |
-| `evidence.recorded.v1` | `experience.submit` | `evidenceItem` | UNRESOLVED |
-| `evolution.candidate.evaluated.v1` | `evolution.candidate.evaluate` | `evolutionCandidateLifecycle` | UNRESOLVED |
-| `evolution.proposed.v1` | `evolution.change.propose` | `evolutionProposed` | UNRESOLVED |
-| `experience.observed.v1` | `experience.submit` | `experienceObserved` | UNRESOLVED |
-| `goal.created.v1` | `goal.create` | `goalRevision` | UNRESOLVED |
-| `goal.revised.v1` | `goal.cancel`, `goal.revise` | `goalRevision` | UNRESOLVED |
-| `interaction.outcome.observed.v1` | `interaction.outcome.record` | `interactionOutcome` | UNRESOLVED |
-| `interaction.proposed.v1` | `interaction.propose` | `interactionProposal` | UNRESOLVED |
-| `learning.candidate.evaluated.v1` | `learning.candidate.evaluate` | `learningCandidateEvaluated` | UNRESOLVED |
-| `learning.experiment.completed.v1` | UNRESOLVED — no command producer bound | `learningExperimentCompleted` | UNRESOLVED |
-| `learning.update.accepted.v1` | UNRESOLVED — no command producer bound | `learningUpdate` | UNRESOLVED |
-| `learning.update.proposed.v1` | `learning.update.propose` | `learningUpdate` | UNRESOLVED |
-| `means.affordance.proposed.v1` | `means.affordance.propose` | `affordanceHypothesis` | UNRESOLVED |
-| `memory.recorded.v1` | UNRESOLVED — no command producer bound | `memoryRecord` | UNRESOLVED |
-| `memory.retrieved.v1` | `memory.retrieve` | `memoryRetrieval` | UNRESOLVED |
-| `objective.created.v1` | `objective.create` | `objective` | UNRESOLVED |
-| `objective.revised.v1` | `objective.revise` | `objectiveRevision` | UNRESOLVED |
-| `operation.awaiting_approval.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.cancel_requested.v1` | `operation.cancel` | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.cancelled.v1` | `operation.cancel` | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.compensated.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.compensating.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.compensation_required.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.dispatched.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.expired.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.failed.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.manual_intervention.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.proposed.v1` | `operation.propose` | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.ready.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.reconciled.v1` | `operation.reconcile` | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.reconciling.v1` | `operation.reconcile` | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.rejected.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.revoked.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.running.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.succeeded.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.uncertain.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `operation.validating.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
-| `outcome.evaluated.v1` | `outcome.evaluate` | `outcomeEvaluation` | UNRESOLVED |
-| `outcome.observed.v1` | UNRESOLVED — no command producer bound | `outcomeObserved` | UNRESOLVED |
-| `permission.evaluated.v1` | UNRESOLVED — no command producer bound | `permissionEvaluated` | UNRESOLVED |
-| `plan.checkpointed.v1` | `plan.checkpoint` | `taskCheckpointDetails` | UNRESOLVED |
-| `plan.proposed.v1` | `plan.propose` | `planRevision` | UNRESOLVED |
-| `plan.revised.v1` | `plan.revise` | `planRevision` | UNRESOLVED |
-| `prediction.created.v1` | `prediction.create` | `predictionCreated` | UNRESOLVED |
-| `prediction.evaluated.v1` | `prediction.evaluate` | `predictionEvaluation` | UNRESOLVED |
-| `reasoning.hypothesis.proposed.v1` | `reasoning.assess` | `reasoningHypothesisProposed` | UNRESOLVED |
-| `representation.created.v1` | `representation.create` | `representationCreated` | UNRESOLVED |
-| `representation.revised.v1` | UNRESOLVED — no command producer bound | `representationRevised` | UNRESOLVED |
-| `retention.deletion.completed.v1` | UNRESOLVED — no command producer bound | `retentionDeletionEvent` | UNRESOLVED |
-| `retention.deletion.requested.v1` | UNRESOLVED — no command producer bound | `retentionDeletionEvent` | UNRESOLVED |
-| `self_model.update.proposed.v1` | `self_model.update.propose` | `selfModelUpdateProposed` | UNRESOLVED |
-| `self_model.updated.v1` | UNRESOLVED — no command producer bound | `selfModelUpdated` | UNRESOLVED |
-| `situation.snapshot.created.v1` | `situation.snapshot.create` | `situation` | UNRESOLVED |
-| `sync.change.applied.v1` | UNRESOLVED — no command producer bound | `syncChange` | UNRESOLVED |
-| `sync.change.exported.v1` | UNRESOLVED — no command producer bound | `syncChange` | UNRESOLVED |
-| `sync.conflict.detected.v1` | UNRESOLVED — no command producer bound | `syncConflictRecord` | UNRESOLVED |
-| `sync.conflict.resolved.v1` | UNRESOLVED — no command producer bound | `syncConflictRecord` | UNRESOLVED |
-| `sync.tombstone.applied.v1` | UNRESOLVED — no command producer bound | `syncChange` | UNRESOLVED |
-| `task.control.requested.v1` | `task.start`, `task.pause`, `task.resume`, `task.cancel` | `taskControlRequest` | UNRESOLVED |
-| `task.run.transitioned.v1` | `task.start`, `task.pause`, `task.resume`, `task.cancel` | `taskRunTransition` | UNRESOLVED |
-| `worker.job.completed.v1` | UNRESOLVED — no command producer bound | `workerResult` | UNRESOLVED |
-| `worker.job.failed.v1` | UNRESOLVED — no command producer bound | `workerFailure` | UNRESOLVED |
-| `worker.job.progressed.v1` | UNRESOLVED — no command producer bound | `workerProgress` | UNRESOLVED |
-| `worker.job.requested.v1` | `learning.experiment.submit` | `workerRequest` | UNRESOLVED |
-| `world.entity.observed.v1` | `world.entity.observe` | `entity` | UNRESOLVED |
-| `world.relationship.revised.v1` | `world.relationship.revise` | `relationshipRevision` | UNRESOLVED |
+| `appraisal.updated.v1` | `appraisal.evaluate` | `appraisalUpdated` | Appraisal subsystem: Append a versioned update with source/evidence lineage; preserve prior revision and enforce its domain acceptance gate. Intended consumers: Attention subsystem; Reasoning subsystem. |
+| `approval.decided.v1` | UNRESOLVED — no command producer bound | `approvalDecision` | Governance approval subsystem: Append an explicit approval decision bound to exact operation digest, target, data scope, actor and expiry; it is not a provider dispatch. Intended consumers: Action gateway; Governance audit. |
+| `approval.requested.v1` | `approval.request` | `approvalRequested` | Governance approval subsystem: Append a pending approval request; request creation grants no approval or execution authority. Intended consumers: Action gateway; Governance audit. |
+| `approval.revoked.v1` | `approval.revoke` | `approvalRevoked` | Governance approval subsystem: Append revocation for the exact approval and block future pre-dispatch use; already-dispatched effects require operation reconciliation. Intended consumers: Action gateway; Governance audit. |
+| `artifact.deleted.v1` | UNRESOLVED — no command producer bound | `artifactManifest` | Artifact registry: Record tombstone/deletion completion and verify retention obligations; replay cannot resurrect the artifact. Intended consumers: Worker and learning supervisors; Retention subsystem. |
+| `artifact.quarantined.v1` | UNRESOLVED — no command producer bound | `artifactManifest` | Artifact registry: Mark artifact unavailable to runtime consumers pending validation; preserve forensic metadata. Intended consumers: Worker and learning supervisors; Retention subsystem. |
+| `artifact.registered.v1` | UNRESOLVED — no command producer bound | `artifactManifest` | Artifact registry: Register immutable artifact digest, provenance and classification; registration is not trust or activation. Intended consumers: Worker and learning supervisors; Retention subsystem. |
+| `attention.allocated.v1` | `attention.allocate` | `attentionAllocated` | Attention subsystem: Advance the runtime attention allocation epoch; prior events are history and are not restored as current after restart. Intended consumers: Task scheduler; Cognitive cycle. |
+| `belief.proposed.v1` | `belief.propose` | `beliefRevision` | Knowledge-belief subsystem: Append a proposal/candidate revision with exact source and evidence lineage; active state and authorization remain unchanged. Intended consumers: Reasoning and prediction subsystems; Planning subsystem. |
+| `belief.revised.v1` | `belief.revise` | `beliefRevision` | Knowledge-belief subsystem: Append a successor aggregate revision using optimistic concurrency; preserve prior and contradictory evidence. Intended consumers: Reasoning and prediction subsystems; Planning subsystem. |
+| `candidate.activated.v1` | `evolution.candidate.activate` | `evolutionCandidateLifecycle` | Evolution activation manager: Advance active candidate pointer only with verified artifact, explicit owner/governance approval and rollback readiness. Intended consumers: Evolution activation manager; Audit subsystem. |
+| `candidate.rolled_back.v1` | `evolution.candidate.rollback` | `evolutionCandidateLifecycle` | Evolution activation manager: Restore exact prior approved artifact pointer and preserve failed candidate and rollback audit lineage. Intended consumers: Evolution activation manager; Audit subsystem. |
+| `capability.discovered.v1` | `capability.discover` | `capabilityDescriptorRecord` | Capability registry and knowledge subsystem: Append discovery provenance and a provisional descriptor; discovery is not verification, permission or authorization. Intended consumers: Planning subsystem; Action gateway; Means reasoning. |
+| `capability.invalidated.v1` | `capability.invalidate` | `capabilityDescriptorRecord` | Capability registry and knowledge subsystem: Mark the exact current revision stale and invalidate dependent caches/plans; do not delete source records. Intended consumers: Planning subsystem; Action gateway; Means reasoning. |
+| `capability.knowledge.proposed.v1` | `capability.knowledge.propose` | `capabilityKnowledgeRevision` | Capability registry and knowledge subsystem: Append a proposal/candidate revision with exact source and evidence lineage; active state and authorization remain unchanged. Intended consumers: Planning subsystem; Action gateway; Means reasoning. |
+| `capability.knowledge.revised.v1` | `capability.knowledge.revise` | `capabilityKnowledgeRevision` | Capability registry and knowledge subsystem: Append a successor aggregate revision using optimistic concurrency; preserve prior and contradictory evidence. Intended consumers: Planning subsystem; Action gateway; Means reasoning. |
+| `capability.revoked.v1` | UNRESOLVED — no command producer bound | `capabilityDescriptorRecord` | Capability registry and knowledge subsystem: Mark the exact descriptor revoked and invalidate dependent plans/caches; queued or in-flight operations are separately blocked/reconciled. Intended consumers: Planning subsystem; Action gateway; Means reasoning. |
+| `capability.verified.v1` | `capability.verify` | `capabilityDescriptorRecord` | Capability registry and knowledge subsystem: Append verification evidence for exact descriptor/provider versions; stale or untrusted sources cannot become verified. Intended consumers: Planning subsystem; Action gateway; Means reasoning. |
+| `context.assembled.v1` | `context.assemble` | `contextSnapshot` | Context subsystem: Persist a versioned context snapshot bound to exact source revisions and explicit unknowns. Intended consumers: Reasoning subsystem; Planning and attention subsystems. |
+| `context.invalidated.v1` | `context.invalidate` | `contextInvalidated` | Context subsystem: Mark the exact current revision stale and invalidate dependent caches/plans; do not delete source records. Intended consumers: Reasoning subsystem; Planning and attention subsystems. |
+| `decision.recorded.v1` | `decision.record` | `decisionRecorded` | Decision subsystem: Append immutable decision and alternatives; decision does not satisfy governance authorization. Intended consumers: Action gateway; Audit subsystem. |
+| `disclosure.recorded.v1` | UNRESOLVED — no command producer bound | `externalDisclosureRecord` | Egress governance subsystem: Append an exact disclosure audit record with recipient, purpose, data classes and approval reference. Intended consumers: Audit subsystem; Retention subsystem. |
+| `environment.observed.v1` | `environment.observe` | `environmentObserved` | Environment observation subsystem: Append immutable observation/outcome evidence with source, scope, observed time and limitations; do not infer causality. Intended consumers: Context assembler; Experience/evidence subsystem. |
+| `evidence.recorded.v1` | `experience.submit` | `evidenceItem` | Evidence subsystem: Append immutable owner-scoped record and provenance; no unrelated aggregate is mutated. Intended consumers: Belief and prediction subsystems; Learning supervisor. |
+| `evolution.candidate.evaluated.v1` | `evolution.candidate.evaluate` | `evolutionCandidateLifecycle` | Evolution subsystem: Append an evaluation tied to exact source, baseline and protocol revisions; do not mutate source or activate candidate. Intended consumers: Evolution candidate manager; Governance and audit. |
+| `evolution.proposed.v1` | `evolution.change.propose` | `evolutionProposed` | Evolution subsystem: Append a proposal/candidate revision with exact source and evidence lineage; active state and authorization remain unchanged. Intended consumers: Evolution candidate manager; Governance and audit. |
+| `experience.observed.v1` | `experience.submit` | `experienceObserved` | Experience subsystem: Append immutable observation/outcome evidence with source, scope, observed time and limitations; do not infer causality. Intended consumers: Representation and memory subsystems; Context assembler. |
+| `goal.created.v1` | `goal.create` | `goalRevision` | Goal subsystem: Create the initial owner-scoped aggregate revision; reject duplicate identity and preserve source provenance. Intended consumers: Planning subsystem; Task scheduler. |
+| `goal.revised.v1` | `goal.cancel`, `goal.revise` | `goalRevision` | Goal subsystem: Append successor goal revision; cancelled is terminal for that goal revision and prior history remains. Intended consumers: Planning subsystem; Task scheduler. |
+| `interaction.outcome.observed.v1` | `interaction.outcome.record` | `interactionOutcome` | Interaction/outcome subsystem: Append immutable observation/outcome evidence with source, scope, observed time and limitations; do not infer causality. Intended consumers: Governance/action gateway; Outcome/learning subsystems. |
+| `interaction.proposed.v1` | `interaction.propose` | `interactionProposal` | Interaction/outcome subsystem: Append a proposal/candidate revision with exact source and evidence lineage; active state and authorization remain unchanged. Intended consumers: Governance/action gateway; Outcome/learning subsystems. |
+| `learning.candidate.evaluated.v1` | `learning.candidate.evaluate` | `learningCandidateEvaluated` | Learning and evaluation subsystem: Append an evaluation tied to exact source, baseline and protocol revisions; do not mutate source or activate candidate. Intended consumers: Learning supervisor; Evolution/governance gate. |
+| `learning.experiment.completed.v1` | UNRESOLVED — no command producer bound | `learningExperimentCompleted` | Learning and evaluation subsystem: Append the event as an immutable owner-scoped transition record; preserve aggregate revision, provenance and prior history. Intended consumers: Learning supervisor; Evolution/governance gate. |
+| `learning.update.accepted.v1` | UNRESOLVED — no command producer bound | `learningUpdate` | Learning and evaluation subsystem: Record the acceptance decision and evidence; active behaviour remains unchanged until a separate authorized activation transition exists. Intended consumers: Learning supervisor; Evolution/governance gate. |
+| `learning.update.proposed.v1` | `learning.update.propose` | `learningUpdate` | Learning and evaluation subsystem: Append a proposal/candidate revision with exact source and evidence lineage; active state and authorization remain unchanged. Intended consumers: Learning supervisor; Evolution/governance gate. |
+| `means.affordance.proposed.v1` | `means.affordance.propose` | `affordanceHypothesis` | Means-reasoning subsystem: Append a proposal/candidate revision with exact source and evidence lineage; active state and authorization remain unchanged. Intended consumers: Planning subsystem; Interaction-control subsystem. |
+| `memory.recorded.v1` | UNRESOLVED — no command producer bound | `memoryRecord` | Memory subsystem: Append owner-scoped memory record/link with provenance and retention classification. Intended consumers: Memory retrieval and context subsystems; Learning subsystem. |
+| `memory.retrieved.v1` | `memory.retrieve` | `memoryRetrieval` | Memory subsystem: Append a retrieval audit record only; retrieved memory content remains unchanged. Intended consumers: Memory retrieval and context subsystems; Learning subsystem. |
+| `objective.created.v1` | `objective.create` | `objective` | Objective subsystem: Create the initial owner-scoped aggregate revision; reject duplicate identity and preserve source provenance. Intended consumers: Goal subsystem; Planning subsystem. |
+| `objective.revised.v1` | `objective.revise` | `objectiveRevision` | Objective subsystem: Append a successor aggregate revision using optimistic concurrency; preserve prior and contradictory evidence. Intended consumers: Goal subsystem; Planning subsystem. |
+| `operation.awaiting_approval.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record pending exact-scope approval; dispatch remains blocked. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.cancel_requested.v1` | `operation.cancel` | `operationLifecycleEvent` | Action gateway: Record cancellation as pending; do not claim terminal cancellation until a safe point and reconciliation. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.cancelled.v1` | `operation.cancel` | `operationLifecycleEvent` | Action gateway: Record terminal cancellation only after safe point and proof that no unresolved external effect remains. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.compensated.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record verified compensation evidence while preserving original action and compensation lineage. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.compensating.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record compensation attempt; result remains uncertain until independently verified. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.compensation_required.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record required compensation and its exact scope; compensation is not assumed safe or complete. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.dispatched.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Persist dispatch attempt and exact request digest; external effect may have begun and must be reconciled before retry. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.expired.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record expiry and prevent late dispatch; if dispatch was already possible, reconcile rather than assume no effect. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.failed.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record provider failure; side-effect uncertainty remains until reconciliation establishes effect absence/presence. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.manual_intervention.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Escalate unresolved state and block automated retry/compensation until an authorized resolution. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.proposed.v1` | `operation.propose` | `operationLifecycleEvent` | Action gateway: Create a proposal-only operation revision; no provider call or external effect occurs. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.ready.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record that pre-dispatch checks are complete; readiness is not proof of dispatch. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.reconciled.v1` | `operation.reconcile` | `operationLifecycleEvent` | Action gateway: Append evidence-backed external state and retry disposition; retain original attempt/receipt history. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.reconciling.v1` | `operation.reconcile` | `operationLifecycleEvent` | Action gateway: Record reconciliation attempt and evidence scope; no new dispatch is permitted. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.rejected.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record pre-dispatch denial; no provider effect is expected and no retry occurs without changed authorized input. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.revoked.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record authority revocation against the operation; block future attempts and reconcile in-flight effects. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.running.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record provider execution state; do not infer success or observed outcome. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.succeeded.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record provider-reported success only; verified outcome requires independent postcondition evidence. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.uncertain.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Persist unknown external outcome and prohibit blind retry until provider/independent evidence reconciles it. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `operation.validating.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | Action gateway: Record pre-dispatch validation in progress; no external effect is permitted. Intended consumers: Task scheduler; Outcome evaluator and audit. |
+| `outcome.evaluated.v1` | `outcome.evaluate` | `outcomeEvaluation` | Outcome evaluation subsystem: Append an evaluation tied to exact source, baseline and protocol revisions; do not mutate source or activate candidate. Intended consumers: Prediction feedback subsystem; Learning supervisor. |
+| `outcome.observed.v1` | UNRESOLVED — no command producer bound | `outcomeObserved` | Outcome evaluation subsystem: Append independently observed outcome evidence with unresolved effects and attribution uncertainty; provider receipt alone is insufficient. Intended consumers: Prediction feedback subsystem; Learning supervisor. |
+| `permission.evaluated.v1` | UNRESOLVED — no command producer bound | `permissionEvaluated` | Governance permission evaluator: Record current effective platform permission and evidence; evaluation never grants or extends permission. Intended consumers: Action gateway; Governance audit. |
+| `plan.checkpointed.v1` | `plan.checkpoint` | `taskCheckpointDetails` | Planning subsystem: Append immutable checkpoint and dependency watermarks for the exact plan/task revision. Intended consumers: Task scheduler; Action gateway. |
+| `plan.proposed.v1` | `plan.propose` | `planRevision` | Planning subsystem: Append a proposal/candidate revision with exact source and evidence lineage; active state and authorization remain unchanged. Intended consumers: Task scheduler; Action gateway. |
+| `plan.revised.v1` | `plan.revise` | `planRevision` | Planning subsystem: Append a successor aggregate revision using optimistic concurrency; preserve prior and contradictory evidence. Intended consumers: Task scheduler; Action gateway. |
+| `prediction.created.v1` | `prediction.create` | `predictionCreated` | Prediction subsystem: Create the initial owner-scoped aggregate revision; reject duplicate identity and preserve source provenance. Intended consumers: Outcome evaluator; Reasoning/learning subsystems. |
+| `prediction.evaluated.v1` | `prediction.evaluate` | `predictionEvaluation` | Prediction subsystem: Append an evaluation tied to exact source, baseline and protocol revisions; do not mutate source or activate candidate. Intended consumers: Outcome evaluator; Reasoning/learning subsystems. |
+| `reasoning.hypothesis.proposed.v1` | `reasoning.assess` | `reasoningHypothesisProposed` | Reasoning subsystem: Append a proposal/candidate revision with exact source and evidence lineage; active state and authorization remain unchanged. Intended consumers: Belief subsystem; Planning and decision subsystems. |
+| `representation.created.v1` | `representation.create` | `representationCreated` | Representation subsystem: Create the initial owner-scoped aggregate revision; reject duplicate identity and preserve source provenance. Intended consumers: Context assembler; Memory subsystem. |
+| `representation.revised.v1` | UNRESOLVED — no command producer bound | `representationRevised` | Representation subsystem: Append a successor aggregate revision using optimistic concurrency; preserve prior and contradictory evidence. Intended consumers: Context assembler; Memory subsystem. |
+| `retention.deletion.completed.v1` | UNRESOLVED — no command producer bound | `retentionDeletionEvent` | Retention subsystem: Persist completion evidence/tombstones across required stores and ensure restore/sync cannot resurrect deleted data. Intended consumers: Memory and artifact stores; Synchronization subsystem. |
+| `retention.deletion.requested.v1` | UNRESOLVED — no command producer bound | `retentionDeletionEvent` | Retention subsystem: Persist scoped deletion request and policy basis; deletion is pending until all owning stores acknowledge. Intended consumers: Memory and artifact stores; Synchronization subsystem. |
+| `self_model.update.proposed.v1` | `self_model.update.propose` | `selfModelUpdateProposed` | Self-model subsystem: Append a proposal/candidate revision with exact source and evidence lineage; active state and authorization remain unchanged. Intended consumers: Reasoning and planning subsystems; Evolution/governance gate. |
+| `self_model.updated.v1` | UNRESOLVED — no command producer bound | `selfModelUpdated` | Self-model subsystem: Append an evidence-backed active self-model revision after its acceptance gate; no permission, authority or capability grant follows. Intended consumers: Reasoning and planning subsystems; Evolution/governance gate. |
+| `situation.snapshot.created.v1` | `situation.snapshot.create` | `situation` | Situation/context subsystem: Create the initial owner-scoped aggregate revision; reject duplicate identity and preserve source provenance. Intended consumers: Context assembler; Planning subsystem. |
+| `sync.change.applied.v1` | UNRESOLVED — no command producer bound | `syncChange` | Synchronization subsystem: Apply an owner-scoped, version-checked change idempotently; preserve source and causation lineage. Intended consumers: Synchronization engine; Conflict-resolution/owner interface. |
+| `sync.change.exported.v1` | UNRESOLVED — no command producer bound | `syncChange` | Synchronization subsystem: Append export ledger for the exact authorized change digest; export does not imply remote application. Intended consumers: Synchronization engine; Conflict-resolution/owner interface. |
+| `sync.conflict.detected.v1` | UNRESOLVED — no command producer bound | `syncConflictRecord` | Synchronization subsystem: Persist both conflicting revisions and mark unresolved; do not silently choose last writer. Intended consumers: Synchronization engine; Conflict-resolution/owner interface. |
+| `sync.conflict.resolved.v1` | UNRESOLVED — no command producer bound | `syncConflictRecord` | Synchronization subsystem: Append explicit authorized resolution while retaining both source revisions and resolution rationale. Intended consumers: Synchronization engine; Conflict-resolution/owner interface. |
+| `sync.tombstone.applied.v1` | UNRESOLVED — no command producer bound | `syncChange` | Synchronization subsystem: Apply deletion tombstone before later changes; deleted content must not be resurrected by replay. Intended consumers: Synchronization engine; Conflict-resolution/owner interface. |
+| `task.control.requested.v1` | `task.start`, `task.pause`, `task.resume`, `task.cancel` | `taskControlRequest` | Task scheduler: Append a pending task-control request with expected task revision; request alone does not change task state. Intended consumers: Task scheduler; Planning subsystem. |
+| `task.run.transitioned.v1` | `task.start`, `task.pause`, `task.resume`, `task.cancel` | `taskRunTransition` | Task scheduler: Append the actual task state transition after expected revision and safe-point checks; preserve checkpoint and dependency lineage. Intended consumers: Task scheduler; Planning subsystem. |
+| `worker.job.completed.v1` | UNRESOLVED — no command producer bound | `workerResult` | Worker supervisor: Persist worker result manifest as untrusted/quarantined output; completion does not accept or activate a candidate. Intended consumers: Learning supervisor; Artifact registry. |
+| `worker.job.failed.v1` | UNRESOLVED — no command producer bound | `workerFailure` | Worker supervisor: Persist worker failure and partial-artifact quarantine; no partial result becomes active. Intended consumers: Learning supervisor; Artifact registry. |
+| `worker.job.progressed.v1` | UNRESOLVED — no command producer bound | `workerProgress` | Worker supervisor: Append bounded progress checkpoint; job remains non-terminal and output remains quarantined. Intended consumers: Learning supervisor; Artifact registry. |
+| `worker.job.requested.v1` | `learning.experiment.submit` | `workerRequest` | Worker supervisor: Persist immutable worker request and budget; worker receives isolated inputs and no production keys/live database credentials. Intended consumers: Learning supervisor; Artifact registry. |
+| `world.entity.observed.v1` | `world.entity.observe` | `entity` | World-model subsystem: Append immutable observation/outcome evidence with source, scope, observed time and limitations; do not infer causality. Intended consumers: Situation/context subsystem; Means/planning subsystems. |
+| `world.relationship.revised.v1` | `world.relationship.revise` | `relationshipRevision` | World-model subsystem: Append a successor aggregate revision using optimistic concurrency; preserve prior and contradictory evidence. Intended consumers: Situation/context subsystem; Means/planning subsystems. |
 
 ## 3. Required closure per event
 
-Before an event can be considered implementation-ready, its owning component must define:
+Before an event can be considered implementation-ready, its owning component must implement and execute evidence for the following contracts (the intended consumer and owner-transition specification is now present in the registry):
 
 1. **Production trigger and owner:** exact state transition or trusted ingress that creates the event; command, platform, worker, sync or internal transition origin; authenticated owner/actor and scope.
 2. **Aggregate and revision:** authoritative aggregate, expected/current revision rule, event sequence allocation, causation/correlation identifiers and ordering scope.
-3. **Atomicity:** exact owning-store transaction that commits the state mutation with immutable event/outbox; cross-store work must use durable saga semantics, not a distributed-transaction claim.
-4. **Consumer contract:** named consumer, accepted event/schema versions, idempotency key, duplicate/replay behaviour, ordering and gap recovery, poison-message/quarantine policy, and bounded retry/reconciliation.
-5. **Authority and data handling:** whether the transition is merely observational, proposal-producing, governance-affecting or externally consequential; owner authorization, classification, redaction and retention requirements.
-6. **Failure and recovery:** crash points before/after commit, duplicate delivery, stale revision, missing predecessor, unknown version, partial cross-store completion, cancellation and restart.
-7. **Event-specific acceptance:** positive and negative assertions over durable state, emitted event/outbox count, consumer effects, no unauthorized transition and no false outcome claim.
+3. **Atomicity:** execute the owning-store transaction that commits aggregate mutation with immutable event/outbox; cross-store work must use durable saga semantics, not a distributed-transaction claim.
+4. **Consumer implementation:** implement the named consumers, accepted event/schema versions, idempotency key, duplicate/replay behaviour, ordering/gap recovery, poison-message quarantine and bounded retry/reconciliation.
+5. **Authority and data handling:** enforce the specified observational/proposal/governance/external-effect classification, owner authorization, redaction and retention.
+6. **Failure and recovery:** execute crash-before/after-commit, duplicate delivery, stale revision, missing predecessor, unknown version, partial cross-store completion, cancellation and restart tests.
+7. **Event-specific acceptance:** execute positive/negative assertions over durable state, event/outbox count, consumer effects, no unauthorized transition and no false outcome claim.
 
 ## 4. Current measured gap
 
 - Total registered events: **89**.
 - Events with one or more explicit command producers: **51**.
 - Events with no command producer binding: **38**.
-- All events still carry the unresolved bindings `runtime_handler`, `consumer_semantics`, `owner_transition` and `event_specific_acceptance`.
-- The command producer crosswalk is machine-enforced against `schemas/command-query-registry.v1.json`; it is not semantic or runtime validation.
+- All events now carry specified owner, producer-origin, consumer, owner-transition, ordering/idempotency and failure/recovery contracts. Remaining unresolved bindings are runtime handler implementation and executed event-specific acceptance; 38 events also lack a command producer and retain an exact internal producer-trigger gate.
+- The command producer and event payload/consumer-transition crosswalks are machine-enforced against the command/event registries; this is specification integrity, not semantic or runtime validation.
 - No event is dispatchable. No handler/consumer implementation, transaction execution, replay/restart test or independent review is claimed.
 
 ## 5. Decision and implementation boundary
