@@ -412,3 +412,10 @@ The 21 query registry entries now each have a unique QCC-001…QCC-021 positive 
 ## BR-002 exact-head verification — query acceptance specification (2026-11-12)
 
 Exact PR #2 head `072843a85e2b234cf8fe62dcc89df78d931f3dbc` passed GitHub Actions run [43319093751](https://github.com/methaneex-oss/AURIONS/actions/runs/43319093751), including schemas/fixtures, 21 query QCC acceptance-case integrity, governance, host SQLite smoke tests and Android shell syntax. Query acceptance cases are specified and machine-bound, not executed handlers. BR-002 remains OPEN; all queries remain design-only/non-dispatchable.
+
+
+## BR-008 builder increment — event producer crosswalk (2026-11-12)
+
+Added a complete 89-event producer/consumer semantics matrix. The machine-readable event registry now declares the exact command producers for each event; a validator enforces bidirectional parity with command `emitted_event_bindings`. Current result: 51 events have one or more command producers; 38 have no command producer binding and remain explicitly unresolved. This is not a claim that the latter have no valid producer: platform, worker, sync and internal transition sources still require evidence and ownership.
+
+All events remain design-only/non-dispatchable. Consumer semantics, owner transitions, event-specific acceptance and runtime handlers remain unresolved. This closes only the producer-crosswalk integrity subtask; BR-008 remains OPEN. Exact-head CI is pending.
