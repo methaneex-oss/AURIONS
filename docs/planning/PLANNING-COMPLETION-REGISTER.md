@@ -474,3 +474,12 @@ This closes scenario fixture specification coverage, not execution. A runtime sc
 Added a planning traceability validator and CI step. It enforces exact WP-00…WP-16 presence in roadmap and matrix, non-empty ownership/input/output/acceptance/failure/gate columns, valid dependency IDs, acyclicity, the WP-15 dependency set WP-00…WP-13, exclusion of WP-14 from first-release prerequisites, and WP-16's dependency on WP-15. Exact code revision `4296fbff3105c0ebabab4ced1bef4fe96a1a0dfe` passed run [43321213661](https://github.com/methaneex-oss/AURIONS/actions/runs/43321213661).
 
 This is structural integrity validation only. Semantic package readiness and PR #1 scaffold reconciliation after planning exit remain outstanding. BR-010 remains OPEN.
+
+
+## BR-004 builder increment — canonical scenario fixture validation (2026-11-12)
+
+Removed the duplicate 36-scenario catalogue and strengthened validation of the canonical 39-scenario contract fixture set: INT-001…003, CM-001…021 and AD-001…015. CI now enforces 172 ordered steps, 45 negative controls, command/query/event/payload reference integrity, durable-state assertions, restart/replay/concurrency/fault/held-out controls, no execution authority and pre-registered learning metrics for actual learning scenarios.
+
+The initial guard incorrectly classified INT-002/INT-003 as learning scenarios; the builder corrected the classification after inspecting their acceptance rules. Exact revision `377ff4ad01b81f2e79b2c60d85c9b946f9c095fe` passed workflow [43321607903](https://github.com/methaneex-oss/AURIONS/actions/runs/43321607903), including all schema, governance, work-package graph, SQLite and Android shell checks.
+
+The scenario suite is specified, not executed. Runtime scenario runner, production handlers and behavioural evidence remain absent. BR-004 remains OPEN.
