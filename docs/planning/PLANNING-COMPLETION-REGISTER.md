@@ -33,7 +33,7 @@ A design can be specified without being validated or implemented. Do not collaps
 - Added `schemas/world-interaction.v1.schema.json` with objective, entity, relationship, situation, evidence, affordance hypothesis, interaction proposal and interaction outcome definitions.
 - Added a positive fixture covering a possible human custodian and a non-executed request; added a negative entity fixture missing evidence.
 - Proposed `aurion_memory.migration_v4.sql` for owner-scoped, versioned world entities, relationships, situation snapshots, affordance hypotheses, interaction proposals and outcomes. Updated schema and persistence indexes.
-- Remaining: validate JSON Schema Draft 2020-12 with an approved validator, execute the SQL migration on the pinned SQLite baseline, reconcile IDs/references/retention, and bind the new contracts to events, commands, queries, C++ owners, work packages and scenario tests. The new contracts remain design-only and are not dispatchable.
+- Remaining: validate JSON Schema Draft 2020-12 with an approved validator, execute the SQL migration on the pinned SQLite baseline, reconcile IDs/references/retention, and bind the new contracts to events, commands, queries, C++ owners, work packages and scenario tests. The new contracts remain design-only and are not dispatchable. A bounded custom structural check accepted the positive world-interaction fixture and rejected the negative entity fixture; this is not official JSON Schema Draft 2020-12 validation.
 
 
 No layer is currently marked COMPLETE — VERIFIED. This is deliberate: the current planning baseline has not passed the full audit and consistency criteria below.
@@ -91,7 +91,7 @@ The canonical matrix is the single mechanism-to-component/persistence/event/test
 - Specify testable experience-dependent change without hardcoded stimulus-to-behaviour mappings.
 
 ### B-03 — Operationalize the no-hardcoding principle
-- The principle is explicitly defined across the dedicated architecture documents and completion register. NHC-001…NHC-016 regression acceptance checks have been added to the contract test catalogue and mapped to the responsible WP-01/WP-04/WP-06/WP-07/WP-09/WP-10/WP-11/WP-12/WP-13/WP-15 packages in the canonical roadmap. Remaining: trace the invariant against every product requirement and review criterion, ensure each mapped WP's fixtures are concrete, and execute code-level checks after implementation.
+- The principle is explicitly defined across the dedicated architecture documents and completion register. NHC-001…NHC-016 regression acceptance checks and CM-022…CM-029 open-world cognitive scenarios have been added to the contract test catalogue and mapped to the responsible WP-01/WP-04/WP-06/WP-07/WP-09/WP-10/WP-11/WP-12/WP-13/WP-15 packages in the canonical roadmap. Remaining: trace the invariant against every product requirement and review criterion, ensure each mapped WP's fixtures are concrete, and execute code-level checks after implementation.
 - Separate engineered mechanisms/invariants from data and behaviour learned or discovered through experience.
 - Permit explicit safety invariants, schemas, protocols, resource limits and policy constraints; these are not learned behaviour.
 - Require provenance, confidence/uncertainty and evaluation for acquired capability knowledge.
