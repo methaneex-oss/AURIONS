@@ -95,11 +95,70 @@ def main() -> int:
     events = event_registry["events"]
     if len(events) != 84:
         fail(f"event registry expected 84 entries, found {len(events)}")
+
+    def resolve_pointer(document, pointer: str, label: str):
+        if not pointer.startswith("#/"):
+            fail(f"{label}: expected a non-root JSON Pointer fragment")
+        value = document
+        for raw_part in pointer[2:].split("/"):
+            part = raw_part.replace("~1", "/").replace("~0", "~")
+            if isinstance(value, list):
+                try:
+                    index = int(part)
+                except ValueError:
+                    fail(f"{label}: non-integer array index {part!r}")
+                if index < 0 or index >= len(value):
+                    fail(f"{label}: array index {index} is out of range")
+                value = value[index]
+            elif isinstance(value, dict) and part in value:
+                value = value[part]
+            else:
+                fail(f"{label}: unresolved JSON Pointer segment {part!r}")
+        return value
+
+    fixture_cache = {}
     for event_type, item in events.items():
         if item.get("dispatch_status") != "design_only_not_dispatchable":
             fail(f"{event_type}: event unexpectedly dispatchable")
         if not item.get("unresolved_bindings"):
             fail(f"{event_type}: missing event binding ledger")
+
+        schema_ref = item.get("payload_schema_ref", "")
+        schema_path, separator, schema_pointer = schema_ref.partition("#")
+        if not separator or not schema_path.startswith("schemas/"):
+            fail(f"{event_type}: malformed payload schema reference {schema_ref!r}")
+        schema_name = Path(schema_path).name
+        payload_schema = schema_docs.get(schema_name)
+        if payload_schema is None:
+            fail(f"{event_type}: missing payload schema file {schema_path!r}")
+        payload_definition = resolve_pointer(
+            payload_schema, "#" + schema_pointer, f"{event_type} payload schema"
+        )
+        if not isinstance(payload_definition, dict):
+            fail(f"{event_type}: payload schema reference does not resolve to a schema object")
+        schema_id = payload_schema.get("$id")
+        if not schema_id:
+            fail(f"{event_type}: referenced schema has no stable $id")
+        payload_ref = {"$ref": schema_id + "#" + schema_pointer}
+
+        fixture_refs = item.get("fixture_refs", [])
+        if not fixture_refs:
+            fail(f"{event_type}: no event-body fixture references")
+        for fixture_ref in fixture_refs:
+            fixture_path, fixture_separator, fixture_pointer = fixture_ref.partition("#")
+            if not fixture_separator or not fixture_path.startswith("schemas/fixtures/"):
+                fail(f"{event_type}: malformed fixture reference {fixture_ref!r}")
+            if fixture_path not in fixture_cache:
+                path = ROOT / fixture_path
+                if not path.is_file():
+                    fail(f"{event_type}: fixture file does not exist: {fixture_path}")
+                fixture_cache[fixture_path] = load(path)
+            fixture_payload = resolve_pointer(
+                fixture_cache[fixture_path],
+                "#" + fixture_pointer,
+                f"{event_type} fixture {fixture_ref}",
+            )
+            validate(fixture_payload, payload_ref, f"{event_type} fixture {fixture_ref}")
 
     error_registry = load(SCHEMAS / "error-registry.v1.json")
     error_cases = load(FIXTURES / "error-handler-cases.fixture.json")["cases"]
