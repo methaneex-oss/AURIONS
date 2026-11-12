@@ -8,6 +8,7 @@ readiness.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -615,7 +616,6 @@ def main() -> int:
 
     # Reconcile the machine registry against the normative per-code mapping
     # table. This verifies mapping integrity, not that a runtime handler exists.
-    import re
 
     matrix_path = ROOT / "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md"
     matrix_rows = {}
