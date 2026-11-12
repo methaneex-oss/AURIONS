@@ -453,3 +453,10 @@ Corrected event payload definition names and task-control producer bindings acro
 Exact PR #2 head `a27260dfcd3ec7a7a77ca725b437f2565bd762ae` passed workflow [43320550842](https://github.com/methaneex-oss/AURIONS/actions/runs/43320550842), including schema/fixture, command/query/event/error integrity, event matrix parity, governance, host SQLite and Android shell checks. A bounded source comparison found zero event matrix/registry mismatches.
 
 This closes event producer catalogue integrity only. Event consumers, owner transitions and runtime handlers remain unimplemented/unverified; all events remain non-dispatchable. BR-008 remains OPEN.
+
+
+## BR-004 builder increment — integrated scenario fixture specification (2026-11-12)
+
+Added a scenario-contract schema and three integrated scenario fixtures (INT-001…INT-003), with 28 ordered steps, nine negative controls and explicit restart/replay, concurrency, fault, held-out and acceptance-threshold controls. CI validates fixture shape and command/query/event/source-scenario references. Exact code/fixture revision `a27260dfcd3ec7a7a77ca725b437f2565bd762ae` passed run [43320550842](https://github.com/methaneex-oss/AURIONS/actions/runs/43320550842).
+
+This is specified test design, not execution evidence. Runtime scenario runner, production handlers and the complete individual CM/AD scenario fixture set remain absent. The current learning command surface also lacks a canonical acceptance/activation transition; this remains an explicit blocker rather than an invented command. BR-004 remains OPEN.
