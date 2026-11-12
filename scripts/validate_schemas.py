@@ -78,13 +78,31 @@ def main() -> int:
         fail("command registry must contain 45 unique command types")
     if len(queries) != 21 or len({item["query_type"] for item in queries}) != 21:
         fail("query registry must contain 21 unique query types")
+    command_matrix_path = ROOT / "docs/planning/COMMAND-TRANSITION-AND-RECOVERY-CONTRACT-MATRIX.md"
+    if not command_matrix_path.is_file():
+        fail("missing per-command transition and recovery contract matrix")
+    command_matrix = command_matrix_path.read_text(encoding="utf-8")
     for item in commands:
+        command_type = item["command_type"]
         if not item.get("unresolved_bindings"):
-            fail(f"{item['command_type']}: missing explicit unresolved-binding ledger")
+            fail(f"{command_type}: missing explicit unresolved-binding ledger")
         if item.get("dispatch_status") not in {
             "design_only_not_dispatchable", "deferred_by_scope"
         }:
-            fail(f"{item['command_type']}: unsafe dispatch status")
+            fail(f"{command_type}: unsafe dispatch status")
+        matrix_row = f"| `{command_type}` |"
+        if matrix_row not in command_matrix:
+            fail(f"{command_type}: missing per-command transition matrix row")
+    matrix_command_rows = [
+        line for line in command_matrix.splitlines()
+        if line.startswith("| `") and line.count("|") >= 4
+    ]
+    if len(matrix_command_rows) != len(commands):
+        fail(
+            f"command transition matrix expected {len(commands)} rows, "
+            f"found {len(matrix_command_rows)}"
+        )
+
     query_contract_fields = (
         "authorization_contract",
         "data_classification",
