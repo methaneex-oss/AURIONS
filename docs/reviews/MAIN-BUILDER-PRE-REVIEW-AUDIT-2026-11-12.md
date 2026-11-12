@@ -94,7 +94,7 @@ The current PR file inventory contains 78 named positive domain-payload examples
 ### BR-003 — Error registry remains a seed, not an operational recovery contract
 
 **Severity:** High  
-**Evidence:** 35/35 registry entries have status `seed`. Category-level contracts and payload fixtures exist, but code-specific recovery branches and executable tests do not.  
+**Evidence:** 35/35 registry entries have status `seed`. All 35 codes have explicit code-level handler-contract, default side-effect, retry-posture and fixture mappings in the Error Handler Contract Matrix and machine-readable registry. The new CI cross-check validates that the two sources and fixture pointers agree. The mappings are design contracts only; code-specific recovery branch execution and executable no-blind-retry tests do not exist.  
 **Required builder closure:** Map every code to its owning handler and legal disposition; define when fresh evidence, state reconciliation, user intervention, quarantine or permanent rejection is required; add executable recovery and no-blind-retry tests; prove that error handling cannot grant authority or convert uncertain effects into success.
 
 **Current disposition:** OPEN. No registry entry is production-dispatchable.
@@ -352,3 +352,18 @@ Applicable duties: builder scope ownership, independent professional judgment, c
 - Consequently, the builder cannot honestly close runtime recovery, integrated cognitive behaviour, target-device, cloud/KMS or actual security-enforcement findings by adding prose or generic fixtures. Doing so would misstate specification as implementation or verification.
 
 **Disposition:** the exact-head CI checks are VERIFIED for their stated scope only. They do not change the NOT READY verdict or close any BR-001…BR-010 finding. Builder work remains blocked at the boundary between design-only contracts and unapproved implementation/owner-reserved decisions. No independent-review or tester handoff is issued by this update.
+
+## Builder increment — validator evidence reconciliation and error-mapping integrity (2026-11-12)
+
+**Exact starting revision:** `0332792bc3f3c1793885d6fb5f8a0def9d392305`. The mandatory fresh-read gate was completed before this run:
+- Project Directorship and Team Operating Standard — blob `951b9009cbedcf8907b365d611d89559d5a17385`.
+- Builder Operating Protocol — blob `179b02aaef051173b96f54812f451ede1a2eae0d`.
+
+**Corrections made:**
+1. Reconciled the implementation-ready contracts, cognitive/capability matrix and owner-decision matrix with later CI evidence. Python-host Draft 2020-12 validation and host SQLite base/migration smoke checks are now recorded as passed for their bounded scopes. C++ validator equivalence, C++/Python conformance, Android/Termux SQLite, crash/fault recovery and runtime semantics remain open.
+2. Added a validator cross-check between all 35 code-level rows in `docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md` and `schemas/error-registry.v1.json`. It verifies exact inventory parity, handler-contract reference, default side-effect state, retry posture and fixture pointer. It does not claim a runtime handler exists or prove that the documented recovery branch executes.
+3. Corrected BR-003's evidence statement: code-level mapping is present and structurally reconciled; executable code-specific recovery and no-blind-retry tests remain outstanding.
+
+**Exact final revision for this increment:** `7b913e829acb5ef51f988a20ca637a45605bc81a`. GitHub Actions run [43291121578](https://github.com/methaneex-oss/AURIONS/actions/runs/43291121578) completed successfully. The job's schema/positive-negative fixture validation, governance integrity validation, SQLite DDL/migration smoke tests and Android probe shell syntax steps all passed.
+
+**Disposition:** This closes a stale-evidence reconciliation and adds a structural integrity guard. BR-003 remains OPEN because the runtime handlers, per-code recovery execution, fault/replay tests and production registration gate are not satisfied. BR-008 remains OPEN because semantic correctness across all event, command/query, entity, persistence, security and product paths is not established by reference consistency. BR-010 remains OPEN because complete package-level ownership/IO/exit traceability and PR #1 scaffold reconciliation remain outstanding. Overall builder disposition remains NOT READY; no independent-review or tester handoff is issued.
