@@ -4,6 +4,8 @@ This directory contains the canonical planning mirror, detailed technical contra
 
 ## Canonical source and planning baseline
 
+- [Mandatory Builder Operating Protocol](../governance/BUILDER-OPERATING-PROTOCOL.md) — execution, scope discipline, verification, completion evidence and distinct builder/reviewer/tester accountability.
+
 - [Initial engineering specification](INITIAL-ENGINEERING-SPECIFICATION.md)
 - [Owner decision traceability matrix](OWNER-DECISION-TRACEABILITY-MATRIX.md) — maps each owner decision to architecture, contracts, tests, roadmap and remaining evidence.
 - [Machine-readable contract schemas](../../schemas/README.md)
