@@ -1,0 +1,1268 @@
+{
+  "registry_id": "aurions.event-registry",
+  "registry_version": "1.0",
+  "status": "design_baseline_not_dispatchable",
+  "source_catalogue": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#event-catalogue",
+  "events": [
+    {
+      "event_type": "experience.observed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/experienceObserved",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/experienceObserved"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "evidence.recorded.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evidenceItem",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/evidenceItem"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "objective.created.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/objective",
+      "fixture_refs": [
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/objective"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "world.entity.observed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/entity",
+      "fixture_refs": [
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/entity"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "world.relationship.revised.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/relationship",
+      "fixture_refs": [
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/relationship"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "situation.snapshot.created.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/situation",
+      "fixture_refs": [
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/situation"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "means.affordance.proposed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/affordanceHypothesis",
+      "fixture_refs": [
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/affordanceHypothesis"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "interaction.proposed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/interactionProposal",
+      "fixture_refs": [
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/interactionProposal"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "interaction.outcome.observed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/interactionOutcome",
+      "fixture_refs": [
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/interactionOutcome"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "representation.created.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/representationCreated",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/representationCreated"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "representation.revised.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/representationRevised",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/representationRevised"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "context.assembled.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/contextSnapshot",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/contextSnapshot"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "context.invalidated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/contextInvalidated",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/contextInvalidated"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "environment.observed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/environmentObserved",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/environmentObserved"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "capability.discovered.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityDescriptorRecord"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "capability.verified.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityDescriptorRecord"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "capability.invalidated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityDescriptorRecord"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "capability.revoked.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityDescriptorRecord"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "capability.knowledge.revised.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityKnowledgeRevision",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityKnowledgeRevision"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "memory.recorded.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/memoryRecord",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/memoryRecord"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "memory.retrieved.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/memoryRetrieval",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/memoryRetrieval"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "belief.proposed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/beliefRevision",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/beliefRevision"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "belief.revised.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/beliefRevision",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/beliefRevision"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "prediction.created.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/predictionCreated",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/predictionCreated"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "prediction.evaluated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/predictionEvaluation",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/predictionEvaluation"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "appraisal.updated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/appraisalUpdated",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/appraisalUpdated"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "attention.allocated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/attentionAllocated",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/attentionAllocated"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "reasoning.hypothesis.proposed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/reasoningHypothesisProposed",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/reasoningHypothesisProposed"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "decision.recorded.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/decisionRecorded",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/decisionRecorded"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "outcome.evaluated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/outcomeEvaluation",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/outcomeEvaluation"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "goal.created.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/goalRevision"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "goal.revised.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/goalRevision"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "plan.proposed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/planRevision",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/planRevision"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "plan.revised.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/planRevision",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/planRevision"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "plan.checkpointed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/taskCheckpointDetails",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/taskCheckpointDetails"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "permission.evaluated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/permissionEvaluated",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/permissionEvaluated"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "approval.requested.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/approvalRequested",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/approvalRequested"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "approval.decided.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/approvalDecision",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/approvalDecision"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.proposed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.validating.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.awaiting_approval.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.ready.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.dispatched.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.running.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.succeeded.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.failed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.rejected.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.expired.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.revoked.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.cancel_requested.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.cancelled.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.uncertain.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.reconciling.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.reconciled.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.compensation_required.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.compensating.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.compensated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "operation.manual_intervention.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/operationLifecycleEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "outcome.observed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/outcomeObserved",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/outcomeObserved"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "learning.update.proposed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/learningUpdate",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/learningUpdate"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "learning.update.accepted.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/learningUpdate",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/learningUpdate"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "learning.experiment.completed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/learningExperimentCompleted",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/learningExperimentCompleted"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "self_model.updated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/selfModelUpdated",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/selfModelUpdated"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "evolution.proposed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionProposed",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionProposed"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "evolution.candidate.evaluated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateLifecycle",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionCandidateLifecycle"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "candidate.activated.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateLifecycle",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionCandidateLifecycle"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "candidate.rolled_back.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateLifecycle",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionCandidateLifecycle"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "sync.change.exported.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/syncChange",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/syncChange"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "sync.change.applied.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/syncChange",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/syncChange"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "sync.tombstone.applied.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/syncChange",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/syncChange"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "sync.conflict.detected.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/syncConflictRecord",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/syncConflictRecord"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "sync.conflict.resolved.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/syncConflictRecord",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/syncConflictRecord"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "artifact.registered.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/artifactManifest",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/artifactManifest"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "artifact.quarantined.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/artifactManifest",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/artifactManifest"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "artifact.deleted.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/artifactManifest",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/artifactManifest"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "disclosure.recorded.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/externalDisclosureRecord",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/externalDisclosureRecord"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "retention.deletion.requested.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/retentionDeletionEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/retentionDeletionEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "retention.deletion.completed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/retentionDeletionEvent",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/retentionDeletionEvent"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "worker.job.requested.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/workerRequest",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/workerRequest"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "worker.job.progressed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/workerProgress",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/workerProgress"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "worker.job.completed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/workerResult",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/workerResult"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "worker.job.failed.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/workerFailure",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/workerFailure"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "task.control.requested.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/taskControlRequest",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/taskControlRequest"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    {
+      "event_type": "task.run.transitioned.v1",
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/taskRunTransition",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/taskRunTransition"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    }
+  ]
+}
