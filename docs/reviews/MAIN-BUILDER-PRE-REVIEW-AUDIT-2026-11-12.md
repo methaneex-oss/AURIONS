@@ -253,3 +253,12 @@ Executed the v3 statements in an in-memory SQLite **3.46.1** database with prere
 
 
 The v3 receipt digest column additionally rejects values that are not exactly 64 lowercase hexadecimal characters. A focused SQLite 3.46.1 constraint test accepted a valid 64-character lowercase hexadecimal value and rejected non-hex, uppercase and wrong-length values. This remains a constraint smoke test, not proof that a C++/Python implementation computes RFC 8785 + SHA-256 identically.
+
+
+## 12. Full Python Draft 2020-12 schema/fixture validation (2026-11-12)
+
+Added `scripts/validate_schemas.py`, pinned validation dependency `requirements-validation.txt`, and `.github/workflows/schema-validation.yml`. The successful CI run on revision `cda9023de34172679f8d5a01dddbdf54457956de` reported: **8 Draft 2020-12 schemas, 7 paired registry/fixture checks, 78 positive domain payloads and 29 negative controls — PASS**. The workflow enables format checking and fails if any negative fixture unexpectedly validates.
+
+Test development exposed and corrected a workflow cache-path defect and two relative external schema references. The final run passed after those corrections.
+
+This closes the Python-host Draft 2020-12 schema/fixture validation gap for the current corpus. It does not close C++ equivalence, Android/Termux feasibility, runtime semantics, command/query/event dispatch bindings, migration execution, or the broader BR-001…BR-010 findings. Full details and limitations are recorded in [Schema Validation Results](SCHEMA-VALIDATION-RESULTS-2026-11-12.md).
