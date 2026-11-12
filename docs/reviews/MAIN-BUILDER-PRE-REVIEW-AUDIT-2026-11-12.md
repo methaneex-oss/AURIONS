@@ -607,3 +607,17 @@ EBT-01, autonomous correction, builder self-review/testing and mandatory per-run
 **Verification state:** The current changes are committed but exact-head CI is pending at the time of this audit entry. Do not claim the new command/query fixture-reference validator or expanded inventory passed until GitHub Actions reports success on the exact final revision.
 
 **Disposition:** This closes the builder's missing open-world API specification/registry-binding subtask. BR-001 and BR-002 remain OPEN for owner acceptance of first-release scope, measured endpoint budgets where applicable, handler implementation and executable positive/negative/replay/crash/recovery/read-only tests. BR-008 remains OPEN for full semantic/consumer review and integrated scenario evidence. No owner-reserved decision, implementation authorization, dispatchability or independent-review/tester handoff is implied.
+
+
+## Exact-head verification — open-world command/query reconciliation (2026-11-12)
+
+The expanded command/query/event registry, new world-interaction bindings, semantic reconciliation report and audit/register updates are present at exact PR #2 head `29d2346958d0a57b072fd3309d698484a34d277b`. Exact-head GitHub Actions run [43320073556](https://github.com/methaneex-oss/AURIONS/actions/runs/43320073556) completed **PASS**.
+
+All steps passed:
+- Draft 2020-12 schemas and fixtures, including all command/query payload/result fixture bindings and the 89-event payload/fixture registry.
+- Command/query/event/error registry integrity, including 51 mapped commands, two deferred commands, 29 queries, CC-001…CC-051 and QCC-001…QCC-029.
+- Mandatory governance integrity.
+- Host SQLite base-schema and ordered migration smoke tests.
+- Android probe shell syntax.
+
+This verifies schema/fixture and registry structural integrity on the exact head. It does not execute command/query handlers, event consumers, cognitive scenarios, target-device tests or security controls. BR-001/BR-002 remain OPEN for implementation/owner gates and executable tests; BR-008 remains OPEN for full semantic/consumer review and integrated scenario evidence. No command/event is dispatchable; all queries remain read-only/non-dispatchable. No implementation authorization or independent-review/tester handoff is implied.
