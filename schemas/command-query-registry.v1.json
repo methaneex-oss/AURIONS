@@ -568,9 +568,7 @@
         "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
         "runtime.internal.INTERNAL_FAILURE"
       ],
-      "emitted_event_bindings": [
-        "capability.knowledge.revised.v1"
-      ],
+      "emitted_event_bindings": [],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/capabilityKnowledgeRevision",
@@ -693,9 +691,7 @@
         "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
         "runtime.internal.INTERNAL_FAILURE"
       ],
-      "emitted_event_bindings": [
-        "memory.retrieved.v1"
-      ],
+      "emitted_event_bindings": [],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/memoryRetrievalQuery",
@@ -1313,9 +1309,7 @@
         "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
         "runtime.internal.INTERNAL_FAILURE"
       ],
-      "emitted_event_bindings": [
-        "goal.revised.v1"
-      ],
+      "emitted_event_bindings": [],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/goalControlRequest",
@@ -1879,9 +1873,7 @@
         "governance.authorization.APPROVAL_MISMATCH",
         "governance.authorization.APPROVAL_REVOKED"
       ],
-      "emitted_event_bindings": [
-        "approval.decided.v1"
-      ],
+      "emitted_event_bindings": [],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/approvalRevocationRequest",
@@ -2205,9 +2197,7 @@
         "evidence.precondition.PRECONDITION_FALSE",
         "evidence.precondition.PRECONDITION_UNKNOWN"
       ],
-      "emitted_event_bindings": [
-        "self_model.updated.v1"
-      ],
+      "emitted_event_bindings": [],
       "fixture_refs": [
         "schemas/fixtures/domain-payloads.fixture.json#/commandEnvelope",
         "schemas/fixtures/domain-payloads.fixture.json#/selfModelUpdated",
