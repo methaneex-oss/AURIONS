@@ -36,7 +36,8 @@
         "evidence",
         "affordanceHypothesis",
         "interactionProposal",
-        "interactionOutcome"
+        "interactionOutcome",
+        "relatedEntities"
       ],
       "properties": {
         "objective": {
@@ -62,6 +63,9 @@
         },
         "interactionOutcome": {
           "$ref": "#/$defs/interactionOutcome"
+        },
+        "relatedEntities": {
+          "$ref": "#/$defs/entityCollection"
         }
       }
     }
@@ -717,6 +721,12 @@
             "type": "string"
           }
         }
+      }
+    },
+    "entityCollection": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/entity"
       }
     }
   }
