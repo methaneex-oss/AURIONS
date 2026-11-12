@@ -386,3 +386,10 @@ The builder freshly retrieved/read the mandatory governance standard (blob `951b
 All 43 mapped command entries now carry machine-readable aggregate revision/transition, owner/actor authorization and risk scope, RFC 8785 idempotency/replay, deadline/cancellation, side-effect/reconciliation, typed error and unambiguous event bindings. Added CC-001…CC-043 positive/negative acceptance criteria and a validator guard for semantic field presence, known error/event references, exact registry/matrix inventory and one-to-one acceptance cases. Device pairing/revocation remain deferred. Six command/event or command/query classification mismatches remain explicit blockers.
 
 This completes BR-001's first-pass specification/registry-binding subtask only. The acceptance cases are not executed handler tests; no production command handlers exist in this planning PR. BR-001 remains OPEN pending owner selection of the first-release subset, resolution of semantic blockers, implementation authorization and executed handler/replay/crash/recovery tests. All commands remain non-dispatchable.
+
+
+## BR-001 exact-head verification — command semantic registry bindings (2026-11-12)
+
+Exact PR #2 head `cb31aedcc5d1d522a3487d59f1a7204986109d12` passed GitHub Actions run [43318379405](https://github.com/methaneex-oss/AURIONS/actions/runs/43318379405). The run passed schema/fixture validation, command/query/event/error registry and CC-001…CC-043 acceptance-case integrity, governance validation, host SQLite smoke tests and Android shell syntax.
+
+All 43 mapped command entries now have semantic registry bindings; two device commands remain deferred. Six event/classification mismatches remain unresolved. This is design/registry validation only; command handlers and executable acceptance tests do not exist in this planning PR. BR-001 remains OPEN and no command is dispatchable.
