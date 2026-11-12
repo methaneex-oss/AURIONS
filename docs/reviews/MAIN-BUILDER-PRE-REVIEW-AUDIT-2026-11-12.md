@@ -335,3 +335,20 @@ Before this builder self-review/verification run, the current authoritative docu
 - Builder Operating Protocol — blob `179b02aaef051173b96f54812f451ede1a2eae0d`.
 
 Applicable duties: builder scope ownership, independent professional judgment, complete self-review, actual relevant verification, root-cause correction within authority, evidence-complete handoff, and separation of builder verification from independent review/tester acceptance. This run was limited to the existing BR-001/BR-002 builder analysis and self-review; it did not make owner-reserved decisions or authorize implementation.
+
+## Builder run — exact-head governance, CI and closure-boundary verification (2026-11-12)
+
+**Mandatory pre-run gate:** freshly retrieved and read before this builder run:
+- Project Directorship and Team Operating Standard — blob `951b9009cbedcf8907b365d611d89559d5a17385` (includes EBT-01 Part J).
+- Builder Operating Protocol — blob `179b02aaef051173b96f54812f451ede1a2eae0d` (includes EBT-01 Section 11).
+
+**Exact starting PR head:** `cc968402c868df1ffd80abf81c9df27f417937fb`. PR #2 remains open, draft and unmerged. The latest successful schema-contract workflow run inspected for that exact head is [43288660789](https://github.com/methaneex-oss/AURIONS/actions/runs/43288660789). Its job completed successfully for all steps: pinned Draft 2020-12 schema/fixture validation, governance integrity validation, complete host SQLite base/migration smoke checks, and Android probe shell syntax validation.
+
+**Builder self-review of the actual closure boundary:**
+- The current audit still has BR-001, BR-002, BR-003, BR-004, BR-008, BR-009 and BR-010 OPEN; BR-005, BR-006 and BR-007 are only PARTIALLY CLOSED.
+- The command/query registry remains design-only/non-dispatchable. Its entries do not have production handlers; the open-world objective/world/means/interaction interfaces remain proposals rather than approved canonical APIs.
+- The product definition itself identifies owner-reserved decisions: first permitted Android action and cloud/mobile cognitive-history continuity. The target Android device must also be owner-selected.
+- The PR contains architecture, product/planning, schemas, SQL proposals and validation scripts; it does not contain the authorized production cognitive/runtime implementation. The repository explicitly records that implementation authorization has not been granted.
+- Consequently, the builder cannot honestly close runtime recovery, integrated cognitive behaviour, target-device, cloud/KMS or actual security-enforcement findings by adding prose or generic fixtures. Doing so would misstate specification as implementation or verification.
+
+**Disposition:** the exact-head CI checks are VERIFIED for their stated scope only. They do not change the NOT READY verdict or close any BR-001…BR-010 finding. Builder work remains blocked at the boundary between design-only contracts and unapproved implementation/owner-reserved decisions. No independent-review or tester handoff is issued by this update.
