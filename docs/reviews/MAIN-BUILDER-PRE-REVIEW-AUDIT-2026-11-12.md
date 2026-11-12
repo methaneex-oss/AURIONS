@@ -467,3 +467,18 @@ Extended the validator to:
 **Verification state:** The code change is committed, but no exact-head GitHub Actions run is currently returned for the new revision. Therefore the new Python validator change is **IMPLEMENTED — UNVERIFIED** pending CI execution. Do not claim the new guard passed until an exact-head run reports success. The previous passing run [43296040114](https://github.com/methaneex-oss/AURIONS/actions/runs/43296040114) applies only to its earlier head `a11934f3177880125a67fbb6830ba59a7672c166`.
 
 BR-008 remains OPEN: this guard closes one machine-enforced schema/fixture reference-integrity gap only. It does not prove event semantic suitability, owner transitions, handler/consumer correctness, persistence transactions or executable cognitive behaviour.
+
+
+## Builder correction and exact-head verification — event payload binding validator (2026-11-12)
+
+The first two CI executions of the new event-payload validation failed, and the builder investigated the actual job logs rather than treating the source-level pointer check as sufficient:
+
+- Run [43309518687](https://github.com/methaneex-oss/AURIONS/actions/runs/43309518687) failed because a relative filename `$id` was used as an unregistered URI base.
+- Run [43309698482](https://github.com/methaneex-oss/AURIONS/actions/runs/43309698482) exposed a second defect: the local JSON Pointer `$ref` was constructed without its leading `#` fragment marker.
+- Corrected the validator to validate each event payload against a local wrapper containing the referenced schema's complete `$defs`, with the correct local fragment reference. A focused local Draft 2020-12 test confirmed that internal definition references resolve and invalid payloads are rejected.
+
+**Exact corrected code revision:** `2cfad2ce1a7a2e64be71697859541a0182b8424d`. GitHub Actions run [43309812492](https://github.com/methaneex-oss/AURIONS/actions/runs/43309812492) completed **PASS**. All steps passed: pinned Draft 2020-12 schemas and positive/negative fixtures (including the new 84-event payload/fixture bindings), mandatory governance integrity, host SQLite base-schema and ordered migration smoke tests, and Android probe shell syntax.
+
+The two failed runs are retained as correction evidence; they are not hidden or overwritten. The final code revision passed after both root causes were corrected.
+
+**Evidence boundary:** This closes the validator implementation/CI subtask for event schema/fixture reference integrity. It remains structural contract validation only. BR-008 remains OPEN for semantic event suitability, owner transitions, runtime handler/consumer behaviour, persistence transaction semantics and integrated cognitive scenarios. The 84 event entries remain design-only/non-dispatchable.
