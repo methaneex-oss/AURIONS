@@ -16,7 +16,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "experience.submit"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "evidence.recorded.v1": {
       "event_version": "1.0",
@@ -30,7 +34,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "experience.submit"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "objective.created.v1": {
       "event_version": "1.0",
@@ -44,7 +52,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "world.entity.observed.v1": {
       "event_version": "1.0",
@@ -58,7 +68,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "world.relationship.revised.v1": {
       "event_version": "1.0",
@@ -72,7 +84,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "situation.snapshot.created.v1": {
       "event_version": "1.0",
@@ -86,7 +100,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "means.affordance.proposed.v1": {
       "event_version": "1.0",
@@ -100,7 +116,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "interaction.proposed.v1": {
       "event_version": "1.0",
@@ -114,7 +132,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "interaction.outcome.observed.v1": {
       "event_version": "1.0",
@@ -128,7 +148,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "representation.created.v1": {
       "event_version": "1.0",
@@ -142,7 +164,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "representation.create"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "representation.revised.v1": {
       "event_version": "1.0",
@@ -156,7 +182,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "context.assembled.v1": {
       "event_version": "1.0",
@@ -170,7 +198,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "context.assemble"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "context.invalidated.v1": {
       "event_version": "1.0",
@@ -184,7 +216,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "context.invalidate"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "environment.observed.v1": {
       "event_version": "1.0",
@@ -198,7 +234,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "environment.observe"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "capability.discovered.v1": {
       "event_version": "1.0",
@@ -212,7 +252,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "capability.discover"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "capability.verified.v1": {
       "event_version": "1.0",
@@ -226,7 +270,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "capability.verify"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "capability.invalidated.v1": {
       "event_version": "1.0",
@@ -240,7 +288,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "capability.invalidate"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "capability.revoked.v1": {
       "event_version": "1.0",
@@ -254,7 +306,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "capability.knowledge.revised.v1": {
       "event_version": "1.0",
@@ -268,7 +322,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "capability.knowledge.revise"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "memory.recorded.v1": {
       "event_version": "1.0",
@@ -282,7 +340,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "memory.retrieved.v1": {
       "event_version": "1.0",
@@ -296,7 +356,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "memory.retrieve"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "belief.proposed.v1": {
       "event_version": "1.0",
@@ -310,7 +374,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "belief.propose"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "belief.revised.v1": {
       "event_version": "1.0",
@@ -324,7 +392,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "belief.revise"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "prediction.created.v1": {
       "event_version": "1.0",
@@ -338,7 +410,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "prediction.create"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "prediction.evaluated.v1": {
       "event_version": "1.0",
@@ -352,7 +428,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "prediction.evaluate"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "appraisal.updated.v1": {
       "event_version": "1.0",
@@ -366,7 +446,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "appraisal.evaluate"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "attention.allocated.v1": {
       "event_version": "1.0",
@@ -380,7 +464,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "attention.allocate"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "reasoning.hypothesis.proposed.v1": {
       "event_version": "1.0",
@@ -394,7 +482,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "reasoning.assess"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "decision.recorded.v1": {
       "event_version": "1.0",
@@ -408,7 +500,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "decision.record"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "outcome.evaluated.v1": {
       "event_version": "1.0",
@@ -422,7 +518,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "outcome.evaluate"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "goal.created.v1": {
       "event_version": "1.0",
@@ -436,7 +536,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "goal.create"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "goal.revised.v1": {
       "event_version": "1.0",
@@ -450,7 +554,12 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "goal.cancel",
+        "goal.revise"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "plan.proposed.v1": {
       "event_version": "1.0",
@@ -464,7 +573,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "plan.propose"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "plan.revised.v1": {
       "event_version": "1.0",
@@ -478,7 +591,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "plan.revise"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "plan.checkpointed.v1": {
       "event_version": "1.0",
@@ -492,7 +609,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "plan.checkpoint"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "permission.evaluated.v1": {
       "event_version": "1.0",
@@ -506,7 +627,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "approval.requested.v1": {
       "event_version": "1.0",
@@ -520,7 +643,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "approval.request"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "approval.decided.v1": {
       "event_version": "1.0",
@@ -534,7 +661,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.proposed.v1": {
       "event_version": "1.0",
@@ -548,7 +677,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "operation.propose"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "operation.validating.v1": {
       "event_version": "1.0",
@@ -562,7 +695,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.awaiting_approval.v1": {
       "event_version": "1.0",
@@ -576,7 +711,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.ready.v1": {
       "event_version": "1.0",
@@ -590,7 +727,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.dispatched.v1": {
       "event_version": "1.0",
@@ -604,7 +743,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.running.v1": {
       "event_version": "1.0",
@@ -618,7 +759,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.succeeded.v1": {
       "event_version": "1.0",
@@ -632,7 +775,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.failed.v1": {
       "event_version": "1.0",
@@ -646,7 +791,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.rejected.v1": {
       "event_version": "1.0",
@@ -660,7 +807,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.expired.v1": {
       "event_version": "1.0",
@@ -674,7 +823,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.revoked.v1": {
       "event_version": "1.0",
@@ -688,7 +839,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.cancel_requested.v1": {
       "event_version": "1.0",
@@ -702,7 +855,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "operation.cancel"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "operation.cancelled.v1": {
       "event_version": "1.0",
@@ -716,7 +873,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "operation.cancel"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "operation.uncertain.v1": {
       "event_version": "1.0",
@@ -730,7 +891,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.reconciling.v1": {
       "event_version": "1.0",
@@ -744,7 +907,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "operation.reconcile"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "operation.reconciled.v1": {
       "event_version": "1.0",
@@ -758,7 +925,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "operation.reconcile"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "operation.compensation_required.v1": {
       "event_version": "1.0",
@@ -772,7 +943,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.compensating.v1": {
       "event_version": "1.0",
@@ -786,7 +959,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.compensated.v1": {
       "event_version": "1.0",
@@ -800,7 +975,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "operation.manual_intervention.v1": {
       "event_version": "1.0",
@@ -814,7 +991,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "outcome.observed.v1": {
       "event_version": "1.0",
@@ -828,7 +1007,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "learning.update.proposed.v1": {
       "event_version": "1.0",
@@ -842,7 +1023,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "learning.update.propose"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "learning.update.accepted.v1": {
       "event_version": "1.0",
@@ -856,7 +1041,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "learning.experiment.completed.v1": {
       "event_version": "1.0",
@@ -870,7 +1057,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "self_model.updated.v1": {
       "event_version": "1.0",
@@ -884,7 +1073,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "evolution.proposed.v1": {
       "event_version": "1.0",
@@ -898,7 +1089,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "evolution.change.propose"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "evolution.candidate.evaluated.v1": {
       "event_version": "1.0",
@@ -912,7 +1107,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "evolution.candidate.evaluate"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "candidate.activated.v1": {
       "event_version": "1.0",
@@ -926,7 +1125,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "evolution.candidate.activate"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "candidate.rolled_back.v1": {
       "event_version": "1.0",
@@ -940,7 +1143,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "evolution.candidate.rollback"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "sync.change.exported.v1": {
       "event_version": "1.0",
@@ -954,7 +1161,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "sync.change.applied.v1": {
       "event_version": "1.0",
@@ -968,7 +1177,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "sync.tombstone.applied.v1": {
       "event_version": "1.0",
@@ -982,7 +1193,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "sync.conflict.detected.v1": {
       "event_version": "1.0",
@@ -996,7 +1209,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "sync.conflict.resolved.v1": {
       "event_version": "1.0",
@@ -1010,7 +1225,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "artifact.registered.v1": {
       "event_version": "1.0",
@@ -1024,7 +1241,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "artifact.quarantined.v1": {
       "event_version": "1.0",
@@ -1038,7 +1257,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "artifact.deleted.v1": {
       "event_version": "1.0",
@@ -1052,7 +1273,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "disclosure.recorded.v1": {
       "event_version": "1.0",
@@ -1066,7 +1289,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "retention.deletion.requested.v1": {
       "event_version": "1.0",
@@ -1080,7 +1305,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "retention.deletion.completed.v1": {
       "event_version": "1.0",
@@ -1094,7 +1321,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "worker.job.requested.v1": {
       "event_version": "1.0",
@@ -1108,7 +1337,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "learning.experiment.submit"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "worker.job.progressed.v1": {
       "event_version": "1.0",
@@ -1122,7 +1355,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "worker.job.completed.v1": {
       "event_version": "1.0",
@@ -1136,7 +1371,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "worker.job.failed.v1": {
       "event_version": "1.0",
@@ -1150,7 +1387,9 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved"
     },
     "task.control.requested.v1": {
       "event_version": "1.0",
@@ -1164,7 +1403,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "task.start"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "task.run.transitioned.v1": {
       "event_version": "1.0",
@@ -1178,7 +1421,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "task.start"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "approval.revoked.v1": {
       "event_version": "1.0",
@@ -1192,7 +1439,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "approval.revoke"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "capability.knowledge.proposed.v1": {
       "event_version": "1.0",
@@ -1206,7 +1457,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "capability.knowledge.propose"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "learning.candidate.evaluated.v1": {
       "event_version": "1.0",
@@ -1220,7 +1475,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "learning.candidate.evaluate"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "self_model.update.proposed.v1": {
       "event_version": "1.0",
@@ -1234,7 +1493,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "self_model.update.propose"
+      ],
+      "command_producer_binding_status": "bound"
     }
   }
 }
