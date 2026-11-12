@@ -201,6 +201,36 @@ def main() -> int:
     if len(events) != 88:
         fail(f"event registry expected 88 entries, found {len(events)}")
 
+    # Reconcile event producer declarations bidirectionally with command
+    # emissions. An event with no command producer remains explicitly
+    # unresolved; it is not silently assumed to be an external or internal
+    # producer. Consumer and owner-transition semantics remain separate gates.
+    expected_event_producers = {event_type: set() for event_type in events}
+    for command in commands:
+        for event_type in command.get("emitted_event_bindings", []):
+            if event_type not in expected_event_producers:
+                fail(
+                    f"{command['command_type']}: emitted event {event_type} "
+                    "is absent from the event registry"
+                )
+            expected_event_producers[event_type].add(command["command_type"])
+    for event_type, event in events.items():
+        declared = event.get("command_producers")
+        if not isinstance(declared, list) or len(declared) != len(set(declared)):
+            fail(f"{event_type}: command_producers must be a unique array")
+        expected = expected_event_producers[event_type]
+        if set(declared) != expected:
+            fail(
+                f"{event_type}: command producer mismatch; "
+                f"declared={sorted(declared)} expected={sorted(expected)}"
+            )
+        expected_status = "bound" if expected else "unresolved"
+        if event.get("command_producer_binding_status") != expected_status:
+            fail(
+                f"{event_type}: command producer status must be "
+                f"{expected_status!r}"
+            )
+
     def resolve_pointer(document, pointer: str, label: str):
         if not pointer.startswith("#/"):
             fail(f"{label}: expected a non-root JSON Pointer fragment")
