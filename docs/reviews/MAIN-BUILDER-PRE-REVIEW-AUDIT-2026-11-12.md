@@ -519,3 +519,12 @@ This verifies the current revision's bounded CI checks. It does not close BR-001
 **Evidence boundary:** These are specified and machine-bound acceptance criteria. No production handlers exist in this planning PR and no command handler acceptance test was executed. The command matrix still identifies the six event/classification blockers and the first-release command subset remains proposed pending owner acceptance. All mapped commands remain design-only/non-dispatchable.
 
 **BR-001 disposition:** Specification/registry-binding subtask is completed for the 43 mapped commands. BR-001 remains OPEN pending resolution of the six semantic binding blockers, owner acceptance of the first-release subset, implementation authorization, handler implementation and executed per-command positive/negative/replay/crash/recovery tests. No dispatchability, implementation authorization or owner decision is inferred.
+
+
+## BR-001 exact-head verification — command semantic registry bindings (2026-11-12)
+
+The command-contract increment is present at exact PR #2 head `cb31aedcc5d1d522a3487d59f1a7204986109d12`. Exact-head GitHub Actions run [43318379405](https://github.com/methaneex-oss/AURIONS/actions/runs/43318379405) completed **PASS**. All workflow steps passed: Draft 2020-12 schemas and fixtures (including the expanded command registry fields), command/query/event/error registry integrity and acceptance-case checks, governance integrity, host SQLite base/migration smoke tests and Android probe shell syntax.
+
+The machine validator now enforces all 43 mapped command semantic bindings, 43 unique CC acceptance cases, known error/event references, exact command inventory and non-dispatchable status. The two device commands remain deferred.
+
+**BR-001 remains OPEN** despite closure of the first-pass specification/registry-binding subtask. Six semantic command/event or command/query classification mismatches remain explicit. The 43 CC cases are acceptance criteria, not executed handler tests; there are no production command handlers in this planning PR. Owner acceptance of the first-release command subset and implementation authorization remain absent. No command is dispatchable; no independent-review/tester handoff is issued.
