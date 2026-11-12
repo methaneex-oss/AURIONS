@@ -2,7 +2,7 @@
 
 **Status: proposed planning artifacts only. None of these scripts has been executed, applied to a user database, or validated against the target Termux/Android SQLite build.**
 
-These files are the machine-readable DDL source for the three independent SQLite stores. Memory migration v4 proposes owner-scoped, versioned persistence for open-world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The explanatory source specification in `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md` Section 26 links to these files; do not maintain a second inline SQL copy there.
+These files are the machine-readable DDL source for the three independent SQLite stores. Memory migration v4 proposes owner-scoped, versioned persistence for objective records (distinct from derived goals), open-world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The explanatory source specification in `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md` Section 26 links to these files; do not maintain a second inline SQL copy there.
 
 ## Base schemas and migration order
 
