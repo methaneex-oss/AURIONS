@@ -194,7 +194,11 @@
           ],
           "properties": {
             "context_ref": {
-              "$ref": "#/$defs/ref"
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
             },
             "valid_from": {
               "type": [
