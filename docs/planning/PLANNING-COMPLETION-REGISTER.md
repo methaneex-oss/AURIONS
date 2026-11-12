@@ -393,3 +393,10 @@ This completes BR-001's first-pass specification/registry-binding subtask only. 
 Exact PR #2 head `cb31aedcc5d1d522a3487d59f1a7204986109d12` passed GitHub Actions run [43318379405](https://github.com/methaneex-oss/AURIONS/actions/runs/43318379405). The run passed schema/fixture validation, command/query/event/error registry and CC-001…CC-043 acceptance-case integrity, governance validation, host SQLite smoke tests and Android shell syntax.
 
 All 43 mapped command entries now have semantic registry bindings; two device commands remain deferred. Six event/classification mismatches remain unresolved. This is design/registry validation only; command handlers and executable acceptance tests do not exist in this planning PR. BR-001 remains OPEN and no command is dispatchable.
+
+
+## BR-001 / BR-008 builder increment — command/event binding gaps resolved (2026-11-12)
+
+Resolved six command/event or command/query classification gaps: memory retrieval is the audited command distinct from read-only memory search; goal cancellation uses an explicit terminal cancelled goal revision; and four new event payloads/fixtures were added for approval revocation, proposed capability knowledge, learning-candidate evaluation and proposed self-model revision. Bound all six command entries to unambiguous events. Event inventory increased from 84 to 88 and the validator count guard was updated.
+
+Exact revision `bde408f8d3c0709a0e848376caa8ccb97dec6bb7` passed workflow [43318729147](https://github.com/methaneex-oss/AURIONS/actions/runs/43318729147), including schema/fixture, command/event/error registry, governance, host SQLite and Android shell checks. New events remain design-only/non-dispatchable. Handler/consumer tests and architecture-wide semantic reconciliation remain outstanding; BR-001 and BR-008 remain OPEN.
