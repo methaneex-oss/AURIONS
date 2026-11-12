@@ -2081,7 +2081,11 @@
       "idempotency_contract": "commandEnvelope.idempotency_key is mandatory. Per-command deduplication scope, canonical digest algorithm/version, result replay and collision handling remain unresolved and are required before dispatch.",
       "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
       "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
-      "error_code_bindings": [],
+      "error_code_bindings": [
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED"
+      ],
       "emitted_event_bindings": [
         "task.control.requested.v1",
         "task.run.transitioned.v1"
@@ -2095,7 +2099,6 @@
       "unresolved_bindings": [
         "per_command_owner_device_scope_and_risk_mapping",
         "per_command_idempotency_scope_digest_replay_and_collision_rules",
-        "error_code_mapping_and_recovery_branches",
         "per_entry_conflict_replay_recovery_assertions"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
@@ -2130,7 +2133,12 @@
       "idempotency_contract": "commandEnvelope.idempotency_key is mandatory. Per-command deduplication scope, canonical digest algorithm/version, result replay and collision handling remain unresolved and are required before dispatch.",
       "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
       "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
-      "error_code_bindings": [],
+      "error_code_bindings": [
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED",
+        "operation.budget.CANCELLED_BEFORE_DISPATCH"
+      ],
       "emitted_event_bindings": [
         "task.control.requested.v1",
         "task.run.transitioned.v1"
@@ -2144,7 +2152,6 @@
       "unresolved_bindings": [
         "per_command_owner_device_scope_and_risk_mapping",
         "per_command_idempotency_scope_digest_replay_and_collision_rules",
-        "error_code_mapping_and_recovery_branches",
         "per_entry_conflict_replay_recovery_assertions"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
@@ -2179,7 +2186,11 @@
       "idempotency_contract": "commandEnvelope.idempotency_key is mandatory. Per-command deduplication scope, canonical digest algorithm/version, result replay and collision handling remain unresolved and are required before dispatch.",
       "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
       "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
-      "error_code_bindings": [],
+      "error_code_bindings": [
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED"
+      ],
       "emitted_event_bindings": [
         "task.control.requested.v1",
         "task.run.transitioned.v1"
@@ -2193,7 +2204,6 @@
       "unresolved_bindings": [
         "per_command_owner_device_scope_and_risk_mapping",
         "per_command_idempotency_scope_digest_replay_and_collision_rules",
-        "error_code_mapping_and_recovery_branches",
         "per_entry_conflict_replay_recovery_assertions"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
@@ -2228,7 +2238,12 @@
       "idempotency_contract": "commandEnvelope.idempotency_key is mandatory. Per-command deduplication scope, canonical digest algorithm/version, result replay and collision handling remain unresolved and are required before dispatch.",
       "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
       "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
-      "error_code_bindings": [],
+      "error_code_bindings": [
+        "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "operation.budget.DEADLINE_EXCEEDED",
+        "operation.budget.CANCELLED_BEFORE_DISPATCH"
+      ],
       "emitted_event_bindings": [
         "task.control.requested.v1",
         "task.run.transitioned.v1"
@@ -2242,7 +2257,6 @@
       "unresolved_bindings": [
         "per_command_owner_device_scope_and_risk_mapping",
         "per_command_idempotency_scope_digest_replay_and_collision_rules",
-        "error_code_mapping_and_recovery_branches",
         "per_entry_conflict_replay_recovery_assertions"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
