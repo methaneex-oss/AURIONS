@@ -826,6 +826,71 @@ The following is the proposed mechanism boundary; it does not select a cloud ven
 
 **Validation boundary:** SEC-001…SEC-011 require host fakes plus actual platform/cloud integration tests. Android Keystore hardware backing, Termux bridge feasibility, secure backup/restore, KMS outage/revocation, signing-key rotation and device-loss recovery are not validated by schema or documentation checks.
 
+
+### 11.7 Provider-independent key-service boundary and trust/data-flow contract
+
+This section makes the provider-independent boundary explicit. It is a design contract only: it selects no cloud KMS, Android bridge, recovery provider, cryptographic library or production key policy.
+
+#### Key-service interface responsibilities
+
+The runtime depends on a narrow key-service abstraction. Domain code MUST NOT call a vendor SDK or platform keystore API directly.
+
+| Operation | Input authority and scope | Required result | Failure rule |
+|---|---|---|---|
+| `describe_key` | Authenticated internal caller; opaque key reference | Key ID/version, purpose, algorithm identifier, provider class, backing evidence and lifecycle state; never key bytes | Unknown/unavailable metadata is an error, not an inferred default |
+| `generate_data_key` | Authorized domain + data-classification scope + algorithm policy | Fresh DEK material for immediate in-memory use plus wrapped DEK and opaque KEK reference/version | No plaintext DEK persistence; fail closed if wrapping cannot complete |
+| `unwrap_data_key` | Authenticated workload, exact owner/domain and ciphertext key-version reference | DEK only for the authorized operation and bounded lifetime | Deny on owner/domain mismatch, revoked/unknown key, provider outage or policy failure |
+| `rewrap_data_key` | Authorized rotation/recovery job with source and destination key versions | New wrapped DEK plus durable old/new version lineage | Idempotent and resumable; do not delete old wrapping until verified completion and retention gate |
+| `sign` / `verify` | Purpose-bound signing key and canonical manifest/message digest | Signature or verified identity/key-version evidence | Signing keys cannot be used for data decryption or owner authentication |
+| `revoke_key` | Governance-authorized revocation command with reason and scope | Durable revocation receipt and effective-state evidence | Revocation cannot be inferred from timeout; uncertain provider result requires reconciliation |
+| `create_recovery_package` / `restore_recovery_package` | Explicit owner-configured recovery policy and separately authenticated recovery actor | Encrypted recovery metadata and verifiable restore result | No implicit recovery, hidden escrow, universal bypass or model-initiated recovery |
+
+All methods use opaque references, typed errors, bounded deadlines and audit correlation IDs. Provider-specific metadata is retained as evidence, not treated as authority. The interface MUST expose whether a key is hardware-backed, software-backed, remote, unknown or unsupported; it MUST NOT collapse these states into a boolean "secure" flag.
+
+#### Trust-boundary and data-flow map
+
+| Boundary | Data crossing it | Mandatory control | Owner / enforcement point |
+|---|---|---|---|
+| Model/inference output → cognitive core | Generated text, tool suggestions, candidate plans | Treat as untrusted content; validate typed structure; no identity, policy, key or approval authority | Cognitive ingress + governance |
+| UI/CLI → application API | User requests, session identity, query/command payloads | Authenticate session; derive owner/actor from trusted session; reject caller-supplied scope escalation | Auth/session boundary |
+| Cognitive core → governance | Exact proposed operation, target, effects, risk, evidence | Governance independently evaluates current policy, grants, expiry and approval; core cannot self-authorize | Governance service |
+| Runtime → local key provider | Opaque key references, bounded cryptographic requests | Narrow IPC/API; caller identity and purpose binding; no raw key export; platform backing reported from observed evidence | Local key adapter |
+| Runtime → cloud key provider | Owner-scoped key operation, authenticated workload identity | Mutual/service authentication, tenant isolation, least privilege, bounded request and audit; no device authority transfer | Cloud key adapter |
+| Domain store ↔ encryption layer | Plaintext only inside authorized process boundary; ciphertext + key metadata at rest | Separate DEK scopes for memory/events/governance/artifacts; authenticated encryption; integrity checked before use | Storage/encryption boundary |
+| Python worker ↔ supervisor | Job-scoped inputs and candidate artifacts | No production key handles or live DB credentials; bounded IPC; schema validation; quarantine before integration | Worker supervisor |
+| Runtime → backup/export | Ciphertext, non-secret metadata, tombstones and version references | Owner policy, integrity manifest, backup epoch; recovery material stored separately | Backup/retention service |
+| Build/release pipeline → runtime | Signed binaries, manifests and protected artifacts | Pinned source provenance, separate update-signing trust root, signature and rollback verification | Release verifier |
+| Runtime ↔ external provider/sync peer | Explicitly classified payloads and authenticated change records | Recipient allowlist/policy, minimum disclosure, replay protection, durable receipt and deletion semantics | Egress/sync boundary |
+
+No trust boundary may be bypassed by a model-generated instruction, provider response, worker artifact, cached permission or technical possession of a key reference. A key reference is not a grant. A successful cryptographic operation is not proof that the underlying business operation was authorized.
+
+#### Host-fake contract test procedure
+
+Before platform integration, a deterministic host test harness MUST supply fake local-key, cloud-key, identity, clock, audit, backup and signing adapters. The fakes MUST expose controllable states (available, unavailable, revoked, unknown version, wrong owner, wrong purpose, delayed response, duplicate response, corrupt ciphertext, partial rotation and uncertain commit) and record every call. Test keys and payloads MUST be synthetic and isolated from production credentials.
+
+| Test group | Injected condition | Required assertion | Linked acceptance |
+|---|---|---|---|
+| Key provenance | Hardware status unknown; software fallback selected | Report exact backing class; never claim hardware backing without provider evidence | SEC-001 |
+| Separation | Attempt to use identity/signing/transport key as data DEK or across owners/domains | Deny; no cross-purpose or cross-owner decryption/authorization | SEC-002 |
+| Envelope and rotation | Duplicate rotation request; crash before/after rewrap commit | One effective version transition; resumable lineage; old key retained until verified completion | SEC-003 |
+| Revocation | Revoke while disconnected; reconnect with stale session/queued operation | Reject future privileged work after revocation is observed; preserve offline enforcement limitation | SEC-004 |
+| Recovery | Missing, corrupt, revoked key; unconfigured recovery actor | Fail closed; no hidden export or fallback key; report unrecoverable scope | SEC-005 |
+| Backup/restore | Corrupt manifest, unavailable KEK, stale backup with tombstone | Verify before exposure; replay tombstones first; expose no plaintext key material | SEC-006 |
+| Signing | Unsigned, tampered, revoked signer or rollback manifest | Reject and audit; model/worker cannot add trust root | SEC-007 |
+| Logging | Inject secret-like values and private payload markers | Assert absence from logs, diagnostics, crash metadata and telemetry | SEC-008 |
+| Cloud key failure | Timeout, denied credential, unknown version, failed unwrap | Deny protected cloud access; do not fall back to a different owner/key; local path remains independently scoped | SEC-009 |
+| Worker compromise | Worker attempts key access, DB mutation, policy update or candidate activation | Access denied; output quarantined and bounded | SEC-010 |
+| Data egress | Unapproved recipient/category, stale approval, digest mismatch | Deny transmission; durable audit of decision; no sensitive bytes emitted | SEC-011 |
+
+Each test report records source revision, fake-adapter configuration, synthetic key IDs (never key material), request digest, injected fault, observed calls, durable state before/after, expected/actual result and log-redaction result. A passing fake test establishes interface behaviour only; it does not establish Android Keystore, cloud KMS, secure hardware, OS isolation or production cryptographic correctness.
+
+#### Explicit implementation and owner gates
+
+- The cloud key provider, account/tenant mapping, region, recovery custodian and production recovery policy remain unselected. Selecting them requires the applicable owner/security approval.
+- Android Keystore access from the Termux runtime requires an evidenced native bridge/companion boundary and target-device testing. No software fallback is silently enabled by this specification.
+- Algorithm suites, nonce strategy, KDF parameters, key lifetimes and cryptographic library versions must be selected by a qualified security implementation review against supported providers; this document intentionally does not invent those parameters.
+- Production key generation, encryption, signing, revocation, backup/restore and recovery controls remain NOT IMPLEMENTED until real adapters and independent security tests exist.
+
 ## 12. Dependency and licensing audit procedure
 
 Before pinning a dependency:
