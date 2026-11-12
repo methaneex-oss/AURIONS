@@ -274,6 +274,8 @@ Event-stream acceptance checks:
 - **EV-002:** duplicate message ID with identical digest does not create a second event or apply twice; same ID with a different digest is rejected and audited.
 - **EV-003:** consumer checkpoint advances only after its owning state change and receipt commit; restart resumes after the last committed sequence without skipping or replaying side effects.
 - **EV-004:** timestamps are not used as the sole ordering mechanism; causation/correlation and domain revisions are retained, and no global order is inferred across independent event stores.
+- **EV-005:** the eight objective/world/means event families each bind to exactly one context-independent payload definition; an unknown or mismatched body is rejected before append, and a textual catalogue entry alone never enables dispatch.
+- **EV-006:** world-entity, relationship, situation, affordance, interaction-proposal and outcome events preserve owner scope, provenance, revision/temporal validity and cross-record reference checks; replay cannot silently convert provisional claims or proposals into verified facts or authorization.
 - **TS-001:** every accepted task control request is durably recorded as `task.control.requested.v1`; rejected/stale requests do not mutate task state.
 - **TS-002:** every committed task state transition emits `task.run.transitioned.v1` in the same event-store transaction as the `task_runs` projection update.
 - **TS-003:** `taskControlRequest.expected_version` must equal `task_runs.revision`; stale requests return conflict and preserve the current revision.
@@ -658,6 +660,14 @@ These tests protect the governing architecture rule: mechanisms are engineered; 
 - NHC-006: removing or adding one illustrative phone-operation example does not require changing the architecture's capability model or define its capability boundary.
 - NHC-007: an accepted evidence-backed strategy/capability update changes a later related task after restart and is traceable to the experience and evaluation that justified it.
 - NHC-008: repeated successful actions cannot weaken permission checks, risk classification, approval requirements or owner authority.
+- NHC-009: an entity/relationship based on indirect evidence remains provisional and is revised on contradiction, expiry or new evidence without rewriting source history.
+- NHC-010: a human-mediated or non-device route can be considered without a device capability descriptor, provider adapter or platform-specific branch.
+- NHC-011: a multi-context task preserves identity, provenance, state ownership and authority independently at each boundary.
+- NHC-012: a proposed interaction cannot dispatch until the independent authority boundary approves the exact actor, targets, effects, parameters and scope.
+- NHC-013: when no evidenced/authorized means is available, the system can ask, observe, wait, delegate or stop; it must not synthesize an executable route from task labels.
+- NHC-014: changed world state or stale evidence invalidates dependent affordance estimates and triggers reassessment without silently changing the objective.
+- NHC-015: provider receipt, independently observed effect and causal attribution are distinct; uncertain effects are reconciled before any success/learning claim.
+- NHC-016: objective success criteria persist independently from derived goals/plans; replanning or execution failure cannot rewrite the requested outcome.
 
 ### 10.2 Cognitive-cycle integration tests
 - CM-001 through CM-021: execute the cognitive mechanism and interaction scenarios defined in [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). Preserve the exact scenario IDs, fixtures and negative controls.
