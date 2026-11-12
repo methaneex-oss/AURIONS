@@ -311,10 +311,13 @@ def main() -> int:
         ["properties"]["state"]["enum"]
     )
     for event_type in events:
-        if event_type.startswith("operation."):
+        if event_type.startswith("operation.") and event_type != "operation.reconciled.v1":
             target_state = event_type.removeprefix("operation.").removesuffix(".v1")
             if target_state not in operation_states:
                 fail(f"{event_type}: event target state is absent from operation lifecycle schema")
+        # Reconciliation is an evidence-bearing transition event, not a
+        # persistent operation state; it resolves to a supported state.
+
     for event_type in action_gateway_events:
         if operation_rows.get(event_type) != (
             events[event_type]["producer_trigger_contract"],
