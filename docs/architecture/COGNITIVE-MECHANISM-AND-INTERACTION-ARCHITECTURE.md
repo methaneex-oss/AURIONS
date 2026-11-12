@@ -1,7 +1,7 @@
 # AURIONS — Cognitive Mechanism and Interaction Architecture
 
 - **Status:** Builder design proposal; IN PROGRESS until reconciled with the complete contract set and independently reviewed.
-- **Purpose:** Specify how cognitive mechanisms interact to produce persistent, experience-dependent change.
+- **Purpose:** Specify how cognitive mechanisms interact to produce persistent, experience-dependent change under the foundational [Open-World Interaction and Means Architecture](OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md).
 - **Governing principle:** Engineer the mechanisms; let behaviour be acquired through experience.
 - **Non-goal:** This is not a hardcoded behavioural script, a fixed stimulus-to-response table, or a rigid linear pipeline.
 
@@ -15,7 +15,7 @@ The system must not claim that it has learned merely because it stored a convers
 
 ## 2. Operating model: recurrent, event-driven cognition
 
-The cognitive system is a recurrent set of interacting mechanisms coordinated by an orchestration/runtime layer.
+The cognitive system is a recurrent set of interacting mechanisms coordinated by an orchestration/runtime layer. Its task and interaction model is objective-led and world/context grounded; it must not assume that a device, platform adapter, connector or registered capability is the universal source or route for action.
 
 A useful conceptual view is:
 
@@ -39,7 +39,7 @@ Every state domain has one authoritative owner. Other mechanisms consume it thro
 |---|---|---|
 | Raw observations and experiences | Experience subsystem | Source, time, context, raw/normalized observation references, sensitivity and provenance |
 | Representations | Representation subsystem | One or more interpretations, features, relations, uncertainty and source links |
-| Active context | Context subsystem | Relevant entities, temporal/spatial/task context, current constraints and confidence |
+| Active context and situation model | Context/world-understanding mechanisms | Relevant entities, actors, resources, relations, temporal/spatial/social/task context, state claims, unknowns, conflicts and confidence |
 | Durable episodic memory | Memory subsystem | Experiences, events, associations, retrieval metadata and retention |
 | Consolidated knowledge | Knowledge subsystem | Generalized information with source lineage and validity scope |
 | Propositions and evidence | Belief subsystem | Claims, evidence, support/contradiction, epistemic status and revision history |
@@ -47,15 +47,15 @@ Every state domain has one authoritative owner. Other mechanisms consume it thro
 | Appraisal state | Appraisal subsystem | Context-sensitive estimates relevant to significance, urgency, opportunity, uncertainty and potential consequence |
 | Attention allocation | Attention subsystem | Current allocation, selection rationale, resource cost and interruptions |
 | Goals and plans | Goal/planning subsystem | Owner objectives, derived goals, versions, dependencies, budgets and checkpoints |
-| Decision records | Decision subsystem | Selected/deferred/rejected option, rationale, uncertainty and policy handoff |
-| Operations and receipts | Action/runtime subsystem | Exact operation, authorization reference, dispatch, execution receipt, observed effects and reconciliation |
+| Possible means / affordance hypotheses | Means-reasoning mechanisms | Context-dependent actor/resource/interactions, preconditions, effects, authority requirements, evidence, uncertainty and scope; not a closed capability registry |\n| Decision records | Decision subsystem | Selected/deferred/rejected option, rationale, uncertainty and policy handoff |
+| Interaction proposals and outcomes | Interaction/runtime boundary | Objective, actors/targets, proposed effects, authority context, exact execution binding where applicable, receipts, independently observed effects and reconciliation |
 | Learning hypotheses and updates | Learning subsystem | Evidence, target mechanism, hypothesis, baseline, candidate update and evaluation |
 | Self-model | Self-model subsystem | Capabilities, limitations, confidence, resource profile and measured performance |
 | Structural change candidates | Evolution subsystem | Proposed mechanism/architecture change, isolation, comparison, approval and rollback |
 
 Cross-domain references use stable IDs and explicit provenance. A consumer cannot mutate an owner's state by editing a shared object or directly writing its tables.
 
-## 4. Mechanism contracts
+\n## 3.1 Open-world objective and interaction contract boundary\n\nThe cognitive mechanisms consume the objective, entity, relationship, situation, evidence, affordance-hypothesis, interaction-proposal and interaction-outcome concepts defined in [Open-World Interaction and Means Architecture](OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md). Their initial machine-readable design baseline is `schemas/world-interaction.v1.schema.json`, with a non-device, human-mediated scenario in `schemas/fixtures/world-interaction.fixture.json`. These contracts are intentionally design-only and non-dispatchable.\n\nThe objective is not a plan. An affordance hypothesis is not an executable operation or permission. An interaction proposal is not authorization. A provider receipt is not independent proof of an outcome. The runtime must preserve these distinctions through contract validation, persistence, governance and evaluation. The means model must allow zero, one or many possible routes, including routes involving people or resources that are not represented by device capability descriptors.\n\nThe current schema is an initial typed baseline, not a complete semantic closure: stable identifiers, temporal validity, cross-record referential integrity, ownership/retention rules, event bindings, command/query ownership and SQL migrations still require reconciliation and verification.\n\n## 4. Mechanism contracts
 
 ### 4.1 Experience and observation
 
@@ -475,9 +475,9 @@ This architecture remains IN PROGRESS until:
 2. Interaction contracts map to concrete versioned schemas and authoritative persistence.
 3. Concurrency, interruption, stale context, cancellation and recovery are specified end-to-end.
 4. Learning types are distinct and their evidence requirements are enforceable.
-5. No-hardcoding invariants are traced into Android discovery, planning, action and test design.
+5. No-hardcoding invariants are traced through objective interpretation, world/situation modeling, means reasoning, interaction governance and all context-specific realizations; Android is only one realization.
 6. The canonical roadmap maps every mechanism to a work package and dependency.
-7. Every CM-* scenario is mapped to requirements and the canonical test catalogue.
+7. Every CM-* scenario and the open-world objective/interaction scenario set is mapped to requirements, contract fixtures and the canonical test catalogue.
 8. Architecture-wide consistency review finds no unresolved critical/high design contradiction.
 9. The exact final revision receives independent review and required findings are resolved.
 10. Owner planning-exit approval is obtained.\n11. Attention allocation is reconstructed safely after restart and stale historical allocations cannot override current state.
