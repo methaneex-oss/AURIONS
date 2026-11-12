@@ -2862,7 +2862,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-001",
+      "acceptance_positive_assertion": "Returns only owner-scoped observations with source identity, observation time and explicit permission/provenance status.",
+      "acceptance_negative_assertion": "Cross-owner filters, revoked permission or untrusted source yield no protected row or count; query performs no live observation.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "capability.search",
@@ -2903,7 +2907,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-002",
+      "acceptance_positive_assertion": "Ranks only owner-visible descriptors and reports exact descriptor/provider version and verification freshness.",
+      "acceptance_negative_assertion": "Unverified, expired, invalidated or other-device descriptor is not represented as currently verified or authorized.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "capability.inspect",
@@ -2944,7 +2952,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-003",
+      "acceptance_positive_assertion": "Returns one exact descriptor revision with verification evidence and expiry.",
+      "acceptance_negative_assertion": "Stale/missing descriptor does not fall back to a different revision or trigger a live probe.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "capability.knowledge.inspect",
@@ -2987,7 +2999,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-004",
+      "acceptance_positive_assertion": "Returns evidence-linked, context-scoped knowledge revisions and retains disputed/contradictory claims.",
+      "acceptance_negative_assertion": "Knowledge claims cannot be elevated to universal capability or permission; missing evidence remains visible.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "representation.inspect",
@@ -3028,7 +3044,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-005",
+      "acceptance_positive_assertion": "Returns exact representation revision with source experience/revision lineage.",
+      "acceptance_negative_assertion": "Missing/expired source lineage is reported; query does not silently synthesize or repair representation.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "context.get",
@@ -3069,7 +3089,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-006",
+      "acceptance_positive_assertion": "Returns immutable context snapshot with exact dependency revisions and unknown/missing inputs.",
+      "acceptance_negative_assertion": "Stale or cross-owner context cannot be returned as current/complete; no implicit reassembly.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "memory.search",
@@ -3111,7 +3135,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-007",
+      "acceptance_positive_assertion": "Returns ranked owner-scoped memories with provenance, uncertainty and retention filtering.",
+      "acceptance_negative_assertion": "Deleted/tombstoned or cross-owner memory is excluded; retrieval scores do not become beliefs or mutate memory.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "knowledge.search",
@@ -3156,7 +3184,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-008",
+      "acceptance_positive_assertion": "Returns source-classified knowledge with revision and evidence lineage, preserving uncertainty.",
+      "acceptance_negative_assertion": "Inference is not presented as observed fact; contradictory or withdrawn knowledge is not silently promoted.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "belief.inspect",
@@ -3200,7 +3232,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-009",
+      "acceptance_positive_assertion": "Returns exact belief revision and supporting/contradicting evidence.",
+      "acceptance_negative_assertion": "Contradictory evidence remains visible; query cannot revise or promote belief.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "prediction.inspect",
@@ -3242,7 +3278,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-010",
+      "acceptance_positive_assertion": "Returns prediction separately from evaluation and observed outcome, with horizon and source revisions.",
+      "acceptance_negative_assertion": "Prediction is never presented as outcome or causal evidence; missing evaluation remains unknown.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "appraisal.inspect",
@@ -3283,7 +3323,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-011",
+      "acceptance_positive_assertion": "Returns appraisal tied to exact context/evidence/model revisions and its uncertainty.",
+      "acceptance_negative_assertion": "Stale dependencies are surfaced; no appraisal recalculation or fixed stimulus-to-emotion mapping occurs during read.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "attention.inspect",
@@ -3324,7 +3368,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "runtime_state_with_event_history"
+      "aggregate_binding_status": "runtime_state_with_event_history",
+      "acceptance_case_id": "QCC-012",
+      "acceptance_positive_assertion": "Returns current committed allocation or immutable event history with explicit sequence watermark.",
+      "acceptance_negative_assertion": "No reprioritization, allocation mutation or stale cached current allocation is permitted.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "reasoning.inspect",
@@ -3365,7 +3413,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-013",
+      "acceptance_positive_assertion": "Returns assessment hypotheses, alternatives, uncertainty and permitted artifact/evidence lineage.",
+      "acceptance_negative_assertion": "Hypothesis is not promoted to fact; protected artifact/provider diagnostics are redacted.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "goal.get",
@@ -3407,7 +3459,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-014",
+      "acceptance_positive_assertion": "Returns owner-scoped derived goal revision and its objective/constraint lineage.",
+      "acceptance_negative_assertion": "A goal is not aliased to an owner objective or plan; stale revision is not silently substituted.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "plan.get",
@@ -3451,7 +3507,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-015",
+      "acceptance_positive_assertion": "Returns plan, steps and dependencies with current validity and exact referenced revisions.",
+      "acceptance_negative_assertion": "Stale means/policy/permission/objective dependency is disclosed; query does not repair, replan or authorize.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "decision.inspect",
@@ -3492,7 +3552,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-016",
+      "acceptance_positive_assertion": "Returns recorded alternatives, evidence and decision authority reference.",
+      "acceptance_negative_assertion": "Reading a decision cannot grant approval, dispatch permission or alter the selected option.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "task.status",
@@ -3535,7 +3599,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-017",
+      "acceptance_positive_assertion": "Returns authoritative task revision/checkpoint and distinguishes pending pause/cancel from terminal state.",
+      "acceptance_negative_assertion": "Task state is not inferred from an operation/provider receipt; stale current state is not cached.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "operation.status",
@@ -3580,7 +3648,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-018",
+      "acceptance_positive_assertion": "Returns operation attempts, provider receipts and reconciliation evidence as separate facts.",
+      "acceptance_negative_assertion": "Provider receipt is not observed outcome; uncertain dispatch remains uncertain and query never redispatches.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "permission.inspect",
@@ -3625,7 +3697,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-019",
+      "acceptance_positive_assertion": "Returns effective owner policy, actor/device grants and OS permission as distinct current facts.",
+      "acceptance_negative_assertion": "Stale/revoked grant is not reported effective; no permission or approval is created by query.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "audit.lookup",
@@ -3667,7 +3743,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-020",
+      "acceptance_positive_assertion": "Returns only purpose-authorized audit fields in a stable governance-store snapshot.",
+      "acceptance_negative_assertion": "Cross-owner records, secrets, keys and approval nonces remain undisclosed; unauthorized audit purpose is denied.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     },
     {
       "query_type": "device.capabilities",
@@ -3708,7 +3788,11 @@
           ]
         }
       ],
-      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed"
+      "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
+      "acceptance_case_id": "QCC-021",
+      "acceptance_positive_assertion": "Returns last evidenced descriptor state for one authenticated paired device with probe time/expiry.",
+      "acceptance_negative_assertion": "No live probe, pairing, permission prompt or authorization inference occurs during read.",
+      "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation."
     }
   ],
   "dispatch_invariant": "No entry is eligible for production dispatch until every applicable binding is completed, validated, covered by fixtures, and registered by the owning runtime. Null means unresolved, never an implicit default. Table bindings reference proposed DDL names only; they do not imply the DDL has been executed or that application-level invariants are implemented.",
