@@ -106,7 +106,7 @@ The matrix intentionally identifies unresolved command/event mismatches rather t
 4. `capability.knowledge.propose` lacks a proposal event distinct from accepted/revised knowledge.
 5. `learning.candidate.evaluate` lacks a clearly bound learning-candidate evaluation event.
 6. `self_model.update.propose` currently points conceptually toward an event named `self_model.updated.v1`, which conflates proposal and accepted update.
-7. The 39 non-task commands still need exact per-entry request digest fields, expected revision/dependency preconditions, exact error-code subsets, fixture IDs and executable before/after-commit/replay/recovery assertions. This matrix defines shared rules and intended domain effects; it does not claim those registry bindings or tests already exist.
+7. The 39 non-task command entries now have machine-readable expected-revision, owner/actor authorization, RFC 8785 idempotency/replay, deadline/cancellation, side-effect/reconciliation, error-code, event-binding and acceptance-case fields. The six event/classification mismatches above remain explicit unresolved bindings. Handler-level before/after-commit, replay, crash/restart and recovery tests are still not implemented or executed.
 
 ## 4. Required executable acceptance
 
@@ -125,7 +125,7 @@ Task controls retain their existing TC-001…TC-012 cases plus per-command repla
 
 ## 5. Completion boundary
 
-This matrix completes a first-pass per-command semantic analysis for the existing 43 mapped entries and identifies concrete event/command mismatches. It does **not** close BR-001. The machine registry still needs per-entry expected-revision, authorization/risk, idempotency, deadline/cancellation, side-effect, error/event/outbox and fixture bindings; handler-level executable tests do not exist in this planning PR. The first-release command subset remains proposed pending owner acceptance. All commands remain `design_only_not_dispatchable`; device pairing/revocation remain deferred. No implementation authorization or owner decision is implied.
+This matrix and the command registry now carry per-entry semantic bindings and 43 unique acceptance-case IDs for the 43 mapped commands. A machine-enforced validator checks those fields, known error/event references, exact command inventory and one-to-one acceptance-case presence. This closes the builder's first-pass specification/registry-binding subtask for BR-001, not BR-001 overall. Six command/event or command/query classification mismatches remain explicitly unresolved; all 43 acceptance cases remain design criteria, not executed handler tests. The first-release command subset remains proposed pending owner acceptance. All mapped commands remain `design_only_not_dispatchable`; device pairing/revocation remain deferred. No implementation authorization or owner decision is implied.
 
 
 ## 4. Per-command acceptance case catalogue
