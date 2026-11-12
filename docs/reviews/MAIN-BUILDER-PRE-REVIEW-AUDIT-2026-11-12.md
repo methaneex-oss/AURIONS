@@ -94,7 +94,7 @@ The current PR file inventory contains 78 named positive domain-payload examples
 ### BR-003 — Error registry remains a seed, not an operational recovery contract
 
 **Severity:** High  
-**Evidence:** 35/35 registry entries have status `seed`. All 35 codes have explicit code-level handler-contract, default side-effect, retry-posture and fixture mappings in the Error Handler Contract Matrix and machine-readable registry. The new CI cross-check validates that the two sources and fixture pointers agree. The mappings are design contracts only; code-specific recovery branch execution and executable no-blind-retry tests do not exist.  
+**Evidence:** 35/35 registry entries have status `seed`. All 35 codes have explicit handler-contract, default side-effect, retry-posture and fixture mappings. The Error Handler Contract Matrix now also specifies EHR-001…EHR-035, one concrete recovery/forbidden-result assertion per code. CI cross-checks mapping inventory, handler reference, side-effect state, retry posture, fixture pointer and exact EHR coverage against the registry. These remain design assertions; runtime branch execution and executable no-blind-retry tests do not exist.  
 **Required builder closure:** Map every code to its owning handler and legal disposition; define when fresh evidence, state reconciliation, user intervention, quarantine or permanent rejection is required; add executable recovery and no-blind-retry tests; prove that error handling cannot grant authority or convert uncertain effects into success.
 
 **Current disposition:** OPEN. No registry entry is production-dispatchable.
@@ -381,3 +381,15 @@ Applicable duties: builder scope ownership, independent professional judgment, c
 **Exact revision tested:** `35edf0345f3d1b4b8a7a5fbf5624051f6de99624`. GitHub Actions run [43291566387](https://github.com/methaneex-oss/AURIONS/actions/runs/43291566387) completed successfully. Schema/fixture validation, governance integrity, host SQLite DDL/migration smoke checks and Android probe shell syntax all passed.
 
 **BR-010 disposition:** the builder-owned traceability artifact now exists, but BR-010 remains OPEN until logical ownership/contracts are reconciled against final approved product decisions, package-specific executable evidence is present, target build gates are met and PR #1 is reconciled after planning exit. BR-008 remains OPEN pending semantic validation of the full architecture. No independent-review or tester handoff is issued.
+
+## Builder increment — per-code error recovery assertions (2026-11-12)
+
+At starting revision `78fac3b68a139c4fa02ec3f6d6896beb789631cf`, the builder freshly retrieved and read the current Project Directorship and Team Operating Standard (blob `951b9009cbedcf8907b365d611d89559d5a17385`) and Builder Operating Protocol (blob `179b02aaef051173b96f54812f451ede1a2eae0d`).
+
+Added EHR-001…EHR-035 to the Error Handler Contract Matrix. Each error code now has a specific required branch assertion and forbidden result, covering malformed/unsupported contracts, provider identity and availability, capability validity, evidence preconditions, platform permission, governance authorization, revision/idempotency conflicts, deadlines/budgets/cancellation, dispatch/receipt uncertainty, outcome contradictions, provider integrity and uncertain persistence commits.
+
+Extended `scripts/validate_schemas.py` to require exactly 35 unique EHR IDs, one per registry error code, and to verify each assertion's fixture reference. The existing cross-check also requires parity between the Markdown mapping table, machine registry and fixture corpus. This validates completeness/consistency of the **specified test catalogue**, not runtime behaviour.
+
+CI run [43291982511](https://github.com/methaneex-oss/AURIONS/actions/runs/43291982511) passed on code revision `07a7219942579d604d933891b9fcb373cf8a4dc9`, including the new 35-case assertion catalogue guard, schema/fixture validation, governance integrity, host SQLite DDL/migration smoke tests and Android probe shell syntax.
+
+**BR-003 remains OPEN.** EHR-001…EHR-035 are specified, not executed. Closing the finding still requires actual owning handlers, deterministic branch tests asserting durable state, replay/restart/fault coverage, and production registration controls. No registry entry has been promoted from `seed`; no dispatchability or implementation is claimed.
