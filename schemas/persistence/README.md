@@ -9,7 +9,7 @@ These files are the machine-readable DDL source for the three independent SQLite
 | Store | Initial schema | Additive migrations |
 |---|---|---|
 | `aurion_memory.db` | [aurion_memory.base.sql](./aurion_memory.base.sql) | [migration v2](./aurion_memory.migration_v2.sql), [migration v3](./aurion_memory.migration_v3.sql), then [migration v4](./aurion_memory.migration_v4.sql) |
-| `aurion_events.db` | [aurion_events.base.sql](./aurion_events.base.sql) | [migration v2](./aurion_events.migration_v2.sql) |
+| `aurion_events.db` | [aurion_events.base.sql](./aurion_events.base.sql) | [migration v2](./aurion_events.migration_v2.sql), then [migration v3](./aurion_events.migration_v3.sql) |
 | `aurion_governance.db` | [aurion_governance.base.sql](./aurion_governance.base.sql) | No additive migration is specified yet |
 
 Each database has its own migration ledger, transaction, backup and recovery. Do not combine these scripts into one cross-database transaction. Cross-store IDs are validated by application services; cross-file foreign keys are prohibited.
@@ -26,7 +26,7 @@ References:
 ## Required validation before implementation approval
 
 1. Execute each base schema on a clean database using the pinned minimum SQLite build.
-2. Apply memory v2 then v3, and events v2, with independent migration ledgers and checksums.
+2. Apply memory v2, v3, v4 and events v2, v3 in order, with independent migration ledgers and checksums. Events v3 leaves legacy task owners NULL pending authoritative owner backfill; verify this gate and the new-task owner trigger.
 3. Run `PRAGMA foreign_key_check`, `PRAGMA integrity_check`, JSON-function probes and migration-specific invariants after each step.
 4. Test empty install, every supported upgrade, interrupted migration before/after commit, checksum mismatch, restore, disk-full, busy/locked, read-only/corrupt DB and process crash.
 5. Verify all indexes, uniqueness/idempotency constraints, owner-scope query plans and target-device timings.
@@ -34,4 +34,4 @@ References:
 7. Reconcile world-interaction schema references with memory v4 columns and event/operation references; prove that device-specific capability descriptors are not required for non-device means.
 8. Record exact SQLite source/version/compile options and Termux/Android device/build identity.
 
-The static DDL table and foreign-key ownership crosswalk is not SQL execution. The v4 design is a first persistence mapping, not proof of complete semantic ownership: event bindings, canonical ID format, entity/evidence referential integrity (including evidence-details linkage to existing evidence IDs), cross-store interaction-operation linkage, retention/deletion policy and query contracts still require closure. Until all tests pass, the DDL and migration set remain **IN PROGRESS**.
+The static DDL table and foreign-key ownership crosswalk is not SQL execution. The memory v4 and events v3 designs are first persistence mappings, not proof of complete semantic ownership: event bindings, canonical ID format, entity/evidence referential integrity (including evidence-details linkage to existing evidence IDs), cross-store interaction-operation linkage, retention/deletion policy and query contracts and task-control lifecycle/receipt tests still require closure. Events v3 introduces a durable task-control receipt ledger, but its retry-horizon and retention/tombstone procedure must be proven before deletion is enabled. Until all tests pass, the DDL and migration set remain **IN PROGRESS**.
