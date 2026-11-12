@@ -169,6 +169,38 @@ def main() -> int:
         if row["fixture_ref"] not in item["fixture_refs"]:
             fail(f"{code}: machine registry omits code-level matrix fixture")
 
+    recovery_rows = {}
+    for line_number, line in enumerate(
+        matrix_path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.startswith("| EHR-"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 5:
+            fail(f"recovery assertion line {line_number}: expected five cells")
+        test_id = cells[0].strip("`")
+        code = cells[1].strip("`")
+        fixture_match = re.fullmatch(r"EHC-(\d{3})", cells[4])
+        if not re.fullmatch(r"EHR-\d{3}", test_id) or not fixture_match:
+            fail(f"recovery assertion line {line_number}: malformed test or fixture ID")
+        if not cells[2] or not cells[3]:
+            fail(f"{test_id}: required assertion or forbidden-result text is empty")
+        if test_id in recovery_rows or code in recovery_rows.values():
+            fail(f"{test_id}/{code}: duplicate per-code recovery assertion")
+        recovery_rows[test_id] = code
+        if code not in registry_by_code:
+            fail(f"{test_id}: references unknown error code {code}")
+        expected_fixture = (
+            "schemas/fixtures/error-handler-cases.fixture.json#/cases/"
+            + str(int(fixture_match.group(1)) - 1)
+        )
+        if expected_fixture not in registry_by_code[code]["fixture_refs"]:
+            fail(f"{test_id}: fixture does not match registry entry {code}")
+    if len(recovery_rows) != 35:
+        fail(f"expected 35 code-specific recovery assertions, found {len(recovery_rows)}")
+    if set(recovery_rows.values()) != set(registry_by_code):
+        fail("code-specific recovery assertions do not cover the exact error registry inventory")
+
     # Every positive domain fixture is validated against the correspondingly
     # named reusable definition, not merely parsed as JSON.
     domain_schema = schema_docs["domain-payloads.v1.schema.json"]
@@ -258,7 +290,8 @@ def main() -> int:
         f"PASS: {len(schema_docs)} Draft 2020-12 schemas; "
         f"{len(pairs)} paired registry/fixture checks; "
         f"{len(domain_fixture)} positive domain payloads; "
-        f"{len(negative_cases)} negative controls."
+        f"{len(negative_cases)} negative controls; "
+        f"{len(recovery_rows)} code-specific recovery assertions."
     )
     return 0
 
