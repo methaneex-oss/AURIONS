@@ -415,25 +415,25 @@
       "additionalProperties": false,
       "properties": {
         "mapped_command_types": {
-          "const": 43
+          "const": 51
         },
         "deferred_command_types": {
           "const": 2
         },
         "query_types": {
-          "const": 21
+          "const": 29
         },
         "command_envelope_bindings": {
-          "const": 45
+          "const": 53
         },
         "query_envelope_bindings": {
-          "const": 21
+          "const": 29
         },
         "proposed_ddl_mapped_commands": {
-          "const": 43
+          "const": 51
         },
         "proposed_ddl_mapped_queries": {
-          "const": 21
+          "const": 29
         }
       },
       "required": [
