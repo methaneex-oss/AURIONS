@@ -59,7 +59,7 @@
             ]
           },
           "payload": {
-            "$ref": "domain-payloads.v1.schema.json#/$defs/contractError"
+            "$ref": "urn:aurions:schema:domain-payloads:1#/$defs/contractError"
           }
         }
       }
