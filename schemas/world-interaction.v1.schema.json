@@ -37,7 +37,9 @@
         "affordanceHypothesis",
         "interactionProposal",
         "interactionOutcome",
-        "relatedEntities"
+        "relatedEntities",
+        "objectiveRevision",
+        "relationshipRevision"
       ],
       "properties": {
         "objective": {
@@ -66,6 +68,12 @@
         },
         "relatedEntities": {
           "$ref": "#/$defs/entityCollection"
+        },
+        "objectiveRevision": {
+          "$ref": "#/$defs/objectiveRevision"
+        },
+        "relationshipRevision": {
+          "$ref": "#/$defs/relationshipRevision"
         }
       }
     }
@@ -782,6 +790,22 @@
       "items": {
         "$ref": "#/$defs/entity"
       }
+    },
+    "objectiveRevision": {
+      "description": "Complete immutable objective snapshot for a specific aggregate revision; consumers compare version with the expected predecessor and never apply it as an unversioned patch.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/objective"
+        }
+      ]
+    },
+    "relationshipRevision": {
+      "description": "Complete immutable relationship snapshot for a specific aggregate revision; consumers compare version with the expected predecessor and preserve evidence lineage.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/relationship"
+        }
+      ]
     }
   }
 }
