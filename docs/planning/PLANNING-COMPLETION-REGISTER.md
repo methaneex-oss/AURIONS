@@ -30,7 +30,7 @@ A design can be specified without being validated or implemented. Do not collaps
 ## 2. Planning-layer status
 
 ### B-00 — Open-world contract and persistence reconciliation (new builder work)
-- Added `schemas/world-interaction.v1.schema.json` with objective, entity, relationship, situation, evidence, affordance hypothesis, interaction proposal and interaction outcome definitions.
+- Added `schemas/world-interaction.v1.schema.json` with owner-scoped, versioned objective, entity, relationship, situation, evidence, affordance hypothesis, interaction proposal and interaction outcome definitions. Added `schemas/event-registry.v1.json` plus its schema, keyed by all 84 event names with payload-schema and fixture references.
 - Added a positive fixture covering a possible human custodian and a non-executed request; added a negative entity fixture missing evidence.
 - Proposed `aurion_memory.migration_v4.sql` for owner-scoped, versioned world entities, relationships, situation snapshots, affordance hypotheses, interaction proposals and outcomes. Updated schema and persistence indexes.
 - Remaining: validate JSON Schema Draft 2020-12 with an approved validator, execute the SQL migration on the pinned SQLite baseline, reconcile IDs/references/retention, and bind the new contracts to events, commands, queries, C++ owners, work packages and scenario tests. The new contracts remain design-only and are not dispatchable. A bounded custom structural check accepted the positive world-interaction fixture and rejected the negative entity fixture; this is not official JSON Schema Draft 2020-12 validation.
