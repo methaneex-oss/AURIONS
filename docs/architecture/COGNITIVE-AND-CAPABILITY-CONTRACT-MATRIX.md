@@ -231,10 +231,10 @@ This section makes the architecture scenario IDs individually traceable to the e
 
 ### 8.3 Evidence boundary
 
-- The existing `schemas/fixtures/domain-payloads.fixture.json` provides payload-shape examples for the definitions referenced above. It does not prove the scenario sequences or durable-state assertions.
-- The existing test catalogue names the scenario and related contract checks. No executable AURIONS test runner or scenario fixture suite exists in this planning branch.
-- Scenario fixtures must be added with the owning implementation work package, using isolated test stores and deterministic provider fakes. They must include positive, negative, stale-version, replay, concurrency, cancellation and recovery controls as applicable.
-- A scenario may be marked VALIDATED only from a recorded test run tied to the exact implementation commit, fixture corpus, toolchain and environment. This matrix is **SPECIFIED**, not validated.
+- The existing `schemas/fixtures/domain-payloads.fixture.json` remains payload-shape coverage only; it does not prove scenario sequences or durable-state assertions.
+- Added `schemas/scenario-contracts.v1.schema.json` and `schemas/fixtures/scenario-contracts.fixture.json` with three integrated scenario specifications (INT-001…INT-003), 28 ordered steps, nine negative controls, restart/replay, concurrency, fault and held-out controls. CI validates the fixture schema and its command/query/event references.
+- These are machine-readable test specifications, **not executed runtime tests**. No AURIONS runtime scenario runner or production handler exists in this planning branch. The full CM-001…CM-021 and AD-001…AD-015 scenario set is not yet individually instantiated in this fixture corpus.
+- Implementation packages must execute the scenarios with isolated stores and deterministic fakes, then record exact code revision, fixture hash, toolchain, environment, durable-state snapshots and results. A scenario may be marked VALIDATED only from a reproducible run against implementation. This matrix remains **SPECIFIED**, not validated.
 
 
 ## 9. Security, key and supply-chain traceability
