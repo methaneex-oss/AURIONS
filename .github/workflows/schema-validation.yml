@@ -5,6 +5,7 @@ on:
     paths:
       - "schemas/**"
       - "scripts/validate_schemas.py"
+      - "scripts/validate_sqlite_ddl.py"
       - "scripts/validate_governance.py"
       - "docs/governance/**"
       - "docs/planning/README.md"
@@ -16,6 +17,7 @@ on:
     paths:
       - "schemas/**"
       - "scripts/validate_schemas.py"
+      - "scripts/validate_sqlite_ddl.py"
       - ".github/workflows/schema-validation.yml"
   workflow_dispatch:
 
