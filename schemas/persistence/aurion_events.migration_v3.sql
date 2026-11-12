@@ -23,6 +23,16 @@ BEGIN
   SELECT RAISE(ABORT,'task_runs.owner_id_required');
 END;
 
+-- Once a task owner is bound, ownership cannot be reassigned or cleared by
+-- ordinary updates. NULL -> verified owner binding is the sole permitted
+-- transition for legacy rows and must be performed by the authorized backfill.
+CREATE TRIGGER task_runs_owner_immutable
+BEFORE UPDATE OF owner_id ON task_runs
+WHEN OLD.owner_id IS NOT NULL AND NEW.owner_id IS NOT OLD.owner_id
+BEGIN
+  SELECT RAISE(ABORT,'task_runs.owner_id_immutable');
+END;
+
 -- The task-control idempotency ledger is local to aurion_events.db so receipt,
 -- task revision transition, event append and outbox enqueue can share one
 -- SQLite transaction. Receipts intentionally have no FK to task_runs:
