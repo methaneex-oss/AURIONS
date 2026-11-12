@@ -949,3 +949,64 @@ Until then, PR #2 stays draft/unmerged and no implementation begins.
 
 ## 17. Change log
 - 2026-11-11: Added implementation-ready planning contracts, recovery/sync/security/test specifications, validation procedures, work-package dependencies and explicit evidence/owner gates to prevent known planning omissions from being delegated to the independent reviewer.
+
+
+### 4.2.3 Task-control command contract (builder closure candidate)
+
+This section narrows the four scheduler controls to their actual target: one owner-scoped task run in `aurion_events.db`. These commands do not select a device, provider, external capability or arbitrary task-owned action. They change scheduler state only. Any operation already dispatched by the task retains its own operation/attempt state and authorization; task control cannot erase, reverse or declare that external effect cancelled.
+
+#### Target and authority
+
+- The payload `task_run_id` is the sole target selector. The handler MUST load that exact row and require `task_runs.owner_id = commandEnvelope.owner_id`. A missing, NULL-owner or mismatched row is denied without disclosing whether another owner's row exists.
+- `actor_identity` MUST be authenticated. The governance decision MUST establish that this actor is the owner principal or has an active owner-authorized grant for the exact scheduler-control operation and task-run scope. An authenticated identity string alone is not authority.
+- These commands have no device target and no requested external capability. They MUST NOT inherit device permissions or capability grants merely because the task may later invoke provider-backed operations.
+- The task-control authorization decision is evaluated at execution time, after envelope validation and before the task-run mutation. Expired approval, revoked grant, owner mismatch or policy denial prevents the transition.
+- The control request's reason is audit context, not authority and not a substitute for a policy decision.
+
+#### Revision and transition invariants
+
+- `expected_version` MUST equal the current `task_runs.revision`; otherwise return a conflict and do not append a transition event or mutate the projection.
+- A committed transition increments revision by exactly one. The transition event's `previous_revision` and `revision` MUST match the before/after row values.
+- The scheduler MUST apply the legal transition table defined by the task-run lifecycle contract; this command family does not permit arbitrary state assignment. Terminal states remain terminal.
+- Pause and cancel are requests, not proof that an in-flight operation stopped. If the task is at a safe point, the scheduler may commit the transition. Otherwise it records a pending control request and continues to expose the actual task and operation states. A dispatched or unknown operation is reconciled independently before any claim that its effects are cancelled.
+- Resume requires a valid checkpoint and revalidation of plan, context, discovered means and dependency revisions. A lost run requires reconciliation before resume.
+- A rejected, stale, unauthorized or expired request does not mutate the task projection. An accepted-but-pending request is not a committed task transition.
+
+#### Idempotency and replay
+
+For `task.start`, `task.pause`, `task.resume` and `task.cancel`, the deduplication key is unique within:
+`(owner_id, actor_identity, command_type, command_version, idempotency_key)`.
+
+The request digest is SHA-256 over RFC 8785 JSON Canonicalization Scheme bytes for the semantic command tuple:
+`owner_id`, `actor_identity`, `command_type`, `command_version`, `operation_id`, `deadline`, `requested_capability`, `data_classification`, `approval_reference`, and the exact validated command payload. Exclude transport-attempt fields `command_id`, `issued_at` and `idempotency_key`; the key is already part of the unique scope. Do not normalize, reorder or reinterpret payload strings beyond RFC 8785 canonicalization.
+
+- First use reserves and commits the receipt in the same local SQLite transaction as the task projection transition, immutable transition event, and outbox record.
+- Same scoped key and same digest returns the stored original command response and does not reapply the transition or emit another event.
+- Same scoped key and different digest is rejected as `operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH`; it must not reveal or overwrite the original response.
+- A crash before transaction commit leaves neither the receipt nor the transition committed. A crash after commit replays the stored response on retry. There is no cross-database atomicity claim.
+- Receipts remain available for the task's deduplication lifetime. Deletion/retention must preserve a tombstone or equivalent key+digest evidence for at least the maximum supported retry/replay horizon; that horizon and deletion procedure remain an explicit persistence acceptance gate.
+
+#### Persistence and transaction boundary
+
+Migration `aurion_events.migration_v3.sql` adds nullable owner binding for legacy task rows, an insert trigger requiring ownership for new rows, and `task_command_receipts`. Existing rows remain unbound; ownership MUST be populated only from authoritative provenance. A NULL owner row cannot be controlled. The receipt ledger intentionally has no task-row foreign key so task deletion cannot silently erase replay evidence.
+
+For a task-control request whose effects are wholly local to the event store, the receipt, task-run revision update, `task.control.requested.v1` / `task.run.transitioned.v1` events as applicable, and outbox insertion MUST commit in one transaction. Event publication is asynchronous from the committed outbox. A task-control transaction MUST NOT perform provider I/O while holding the SQLite write transaction.
+
+#### Acceptance cases to implement and execute
+
+| Case | Given / action | Required assertion |
+|---|---|---|
+| TC-001 | Authenticated owner controls an owned queued task with matching revision | Exactly one legal transition; revision +1; one transition event; one receipt; outbox row committed atomically. |
+| TC-002 | Owner A targets owner B's task | Denied without state mutation, event append or existence disclosure. |
+| TC-003 | Actor has no active exact-scope grant | Denied; an identity string or task payload cannot self-authorize. |
+| TC-004 | Expected revision is stale | Conflict; no revision increment, transition event or side effect. |
+| TC-005 | Same idempotency scope and digest is replayed | Original response returned; no second transition/event/outbox effect. |
+| TC-006 | Same idempotency scope but different digest | Collision rejected; original receipt unchanged; no transition. |
+| TC-007 | Crash injected before local transaction commit | No receipt, projection transition, transition event or outbox row survives. |
+| TC-008 | Crash injected after local transaction commit but before publication | Retry returns stored response; outbox publishes once logically; projection revision does not increment again. |
+| TC-009 | Pause/cancel arrives while a provider operation is dispatched or unknown | Task control remains pending at safe point; operation is reconciled independently; no false cancelled-success claim. |
+| TC-010 | Resume uses stale checkpoint/plan/context/means/dependency revision | Resume rejected or deferred; no running transition until revalidation succeeds. |
+| TC-011 | Legacy task row has NULL owner_id | Control denied; no inferred owner assignment. |
+| TC-012 | Task is terminal | No further state transition; replay of a prior accepted request returns its stored response only. |
+
+**Evidence boundary:** These are specified acceptance cases, not executed runtime tests. The proposed migration is not executed. Task controls remain `design_only_not_dispatchable` until migration execution, lifecycle table reconciliation, executable tests, and builder review pass.
