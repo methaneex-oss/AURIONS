@@ -56,7 +56,7 @@ These checks validate pointer existence and basic structural consistency only. T
 These counts were derived by parsing the fetched JSON documents. They are not a full JSON Schema Draft 2020-12 conformance result.
 
 ### Current fixture inventory correction
-The current PR file inventory contains 78 named positive domain-payload examples and 28 negative fixture files. The earlier bounded-check evidence covers the original 25 negative fixtures and three later additions; it does not establish that every one of the current 28 has been rerun after all subsequent edits. The register was corrected to preserve that evidence boundary. A fresh full negative-corpus run remains a builder validation task.
+The current PR file inventory contains 78 named positive domain-payload examples, eight separate world-interaction payload examples and 29 negative fixture files. The earlier bounded-check evidence covers the original 25 negative fixtures and three later additions; it does not establish that every one of the current 28 has been rerun after all subsequent edits. The register was corrected to preserve that evidence boundary. A fresh full negative-corpus run remains a builder validation task.
 
 ## 4. Builder findings — open and blocking
 
