@@ -264,6 +264,8 @@ def main() -> int:
             fail(f"{label}: schema pointer does not resolve to a schema object")
         return document, pointer
 
+    fixture_cache = {}
+
     def validate_bound_fixture(reference: str, selected_schema_ref: str, label: str):
         fixture_path, separator, fixture_pointer = reference.partition("#")
         if not separator or not fixture_path.startswith("schemas/fixtures/"):
@@ -309,7 +311,6 @@ def main() -> int:
             )
             validate_bound_fixture(fixture_ref, selected, query_type)
 
-    fixture_cache = {}
     for event_type, item in events.items():
         if item.get("dispatch_status") != "design_only_not_dispatchable":
             fail(f"{event_type}: event unexpectedly dispatchable")
