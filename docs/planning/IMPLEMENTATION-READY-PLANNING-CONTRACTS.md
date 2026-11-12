@@ -228,7 +228,15 @@ Every event body MUST validate against exactly one versioned payload schema befo
 
 | Event family | Payload definition |
 |---|---|
-| `experience.observed.v1` | `experienceObserved` |\n| `evidence.recorded.v1` | `evidenceItem` |\n| `objective.created.v1` | `objective` in `world-interaction.v1.schema.json` |\n| `world.entity.observed.v1` | `entity` in `world-interaction.v1.schema.json` |\n| `world.relationship.revised.v1` | `relationship` in `world-interaction.v1.schema.json` |\n| `situation.snapshot.created.v1` | `situation` in `world-interaction.v1.schema.json` |\n| `means.affordance.proposed.v1` | `affordanceHypothesis` in `world-interaction.v1.schema.json` |\n| `interaction.proposed.v1` | `interactionProposal` in `world-interaction.v1.schema.json` |\n| `interaction.outcome.observed.v1` | `interactionOutcome` in `world-interaction.v1.schema.json` |
+| `experience.observed.v1` | `experienceObserved` |
+| `evidence.recorded.v1` | `evidenceItem` |
+| `objective.created.v1` | `objective` in `world-interaction.v1.schema.json` |
+| `world.entity.observed.v1` | `entity` in `world-interaction.v1.schema.json` |
+| `world.relationship.revised.v1` | `relationship` in `world-interaction.v1.schema.json` |
+| `situation.snapshot.created.v1` | `situation` in `world-interaction.v1.schema.json` |
+| `means.affordance.proposed.v1` | `affordanceHypothesis` in `world-interaction.v1.schema.json` |
+| `interaction.proposed.v1` | `interactionProposal` in `world-interaction.v1.schema.json` |
+| `interaction.outcome.observed.v1` | `interactionOutcome` in `world-interaction.v1.schema.json` |
 | `representation.created.v1` / `representation.revised.v1` | `representationCreated` / `representationRevised` |
 | `context.assembled.v1` / `context.invalidated.v1` | `contextSnapshot` / `contextInvalidated` |
 | `environment.observed.v1` | `environmentObserved` |
