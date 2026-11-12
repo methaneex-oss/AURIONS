@@ -286,3 +286,15 @@ At starting PR head `cc968402c868df1ffd80abf81c9df27f417937fb`, workflow run [43
 The builder re-examined the current audit and owner-decision boundary. BR-001/002/003/004/008/009/010 remain OPEN; BR-005/006/007 remain PARTIALLY CLOSED. The registry remains non-dispatchable and runtime handlers are not present in this planning PR. The first permitted Android action, cloud/mobile cognitive-history continuity and target-device selection remain owner-reserved. Production implementation authorization remains NOT GRANTED.
 
 **Disposition remains NOT READY.** No independent-review or tester handoff is made. The builder must not manufacture closure through documentation-only edits where actual implementation, target evidence or owner decisions are prerequisites.
+
+## Builder increment — validator evidence and error mapping integrity (2026-11-12)
+
+At starting revision `0332792bc3f3c1793885d6fb5f8a0def9d392305`, the builder freshly read the current Project Directorship and Team Operating Standard (blob `951b9009cbedcf8907b365d611d89559d5a17385`) and Builder Operating Protocol (blob `179b02aaef051173b96f54812f451ede1a2eae0d`).
+
+The builder corrected stale evidence statements in the implementation-ready contracts, cognitive/capability matrix and owner-decision traceability matrix. Python-host Draft 2020-12 schema/fixture CI and host SQLite base/migration smoke checks are recorded as passed for their actual scopes; C++/Python conformance, target Android/Termux SQLite, crash/fault recovery and runtime semantics remain open.
+
+A new check in `scripts/validate_schemas.py` reconciles all 35 error-code mappings across the normative Error Handler Contract Matrix, machine-readable error registry and fixture corpus. It verifies inventory parity, handler mapping, default side-effect state, retry posture and fixture pointer. It does not prove runtime handler implementation or executed recovery branches.
+
+The final revision for this increment, `7b913e829acb5ef51f988a20ca637a45605bc81a`, passed GitHub Actions run [43291121578](https://github.com/methaneex-oss/AURIONS/actions/runs/43291121578), including schema/fixture validation, governance validation, host SQLite DDL/migration smoke tests and Android probe shell syntax.
+
+**Evidence boundary:** BR-003 remains OPEN pending actual per-code recovery/fault/replay tests and production handlers. BR-008 remains OPEN pending semantic cross-document verification. BR-010 remains OPEN pending full package traceability and scaffold reconciliation. Overall planning remains NOT READY; this update does not authorize implementation or trigger independent review.
