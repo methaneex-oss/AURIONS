@@ -2,7 +2,7 @@
 
 **Status:** Author-prepared planning supplement; proposed until owner approval. This document closes the design gaps listed in the author-side review where they can be resolved without fabricating test evidence or making owner-reserved product decisions. It does not claim SQL execution, device measurements, dependency audit, penetration testing, or implementation.
 
-**Authority:** The imported owner decision register remains authoritative. Where this supplement adds detail, it is an engineering proposal. A proposal must not silently become an owner decision. The [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) is the canonical crosswalk for cognitive and Android capability state ownership, persistence, work-package and test mapping. The initial language-neutral JSON Schema source is `schemas/domain-payloads.v1.schema.json`; it currently contains 86 reusable schema definitions, while `schemas/fixtures/domain-payloads.fixture.json` contains 78 named positive payload examples across experience, representation, context, evidence, belief, prediction, appraisal, attention, reasoning, memory, knowledge, goals, plans, decisions, capability discovery/knowledge, operation lifecycle, outcome evaluation, learning, self-model, evolution, governance, checkpoints, worker protocol, task control and sync. The definition count and fixture-example count are different measures; neither implies complete handler semantics or scenario-level validation. The common envelope and extensible capability descriptor body are defined separately in `schemas/message-envelope.v1.schema.json` and `schemas/capability-descriptor-body.v1.schema.json`. It is an initial schema set, not yet the complete command/event contract corpus or a selected runtime validator.
+**Authority:** The imported owner decision register remains authoritative. Where this supplement adds detail, it is an engineering proposal. A proposal must not silently become an owner decision. The [Open-World Interaction and Means Architecture](../architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) is the foundational objective-led model. The [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) is the canonical crosswalk for world, interaction, cognitive and platform-specific state ownership, persistence, work-package and test mapping. The initial language-neutral JSON Schema source is `schemas/domain-payloads.v1.schema.json`; it currently contains 86 reusable schema definitions, while `schemas/fixtures/domain-payloads.fixture.json` contains 78 named positive payload examples across experience, representation, context, evidence, belief, prediction, appraisal, attention, reasoning, memory, knowledge, goals, plans, decisions, capability discovery/knowledge, operation lifecycle, outcome evaluation, learning, self-model, evolution, governance, checkpoints, worker protocol, task control and sync. The definition count and fixture-example count are different measures; neither implies complete handler semantics or scenario-level validation. The common envelope and extensible capability descriptor body are defined separately in `schemas/message-envelope.v1.schema.json` and `schemas/capability-descriptor-body.v1.schema.json`. It is an initial schema set, not yet the complete command/event contract corpus or a selected runtime validator.
 
 ## 1. Scope and completion semantics
 
@@ -201,7 +201,10 @@ The result schema specifies each result item; `queryResponse.results` is a colle
 
 ### 4.3 Event catalogue
 Every event includes the common envelope and an immutable event body. Initial event names:
-- `experience.observed.v1`
+- `experience.observed.v1`, `evidence.recorded.v1`
+- `objective.created.v1`
+- `world.entity.observed.v1`, `world.relationship.revised.v1`, `situation.snapshot.created.v1`
+- `means.affordance.proposed.v1`, `interaction.proposed.v1`, `interaction.outcome.observed.v1`
 - `representation.created.v1`, `representation.revised.v1`
 - `context.assembled.v1`, `context.invalidated.v1`
 - `environment.observed.v1`, `capability.discovered.v1`, `capability.verified.v1`, `capability.invalidated.v1`, `capability.revoked.v1`, `capability.knowledge.revised.v1`
@@ -225,7 +228,7 @@ Every event body MUST validate against exactly one versioned payload schema befo
 
 | Event family | Payload definition |
 |---|---|
-| `experience.observed.v1` | `experienceObserved` |
+| `experience.observed.v1` | `experienceObserved` |\n| `evidence.recorded.v1` | `evidenceItem` |\n| `objective.created.v1` | `objective` in `world-interaction.v1.schema.json` |\n| `world.entity.observed.v1` | `entity` in `world-interaction.v1.schema.json` |\n| `world.relationship.revised.v1` | `relationship` in `world-interaction.v1.schema.json` |\n| `situation.snapshot.created.v1` | `situation` in `world-interaction.v1.schema.json` |\n| `means.affordance.proposed.v1` | `affordanceHypothesis` in `world-interaction.v1.schema.json` |\n| `interaction.proposed.v1` | `interactionProposal` in `world-interaction.v1.schema.json` |\n| `interaction.outcome.observed.v1` | `interactionOutcome` in `world-interaction.v1.schema.json` |
 | `representation.created.v1` / `representation.revised.v1` | `representationCreated` / `representationRevised` |
 | `context.assembled.v1` / `context.invalidated.v1` | `contextSnapshot` / `contextInvalidated` |
 | `environment.observed.v1` | `environmentObserved` |
@@ -254,7 +257,7 @@ Every event body MUST validate against exactly one versioned payload schema befo
 | `task.run.transitioned.v1` | `taskRunTransition` |
 | `worker.job.requested.v1` / `worker.job.progressed.v1` / `worker.job.completed.v1` / `worker.job.failed.v1` | `workerRequest` / `workerProgress` / `workerResult` / `workerFailure` |
 
-Payload definitions are in `schemas/domain-payloads.v1.schema.json`. The common envelope is in `schemas/message-envelope.v1.schema.json`; capability descriptor bodies use `schemas/capability-descriptor-body.v1.schema.json`. Event-to-payload binding MUST be enforced by the event validator, not by a model-authored type claim. Any new event requires a new explicit mapping and compatible schema/fixture before it can be published.
+Payload definitions are in `schemas/domain-payloads.v1.schema.json` and `schemas/world-interaction.v1.schema.json`. The common envelope is in `schemas/message-envelope.v1.schema.json`; provider/interface-specific capability descriptor bodies use `schemas/capability-descriptor-body.v1.schema.json`. The latter are not the universal model of possible means. Event-to-payload binding MUST be enforced by the event validator, not by a model-authored type claim. Any new event requires a new explicit mapping and compatible schema/fixture before it can be published.
 
 Events are append-only facts. Each durable append receives an `event_sequence` from the receiving event store inside the same local transaction as the event record; producers never supply or predict it. The sequence is monotonically increasing and unique within that one event store, not a global cross-device order. Consumers persist `last_sequence` only after the corresponding state change and event receipt are committed. Duplicate `message_id` with identical content is acknowledged without a second append; the same ID with a different payload digest is a protocol-integrity error. Corrections are new compensating events with causation links; do not rewrite history to conceal a prior outcome.
 
@@ -271,15 +274,15 @@ Event-stream acceptance checks:
 - **TS-006:** `completed`, `failed` and `cancelled` are terminal task states; no transition can mutate a terminal run.
 - **TS-007:** crash/replay around control acceptance or transition commit does not duplicate a state change or advance revision twice.
 
-## 4.4 Canonical environment and capability payload contracts
+## 4.4 Platform-specific environment and capability payload contracts
 
-These payload contracts are extensible data contracts. They describe observations and discovered interfaces; they do not enumerate or hardcode the behaviours AURIONS may learn to perform. Every payload is carried inside the common envelope and remains subject to owner/device scope, schema validation, sensitivity controls and authorization.
+These payload contracts describe one provider/device-specific class of observations and discovered interfaces. They do not define the general world model or enumerate the behaviours AURIONS may learn to perform. Every payload is carried inside the common envelope and remains subject to its actual owner/context scope, schema validation, sensitivity controls and authorization. Device scope is required only for device-specific records; non-device entities, actors, resources and interactions use the context-independent world-interaction contracts.
 
-### Environment observation
+### Device/platform environment observation
 
 Required fields:
 - `observation_id`: stable UUID.
-- `owner_id`, `device_id`: authenticated scope.
+- `owner_id`, `device_id`: authenticated scope for this device-specific observation.
 - `environment_scope`: declared observation boundary.
 - `observed_at`, `recorded_at`: UTC timestamps.
 - `source_id`, `collection_method`, `collector_version`: provenance.
@@ -906,11 +909,11 @@ These are specified proposals, not independently validated or owner-approved imp
 The following must not be guessed by the technical lead:
 1. ~~First user-facing interface (CLI, Android-native or another client).~~ **RESOLVED: CLI is the first user-facing interface.**
 2. **RESOLVED: cloud operation and offline-capable mobile operation are concurrent first-release targets.** Offline mobile must not require cloud connectivity; both contexts use shared versioned contracts and the authoritative cognitive core. Mobile UI technology and exact deployment topology remain subject to validation.
-3. **Android capability architecture:** the examples (app launch, volume adjustment and file handling) are illustrative only, not an exhaustive capability list, fixed scope or selected first action. Planning must define environment perception/representation, general capability discovery, capability learning, reasoning/planning over discovered capabilities, platform adapters and independent governance. No fixed operation catalogue may be inferred from the examples.
+3. **Android platform realization:** the examples (app launch, volume adjustment and file handling) are illustrative only, not an exhaustive capability list, fixed scope or selected first action. Planning must define the general objective/world/means reasoning independently of platforms, then specify Android observation, Android-specific discovery, platform permission integration and empirical feasibility under that model. No fixed operation catalogue may be inferred from the examples.
 4. Numeric performance/latency/resource thresholds after device baselines.
 5. Any change to protected authority, privacy, external disclosure or risk tolerance.
 
-The first-interface and deployment directions are owner-decided. The Android capability architecture remains an IN-PROGRESS builder design deliverable; implementation authorization and the planning exit remain separate owner gates. See PLANNING-COMPLETION-REGISTER.md for authoritative status.
+The first-interface and deployment directions are owner-decided. The foundational open-world interaction architecture and its first schema/persistence mapping remain IN PROGRESS; Android is one separate platform-specific realization. Implementation authorization and the planning exit remain separate owner gates. See PLANNING-COMPLETION-REGISTER.md for authoritative status.
 
 ## 16. Planning exit rule
 
