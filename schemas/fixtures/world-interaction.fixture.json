@@ -221,6 +221,42 @@
         "owner_ref": "owner:primary",
         "version": 1
       }
-    ]
+    ],
+    "objectiveRevision": {
+      "objective_id": "objective:fixture:1",
+      "statement": "Obtain a verified copy of the document from its current custodian using the newly confirmed scope.",
+      "request_source_ref": "experience:owner-request:1",
+      "created_at": "2026-11-12T08:00:00Z",
+      "status": "active",
+      "success_evidence": [
+        "evidence:document-received-and-verified"
+      ],
+      "constraints": {
+        "disclosure": "do not disclose document contents to an unapproved party"
+      },
+      "assumptions": [],
+      "uncertainty": {
+        "custodian_identity": "not yet established"
+      },
+      "owner_ref": "owner:primary",
+      "version": 2
+    },
+    "relationshipRevision": {
+      "relationship_id": "relationship:fixture:1",
+      "subject_ref": "entity:fixture:custodian",
+      "predicate": "may_custody",
+      "object_ref": "entity:fixture:document",
+      "epistemic_status": "supported",
+      "confidence": 0.75,
+      "evidence_refs": [
+        "evidence:user-mentioned-custodian",
+        "evidence:follow-up-confirmation"
+      ],
+      "valid_from": "2026-11-12T08:05:00Z",
+      "valid_until": null,
+      "context_ref": "situation:fixture:1",
+      "owner_ref": "owner:primary",
+      "version": 2
+    }
   }
 }
