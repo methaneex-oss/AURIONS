@@ -89,6 +89,7 @@
       "additionalProperties": false,
       "required": [
         "objective_id",
+        "owner_ref",
         "statement",
         "request_source_ref",
         "created_at",
@@ -132,6 +133,9 @@
         },
         "uncertainty": {
           "type": "object"
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
         }
       }
     },
@@ -140,6 +144,7 @@
       "additionalProperties": false,
       "required": [
         "entity_id",
+        "owner_ref",
         "identity_status",
         "description",
         "first_observed_at",
@@ -185,12 +190,6 @@
             "context_ref": {
               "$ref": "#/$defs/ref"
             },
-            "owner_ref": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
             "valid_from": {
               "type": [
                 "string",
@@ -214,6 +213,9 @@
         "sensitivity": {
           "type": "integer",
           "minimum": 0
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
         }
       }
     },
@@ -222,6 +224,7 @@
       "additionalProperties": false,
       "required": [
         "relationship_id",
+        "owner_ref",
         "subject_ref",
         "predicate",
         "object_ref",
@@ -272,6 +275,9 @@
             "string",
             "null"
           ]
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
         }
       }
     },
@@ -280,6 +286,7 @@
       "additionalProperties": false,
       "required": [
         "situation_id",
+        "owner_ref",
         "version",
         "objective_refs",
         "entity_refs",
@@ -370,6 +377,9 @@
             "string",
             "null"
           ]
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
         }
       }
     },
@@ -378,6 +388,7 @@
       "additionalProperties": false,
       "required": [
         "evidence_id",
+        "owner_ref",
         "source_ref",
         "source_kind",
         "observed_at",
@@ -423,6 +434,9 @@
         "sensitivity": {
           "type": "integer",
           "minimum": 0
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
         }
       }
     },
@@ -431,6 +445,7 @@
       "additionalProperties": false,
       "required": [
         "hypothesis_id",
+        "owner_ref",
         "objective_ref",
         "actor_refs",
         "resource_refs",
@@ -537,6 +552,9 @@
           "items": {
             "$ref": "#/$defs/ref"
           }
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
         }
       }
     },
@@ -545,6 +563,7 @@
       "additionalProperties": false,
       "required": [
         "interaction_id",
+        "owner_ref",
         "objective_ref",
         "actor_ref",
         "target_refs",
@@ -643,6 +662,9 @@
             "string",
             "null"
           ]
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
         }
       }
     },
@@ -651,6 +673,7 @@
       "additionalProperties": false,
       "required": [
         "outcome_id",
+        "owner_ref",
         "interaction_ref",
         "observed_at",
         "recorded_at",
@@ -720,6 +743,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
         }
       }
     },
