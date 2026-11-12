@@ -419,3 +419,8 @@ Exact PR #2 head `072843a85e2b234cf8fe62dcc89df78d931f3dbc` passed GitHub Action
 Added a complete 89-event producer/consumer semantics matrix. The machine-readable event registry now declares the exact command producers for each event; a validator enforces bidirectional parity with command `emitted_event_bindings`. Current result: 51 events have one or more command producers; 38 have no command producer binding and remain explicitly unresolved. This is not a claim that the latter have no valid producer: platform, worker, sync and internal transition sources still require evidence and ownership.
 
 All events remain design-only/non-dispatchable. Consumer semantics, owner transitions, event-specific acceptance and runtime handlers remain unresolved. This closes only the producer-crosswalk integrity subtask; BR-008 remains OPEN. Exact-head CI is pending.
+
+
+## BR-002 follow-on — expanded open-world query inventory (2026-11-12)
+
+The query registry expanded from 21 to 29 entries with objective/world entity/relationship/situation/affordance/interaction inspection. Added unique QCC-022…QCC-029 positive/negative acceptance assertions and read-only invariants for the eight new queries. All 29 query entries now have acceptance IDs and remain design-only/non-dispatchable. These are specifications, not handler tests; BR-002 remains OPEN.
