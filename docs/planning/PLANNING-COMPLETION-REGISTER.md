@@ -119,21 +119,14 @@ The canonical matrix is the single mechanism-to-component/persistence/event/test
 - Record every finding with severity, disposition and evidence; no silent assumptions.
 
 ### B-08 — Finalize planning baseline and review package
-- A main-builder pre-review audit is recorded at [MAIN-BUILDER-PRE-REVIEW-AUDIT-2026-11-12.md](../reviews/MAIN-BUILDER-PRE-REVIEW-AUDIT-2026-11-12.md). Its verdict is NOT READY; it is a closure ledger, not a final builder review or independent review.
-- The audit parsed the current domain schema, positive fixture, command/query registry and error registry. It found 86 reusable schema definitions, 78 named positive fixture examples, 45 command records (43 mapped and two deferred), 21 query records, and 35 error codes all still marked seed. All 45 command entries and all 21 query entries have unresolved bindings. These are structural counts, not conformance or runtime evidence.
-- The implementation-contract introduction was corrected in commit `d616036d9b7a6b9276bcb7a20af515ea6b9f828a` to distinguish schema-definition count from positive-fixture count.
-- Builder closure still includes command/query per-entry semantics, error recovery, executable multi-step scenarios, DDL execution/fault tests, Android target validation protocol and evidence, validator/toolchain/CI decision, security/key lifecycle evidence, semantic requirement/event/DDL reconciliation and work-package/scaffold traceability.
-- Correct stale and contradictory documentation.
-- Publish the canonical completion matrix and unresolved-gate register.
-- Re-fetch and verify the exact branch revision, file contents, PR metadata and status.
-- Prepare the exact final revision for independent re-review.
-- Do not merge PRs or authorize implementation without the required review and owner approval.
-
-- Correct stale and contradictory documentation.
-- Publish the canonical completion matrix and unresolved-gate register.
-- Re-fetch and verify the exact branch revision, file contents, PR metadata and status.
-- Prepare the exact final revision for independent re-review.
-- Do not merge PRs or authorize implementation without the required review and owner approval.
+- The main-builder pre-review audit is recorded at [MAIN-BUILDER-PRE-REVIEW-AUDIT-2026-11-12.md](../reviews/MAIN-BUILDER-PRE-REVIEW-AUDIT-2026-11-12.md). Its verdict is NOT READY; it is a closure ledger, not a final builder review or independent review.
+- Current machine-readable inventory: 86 reusable domain-schema definitions; 78 named positive payload examples; 45 command records (43 mapped and two deferred); 21 query records; 35 error-registry entries. All 45 command and 21 query records retain unresolved handler bindings; all 35 error entries remain seed. These are inventory/reference-integrity checks, not semantic conformance or runtime evidence.
+- Structural crosschecks currently recorded in the audit: schema/fixture references resolve; 76 event types are bound exactly once to declared payload definitions; all 51 distinct command/query table references exist in their declared store; all 35 error entries reference a handler-contract section and an in-range fixture. Semantic correctness, SQL execution and handler behaviour remain unverified.
+- Builder-owned closure remains: per-entry command/query semantics; code-specific error recovery; executable multi-step scenario contracts; semantic event/state/DDL reconciliation; validator and CI selection; security and key-lifecycle contract reconciliation; work-package/scaffold traceability; final 69-file repository and cross-document audit.
+- Correct all stale and contradictory claims found during the final bounded audit. Re-run the entire changed-file and cross-reference scan after the last edit.
+- Perform a separate final builder review of the exact final revision. Do not use the pre-review audit as a substitute for that review.
+- Only after builder closure and final builder review, request the main independent reviewer to review that exact revision.
+- Keep PR #2 draft/open/unmerged; do not authorize implementation or merge by implication.
 
 ## 4. External and owner-dependent gates (not builder completion claims)
 
