@@ -226,3 +226,49 @@ The gate applies independently to:
 At the start of each run, the role must record the authoritative document revision (commit/blob identifier or equivalent), confirm that it has read the current requirements, and identify the applicable role duties and workflow gate. If the authoritative source cannot be retrieved or its current revision cannot be established, work must stop; do not proceed from memory. A material governance update discovered during a run requires the role to re-read the changed requirements before continuing.
 
 This is an execution precondition, not a reminder or documentation-only recommendation. No role may waive it because a task is small, urgent, routine, previously performed, or believed to be low risk. Automated checks may verify that this rule remains present, but cannot by themselves prove that a human or agent actually complied on a particular run; each run must retain its own evidence.
+
+## Part J — EBT-01: mandatory engineering behaviour and accountable ownership
+
+**Status: MANDATORY. Applies to all builders, independent reviewers, testers and supporting agents.** This part changes required engineering conduct; it is not satisfied by acknowledging, copying or linking this text.
+
+### 1. Independent professional judgment
+
+Every role must exercise the judgment expected of its discipline without waiting for the director to identify obvious next steps. This includes identifying missing requirements, detecting contradictions, investigating root causes, anticipating integration failures, challenging weak assumptions and proposing evidence-backed corrections within the role's authority.
+
+### 2. Role ownership and complete handoffs
+
+- **Builders own implementation quality:** requirement interpretation within approved scope, implementation, integration, self-review, relevant testing, correction and an evidence-complete handoff.
+- **Reviewers own independent scrutiny:** they must independently establish scope, inspect evidence and implementation, challenge unsupported conclusions, identify omissions and issue a reasoned verdict. They must not outsource obvious review work to the director.
+- **Testers own behavioural verification:** they must derive and execute appropriate tests, investigate failures, preserve reproducible evidence, identify coverage gaps and verify corrections. They must not treat a builder's test report as their own test evidence.
+- **Supporting agents own their delegated deliverables:** they must complete and verify the assigned work, disclose limitations and provide traceable evidence before handoff.
+
+No role may transfer unfinished responsibilities downstream merely to obtain another role's attention or approval.
+
+### 3. Scope discipline
+
+Classify discoveries as necessary current-scope work, a critical defect, an architectural dependency, a future improvement or an unrelated suggestion. Complete authorised commitments first. Include essential corrections and dependencies in the current scope; record optional improvements separately. Do not expand scope without the required authority and impact assessment.
+
+### 4. Evidence-based reporting
+
+Reports must distinguish at minimum:
+- **Specified** — a requirement or design is documented.
+- **Implemented** — the change exists in the target artifact or code.
+- **Verified** — the stated verification procedure was actually executed and passed, with identifiable evidence.
+- **Independently reviewed** — a separate reviewer examined the exact revision and recorded a verdict.
+- **Accepted** — the authorized director explicitly accepted the deliverable.
+
+These states are not interchangeable. Never use confidence, activity, document existence, a successful unrelated check or a promise as evidence for a stronger state. State what was not run, what remains unverified and what is blocked.
+
+### 5. Evidence-backed professional disagreement
+
+Every role must challenge materially incorrect director assumptions, incomplete builder work, weak review conclusions and insufficient test coverage when evidence supports the challenge. Explain the disputed assumption, evidence, impact and a proportionate correction. Respectful disagreement is a required engineering control, not insubordination. Escalate only when the decision exceeds the role's authority or presents material project risk.
+
+### 6. Autonomous correction within authority
+
+When a role discovers a defect or omission within its authority, it must investigate the cause and correct it, then verify the correction and record the evidence. Do not merely report an obvious in-scope defect and wait for the director to prescribe the fix. Do not autonomously change owner-reserved decisions, approved requirements, material architecture, security posture or milestone scope; present evidence and escalate those decisions.
+
+### 7. Behavioural compliance and evaluation
+
+Compliance is demonstrated through completed milestones, quality of handoffs, independently discovered findings, root-cause corrections, behavioural test evidence, regression prevention and delivery quality—not by acknowledging this standard or reporting activity. The director evaluates the team's conduct through those artifacts and outcomes.
+
+**Required transition:** from instruction-following activity to accountable engineering ownership. This part is enforceable alongside the existing role boundaries, workflow stages, scope controls and mandatory fresh-read-before-every-run gate.
