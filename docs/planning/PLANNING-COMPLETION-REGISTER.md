@@ -407,3 +407,8 @@ Exact revision `bde408f8d3c0709a0e848376caa8ccb97dec6bb7` passed workflow [43318
 Freshly read the current mandatory governance standard and Builder Operating Protocol (blobs `951b9009cbedcf8907b365d611d89559d5a17385` and `179b02aaef051173b96f54812f451ede1a2eae0d`); EBT-01 and the fresh-read gate were confirmed.
 
 The 21 query registry entries now each have a unique QCC-001…QCC-021 positive assertion, negative/stale/security assertion and read-only invariant. The schema and validator enforce these fields, unique IDs and exact matrix/registry coverage. Shared QRY-001…QRY-014 remain the cross-query test requirements. These are acceptance specifications, not executed handlers. Numerical budgets and target-runtime cursor/concurrency evidence remain outstanding; all queries remain design-only/non-dispatchable. BR-002 remains OPEN.
+
+
+## BR-002 exact-head verification — query acceptance specification (2026-11-12)
+
+Exact PR #2 head `072843a85e2b234cf8fe62dcc89df78d931f3dbc` passed GitHub Actions run [43319093751](https://github.com/methaneex-oss/AURIONS/actions/runs/43319093751), including schemas/fixtures, 21 query QCC acceptance-case integrity, governance, host SQLite smoke tests and Android shell syntax. Query acceptance cases are specified and machine-bound, not executed handlers. BR-002 remains OPEN; all queries remain design-only/non-dispatchable.
