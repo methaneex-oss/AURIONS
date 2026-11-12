@@ -116,3 +116,34 @@ The semantic contract matrix is specified. The following cannot be claimed compl
 5. Owner approval of the proposed first-release workflow/query subset.
 
 Until those gates pass, the machine registry must retain all query entries as `design_only_not_dispatchable`. This matrix does not change registry dispatch status or imply implementation authorization.
+
+
+## 5. Per-query acceptance catalogue (QCC-001…QCC-021)
+
+Each registry query now has a unique acceptance ID, one domain-specific positive assertion, one negative/staleness/security assertion and an explicit read-only invariant. These supplement QRY-001…QRY-014, which remain the shared cross-query security and pagination test set.
+
+| Acceptance ID | Query | Positive assertion | Negative / stale / security assertion |
+|---|---|---|---|
+| `QCC-001` | `environment.inspect` | Returns only owner-scoped observations with source identity, observation time and explicit permission/provenance status. | Cross-owner filters, revoked permission or untrusted source yield no protected row or count; query performs no live observation. |
+| `QCC-002` | `capability.search` | Ranks only owner-visible descriptors and reports exact descriptor/provider version and verification freshness. | Unverified, expired, invalidated or other-device descriptor is not represented as currently verified or authorized. |
+| `QCC-003` | `capability.inspect` | Returns one exact descriptor revision with verification evidence and expiry. | Stale/missing descriptor does not fall back to a different revision or trigger a live probe. |
+| `QCC-004` | `capability.knowledge.inspect` | Returns evidence-linked, context-scoped knowledge revisions and retains disputed/contradictory claims. | Knowledge claims cannot be elevated to universal capability or permission; missing evidence remains visible. |
+| `QCC-005` | `representation.inspect` | Returns exact representation revision with source experience/revision lineage. | Missing/expired source lineage is reported; query does not silently synthesize or repair representation. |
+| `QCC-006` | `context.get` | Returns immutable context snapshot with exact dependency revisions and unknown/missing inputs. | Stale or cross-owner context cannot be returned as current/complete; no implicit reassembly. |
+| `QCC-007` | `memory.search` | Returns ranked owner-scoped memories with provenance, uncertainty and retention filtering. | Deleted/tombstoned or cross-owner memory is excluded; retrieval scores do not become beliefs or mutate memory. |
+| `QCC-008` | `knowledge.search` | Returns source-classified knowledge with revision and evidence lineage, preserving uncertainty. | Inference is not presented as observed fact; contradictory or withdrawn knowledge is not silently promoted. |
+| `QCC-009` | `belief.inspect` | Returns exact belief revision and supporting/contradicting evidence. | Contradictory evidence remains visible; query cannot revise or promote belief. |
+| `QCC-010` | `prediction.inspect` | Returns prediction separately from evaluation and observed outcome, with horizon and source revisions. | Prediction is never presented as outcome or causal evidence; missing evaluation remains unknown. |
+| `QCC-011` | `appraisal.inspect` | Returns appraisal tied to exact context/evidence/model revisions and its uncertainty. | Stale dependencies are surfaced; no appraisal recalculation or fixed stimulus-to-emotion mapping occurs during read. |
+| `QCC-012` | `attention.inspect` | Returns current committed allocation or immutable event history with explicit sequence watermark. | No reprioritization, allocation mutation or stale cached current allocation is permitted. |
+| `QCC-013` | `reasoning.inspect` | Returns assessment hypotheses, alternatives, uncertainty and permitted artifact/evidence lineage. | Hypothesis is not promoted to fact; protected artifact/provider diagnostics are redacted. |
+| `QCC-014` | `goal.get` | Returns owner-scoped derived goal revision and its objective/constraint lineage. | A goal is not aliased to an owner objective or plan; stale revision is not silently substituted. |
+| `QCC-015` | `plan.get` | Returns plan, steps and dependencies with current validity and exact referenced revisions. | Stale means/policy/permission/objective dependency is disclosed; query does not repair, replan or authorize. |
+| `QCC-016` | `decision.inspect` | Returns recorded alternatives, evidence and decision authority reference. | Reading a decision cannot grant approval, dispatch permission or alter the selected option. |
+| `QCC-017` | `task.status` | Returns authoritative task revision/checkpoint and distinguishes pending pause/cancel from terminal state. | Task state is not inferred from an operation/provider receipt; stale current state is not cached. |
+| `QCC-018` | `operation.status` | Returns operation attempts, provider receipts and reconciliation evidence as separate facts. | Provider receipt is not observed outcome; uncertain dispatch remains uncertain and query never redispatches. |
+| `QCC-019` | `permission.inspect` | Returns effective owner policy, actor/device grants and OS permission as distinct current facts. | Stale/revoked grant is not reported effective; no permission or approval is created by query. |
+| `QCC-020` | `audit.lookup` | Returns only purpose-authorized audit fields in a stable governance-store snapshot. | Cross-owner records, secrets, keys and approval nonces remain undisclosed; unauthorized audit purpose is denied. |
+| `QCC-021` | `device.capabilities` | Returns last evidenced descriptor state for one authenticated paired device with probe time/expiry. | No live probe, pairing, permission prompt or authorization inference occurs during read. |
+
+The catalogue is a test specification, not evidence of executed handlers. Execution must assert response fields, owner/actor isolation, deterministic redaction, snapshot/cursor behaviour and unchanged domain-store/event/outbox state using deterministic stores and fault injection.
