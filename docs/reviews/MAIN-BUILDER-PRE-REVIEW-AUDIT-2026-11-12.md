@@ -450,3 +450,20 @@ This closes the missing **builder specification** subtask for the provider-indep
 **Builder crosswalk recheck:** The canonical roadmap and work-package matrix each contain WP-00…WP-16 (17 packages); the roadmap has 17 package rows and no dependency token outside the canonical WP-00…WP-16 set. The product definition contains workflows 0 and A…F. This is a bounded structural presence check only; it does not establish that each dependency edge, contract binding or acceptance test is semantically complete. PR #1 remains open, draft and unmerged at `742232599a5dc37f48ea33cd9fef77924e060a38`; it remains a minimal version-function scaffold, not a cognitive/runtime implementation.
 
 **Disposition:** BR-009 remains OPEN pending executable host-fake tests and actual platform/cloud evidence. BR-001…BR-004 and BR-008…BR-010 remain open; BR-005…BR-007 remain partially closed for their explicitly bounded evidence only. No owner-reserved decision was made, no implementation authorization is inferred, and no independent-review or tester handoff is issued.
+
+
+## Builder increment — event payload/fixture binding guard (2026-11-12)
+
+A source inspection of `scripts/validate_schemas.py` found that the event-registry CI gate checked the 84-entry count and non-dispatchable status, but did not resolve each event's `payload_schema_ref` or `fixture_refs`. That left a concrete cross-document drift path: an event could retain a structurally valid registry record while pointing to a missing schema definition or fixture.
+
+Extended the validator to:
+- Resolve every event payload-schema file and JSON Pointer against the loaded Draft 2020-12 schema documents.
+- Require each resolved payload reference to identify a schema object with a stable schema ID.
+- Resolve every fixture file and JSON Pointer, require at least one fixture per event, and validate each referenced fixture payload against that event's referenced schema.
+- Preserve the existing guard that every event remains `design_only_not_dispatchable` with explicit unresolved runtime bindings.
+
+**Bounded source-data check:** Re-fetched the exact branch's event registry, domain schema, world-interaction schema and both referenced fixture files. All 84 event payload-schema references resolved; all fixture pointers resolved; no missing or malformed schema/fixture reference was found. This was a source-level reference check, not execution of the updated Python validator or a full semantic consumer test.
+
+**Verification state:** The code change is committed, but no exact-head GitHub Actions run is currently returned for the new revision. Therefore the new Python validator change is **IMPLEMENTED — UNVERIFIED** pending CI execution. Do not claim the new guard passed until an exact-head run reports success. The previous passing run [43296040114](https://github.com/methaneex-oss/AURIONS/actions/runs/43296040114) applies only to its earlier head `a11934f3177880125a67fbb6830ba59a7672c166`.
+
+BR-008 remains OPEN: this guard closes one machine-enforced schema/fixture reference-integrity gap only. It does not prove event semantic suitability, owner transitions, handler/consumer correctness, persistence transactions or executable cognitive behaviour.
