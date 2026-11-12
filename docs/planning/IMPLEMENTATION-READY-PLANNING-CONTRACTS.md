@@ -849,7 +849,12 @@ No dependency/license audit is claimed complete by this checklist. It becomes co
 - No SQLite library/version, JSON Schema validator, C++/Python contract generator, Python runtime package or model runtime is currently selected/pinned by the scaffold.
 - C++20 is explicitly provisional; target Termux/Android compiler and build evidence remain outstanding.
 
-**Validator candidate — proposed, not yet adopted:**
+**Validator status — split by execution boundary:**
+
+- **Adopted for Python-host CI:** pinned `jsonschema[format]==4.26.0`, installed from `requirements-validation.txt`, executed by `scripts/validate_schemas.py` in `.github/workflows/schema-validation.yml`. On final planning PR revision `0332792bc3f3c1793885d6fb5f8a0def9d392305`, workflow run [43288993781](https://github.com/methaneex-oss/AURIONS/actions/runs/43288993781) passed the Draft 2020-12 schema/fixture validation and governance integrity steps. The corpus result recorded in [Schema Validation Results](../reviews/SCHEMA-VALIDATION-RESULTS-2026-11-12.md) is 8 schema meta-schema checks, 7 registry/fixture pairs, 78 positive domain payloads and 29 negative controls.
+- This adoption is limited to Python-host schema/fixture validation. It does not establish C++ validator equivalence, Android/Termux feasibility, C++/Python serialization conformance, runtime command/query semantics or production handler readiness.
+
+**C++/shared-evaluator candidate — proposed, not adopted:**
 - C++ boundary: Corvus JSON Schema C ABI release `capi-v0.1.7`, tag commit `150e755760a0b318e7f0aa5c57d7522e79af612c`, using its header-only C++ wrapper.
 - Shared evaluator: Corvus Rust crate `corvus-json-schema` version `0.2.2`; the C API crate is version `0.1.7`, edition 2024, and declares Rust 1.89 as its minimum.
 - Python worker/test binding: `corvus-json-schema-rs` version `0.2.2`, backed by the same Rust evaluator. The pure-Python `corvus-json-schema` package is a separate implementation and is not the proposed pairing.
@@ -862,14 +867,14 @@ No dependency/license audit is claimed complete by this checklist. It becomes co
 - Rationale: capability descriptors and provider-defined extensions are intentionally open-world. Generating closed enums or assuming all extension properties are statically known would create pressure to encode the current fixture set as the capability boundary. Explicit adapters must preserve unknown compatible extension data while keeping authority-sensitive fields closed and validated.
 - C++/Python conformance will be enforced by running the same positive/negative fixture corpus through both bindings. If hand-maintained adapters produce measurable drift, evaluate a generator against the actual schemas and require unknown-field preservation and Draft 2020-12 compatibility before adoption.
 
-**Adoption gate (not yet passed):**
-1. Build C API 0.1.7 and Python binding 0.2.2 from pinned sources for host and target Android/Termux; record compiler, Rust, NDK/ABI and package hashes.
-2. Verify all external `$ref` resolution, format assertion, regex/resource limits, error reporting and maximum recursion depth against the AURIONS schemas.
-3. Run the official JSON-Schema-Test-Suite subset required by the selected dialect plus every AURIONS positive/negative fixture in both bindings; compare normalized validation results.
+**Remaining C++ candidate adoption gates (not passed):**
+1. Build the Corvus C API and Python binding from pinned sources for host and target Android/Termux; record compiler, Rust, NDK/ABI and package hashes.
+2. Verify external `$ref` resolution, format assertion, regex/resource limits, error reporting and recursion/resource limits against the AURIONS schemas.
+3. Run the required official JSON-Schema-Test-Suite subset and the complete AURIONS positive/negative corpus through both C++ and Python bindings; compare normalized results.
 4. Produce Cargo/Python dependency inventories, license notices, SBOM, vulnerability scan and reproducible offline rebuild.
-5. Integrate the validator and fixture checks into CI only after the target and licensing gates pass. Until then the schemas remain planning artifacts and the current structural subset checks are not full conformance evidence.
+5. Decide whether the C++ candidate is suitable only after target and licensing evidence is available. The existing Python-host CI remains in place and does not depend on adoption of this candidate.
 
-The current evaluation is a reasoned candidate recommendation, not a final dependency approval or completed license/security audit. Sources inspected: `https://github.com/corvus-dotnet/Corvus.JsonSchema`, release `https://github.com/corvus-dotnet/Corvus.JsonSchema/releases/tag/capi-v0.1.7`, and `https://json-schema.org/specification`.
+The Python-host validator is adopted and CI-enforced for its stated scope. The Corvus evaluation remains a reasoned C++ candidate recommendation, not a final dependency approval or completed license/security audit. Sources inspected: `https://github.com/corvus-dotnet/Corvus.JsonSchema`, release `https://github.com/corvus-dotnet/Corvus.JsonSchema/releases/tag/capi-v0.1.7`, and `https://json-schema.org/specification`.
 
 ## 13. Platform and target-device validation plan
 
