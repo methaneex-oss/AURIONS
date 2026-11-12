@@ -66,6 +66,7 @@ def main() -> int:
         ("fixtures/capability-descriptor.fixture.json", "capability-descriptor-body.v1.schema.json"),
         ("fixtures/world-interaction.fixture.json", "world-interaction.v1.schema.json"),
         ("fixtures/scenario-contracts.fixture.json", "scenario-contracts.v1.schema.json"),
+        ("scenario-test-catalogue.v1.json", "scenario-test-catalogue.v1.schema.json"),
     ]
     for instance_path, schema_name in pairs:
         validate(load(SCHEMAS / instance_path), schema_docs[schema_name], instance_path)
@@ -264,6 +265,46 @@ def main() -> int:
                 f"{event_type}: event matrix payload {matrix_payload!r} "
                 f"does not match schema definition {expected_payload!r}"
             )
+
+    scenario_catalogue = load(SCHEMAS / "scenario-test-catalogue.v1.json")
+    scenarios = scenario_catalogue["scenarios"]
+    expected_scenario_ids = {
+        *(f"CM-{index:03d}" for index in range(1, 22)),
+        *(f"AD-{index:03d}" for index in range(1, 16)),
+    }
+    scenario_ids = {item["scenario_id"] for item in scenarios}
+    if len(scenarios) != 36 or scenario_ids != expected_scenario_ids:
+        fail("scenario catalogue must contain the exact CM-001…CM-021 and AD-001…AD-015 inventory")
+    command_types = {item["command_type"] for item in commands}
+    query_types = {item["query_type"] for item in queries}
+    domain_payload_defs = set(schema_docs["domain-payloads.v1.schema.json"].get("$defs", {}))
+    world_payload_defs = set(schema_docs["world-interaction.v1.schema.json"].get("$defs", {}))
+    for scenario in scenarios:
+        scenario_id = scenario["scenario_id"]
+        if scenario.get("status") != "specified_not_executable":
+            fail(f"{scenario_id}: scenario must remain specified_not_executable")
+        if len(scenario["positive_assertions"]) < 2 or len(scenario["negative_controls"]) < 2:
+            fail(f"{scenario_id}: positive and negative assertions are required")
+        if len(scenario["durable_state_assertions"]) < 2:
+            fail(f"{scenario_id}: durable-state assertions are required")
+        unknown_commands = set(scenario["command_refs"]) - command_types
+        unknown_queries = set(scenario["query_refs"]) - query_types
+        unknown_events = set(scenario["event_refs"]) - set(events)
+        unknown_payloads = set(scenario["required_payload_definitions"]) - domain_payload_defs - world_payload_defs
+        if unknown_commands or unknown_queries or unknown_events or unknown_payloads:
+            fail(
+                f"{scenario_id}: unresolved references; commands={sorted(unknown_commands)} "
+                f"queries={sorted(unknown_queries)} events={sorted(unknown_events)} "
+                f"payloads={sorted(unknown_payloads)}"
+            )
+        learning = scenario["learning_evaluation"]
+        if learning["persistent_change_required"] and not (
+            learning["frozen_baseline_required"]
+            and learning["held_out_controls_required"]
+            and learning["repeat_seeded_runs"] >= 3
+            and learning["pre_registered_metrics_and_tolerances"]
+        ):
+            fail(f"{scenario_id}: persistent-learning acceptance lacks baseline/held-out/repeated preregistered evaluation")
 
     def resolve_pointer(document, pointer: str, label: str):
         if not pointer.startswith("#/"):
