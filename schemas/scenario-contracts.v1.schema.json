@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scenario-contracts.v1.schema.json",
+  "title": "AURIONS integrated architecture scenario contracts",
+  "description": "Machine-readable multi-step design/test specifications. These fixtures are not executable runtime tests and do not authorize dispatch.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "registry_id",
+    "registry_version",
+    "status",
+    "source_matrix",
+    "scenarios"
+  ],
+  "properties": {
+    "registry_id": {
+      "const": "aurions.scenario-contracts"
+    },
+    "registry_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "const": "design_specified_not_executed"
+    },
+    "source_matrix": {
+      "const": "docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md"
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "$ref": "#/$defs/scenario"
+      }
+    }
+  },
+  "$defs": {
+    "stringList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "step_id",
+        "trigger",
+        "contract_action",
+        "expected_transitions",
+        "expected_events",
+        "durable_assertions"
+      ],
+      "properties": {
+        "step_id": {
+          "type": "string",
+          "pattern": "^S[0-9]{2}$"
+        },
+        "trigger": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contract_action": {
+          "type": "string",
+          "pattern": "^(command|query|event|observation|fake):[a-zA-Z0-9_.:-]+$"
+        },
+        "expected_transitions": {
+          "$ref": "#/$defs/stringList"
+        },
+        "expected_events": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "durable_assertions": {
+          "$ref": "#/$defs/stringList"
+        }
+      }
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "control_id",
+        "injection",
+        "expected_disposition",
+        "must_not_change"
+      ],
+      "properties": {
+        "control_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "injection": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_disposition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "must_not_change": {
+          "$ref": "#/$defs/stringList"
+        }
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_id",
+        "title",
+        "purpose",
+        "source_scenario_ids",
+        "contract_refs",
+        "initial_state",
+        "deterministic_fakes",
+        "steps",
+        "negative_controls",
+        "restart_replay_controls",
+        "concurrency_controls",
+        "fault_controls",
+        "held_out_controls",
+        "acceptance_thresholds",
+        "execution_status",
+        "execution_authority"
+      ],
+      "properties": {
+        "scenario_id": {
+          "type": "string",
+          "pattern": "^INT-[0-9]{3}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_scenario_ids": {
+          "$ref": "#/$defs/stringList"
+        },
+        "contract_refs": {
+          "$ref": "#/$defs/stringList"
+        },
+        "initial_state": {
+          "$ref": "#/$defs/stringList"
+        },
+        "deterministic_fakes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "clock",
+            "inference",
+            "stores",
+            "provider",
+            "authority"
+          ],
+          "properties": {
+            "clock": {
+              "type": "string",
+              "minLength": 1
+            },
+            "inference": {
+              "type": "string",
+              "minLength": 1
+            },
+            "stores": {
+              "type": "string",
+              "minLength": 1
+            },
+            "provider": {
+              "type": "string",
+              "minLength": 1
+            },
+            "authority": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "$ref": "#/$defs/step"
+          }
+        },
+        "negative_controls": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/control"
+          }
+        },
+        "restart_replay_controls": {
+          "$ref": "#/$defs/stringList"
+        },
+        "concurrency_controls": {
+          "$ref": "#/$defs/stringList"
+        },
+        "fault_controls": {
+          "$ref": "#/$defs/stringList"
+        },
+        "held_out_controls": {
+          "$ref": "#/$defs/stringList"
+        },
+        "acceptance_thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "hard_invariants",
+            "learning_metric_rule",
+            "evidence_requirement"
+          ],
+          "properties": {
+            "hard_invariants": {
+              "$ref": "#/$defs/stringList"
+            },
+            "learning_metric_rule": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence_requirement": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "execution_status": {
+          "const": "specified_not_executed"
+        },
+        "execution_authority": {
+          "const": "none"
+        }
+      }
+    }
+  }
+}
