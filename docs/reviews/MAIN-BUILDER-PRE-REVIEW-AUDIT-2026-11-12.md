@@ -123,13 +123,14 @@ The current PR file inventory contains 78 named positive domain-payload examples
 
 **Current disposition:** OPEN. Device selection/availability and measurements are external evidence gates; the protocol itself is builder work.
 
-### BR-007 — Validator and schema CI are not selected or integrated
+### BR-007 — Validator and schema CI selection: partially closed
 
 **Severity:** High  
-**Evidence:** Corvus is a proposal only; Android/Bionic artifacts are not published; full Draft 2020-12 conformance, C++/Python equivalence, transitive SBOM/license review and CI enforcement remain open.  
-**Required builder closure:** Complete a reproducible comparison of viable validators, pin source/version/hash and toolchains, prove host C++ and Python result equivalence against the complete positive and negative corpus, determine Android cross-build feasibility, complete transitive license/SBOM/vulnerability review and add CI only after the tool choice is accepted.
+**Verified builder closure:** A pinned Python `jsonschema[format]==4.26.0` Draft 2020-12 validator is integrated into GitHub Actions. The current corpus passed eight schema meta-schema checks, seven registry/fixture pairs, all 78 positive domain payloads and all 29 negative controls. See [Schema Validation Results](SCHEMA-VALIDATION-RESULTS-2026-11-12.md) and the linked successful workflow run.
 
-**Current disposition:** OPEN. A custom structural subset checker is not a standards-compliant validator.
+**Remaining:** Host C++ validator comparison and result equivalence, Android/Termux dependency feasibility, C++/Python serialization compatibility, transitive SBOM/license/vulnerability review and integration with the eventual runtime toolchain.
+
+**Current disposition:** PARTIALLY CLOSED. Python-host schema/fixture validation is verified; BR-007 as a whole remains OPEN until the remaining compatibility and supply-chain gates are closed.
 
 ### BR-008 — Semantic cross-document reconciliation is incomplete
 
