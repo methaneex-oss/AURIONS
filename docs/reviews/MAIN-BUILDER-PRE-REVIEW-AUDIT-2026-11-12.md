@@ -116,13 +116,14 @@ The current PR file inventory contains 78 named positive domain-payload examples
 
 **Current disposition:** PARTIALLY CLOSED for host DDL execution and the listed smoke invariants; BR-005 remains OPEN pending target and fault/recovery evidence. SQL execution is now an automated gate, not a documentation-only claim.
 
-### BR-006 — Android platform baseline and capability feasibility remain unvalidated
+### BR-006 — Android platform baseline: validation procedure prepared; target evidence open
 
 **Severity:** High  
-**Evidence:** Android architecture defines general discovery and OS/AURIONS authorization separation, but no exact target device/API baseline or actual platform permission/lifecycle validation is recorded.  
-**Required builder closure:** Write a target-device validation protocol that records manufacturer/model, Android release/API level, build fingerprint, Termux version, ABI, available SQLite version/compile options, background execution limits, permission state, storage constraints, resource budgets and reproducible measurements. Reconcile each Android API assumption against the pinned target baseline and official platform documentation. Do not assume root, unrestricted filesystem access, arbitrary background execution or privileges that Android does not grant.
+**Verified builder closure:** Added [Android / Termux Target Baseline Validation Protocol](../platform/ANDROID-TERMUX-TARGET-VALIDATION-PROTOCOL.md) and read-only collector `scripts/probe_android_termux.sh`. The protocol defines the required target identity, runtime SQLite probes, permission/lifecycle cases, resource measurements, evidence package and PASS/FAIL/BLOCKED verdicts. The collector records available Android build properties, ABI, Termux inventory, SQLite CLI/version/compile options/JSON/FK/WAL probes, storage and optional Termux API availability without changing permissions or acquiring wake locks.
 
-**Current disposition:** OPEN. Device selection/availability and measurements are external evidence gates; the protocol itself is builder work.
+**Remaining:** The owner must select the target device. Run the collector on that target, verify the actual SQLite library linked by the runtime (not only the CLI), reconcile API assumptions against official documentation for the recorded API level, and execute permission revocation, process death, background, reboot, storage and resource tests. No target measurements or Android lifecycle validation are claimed.
+
+**Current disposition:** PARTIALLY CLOSED for the builder-owned procedure and collector; BR-006 remains OPEN pending owner-selected target and empirical evidence.
 
 ### BR-007 — Validator and schema CI selection: partially closed
 
