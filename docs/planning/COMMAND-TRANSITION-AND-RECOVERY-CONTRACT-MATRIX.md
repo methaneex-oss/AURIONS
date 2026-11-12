@@ -97,6 +97,15 @@ The following table defines the intended state effect and event boundary for eac
 | `device.pair` | Deferred future multi-device phase; no aggregate, request schema or owner authorization contract is approved. | None. | `deferred_by_scope`; no dispatch. |
 | `device.revoke` | Deferred future multi-device phase; no aggregate, request schema or owner authorization contract is approved. | None. | `deferred_by_scope`; no dispatch. |
 
+| `objective.create` | Create owner intent as objective_records version 1; success evidence, constraints and uncertainty remain explicit; never create a derived goal implicitly. | `objective.created.v1` | Local owner-intent write only; no action or authorization grant. |
+| `objective.revise` | Require exact current objective and next version; append revision lineage and preserve original request source. | `objective.revised.v1` | Local objective revision only; material changes require downstream plan/dependency re-evaluation. |
+| `world.entity.observe` | Append owner-scoped entity observation/evidence; new identity starts provisional at version 1; later versions preserve all evidence lineage. | `world.entity.observed.v1` | Records an already-obtained observation; does not trigger sensing or assert ground truth. |
+| `world.relationship.revise` | Append exact relationship revision with temporal/context scope and evidence; subject/object must resolve under same owner. | `world.relationship.revised.v1` | Local world-model write; contradictory evidence remains visible and epistemically qualified. |
+| `situation.snapshot.create` | Create immutable partial situation snapshot from exact objective/entity/evidence revisions; retain unknowns and conflicts. | `situation.snapshot.created.v1` | Local snapshot only; no sensing and no claim of complete world state. |
+| `means.affordance.propose` | Create context-scoped possible-means hypothesis with actors, resources, preconditions, expected effects, authority requirements and evidence. | `means.affordance.proposed.v1` | Hypothesis only; not a capability grant, permission, guaranteed ability or executable API. |
+| `interaction.propose` | Create immutable proposal bound to objective, actor, targets, means hypotheses, expected effects and precondition evidence. | `interaction.proposed.v1` | Proposal only; MUST NOT dispatch or contact target. Independent governance and operation path remain separate. |
+| `interaction.outcome.record` | Append independently observed outcome, evidence, unresolved effects and attribution hypotheses for exact interaction. | `interaction.outcome.observed.v1` | Local evidence write; provider receipt alone is not observed outcome or causal proof. |
+
 ## 3. Resolved command/event bindings and remaining blockers
 
 The six command/event or command/query mismatches identified in the initial matrix review are now resolved at the specification/schema/registry level:
@@ -182,4 +191,12 @@ The following cases are builder-defined acceptance criteria, not executed handle
 | `CC-042` | `task.resume` | Paused run resumes only after checkpoint and all dependencies are revalidated. | Lost, terminal or stale-dependency run cannot resume. |
 | `CC-043` | `task.cancel` | Non-terminal run cancellation completes only after safe point and operation reconciliation. | Dispatched/unknown operation keeps cancellation pending; no false external reversal claim. |
 
+| `CC-044` | `objective.create` | Create version-1 objective with owner intent and success evidence. | Duplicate ID or owner_ref mismatch creates no objective or event. |
+| `CC-045` | `objective.revise` | Append version+1 objective preserving source and prior criteria. | Stale/skip version conflicts; no goal or plan is silently rewritten. |
+| `CC-046` | `world.entity.observe` | Append provisional entity observation with evidence and context scope. | Missing evidence or cross-owner reference creates no entity revision. |
+| `CC-047` | `world.relationship.revise` | Append relation revision with valid_from/context and evidence lineage. | Unknown subject/object or stale version causes no relation change. |
+| `CC-048` | `situation.snapshot.create` | Persist snapshot with exact source revisions, unknowns and conflicts. | Missing evidence lineage or cross-owner objective/entity rejects snapshot. |
+| `CC-049` | `means.affordance.propose` | Persist hypothesis with explicit preconditions/effects/authority requirements. | Insufficient evidence remains unverified; no permission/capability is granted. |
+| `CC-050` | `interaction.propose` | Persist proposal with exact target/means/effect digest and no dispatch. | Attempted provider call or missing authority evidence fails closed before any effect. |
+| `CC-051` | `interaction.outcome.record` | Persist observed outcome with source evidence and unresolved attribution. | Provider receipt alone or absent independent evidence cannot record verified success. |
 A passing implementation must execute these cases with deterministic stores/providers/workers, assert durable before/after state, event/outbox count, receipt replay and crash/restart behaviour, and preserve exact error/side-effect classification. Catalogue presence alone is not test evidence.
