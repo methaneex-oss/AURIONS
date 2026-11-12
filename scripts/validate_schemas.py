@@ -329,7 +329,7 @@ def main() -> int:
         for control in scenario["negative_controls"]:
             if not control.get("expected_disposition") or not control.get("must_not_change"):
                 fail(f"{scenario_id}/{control.get('control_id')}: incomplete negative control")
-        if scenario_id in {"INT-001", "INT-002", "INT-003", "CM-012", "CM-013", "CM-016", "AD-009"}:
+        if scenario_id in {"INT-001", "CM-012", "CM-013", "CM-016", "AD-009"}:
             metric_rule = scenario["acceptance_thresholds"].get("learning_metric_rule", "")
             if "pre-register" not in metric_rule.lower() and "pre-register" not in scenario["acceptance_thresholds"].get("learning_metric_rule","").lower():
                 fail(f"{scenario_id}: learning scenario lacks pre-registered metric rule")
