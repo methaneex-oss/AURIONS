@@ -648,7 +648,7 @@ Every test has stable ID, requirement link, fixture/version, preconditions, exac
 - CT-006: query API performs no writes.
 - CT-007: dependency graph contains no forbidden cycles.
 - CT-008: canonical JSON Schema files parse and validate all positive/negative shared fixtures; C++ and Python consumers use the same versioned fixture corpus.
-- EV-001 through EV-004: verify store-local monotonic event sequence, duplicate message identity/digest handling, atomic consumer checkpoint advancement and causal ordering without relying on timestamps or inventing global cross-device order.
+- EV-001 through EV-006: verify store-local monotonic event sequence, duplicate message identity/digest handling, atomic consumer checkpoint advancement, causal ordering, and exact body binding/semantic lineage for the open-world event families without relying on timestamps or inventing global cross-context order.
 
 ### 10.1.1 No-hardcoding regression tests
 These tests protect the governing architecture rule: mechanisms are engineered; behaviour and capability knowledge are acquired through experience. They do not prohibit explicit safety, schema, protocol or permission invariants.
@@ -670,8 +670,8 @@ These tests protect the governing architecture rule: mechanisms are engineered; 
 - NHC-016: objective success criteria persist independently from derived goals/plans; replanning or execution failure cannot rewrite the requested outcome.
 
 ### 10.2 Cognitive-cycle integration tests
-- CM-001 through CM-021: execute the cognitive mechanism and interaction scenarios defined in [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). Preserve the exact scenario IDs, fixtures and negative controls.
-- AD-001 through AD-015: execute the Android environment/capability discovery scenarios defined in [Android Environment and Capability Architecture](../architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md). These test general mechanisms, not a fixed operation catalogue.
+- CM-001 through CM-029: execute the cognitive mechanism and interaction scenarios defined in [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md). Preserve the exact scenario IDs, fixtures and negative controls.
+- AD-001 through AD-015: execute the Android-specific observation/discovery/permission scenarios defined in [Android Platform Interaction Realization](../architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md). These are platform validation tests, not tests of the general open-world means model.
 - CG-001: observation is stored with provenance and source.
 - CG-002: representation/context link to source experience.
 - CG-003: retrieval returns provenance and respects owner/data scope.
@@ -725,7 +725,7 @@ These tests protect the governing architecture rule: mechanisms are engineered; 
 - CAP-002: revoked/stale descriptor or platform grant blocks queued execution and triggers safe revalidation.
 - CAP-003: contradictory capability-use evidence creates a scoped knowledge revision without erasing history.
 - CAP-004: a new schema-compatible capability descriptor is represented without a hardcoded task-to-action branch.
-- NHC-001 through NHC-008: execute the no-hardcoding and capability-extensibility regression checks defined in Section 10.7.
+- NHC-001 through NHC-016: execute the no-hardcoding and capability-extensibility regression checks defined in Section 10.7.
 - SY-001: duplicate sync envelope applies once.
 - SY-002: out-of-order causal change is buffered/rejected safely.
 - SY-003: conflict retains both versions and provenance.
