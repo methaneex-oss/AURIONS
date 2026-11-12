@@ -406,3 +406,26 @@ The builder inspected PR #1 without modifying it. Exact inspected PR head: `7422
 GitHub Actions run [43104192873](https://github.com/methaneex-oss/AURIONS/actions/runs/43104192873), retrieved for that exact PR head, completed successfully through configure, build and CTest. This proves only the hosted scaffold smoke test. The current workflow uses `actions/checkout@v4` by major tag and `ubuntu-latest`; action commit and runner image are not immutable. C++20 remains provisional. No local clean build, actual Termux/ARM64 build, target ABI check, dependency/license inventory or reproducible offline build is evidenced.
 
 **Reconciliation conclusion:** PR #1 is a minimal scaffold and contains no cognitive/runtime, persistence, inference, memory, learning, worker or action implementation. It must remain separate and unmerged until PR #2 planning exit is accepted; only then should it be rebased/reconciled against the accepted baseline and retested. This inspection improves BR-010 evidence but does not close it.
+
+
+## Builder run — current exact-head verification and closure decision (2026-11-12)
+
+**Mandatory fresh governance gate completed before this run:**
+- Project Directorship and Team Operating Standard — blob `951b9009cbedcf8907b365d611d89559d5a17385`; Part J / EBT-01 and the mandatory per-run retrieval/read requirement were freshly retrieved and read.
+- Builder Operating Protocol — blob `179b02aaef051173b96f54812f451ede1a2eae0d`; Sections 10–11 / EBT-01 builder duties were freshly retrieved and read.
+
+**Exact starting PR #2 state:** head `72adb283b76df88cf9530483193359ee2b44a878`; PR #2 is open, draft, unmerged, with 90 changed files. Exact-head GitHub Actions run [43292588202](https://github.com/methaneex-oss/AURIONS/actions/runs/43292588202) completed successfully. The single job passed all applicable steps: pinned Python Draft 2020-12 schema/positive-negative fixture validation; mandatory governance integrity validation; host SQLite base-schema and ordered migration smoke tests; Android probe shell syntax.
+
+**PR #1 scaffold re-check:** PR #1 remains open, draft, unmerged at `742232599a5dc37f48ea33cd9fef77924e060a38`, with nine changed files. Its exact-head hosted CMake/build/CTest run [43104192873](https://github.com/methaneex-oss/AURIONS/actions/runs/43104192873) remains successful. This remains only the minimal C++ version-function scaffold smoke test; no target Termux/ARM64, local reproducibility, dependency/SBOM or cognitive/runtime evidence is established.
+
+**Builder self-review and decision:**
+- The latest branch contains the first-release command/query scope analysis and its bounded cross-artifact inspection. That work confirms structural references, not semantic or executable correctness.
+- BR-001 remains OPEN: 39/43 mapped commands still lack the eight per-command semantic/acceptance categories; four task-control commands still lack executed per-entry conflict/replay/recovery evidence. The proposed objective/world/means/interaction interfaces remain proposals, not canonical accepted command/query contracts.
+- BR-002 remains OPEN: all 21 queries still lack the seven per-query scope/classification/consistency/pagination/budget/freshness/fixture categories.
+- BR-003 and BR-004 remain OPEN: recovery assertions are specified but no production handlers or executable integrated cognitive scenario tests exist.
+- BR-005, BR-006 and BR-007 remain PARTIALLY CLOSED only for their bounded host/procedure checks; target SQLite/device, fault/restore, C++ conformance and runtime integration remain unverified.
+- BR-008, BR-009 and BR-010 remain OPEN: architecture-wide semantic reconciliation, security/key lifecycle enforcement, and accepted package/scaffold reconciliation are not complete.
+- Owner-reserved first Android action and cloud/mobile cognitive-history topology remain unresolved. Target Android device selection and cloud key provider/recovery policy also remain gates.
+- No implementation authorization exists. The builder must not create production runtime handlers, promote registry entries to dispatchable, choose owner-reserved product/topology decisions, merge either PR, or represent planning CI as runtime acceptance.
+
+**Disposition:** Exact-head CI is VERIFIED for the listed bounded checks only. Overall builder status remains **NOT READY** for independent review or planning-exit approval. No reviewer/tester handoff is issued. The remaining open findings are not closable by further prose-only edits; they require owner-approved contract baseline, authorized implementation, actual target environments and executable evidence.
