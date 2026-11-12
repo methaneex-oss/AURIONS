@@ -250,11 +250,12 @@ def main() -> int:
             part for index, part in enumerate(producer_cell.split("`"))
             if index % 2 == 1 and part
         }
-        matrix_event_rows[event_type] = (producers, payload_name)
+        consumer_transition_summary = cells[3] if len(cells) > 3 else ""
+        matrix_event_rows[event_type] = (producers, payload_name, consumer_transition_summary)
     if set(matrix_event_rows) != set(events):
         fail("event producer/consumer matrix inventory does not exactly match event registry")
     for event_type, event in events.items():
-        matrix_producers, matrix_payload = matrix_event_rows[event_type]
+        matrix_producers, matrix_payload, matrix_summary = matrix_event_rows[event_type]
         if matrix_producers != set(event["command_producers"]):
             fail(f"{event_type}: event matrix command producers do not match event registry")
         schema_pointer = event["payload_schema_ref"].split("#", 1)[1]
@@ -264,6 +265,26 @@ def main() -> int:
                 f"{event_type}: event matrix payload {matrix_payload!r} "
                 f"does not match schema definition {expected_payload!r}"
             )
+        if matrix_summary != event.get("consumer_transition_summary"):
+            fail(f"{event_type}: event matrix consumer/transition summary does not match registry")
+        for field in (
+            "producer_origin", "producer_trigger_contract", "owning_component",
+            "consumer_contracts", "owner_transition_contract",
+            "ordering_idempotency_contract", "failure_recovery_contract",
+        ):
+            if not event.get(field):
+                fail(f"{event_type}: missing event field {field}")
+        if event.get("specification_status") != "specified_not_runtime_validated":
+            fail(f"{event_type}: event specification status is misleading")
+        if event["command_producers"] and event["producer_origin"] != "command":
+            fail(f"{event_type}: command-produced event has inconsistent producer origin")
+        if not event["command_producers"] and event["producer_origin"] == "command":
+            fail(f"{event_type}: unbound event cannot claim command producer origin")
+        expected_unresolved = ["runtime_handler", "event_specific_acceptance_execution"]
+        if not event["command_producers"]:
+            expected_unresolved.append("exact_internal_producer_trigger")
+        if set(event.get("unresolved_bindings", [])) != set(expected_unresolved):
+            fail(f"{event_type}: unresolved event bindings do not match implementation evidence boundary")
 
     scenario_contracts = load(SCHEMAS / "fixtures/scenario-contracts.fixture.json")
     scenarios = scenario_contracts["scenarios"]
@@ -286,6 +307,14 @@ def main() -> int:
     query_types = {item["query_type"] for item in queries}
     domain_payload_defs = set(schema_docs["domain-payloads.v1.schema.json"].get("$defs", {}))
     world_payload_defs = set(schema_docs["world-interaction.v1.schema.json"].get("$defs", {}))
+    expected_event_scenario_refs = {}
+    for scenario in scenarios:
+        for step in scenario["steps"]:
+            for event_type in step.get("expected_events", []):
+                expected_event_scenario_refs.setdefault(event_type, set()).add(scenario["scenario_id"])
+    for event_type, event in events.items():
+        if set(event.get("acceptance_scenario_refs", [])) != expected_event_scenario_refs.get(event_type, set()):
+            fail(f"{event_type}: acceptance scenario references do not match scenario fixture coverage")
     for scenario in scenarios:
         scenario_id = scenario["scenario_id"]
         if scenario.get("execution_status") != "specified_not_executed" or scenario.get("execution_authority") != "none":
