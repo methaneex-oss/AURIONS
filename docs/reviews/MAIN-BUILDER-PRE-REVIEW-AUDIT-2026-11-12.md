@@ -621,3 +621,16 @@ All steps passed:
 - Android probe shell syntax.
 
 This verifies schema/fixture and registry structural integrity on the exact head. It does not execute command/query handlers, event consumers, cognitive scenarios, target-device tests or security controls. BR-001/BR-002 remain OPEN for implementation/owner gates and executable tests; BR-008 remains OPEN for full semantic/consumer review and integrated scenario evidence. No command/event is dispatchable; all queries remain read-only/non-dispatchable. No implementation authorization or independent-review/tester handoff is implied.
+
+
+## BR-008 builder increment — event producer/consumer matrix integrity (2026-11-12)
+
+A source-level reconciliation found two concrete event-matrix drift classes after the open-world command expansion:
+- Revision event payload names had to match the exact schema definition identifiers (`objectiveRevision`, `relationshipRevision`) rather than their base entity names.
+- The four task-control commands all use the task-control request/transition event pair; the command registry had only bound `task.start`, because the original per-command matrix said "same task-control event pair" without literal event identifiers.
+
+Corrected the command registry to bind `task.pause`, `task.resume` and `task.cancel` to both task events; corrected the event registry's command producer sets; reconciled event matrix payload names and producer lists. Added a machine validator that requires exact event-matrix/event-registry inventory parity, exact command-producer parity, and payload-definition-name parity. Every mapped command must now declare at least one event binding.
+
+A bounded source cross-check found zero mismatches across all 89 event rows and all 51 mapped command producers. Exact PR #2 head `a27260dfcd3ec7a7a77ca725b437f2565bd762ae` passed GitHub Actions run [43320550842](https://github.com/methaneex-oss/AURIONS/actions/runs/43320550842). All workflow steps passed: Draft 2020-12 schemas/fixtures, registry and event producer matrix integrity, governance, host SQLite smoke tests and Android probe syntax.
+
+This closes event producer **catalogue integrity**, not event consumer semantics or runtime ownership. All 89 events remain design-only/non-dispatchable. BR-008 remains OPEN for full semantic/consumer review and executable scenarios; BR-001 remains OPEN for handlers, owner acceptance and execution evidence.
