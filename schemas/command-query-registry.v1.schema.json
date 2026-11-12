@@ -362,6 +362,22 @@
               "mapped_to_proposed_ddl_not_executed",
               "runtime_state_with_event_history"
             ]
+          },
+          "acceptance_case_id": {
+            "type": "string",
+            "pattern": "^QCC-[0-9]{3}$"
+          },
+          "acceptance_positive_assertion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "acceptance_negative_assertion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "read_only_invariant": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": [
