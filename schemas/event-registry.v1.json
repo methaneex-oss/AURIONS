@@ -1179,6 +1179,62 @@
         "owner_transition",
         "event_specific_acceptance"
       ]
+    },
+    "approval.revoked.v1": {
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/approvalRevoked",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/approvalRevoked"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    "capability.knowledge.proposed.v1": {
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/capabilityKnowledgeRevision",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/capabilityKnowledgeRevision"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    "learning.candidate.evaluated.v1": {
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/learningCandidateEvaluated",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/learningCandidateEvaluated"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
+    },
+    "self_model.update.proposed.v1": {
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/selfModelUpdateProposed",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/selfModelUpdateProposed"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "consumer_semantics",
+        "owner_transition",
+        "event_specific_acceptance"
+      ]
     }
   }
 }
