@@ -205,3 +205,16 @@ The following findings were identified during the current cross-document pass. C
 | BA-010 | HIGH | Event consumers stored `last_sequence`, but the proposed `events` table had no explicit append sequence; causal ordering could not be implemented as documented. | Added store-local `event_sequence INTEGER PRIMARY KEY AUTOINCREMENT`, retained immutable `event_id` as unique identity, and specified append/receipt/consumer checkpoint semantics with EV-001…EV-004. | Proposed SQL has not been executed; monotonic sequence, crash atomicity, duplicate handling and consumer replay require migration/fault tests. |
 
 These findings do not establish completion of any planning layer. They document specific corrections and remaining work discovered by the builder audit.
+
+
+## 4. Builder follow-up — task-control contract reconciliation
+
+**Status: IN PROGRESS — specified, not validated or implemented.**
+
+The four scheduler controls (`task.start`, `task.pause`, `task.resume`, `task.cancel`) now have an explicit owner/task-run scope, actor authorization requirement, no-device/no-provider boundary, RFC 8785 canonical request digest and idempotency scope, replay/collision behaviour, local event-store transaction boundary, legacy-owner safety gate, and twelve acceptance cases in §4.2.3 of the implementation-ready contracts.
+
+A proposed `aurion_events.migration_v3.sql` adds nullable ownership to legacy task rows, rejects new task rows without a non-empty owner, and adds a durable task-control receipt ledger. Legacy rows are intentionally not assigned an inferred owner. The migration is added to the persistence README sequence.
+
+Registry entries for those four commands now carry the task-specific authorization and idempotency semantics; two corresponding generic unresolved bindings were removed. Their per-entry conflict/replay/recovery assertions remain unresolved, and they remain non-dispatchable.
+
+**Not verified:** SQLite migration execution, trigger/DDL compatibility, lifecycle transition legality against every task state, RFC 8785 digest equivalence across C++/Python, receipt retention/tombstone policy, executable fault-injection/replay tests, and runtime handlers. This is a bounded design closure, not task-control completion.
