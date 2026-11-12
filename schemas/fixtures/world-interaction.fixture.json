@@ -186,6 +186,28 @@
         "hypotheses": []
       },
       "side_effects": []
-    }
+    },
+    "relatedEntities": [
+      {
+        "entity_id": "entity:fixture:document",
+        "identity_status": "provisional",
+        "description": "The document requested by the owner.",
+        "first_observed_at": "2026-11-12T08:00:01Z",
+        "last_observed_at": null,
+        "evidence_refs": [
+          "evidence:user-mentioned-custodian"
+        ],
+        "scope": {
+          "context_ref": "situation:fixture:1",
+          "owner_ref": null,
+          "valid_from": null,
+          "valid_until": null
+        },
+        "attributes": {
+          "requested_artifact": true
+        },
+        "sensitivity": 1
+      }
+    ]
   }
 }
