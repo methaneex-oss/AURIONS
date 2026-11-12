@@ -28,7 +28,7 @@
     },
     "events": {
       "type": "object",
-      "minProperties": 84,
+      "minProperties": 88,
       "propertyNames": {
         "type": "string",
         "pattern": "^[a-z][a-z0-9_.]+\\.v1$"
@@ -41,7 +41,9 @@
           "payload_schema_ref",
           "fixture_refs",
           "dispatch_status",
-          "unresolved_bindings"
+          "unresolved_bindings",
+          "command_producers",
+          "command_producer_binding_status"
         ],
         "properties": {
           "event_version": {
@@ -70,6 +72,20 @@
               "type": "string",
               "minLength": 1
             }
+          },
+          "command_producers": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "command_producer_binding_status": {
+            "enum": [
+              "bound",
+              "unresolved"
+            ]
           }
         }
       }
