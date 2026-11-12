@@ -62,7 +62,7 @@ The declared WP-00…WP-16 prerequisite edges were checked as a directed graph. 
 
 `WP-00 → WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12 → WP-13 → WP-14 → WP-15 → WP-16`
 
-This is a valid ordering, not a required serial schedule. Independent packages may proceed concurrently once their prerequisites and interfaces are stable (for example, WP-05 and WP-06 after their common prerequisites, and WP-14 can proceed independently of WP-15 once its WP-12 prerequisites are met). WP-00 also has the separate external gate of planning-exit approval. The graph audit checks only dependency cycles; it does not prove that every package has complete component ownership, machine-readable contracts, executable acceptance fixtures or authorization to start.
+This is a valid ordering, not a required serial schedule. Independent packages may proceed concurrently once their prerequisites and interfaces are stable (for example, WP-05 and WP-06 after their common prerequisites, and WP-14 can proceed independently of WP-15 once its WP-12 prerequisites are met). WP-00 also has the separate external gate of planning-exit approval. The graph audit is now machine-enforced by `scripts/validate_planning_traceability.py` in CI: it checks the exact WP-00…WP-16 inventories in both roadmap and traceability matrix, all dependency references, acyclicity, required row fields, the WP-15 first-release dependency set, and the WP-14/WP-16 boundaries. The guard proves structural graph integrity only; it does not prove semantic completeness, owner acceptance, package readiness or authorization to start.
 
 ## 3. Dependency principles
 
