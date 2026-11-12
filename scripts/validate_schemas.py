@@ -231,6 +231,37 @@ def main() -> int:
                 f"{expected_status!r}"
             )
 
+    event_matrix_path = ROOT / "docs/planning/EVENT-PRODUCER-AND-CONSUMER-SEMANTICS-MATRIX.md"
+    if not event_matrix_path.is_file():
+        fail("missing event producer/consumer semantics matrix")
+    event_matrix = event_matrix_path.read_text(encoding="utf-8")
+    matrix_event_rows = {}
+    for line in event_matrix.splitlines():
+        if not line.startswith("| `") or line.count("|") < 4:
+            continue
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        event_type = cells[0].strip("`")
+        producer_cell = cells[1]
+        payload_name = cells[2].strip("`")
+        producers = {
+            part for index, part in enumerate(producer_cell.split("`"))
+            if index % 2 == 1 and part
+        }
+        matrix_event_rows[event_type] = (producers, payload_name)
+    if set(matrix_event_rows) != set(events):
+        fail("event producer/consumer matrix inventory does not exactly match event registry")
+    for event_type, event in events.items():
+        matrix_producers, matrix_payload = matrix_event_rows[event_type]
+        if matrix_producers != set(event["command_producers"]):
+            fail(f"{event_type}: event matrix command producers do not match event registry")
+        schema_pointer = event["payload_schema_ref"].split("#", 1)[1]
+        expected_payload = schema_pointer.rsplit("/", 1)[-1].replace("~1", "/").replace("~0", "~")
+        if matrix_payload != expected_payload:
+            fail(
+                f"{event_type}: event matrix payload {matrix_payload!r} "
+                f"does not match schema definition {expected_payload!r}"
+            )
+
     def resolve_pointer(document, pointer: str, label: str):
         if not pointer.startswith("#/"):
             fail(f"{label}: expected a non-root JSON Pointer fragment")
