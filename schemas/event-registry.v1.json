@@ -78,9 +78,9 @@
     },
     "world.relationship.revised.v1": {
       "event_version": "1.0",
-      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/relationship",
+      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/relationshipRevision",
       "fixture_refs": [
-        "schemas/fixtures/world-interaction.fixture.json#/definitions/relationship"
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/relationshipRevision"
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
@@ -1515,9 +1515,9 @@
     },
     "objective.revised.v1": {
       "event_version": "1.0",
-      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/objective",
+      "payload_schema_ref": "schemas/world-interaction.v1.schema.json#/$defs/objectiveRevision",
       "fixture_refs": [
-        "schemas/fixtures/world-interaction.fixture.json#/definitions/objective"
+        "schemas/fixtures/world-interaction.fixture.json#/definitions/objectiveRevision"
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
