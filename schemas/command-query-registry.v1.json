@@ -2077,8 +2077,8 @@
         "aurion_events.db"
       ],
       "expected_revision_contract": "taskControlRequest.expected_version MUST equal task_runs.revision; taskRunTransition.previous_revision MUST equal the prior revision and revision MUST advance by exactly one on a committed transition; see TS-001…TS-007.",
-      "authorization_contract": "Every command requires authenticated owner_id and actor_identity; authorization is evaluated at execution time against capability, target/resource scope, data categories, risk, policy version, budgets, expiry, approval and current OS permission (contracts §6.2/§6.4). Per-command owner/device scope and risk mapping remain unresolved.",
-      "idempotency_contract": "commandEnvelope.idempotency_key is mandatory. Per-command deduplication scope, canonical digest algorithm/version, result replay and collision handling remain unresolved and are required before dispatch.",
+      "authorization_contract": "Authenticated owner_id must match task_runs.owner_id for the exact task_run_id in taskControlRequest; NULL-owner legacy rows are not controllable. actor_identity must be authenticated and must be the owner principal or hold an active owner-authorized governance grant for this exact scheduler-control operation and task-run scope. Evaluate authorization at execution time before mutation. Task controls have no device target or requested external capability and cannot inherit provider/device permissions. Control does not authorize or cancel task-owned external operations.",
+      "idempotency_contract": "Deduplication scope is (owner_id, actor_identity, command_type, command_version, idempotency_key). SHA-256 request_digest is computed over RFC 8785 JCS bytes for owner_id, actor_identity, command_type, command_version, operation_id, deadline, requested_capability, data_classification, approval_reference and the validated taskControlRequest payload; exclude command_id, issued_at and idempotency_key. Same key+digest replays the stored response without reapplying; same key+different digest is rejected with operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH. Receipt, task projection transition, immutable event and outbox commit atomically in aurion_events.db. See IMPLEMENTATION-READY-PLANNING-CONTRACTS.md §4.2.3.",
       "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
       "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
       "error_code_bindings": [
@@ -2097,8 +2097,6 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_command_owner_device_scope_and_risk_mapping",
-        "per_command_idempotency_scope_digest_replay_and_collision_rules",
         "per_entry_conflict_replay_recovery_assertions"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
@@ -2129,8 +2127,8 @@
         "aurion_events.db"
       ],
       "expected_revision_contract": "taskControlRequest.expected_version MUST equal task_runs.revision; taskRunTransition.previous_revision MUST equal the prior revision and revision MUST advance by exactly one on a committed transition; see TS-001…TS-007.",
-      "authorization_contract": "Every command requires authenticated owner_id and actor_identity; authorization is evaluated at execution time against capability, target/resource scope, data categories, risk, policy version, budgets, expiry, approval and current OS permission (contracts §6.2/§6.4). Per-command owner/device scope and risk mapping remain unresolved.",
-      "idempotency_contract": "commandEnvelope.idempotency_key is mandatory. Per-command deduplication scope, canonical digest algorithm/version, result replay and collision handling remain unresolved and are required before dispatch.",
+      "authorization_contract": "Authenticated owner_id must match task_runs.owner_id for the exact task_run_id in taskControlRequest; NULL-owner legacy rows are not controllable. actor_identity must be authenticated and must be the owner principal or hold an active owner-authorized governance grant for this exact scheduler-control operation and task-run scope. Evaluate authorization at execution time before mutation. Task controls have no device target or requested external capability and cannot inherit provider/device permissions. Control does not authorize or cancel task-owned external operations.",
+      "idempotency_contract": "Deduplication scope is (owner_id, actor_identity, command_type, command_version, idempotency_key). SHA-256 request_digest is computed over RFC 8785 JCS bytes for owner_id, actor_identity, command_type, command_version, operation_id, deadline, requested_capability, data_classification, approval_reference and the validated taskControlRequest payload; exclude command_id, issued_at and idempotency_key. Same key+digest replays the stored response without reapplying; same key+different digest is rejected with operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH. Receipt, task projection transition, immutable event and outbox commit atomically in aurion_events.db. See IMPLEMENTATION-READY-PLANNING-CONTRACTS.md §4.2.3.",
       "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
       "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
       "error_code_bindings": [
@@ -2150,8 +2148,6 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_command_owner_device_scope_and_risk_mapping",
-        "per_command_idempotency_scope_digest_replay_and_collision_rules",
         "per_entry_conflict_replay_recovery_assertions"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
@@ -2182,8 +2178,8 @@
         "aurion_events.db"
       ],
       "expected_revision_contract": "taskControlRequest.expected_version MUST equal task_runs.revision; taskRunTransition.previous_revision MUST equal the prior revision and revision MUST advance by exactly one on a committed transition; see TS-001…TS-007.",
-      "authorization_contract": "Every command requires authenticated owner_id and actor_identity; authorization is evaluated at execution time against capability, target/resource scope, data categories, risk, policy version, budgets, expiry, approval and current OS permission (contracts §6.2/§6.4). Per-command owner/device scope and risk mapping remain unresolved.",
-      "idempotency_contract": "commandEnvelope.idempotency_key is mandatory. Per-command deduplication scope, canonical digest algorithm/version, result replay and collision handling remain unresolved and are required before dispatch.",
+      "authorization_contract": "Authenticated owner_id must match task_runs.owner_id for the exact task_run_id in taskControlRequest; NULL-owner legacy rows are not controllable. actor_identity must be authenticated and must be the owner principal or hold an active owner-authorized governance grant for this exact scheduler-control operation and task-run scope. Evaluate authorization at execution time before mutation. Task controls have no device target or requested external capability and cannot inherit provider/device permissions. Control does not authorize or cancel task-owned external operations.",
+      "idempotency_contract": "Deduplication scope is (owner_id, actor_identity, command_type, command_version, idempotency_key). SHA-256 request_digest is computed over RFC 8785 JCS bytes for owner_id, actor_identity, command_type, command_version, operation_id, deadline, requested_capability, data_classification, approval_reference and the validated taskControlRequest payload; exclude command_id, issued_at and idempotency_key. Same key+digest replays the stored response without reapplying; same key+different digest is rejected with operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH. Receipt, task projection transition, immutable event and outbox commit atomically in aurion_events.db. See IMPLEMENTATION-READY-PLANNING-CONTRACTS.md §4.2.3.",
       "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
       "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
       "error_code_bindings": [
@@ -2202,8 +2198,6 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_command_owner_device_scope_and_risk_mapping",
-        "per_command_idempotency_scope_digest_replay_and_collision_rules",
         "per_entry_conflict_replay_recovery_assertions"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
@@ -2234,8 +2228,8 @@
         "aurion_events.db"
       ],
       "expected_revision_contract": "taskControlRequest.expected_version MUST equal task_runs.revision; taskRunTransition.previous_revision MUST equal the prior revision and revision MUST advance by exactly one on a committed transition; see TS-001…TS-007.",
-      "authorization_contract": "Every command requires authenticated owner_id and actor_identity; authorization is evaluated at execution time against capability, target/resource scope, data categories, risk, policy version, budgets, expiry, approval and current OS permission (contracts §6.2/§6.4). Per-command owner/device scope and risk mapping remain unresolved.",
-      "idempotency_contract": "commandEnvelope.idempotency_key is mandatory. Per-command deduplication scope, canonical digest algorithm/version, result replay and collision handling remain unresolved and are required before dispatch.",
+      "authorization_contract": "Authenticated owner_id must match task_runs.owner_id for the exact task_run_id in taskControlRequest; NULL-owner legacy rows are not controllable. actor_identity must be authenticated and must be the owner principal or hold an active owner-authorized governance grant for this exact scheduler-control operation and task-run scope. Evaluate authorization at execution time before mutation. Task controls have no device target or requested external capability and cannot inherit provider/device permissions. Control does not authorize or cancel task-owned external operations.",
+      "idempotency_contract": "Deduplication scope is (owner_id, actor_identity, command_type, command_version, idempotency_key). SHA-256 request_digest is computed over RFC 8785 JCS bytes for owner_id, actor_identity, command_type, command_version, operation_id, deadline, requested_capability, data_classification, approval_reference and the validated taskControlRequest payload; exclude command_id, issued_at and idempotency_key. Same key+digest replays the stored response without reapplying; same key+different digest is rejected with operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH. Receipt, task projection transition, immutable event and outbox commit atomically in aurion_events.db. See IMPLEMENTATION-READY-PLANNING-CONTRACTS.md §4.2.3.",
       "deadline_cancellation_contract": "taskControlRequest.deadline bounds acceptance/processing; pause/cancel are pending until a documented safe point; any dispatched/unknown operation must be reconciled before the task is reported cancelled; see TS-004 and TS-007.",
       "side_effect_contract": "Scheduler control itself has no direct external side effect. Task-owned operations retain independent operation/attempt state; dispatched or unknown effects require reconciliation before terminal cancellation.",
       "error_code_bindings": [
@@ -2255,8 +2249,6 @@
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
-        "per_command_owner_device_scope_and_risk_mapping",
-        "per_command_idempotency_scope_digest_replay_and_collision_rules",
         "per_entry_conflict_replay_recovery_assertions"
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
