@@ -69,6 +69,53 @@ def main() -> int:
     for instance_path, schema_name in pairs:
         validate(load(SCHEMAS / instance_path), schema_docs[schema_name], instance_path)
 
+    # Guard the safety status of design registries. Structural validity
+    # must never accidentally promote an incomplete contract to dispatchable.
+    command_registry = load(SCHEMAS / "command-query-registry.v1.json")
+    commands = command_registry["commands"]
+    queries = command_registry["queries"]
+    if len(commands) != 45 or len({item["command_type"] for item in commands}) != 45:
+        fail("command registry must contain 45 unique command types")
+    if len(queries) != 21 or len({item["query_type"] for item in queries}) != 21:
+        fail("query registry must contain 21 unique query types")
+    for item in commands:
+        if not item.get("unresolved_bindings"):
+            fail(f"{item['command_type']}: missing explicit unresolved-binding ledger")
+        if item.get("dispatch_status") not in {
+            "design_only_not_dispatchable", "deferred_by_scope"
+        }:
+            fail(f"{item['command_type']}: unsafe dispatch status")
+    for item in queries:
+        if not item.get("unresolved_bindings"):
+            fail(f"{item['query_type']}: missing explicit unresolved-binding ledger")
+        if item.get("dispatch_status") != "design_only_not_dispatchable":
+            fail(f"{item['query_type']}: unsafe dispatch status")
+
+    event_registry = load(SCHEMAS / "event-registry.v1.json")
+    events = event_registry["events"]
+    if len(events) != 84:
+        fail(f"event registry expected 84 entries, found {len(events)}")
+    for event_type, item in events.items():
+        if item.get("dispatch_status") != "design_only_not_dispatchable":
+            fail(f"{event_type}: event unexpectedly dispatchable")
+        if not item.get("unresolved_bindings"):
+            fail(f"{event_type}: missing event binding ledger")
+
+    error_registry = load(SCHEMAS / "error-registry.v1.json")
+    error_cases = load(FIXTURES / "error-handler-cases.fixture.json")["cases"]
+    if len(error_registry["entries"]) != 35 or len(error_cases) != 35:
+        fail("error registry and fixture corpus must each contain 35 entries")
+    if len({item["error_code"] for item in error_registry["entries"]}) != 35:
+        fail("error registry contains duplicate error codes")
+    case_by_code = {case["payload"]["error_code"]: case for case in error_cases}
+    for item in error_registry["entries"]:
+        if item.get("status") != "seed":
+            fail(f"{item['error_code']}: seed status changed without runtime handler gate")
+        if item["error_code"] not in case_by_code:
+            fail(f"{item['error_code']}: no matching error fixture")
+        if case_by_code[item["error_code"]]["handler_contract_ref"] != item["handler_mapping_ref"]:
+            fail(f"{item['error_code']}: handler mapping and fixture disagree")
+
     # Every positive domain fixture is validated against the correspondingly
     # named reusable definition, not merely parsed as JSON.
     domain_schema = schema_docs["domain-payloads.v1.schema.json"]
