@@ -183,6 +183,13 @@
               "mapped_to_proposed_ddl_not_executed",
               "deferred_by_scope"
             ]
+          },
+          "acceptance_case_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^CC-[0-9]{3}$"
           }
         },
         "required": [
