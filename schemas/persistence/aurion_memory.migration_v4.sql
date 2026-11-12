@@ -21,6 +21,18 @@ CREATE TABLE objective_records (
 CREATE INDEX idx_objective_owner_status
   ON objective_records(owner_ref,status,created_at_ms DESC);
 
+CREATE TABLE evidence_details (
+  evidence_id BLOB PRIMARY KEY REFERENCES evidence_items(evidence_id),
+  owner_ref TEXT NOT NULL,
+  content_ref TEXT NOT NULL,
+  epistemic_status TEXT NOT NULL,
+  scope_json TEXT NOT NULL CHECK(json_valid(scope_json)),
+  limitations_json TEXT NOT NULL CHECK(json_valid(limitations_json)),
+  sensitivity INTEGER NOT NULL CHECK(sensitivity BETWEEN 0 AND 4)
+) STRICT;
+CREATE INDEX idx_evidence_details_owner
+  ON evidence_details(owner_ref,evidence_id);
+
 CREATE TABLE world_entities (
   entity_id TEXT NOT NULL,
   owner_ref TEXT NOT NULL,
@@ -31,7 +43,8 @@ CREATE TABLE world_entities (
   scope_json TEXT NOT NULL CHECK(json_valid(scope_json)),
   evidence_refs_json TEXT NOT NULL CHECK(json_valid(evidence_refs_json)),
   sensitivity INTEGER NOT NULL CHECK(sensitivity BETWEEN 0 AND 4),
-  observed_at_ms INTEGER NOT NULL,
+  first_observed_at_ms INTEGER NOT NULL,
+  last_observed_at_ms INTEGER,
   recorded_at_ms INTEGER NOT NULL,
   PRIMARY KEY(entity_id,version)
 ) STRICT;
