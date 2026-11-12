@@ -401,7 +401,7 @@
             "Record discovery as unknown or unsupported without manufacturing an invocation contract."
           ],
           "expected_events": [
-            "capability.discovery.completed.v1"
+            "capability.discovered.v1"
           ],
           "durable_assertions": [
             "Unknown interface remains unknown.",
