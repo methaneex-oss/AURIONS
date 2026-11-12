@@ -171,15 +171,15 @@ The gateway enforces authorization immediately before execution and records outc
 
 Do not introduce Kubernetes, microservices, a mandatory cloud backend, a message broker, a vector database or Rust merely because they are common in large systems. Each must solve a demonstrated requirement and justify operational cost.
 
-## 11. Capability map inspired by J.A.R.V.I.S., F.R.I.D.A.Y. and E.D.I.T.H.
+## 11. Illustrative product capability families and inspirations
 
-These are sources of capability inspiration, not templates to copy blindly and not promises of fictional unrestricted access.
+These families are product-planning prompts inspired by J.A.R.V.I.S., F.R.I.D.A.Y. and E.D.I.T.H.; they are not an ontology, exhaustive capability catalogue, fixed roadmap or boundary on the open-world model. They are not templates to copy blindly and not promises of fictional unrestricted access.
 
 | Capability family | AURIONS interpretation | Release placement |
 |---|---|---|
 | Conversation and contextual recall | Durable experiences, memory retrieval, provenance-aware context | First usable local release |
 | Reasoning and task planning | Goals, bounded plans, progress and explicit task state | First usable local release, bounded scope |
-| Tool/device operation | Environment/capability discovery, capability knowledge, governed action gateway, verification and receipts | First usable local release: prove the general mechanisms with an owner-approved narrow scenario |
+| Contextual interaction and resource use | Objective-led situation understanding, evidence-based means reasoning, authority-bound interaction, independent outcome verification and learning; device/provider descriptors are one possible input | First usable release: prove the general mechanisms with an owner-approved narrow scenario, without treating a platform or tool registry as the action-space boundary |
 | Proactive assistance | Persistent scheduler, triggers, budgets and notifications | Later, after reliable task lifecycle and permissions |
 | Voice interaction | ASR/TTS adapters and interruption-aware interface | Later; text-first core remains usable |
 | Cross-device access | Android/desktop clients and device identity | Android native UI after core contracts; the first user-facing interface remains CLI |
