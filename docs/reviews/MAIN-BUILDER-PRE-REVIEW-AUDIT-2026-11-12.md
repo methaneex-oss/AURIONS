@@ -263,3 +263,13 @@ Added `scripts/validate_schemas.py`, pinned validation dependency `requirements-
 Test development exposed and corrected a workflow cache-path defect and two relative external schema references. The final run passed after those corrections.
 
 This closes the Python-host Draft 2020-12 schema/fixture validation gap for the current corpus. It does not close C++ equivalence, Android/Termux feasibility, runtime semantics, command/query/event dispatch bindings, migration execution, or the broader BR-001…BR-010 findings. Full details and limitations are recorded in [Schema Validation Results](SCHEMA-VALIDATION-RESULTS-2026-11-12.md).
+
+## Governance reform integration — builder closure evidence (2026-11-12)
+
+**Status: VERIFIED COMPLETE for repository documentation integration only.**
+
+The mandatory Project Directorship and Team Operating Standard is recorded in `docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md`. It establishes the director/builder/independent reviewer/tester authority boundaries, ten-stage workflow, scope/change control, verdicts and evidence-based acceptance. The detailed Builder Operating Protocol explicitly defers role/workflow authority to this standard. Both are linked from the root README and planning index, and the completion register identifies them as mandatory authorities.
+
+Automated check: `scripts/validate_governance.py` verifies all nine standard sections, all ten workflow stages in order, builder-protocol alignment and the three repository entry-point links. GitHub Actions run [43220114110](https://github.com/methaneex-oss/AURIONS/actions/runs/43220114110) passed on commit `2d70cb885dbaaf823b1e545d39d3203ea027682d`, including both schema/fixture validation and governance integrity validation. The evidence report is [GOVERNANCE-STANDARD-VALIDATION-RESULTS-2026-11-12.md](GOVERNANCE-STANDARD-VALIDATION-RESULTS-2026-11-12.md).
+
+**Boundary:** this closes only the governance-documentation integration task. It does not prove human compliance, independent reviewer impartiality, system behaviour, technical planning closure, implementation authorization, independent review, tester acceptance or director acceptance. BR-001…BR-010 and the overall NOT READY disposition remain in force.
