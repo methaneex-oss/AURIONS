@@ -83,9 +83,7 @@ P0 means required to support the workflow contract in the proposed first release
 
 ## 4. Foundational open-world command/query gaps
 
-The current registry does not expose the minimum context-independent world/interaction operations implied by the product and foundational architecture. The eight world-interaction payload definitions and event families are not substitutes for command/query contracts.
-
-The following are proposed interface names for design discussion, not accepted API names or dispatchable entries:
+The initial registry omitted the minimum context-independent world/interaction operations implied by the product and foundational architecture. The eight world-interaction payload definitions and event families were not substitutes for command/query contracts. The builder has now added the proposed interface names below to the machine registry with versioned request/result schemas, aggregate/store bindings, semantic contracts, event bindings and acceptance IDs. They remain design proposals, not owner-approved release APIs or dispatchable entries.
 
 | Proposed command | Owning domain | Minimum contract responsibility |
 |---|---|---|
@@ -109,7 +107,7 @@ Corresponding proposed query surface:
 | `interaction.inspect` | Interaction control | Return proposal/authorization/dispatch states as distinct fields |
 | `interaction.outcome.inspect` | Outcome subsystem | Return observed evidence and evaluation separately |
 
-The exact command/query names, schema bindings, aggregate revision rules, persistence ownership and event bindings require reconciliation against the implementation-ready contracts before registry insertion. In particular, do not infer that every event should have a public command, or that a query should expose internal records wholesale.
+The command/query names and bindings are now present in `command-query-registry.v1.json`, with the command transitions in `COMMAND-TRANSITION-AND-RECOVERY-CONTRACT-MATRIX.md` and query semantics in `QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md`. They remain `design_only_not_dispatchable` pending owner acceptance of first-release scope and handler-level implementation/tests. Do not infer that every event should have a public command, or that a query should expose internal records wholesale.
 
 ## 5. Mandatory per-query contract baseline
 
