@@ -699,3 +699,10 @@ The event producer/consumer matrix now lists the consumer/transition summary for
 The validator now requires these event fields, exact matrix-summary parity, correct unresolved-binding boundaries and scenario-reference parity. It does not claim runtime consumer implementation. Unbound internal events retain an explicit exact-producer-trigger blocker; all events retain runtime-handler and executed event-specific acceptance blockers.
 
 **Verification state:** The registry/matrix changes are committed, but exact-head CI is pending. Do not mark the event consumer/transition contract guard verified until the exact current head passes. BR-008 remains OPEN; no event is dispatchable.
+
+
+## Exact-head verification — event consumer and owner-transition contracts (2026-11-12)
+
+Exact PR #2 head `9eea1f7a322e0c7c0cdbd99df2b1c43a109f1166` passed GitHub Actions run [43322220591](https://github.com/methaneex-oss/AURIONS/actions/runs/43322220591). All steps passed: schema/fixture validation, governance integrity, work-package dependency graph validation, host SQLite base/migration smoke tests and Android probe shell syntax.
+
+The passing validator now enforces all 89 event entries' producer origin/trigger boundary, owning component, consumer contracts, owner transition, ordering/idempotency, failure/recovery and scenario references; exact event-matrix summary/payload/producer parity; and exact 39-scenario coverage parity. The 89 event contracts are specified, not runtime implemented. Unbound internal event triggers, runtime handlers and executed event-specific acceptance remain explicit blockers. All events remain design-only/non-dispatchable.
