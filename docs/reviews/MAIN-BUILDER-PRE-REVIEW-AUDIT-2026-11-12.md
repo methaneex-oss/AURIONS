@@ -652,3 +652,12 @@ Expanded the machine-readable scenario corpus to all 39 canonical probes: INT-00
 Exact code/fixture revision `4e509a194f206c52d41fda1f6d3b3599bc5c0375` passed GitHub Actions run [43320967492](https://github.com/methaneex-oss/AURIONS/actions/runs/43320967492). All workflow steps passed, including scenario/schema/registry validation, governance integrity, host SQLite migrations and Android probe syntax.
 
 **Evidence boundary:** All 39 scenarios are specified as machine-readable test contracts, not executed. No production handlers or runtime scenario runner exist in this planning PR. BR-004 remains OPEN for executable integration/behavioural evidence; no implementation authorization is inferred.
+
+
+## BR-010 builder increment — machine-enforced work-package traceability (2026-11-12)
+
+Added `scripts/validate_planning_traceability.py` and integrated it into the schema/governance CI workflow. The validator requires exactly WP-00…WP-16 in both the canonical roadmap and work-package traceability matrix, one row per package, populated owner/input/output/acceptance/failure-recovery/owner-gate fields, resolvable dependency references, an acyclic graph, WP-15 depending on exactly WP-00…WP-13, WP-14 excluded from first-release prerequisites, and WP-16 depending on accepted WP-15. Parser range expansion and cycle detection have self-tests.
+
+Exact code revision `4296fbff3105c0ebabab4ced1bef4fe96a1a0dfe` passed GitHub Actions run [43321213661](https://github.com/methaneex-oss/AURIONS/actions/runs/43321213661), including the new work-package graph guard, schema/fixture validation, governance integrity, host SQLite smoke tests and Android probe shell syntax.
+
+**Evidence boundary:** This closes BR-010's machine-enforced structural inventory/dependency-graph integrity subtask. It does not prove semantic completeness of package contracts, owner acceptance, target build readiness, or post-planning PR #1 reconciliation. PR #1 remains a separate minimal scaffold and must not be changed or merged before planning exit. BR-010 remains OPEN.
