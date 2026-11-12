@@ -661,3 +661,23 @@ Added `scripts/validate_planning_traceability.py` and integrated it into the sch
 Exact code revision `4296fbff3105c0ebabab4ced1bef4fe96a1a0dfe` passed GitHub Actions run [43321213661](https://github.com/methaneex-oss/AURIONS/actions/runs/43321213661), including the new work-package graph guard, schema/fixture validation, governance integrity, host SQLite smoke tests and Android probe shell syntax.
 
 **Evidence boundary:** This closes BR-010's machine-enforced structural inventory/dependency-graph integrity subtask. It does not prove semantic completeness of package contracts, owner acceptance, target build readiness, or post-planning PR #1 reconciliation. PR #1 remains a separate minimal scaffold and must not be changed or merged before planning exit. BR-010 remains OPEN.
+
+
+## BR-004 builder increment — canonical 39-scenario contract integrity (2026-11-12)
+
+The builder found that a second, less-complete 36-scenario catalogue had become redundant after the canonical scenario fixture set was added. Removed the duplicate catalogue and its schema/validator guard; retained the richer canonical `schemas/fixtures/scenario-contracts.fixture.json` and its schema.
+
+Extended `scripts/validate_schemas.py` to enforce:
+- Exact inventory: INT-001…INT-003, CM-001…CM-021 and AD-001…AD-015 (39 scenarios).
+- Exactly 172 ordered steps and 45 negative controls.
+- Every scenario remains `specified_not_executed` with `execution_authority=none`.
+- Every command/query/event/payload reference resolves to the current registry/schema inventory.
+- Every step has transition and durable-state assertions; every negative control has a disposition and explicit must-not-change state.
+- Restart/replay, concurrency, fault, held-out-control and hard acceptance-invariant sections are present.
+- Learning scenarios require pre-registered metrics and evaluation controls.
+
+The first execution of the new guard failed because it incorrectly classified INT-002 and INT-003 as learning-improvement scenarios. Inspection of their declared purpose and acceptance rules showed neither makes a learning-improvement claim. The guard was corrected to require learning metrics only for INT-001, CM-012, CM-013, CM-016 and AD-009.
+
+Exact corrected revision `377ff4ad01b81f2e79b2c60d85c9b946f9c095fe` passed GitHub Actions run [43321607903](https://github.com/methaneex-oss/AURIONS/actions/runs/43321607903). All workflow steps passed: schema/fixture validation, governance integrity, work-package dependency graph validation, host SQLite base/migration smoke tests and Android probe shell syntax.
+
+**Evidence boundary:** The 39 scenarios now have detailed machine-readable test specifications, including 172 steps, 45 negative controls, restart/replay/concurrency/fault and held-out controls. They remain `specified_not_executed`. There is no production handler set or runtime scenario runner in this planning PR. BR-004 remains OPEN for executed integration/behavioural evidence; no implementation authorization is inferred.
