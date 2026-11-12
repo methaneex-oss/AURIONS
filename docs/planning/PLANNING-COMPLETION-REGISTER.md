@@ -322,3 +322,20 @@ The new validation passed in GitHub Actions run [43291982511](https://github.com
 Inspected PR #1 at exact head `742232599a5dc37f48ea33cd9fef77924e060a38` (nine files; open/draft/unmerged). It contains a dependency-free C++ static library/version function, one smoke test, CTest/CMake, hosted CI, ignore rules and scope documentation. Hosted configure/build/test run [43104192873](https://github.com/methaneex-oss/AURIONS/actions/runs/43104192873) passed for that head. It does not demonstrate local reproducible build, Termux/ARM64 build, target ABI, dependency/license inventory or offline reproducibility. C++20 is provisional; CI uses a major-tag action and `ubuntu-latest`.
 
 No PR #1 changes were made. It remains separate and must not merge until the planning baseline is accepted, then be reconciled/rebased and retested. BR-010 remains OPEN.
+
+
+## Builder increment — provider-independent security boundary (2026-11-12)
+
+Before this run, the builder freshly retrieved and read the mandatory Project Directorship and Team Operating Standard (blob `951b9009cbedcf8907b365d611d89559d5a17385`) and Builder Operating Protocol (blob `179b02aaef051173b96f54812f451ede1a2eae0d`); EBT-01 and the per-run governance gate were confirmed.
+
+Extended §11.6 of `IMPLEMENTATION-READY-PLANNING-CONTRACTS.md` with §11.7:
+- Narrow provider-independent key-service operation contracts with owner/purpose scoping and fail-closed errors.
+- Trust-boundary/data-flow map across model, UI, governance, local/cloud key providers, storage, workers, backup, release and external egress.
+- Deterministic host-fake fault-test procedures mapped to SEC-001…SEC-011.
+- Explicit platform/cloud/owner gates; no provider, recovery custodian, algorithm suite or target capability was selected.
+
+The builder audit records this as completion of the missing **specification subtask only**. BR-009 remains OPEN: no host-fake executable, production crypto adapter, Android Keystore bridge, cloud KMS, worker enforcement, signing, backup/recovery or independent security validation has been implemented or tested.
+
+**Starting evidence:** PR #2 was open/draft/unmerged at `a11934f3177880125a67fbb6830ba59a7672c166`; exact-head workflow run [43296040114](https://github.com/methaneex-oss/AURIONS/actions/runs/43296040114) passed schema/fixture, governance, host SQLite and Android shell-syntax steps. The security increment and audit update produced subsequent commits; exact final-head CI is pending and must be recorded only after GitHub reports it.
+
+**Current planning disposition remains NOT READY.** BR-001…BR-004 and BR-008…BR-010 remain OPEN; BR-005…BR-007 remain PARTIALLY CLOSED within their stated evidence limits. No owner decision, planning-exit approval, implementation authorization, independent-review handoff or tester handoff is implied.
