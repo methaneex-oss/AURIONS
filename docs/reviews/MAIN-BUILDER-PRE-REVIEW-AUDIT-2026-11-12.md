@@ -634,3 +634,12 @@ Corrected the command registry to bind `task.pause`, `task.resume` and `task.can
 A bounded source cross-check found zero mismatches across all 89 event rows and all 51 mapped command producers. Exact PR #2 head `a27260dfcd3ec7a7a77ca725b437f2565bd762ae` passed GitHub Actions run [43320550842](https://github.com/methaneex-oss/AURIONS/actions/runs/43320550842). All workflow steps passed: Draft 2020-12 schemas/fixtures, registry and event producer matrix integrity, governance, host SQLite smoke tests and Android probe syntax.
 
 This closes event producer **catalogue integrity**, not event consumer semantics or runtime ownership. All 89 events remain design-only/non-dispatchable. BR-008 remains OPEN for full semantic/consumer review and executable scenarios; BR-001 remains OPEN for handlers, owner acceptance and execution evidence.
+
+
+## BR-004 builder increment — integrated scenario contract fixture suite (2026-11-12)
+
+Added a Draft 2020-12 schema and three integrated scenario fixtures (INT-001…INT-003) covering evidence/belief/prediction/outcome/learning, open-world objective and changing means, and exact-operation authorization/revocation/uncertain-effect recovery. The corpus contains 28 ordered steps and nine negative controls, plus explicit restart/replay, concurrency, fault, held-out and acceptance-threshold requirements. The validator checks schema conformance, unique IDs, known command/query/event references, known source scenario IDs and the explicit non-executable/no-authority boundary.
+
+Exact code/fixture revision `a27260dfcd3ec7a7a77ca725b437f2565bd762ae` passed GitHub Actions run [43320550842](https://github.com/methaneex-oss/AURIONS/actions/runs/43320550842). All steps passed: schema/fixture validation, governance integrity, host SQLite base/migration smoke tests and Android probe shell syntax.
+
+**Evidence boundary:** This is a machine-readable scenario specification, not a runtime test. No production handler or AURIONS scenario runner exists in this planning PR. Full individual CM-001…CM-021 and AD-001…AD-015 fixtures remain outstanding. INT-001 also exposes the missing canonical learning-update acceptance/activation transition; no activation command was invented. BR-004 remains OPEN.
