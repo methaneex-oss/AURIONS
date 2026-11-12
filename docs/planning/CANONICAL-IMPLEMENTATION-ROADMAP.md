@@ -97,16 +97,16 @@ The NHC regression family is a release-spanning architectural invariant, not a s
 
 | Test | Required work packages | What the test must prove |
 |---|---|---|
-| NHC-001 | WP-01, WP-06, WP-11 | A new schema-compatible provider is discovered and represented without a task-specific core branch. |
-| NHC-002 | WP-06, WP-09, WP-10, WP-11 | The same objective under different observed environments leads to reasoning over discovered capabilities, not a fixed objective-to-operation mapping. |
-| NHC-003 | WP-06, WP-09, WP-10 | Incomplete discovery remains unknown; the system defers, asks or reports limits rather than inventing an interface. |
+| NHC-001 | WP-01, WP-06, WP-11 | A new context, actor, resource or schema-compatible provider is encountered and represented without a task-specific core branch or closed ontology change. |
+| NHC-002 | WP-06, WP-09, WP-10, WP-11 | The same objective under different situations and available means (including human-mediated and non-device means) leads to evidence-based route reasoning, not a fixed objective-to-operation mapping or platform priority. |
+| NHC-003 | WP-06, WP-09, WP-10 | Incomplete observation or means evidence remains unknown; the system can ask, observe, wait, delegate or report limits rather than inventing an entity, affordance, interface or route. |
 | NHC-004 | WP-07, WP-12 | Failure evidence changes knowledge only within its supported context and does not become a universal prohibition. |
 | NHC-005 | WP-04, WP-11, WP-12 | Success does not create permission, universal competence or authority to repeat an action in a new scope. |
-| NHC-006 | WP-06, WP-15 | Removing or changing an illustrative phone-operation example does not alter the capability architecture or define its boundary. |
+| NHC-006 | WP-06, WP-15 | Removing or changing an illustrative platform/tool example does not alter the open-world model or define its boundary. |
 | NHC-007 | WP-02, WP-12, WP-15 | An accepted evidence-backed update persists across restart and changes a later related task with traceable evaluation provenance. |
 | NHC-008 | WP-04, WP-11, WP-13 | Repeated successful actions cannot weaken authorization, risk classification, approval or owner authority. |
 
-A work package cannot claim its no-hardcoding obligation is met by passing only its local unit tests. The integration suite must execute the relevant NHC tests against a new/unseen capability descriptor and related unseen task variations. Explicit schemas, protocols, permission checks, resource limits and safety invariants are engineered constraints, not hardcoded behavioural substitutes.
+A work package cannot claim its no-hardcoding obligation is met by passing only its local unit tests. The integration suite must execute the relevant NHC tests against unseen objectives, entities, relationships, contexts and means—including non-device/human-mediated cases—and unseen task variations, not merely a new capability descriptor. Explicit schemas, protocols, permission checks, resource limits and safety invariants are engineered constraints, not hardcoded behavioural substitutes.
 
 ## 5. Work-package status discipline
 
