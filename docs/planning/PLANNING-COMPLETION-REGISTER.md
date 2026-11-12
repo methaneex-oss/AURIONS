@@ -243,3 +243,9 @@ The repository now pins `jsonschema[format]==4.26.0` in `requirements-validation
 The test-development failures were investigated and corrected: the pip cache dependency path was explicit, and external schema references were normalized to canonical URNs. The final result is recorded in `docs/reviews/SCHEMA-VALIDATION-RESULTS-2026-11-12.md`.
 
 **Not closed:** C++ validator equivalence, C++/Python serialization compatibility, Android/Termux dependency feasibility, runtime contract/handler validation, and semantic completeness of the registries. No registry is made dispatchable by schema validation.
+
+## Mandatory fresh-read-before-every-run gate (2026-11-12)
+
+**Status: SPECIFIED AND AUTOMATED CHECK ADDED; execution compliance remains per-run evidence.** The authoritative team standard and Builder Operating Protocol now require every director, builder, independent reviewer, tester and supporting agent to freshly retrieve and read the current authoritative governance and applicable role protocol before every run, regardless of task size or type. Prior reads, memory, summaries and prior-chat context do not satisfy the gate. The role must record the source revision and confirm the applicable scope/acceptance gate; inability to establish the current source revision is a stop condition. Governance integrity validation now checks that the rule remains present in both authoritative documents.
+
+This repository check verifies rule presence, not actual agent/human compliance. Each execution must retain its own source-revision/read confirmation. The rule does not alter the existing technical planning status, independent review gate or implementation-authorization boundary.
