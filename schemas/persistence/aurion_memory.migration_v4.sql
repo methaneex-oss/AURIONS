@@ -4,6 +4,23 @@
 -- Cross-store references are stable textual references; no cross-database foreign keys.
 -- JSON arrays/objects are validated structurally here; semantic reference resolution belongs to application validation.
 
+CREATE TABLE objective_records (
+  objective_id TEXT NOT NULL,
+  owner_ref TEXT NOT NULL,
+  version INTEGER NOT NULL CHECK(version>0),
+  statement TEXT NOT NULL,
+  request_source_ref TEXT NOT NULL,
+  status TEXT NOT NULL,
+  success_evidence_json TEXT NOT NULL CHECK(json_valid(success_evidence_json)),
+  constraints_json TEXT NOT NULL CHECK(json_valid(constraints_json)),
+  assumptions_json TEXT NOT NULL CHECK(json_valid(assumptions_json)),
+  uncertainty_json TEXT NOT NULL CHECK(json_valid(uncertainty_json)),
+  created_at_ms INTEGER NOT NULL,
+  PRIMARY KEY(objective_id,version)
+) STRICT;
+CREATE INDEX idx_objective_owner_status
+  ON objective_records(owner_ref,status,created_at_ms DESC);
+
 CREATE TABLE world_entities (
   entity_id TEXT NOT NULL,
   owner_ref TEXT NOT NULL,
