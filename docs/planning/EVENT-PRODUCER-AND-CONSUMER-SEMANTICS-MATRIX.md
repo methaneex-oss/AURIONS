@@ -54,7 +54,7 @@
 | `memory.recorded.v1` | UNRESOLVED — no command producer bound | `memoryRecord` | UNRESOLVED |
 | `memory.retrieved.v1` | `memory.retrieve` | `memoryRetrieval` | UNRESOLVED |
 | `objective.created.v1` | `objective.create` | `objective` | UNRESOLVED |
-| `objective.revised.v1` | `objective.revise` | `objectiveRevision` | UNRESOLVED |
+| `objective.revised.v1` | `objective.revise` | `objective` | UNRESOLVED |
 | `operation.awaiting_approval.v1` | UNRESOLVED — no command producer bound | `operationLifecycleEvent` | UNRESOLVED |
 | `operation.cancel_requested.v1` | `operation.cancel` | `operationLifecycleEvent` | UNRESOLVED |
 | `operation.cancelled.v1` | `operation.cancel` | `operationLifecycleEvent` | UNRESOLVED |
@@ -96,14 +96,14 @@
 | `sync.conflict.detected.v1` | UNRESOLVED — no command producer bound | `syncConflictRecord` | UNRESOLVED |
 | `sync.conflict.resolved.v1` | UNRESOLVED — no command producer bound | `syncConflictRecord` | UNRESOLVED |
 | `sync.tombstone.applied.v1` | UNRESOLVED — no command producer bound | `syncChange` | UNRESOLVED |
-| `task.control.requested.v1` | `task.start` | `taskControlRequest` | UNRESOLVED |
-| `task.run.transitioned.v1` | `task.start` | `taskRunTransition` | UNRESOLVED |
+| `task.control.requested.v1` | `task.start`, `task.pause`, `task.resume`, `task.cancel` | `taskControlRequest` | UNRESOLVED |
+| `task.run.transitioned.v1` | `task.start`, `task.pause`, `task.resume`, `task.cancel` | `taskRunTransition` | UNRESOLVED |
 | `worker.job.completed.v1` | UNRESOLVED — no command producer bound | `workerResult` | UNRESOLVED |
 | `worker.job.failed.v1` | UNRESOLVED — no command producer bound | `workerFailure` | UNRESOLVED |
 | `worker.job.progressed.v1` | UNRESOLVED — no command producer bound | `workerProgress` | UNRESOLVED |
 | `worker.job.requested.v1` | `learning.experiment.submit` | `workerRequest` | UNRESOLVED |
 | `world.entity.observed.v1` | `world.entity.observe` | `entity` | UNRESOLVED |
-| `world.relationship.revised.v1` | `world.relationship.revise` | `relationshipRevision` | UNRESOLVED |
+| `world.relationship.revised.v1` | `world.relationship.revise` | `relationship` | UNRESOLVED |
 
 ## 3. Required closure per event
 
