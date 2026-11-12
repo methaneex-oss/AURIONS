@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "event-registry.v1.schema.json",
+  "title": "AURIONS event registry",
+  "description": "Machine-readable inventory of versioned event names and exact payload-schema/fixture bindings. Entries are design-only and cannot be dispatched until handler, consumer, transition, authorization and runtime validation contracts are complete.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "registry_id",
+    "registry_version",
+    "status",
+    "source_catalogue",
+    "events"
+  ],
+  "properties": {
+    "registry_id": {
+      "const": "aurions.event-registry"
+    },
+    "registry_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "const": "design_baseline_not_dispatchable"
+    },
+    "source_catalogue": {
+      "type": "string",
+      "minLength": 1
+    },
+    "events": {
+      "type": "array",
+      "minItems": 84,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_type",
+          "event_version",
+          "payload_schema_ref",
+          "fixture_refs",
+          "dispatch_status",
+          "unresolved_bindings"
+        ],
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.]+\\.v1$"
+          },
+          "event_version": {
+            "const": "1.0"
+          },
+          "payload_schema_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fixture_refs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "dispatch_status": {
+            "const": "design_only_not_dispatchable"
+          },
+          "unresolved_bindings": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}
