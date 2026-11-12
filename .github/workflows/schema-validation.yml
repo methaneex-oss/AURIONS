@@ -15,6 +15,7 @@ on:
       - "docs/planning/README.md"
       - "docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md"
       - "docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md"
+      - "docs/planning/OPERATION-LIFECYCLE-TRANSITION-MATRIX.md"
       - "docs/planning/PLANNING-COMPLETION-REGISTER.md"
       - "README.md"
       - ".github/workflows/schema-validation.yml"
