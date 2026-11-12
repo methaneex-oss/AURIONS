@@ -444,3 +444,12 @@ This closes the missing open-world API specification/registry-binding subtask on
 Exact PR #2 head `29d2346958d0a57b072fd3309d698484a34d277b` passed workflow [43320073556](https://github.com/methaneex-oss/AURIONS/actions/runs/43320073556). All steps passed: Draft 2020-12 schema and fixture validation (including command/query payload/result references and 89 event bindings), registry/acceptance integrity (51 mapped commands, two deferred, 29 queries, 51 CC cases and 29 QCC cases), governance integrity, host SQLite smoke tests and Android probe syntax.
 
 This closes the open-world command/query **specification and structural registry-integrity** increment only. No handler/consumer or integrated cognitive scenario test was executed. BR-001, BR-002 and BR-008 remain OPEN; no dispatchability or implementation authorization is implied.
+
+
+## BR-008 builder increment — event producer/consumer catalogue reconciliation (2026-11-12)
+
+Corrected event payload definition names and task-control producer bindings across the event registry, command registry and event producer/consumer matrix. All four task-control commands now bind both `task.control.requested.v1` and `task.run.transitioned.v1`. Added validator enforcement for exact 89-event matrix inventory, producer parity and payload-schema definition parity; every mapped command must have an explicit event binding.
+
+Exact PR #2 head `a27260dfcd3ec7a7a77ca725b437f2565bd762ae` passed workflow [43320550842](https://github.com/methaneex-oss/AURIONS/actions/runs/43320550842), including schema/fixture, command/query/event/error integrity, event matrix parity, governance, host SQLite and Android shell checks. A bounded source comparison found zero event matrix/registry mismatches.
+
+This closes event producer catalogue integrity only. Event consumers, owner transitions and runtime handlers remain unimplemented/unverified; all events remain non-dispatchable. BR-008 remains OPEN.
