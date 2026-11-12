@@ -126,3 +126,56 @@ Task controls retain their existing TC-001…TC-012 cases plus per-command repla
 ## 5. Completion boundary
 
 This matrix completes a first-pass per-command semantic analysis for the existing 43 mapped entries and identifies concrete event/command mismatches. It does **not** close BR-001. The machine registry still needs per-entry expected-revision, authorization/risk, idempotency, deadline/cancellation, side-effect, error/event/outbox and fixture bindings; handler-level executable tests do not exist in this planning PR. The first-release command subset remains proposed pending owner acceptance. All commands remain `design_only_not_dispatchable`; device pairing/revocation remain deferred. No implementation authorization or owner decision is implied.
+
+
+## 4. Per-command acceptance case catalogue
+
+The following cases are builder-defined acceptance criteria, not executed handler tests. They give each mapped command an independently addressable positive and negative assertion. Task-control cases supplement the existing TC-001…TC-012 suite; they do not replace it.
+
+| Acceptance ID | Command | Positive assertion | Negative / fault assertion |
+|---|---|---|---|
+| `CC-001` | `experience.submit` | One owner-scoped observation and its evidence links commit atomically with one receipt/event. | Duplicate experience ID, cross-owner source or invalid provenance leaves no partial record. |
+| `CC-002` | `representation.create` | Representation revision 1 links only to exact owner-scoped source experience revisions. | Missing/cross-owner source or duplicate representation ID commits nothing. |
+| `CC-003` | `context.assemble` | Snapshot records exact source revisions plus explicit unknown/missing dependencies. | Unbound source or stale required dependency cannot produce a falsely complete snapshot. |
+| `CC-004` | `context.invalidate` | Current context revision becomes stale once and source records remain intact. | Stale revision conflicts; repeated request replays without duplicate invalidation. |
+| `CC-005` | `environment.observe` | One explicitly requested observation is captured with current permission and source identity. | Missing/revoked OS permission causes no sensor/provider call and no observation record. |
+| `CC-006` | `capability.discover` | Discovery appends provenance and a provisional descriptor without creating permission. | Unknown/unavailable provider leaves capability unknown and no trusted descriptor. |
+| `CC-007` | `capability.verify` | Verification evidence binds exact descriptor and provider versions. | Stale descriptor or untrusted provider cannot become verified. |
+| `CC-008` | `capability.invalidate` | Exact descriptor revision becomes invalid and dependent estimates are invalidated. | Stale descriptor revision conflicts; no history is deleted or operation falsely cancelled. |
+| `CC-009` | `capability.knowledge.propose` | Evidence-backed candidate is quarantined and active knowledge head is unchanged. | Insufficient evidence or cross-owner lineage cannot alter active knowledge. |
+| `CC-010` | `capability.knowledge.revise` | Accepted successor knowledge revision preserves prior and contradictory evidence. | Stale expected revision cannot replace current knowledge. |
+| `CC-011` | `memory.retrieve` | If retained as a command, retrieval audit record is appended without changing memory contents. | Cross-owner retrieval is denied without record/existence disclosure; command/query classification remains a release blocker. |
+| `CC-012` | `belief.propose` | Provisional belief is linked to supporting and contradicting evidence. | Unsupported/model-only claim is not promoted to accepted belief. |
+| `CC-013` | `belief.revise` | Successor revision preserves prior belief and contradictory evidence. | Stale expected revision or missing evidence causes no update. |
+| `CC-014` | `prediction.create` | Immutable prediction records exact context/belief revisions and horizon. | Prediction cannot be treated as observation, outcome or authorization. |
+| `CC-015` | `prediction.evaluate` | Evaluation links exact prediction to independently observed outcome evidence. | Missing/uncertain outcome remains inconclusive and never fabricates a score. |
+| `CC-016` | `appraisal.evaluate` | Appraisal is tied to context, evidence and model revisions; context changes can change appraisal. | Missing context/evidence is rejected; no fixed stimulus-to-emotion/action mapping is applied. |
+| `CC-017` | `attention.allocate` | Current attention epoch is replaced once and advanced once. | Stale epoch cannot overwrite a newer allocation or alter governance priority. |
+| `CC-018` | `reasoning.assess` | Assessment appends hypotheses, alternatives and evidence lineage. | Hypothesis is not promoted to fact or used as authorization. |
+| `CC-019` | `goal.create` | Derived goal is created against an existing objective revision. | Missing/cross-owner objective cannot create a goal or mutate objective. |
+| `CC-020` | `goal.revise` | Successor goal revision binds current objective revision and retains lineage. | Stale goal/objective revision conflicts without rewriting dependent plan. |
+| `CC-021` | `goal.cancel` | Non-terminal goal receives one terminal cancelled revision and retained history. | Terminal goal cannot be cancelled again; event remains blocked until schema/consumer binding is resolved. |
+| `CC-022` | `plan.propose` | Plan binds exact objective, situation, evidence, means and policy revisions. | Unknown means or stale dependencies cannot be represented as executable/authorized plan. |
+| `CC-023` | `plan.revise` | New plan revision records changed dependencies and rationale. | Stale plan/objective/context/means revision conflicts. |
+| `CC-024` | `plan.checkpoint` | Checkpoint records exact task/plan revisions, completed steps and dependency watermarks. | Stale task/plan or missing step evidence cannot be checkpointed. |
+| `CC-025` | `decision.record` | Decision record preserves options, evidence and authority reference. | Decision record alone cannot satisfy approval or authorize dispatch. |
+| `CC-026` | `operation.propose` | Exact operation proposal is persisted without invoking provider dispatch. | Missing target, stale means, missing permission or approval cannot reach dispatch. |
+| `CC-027` | `operation.cancel` | Pre-dispatch operation can cancel; dispatched/unknown operation remains pending until reconciliation. | No terminal cancelled state or reversal claim while provider effect is unresolved. |
+| `CC-028` | `operation.reconcile` | Fresh provider evidence advances an uncertain operation to a supported reconciled state without redispatch. | Missing/contradictory provider evidence leaves operation uncertain and retry prohibited. |
+| `CC-029` | `approval.request` | One approval request is bound to exact operation digest, target, data, risk and expiry. | Changed operation digest, untrusted requester or missing scope cannot create usable approval. |
+| `CC-030` | `approval.revoke` | Exact active approval is revoked and future pre-dispatch authorization is denied. | Revocation cannot imply reversal of an already dispatched operation; event binding remains unresolved. |
+| `CC-031` | `outcome.evaluate` | Evaluation compares independently observed outcome with prediction/objective criteria and retains uncertainty. | Provider receipt alone cannot be treated as observed outcome or causal proof. |
+| `CC-032` | `learning.update.propose` | Learning update candidate records experience lineage, frozen baseline and evaluation plan; active behaviour unchanged. | Missing provenance/baseline or model-generated unsupported claim cannot alter active mechanisms. |
+| `CC-033` | `learning.experiment.submit` | Isolated worker receives immutable manifest, seed and bounded budget; output is quarantined. | Worker cannot access production keys/DB credentials or activate artifacts; timeout retains attempt uncertainty. |
+| `CC-034` | `learning.candidate.evaluate` | Candidate evaluation uses frozen baseline, held-out data and unseen controls; no activation. | Incomplete/contaminated evaluation cannot pass or change active behaviour. |
+| `CC-035` | `self_model.update.propose` | Proposed self-model revision is evidence-linked and active head remains unchanged. | Unmeasured/model-only capability claim cannot update active self-model; event semantics remain unresolved. |
+| `CC-036` | `evolution.change.propose` | Candidate artifact and source revision are quarantined with validation and rollback lineage. | Proposal cannot change active runtime, policy or authority. |
+| `CC-037` | `evolution.candidate.evaluate` | Exact artifact is evaluated against frozen baseline and safety/regression thresholds. | Missing evaluation evidence or artifact digest mismatch cannot pass. |
+| `CC-038` | `evolution.candidate.activate` | Activation atomically advances active pointer only with owner/governance approval, valid signature and rollback readiness. | Missing/expired/revoked approval or stale active pointer blocks activation. |
+| `CC-039` | `evolution.candidate.rollback` | Rollback restores exact prior approved artifact digest and records lineage. | Unknown prior digest or missing rollback authority cannot change active pointer. |
+| `CC-040` | `task.start` | Queued run transitions to running exactly once after prerequisite, budget and revision checks. | Non-queued, stale, unowned or blocked run cannot start. |
+| `CC-041` | `task.pause` | Running run pauses at safe point; otherwise durable pending request is recorded. | In-flight/unknown operation cannot be represented as paused or cancelled. |
+| `CC-042` | `task.resume` | Paused run resumes only after checkpoint and all dependencies are revalidated. | Lost, terminal or stale-dependency run cannot resume. |
+| `CC-043` | `task.cancel` | Non-terminal run cancellation completes only after safe point and operation reconciliation. | Dispatched/unknown operation keeps cancellation pending; no false external reversal claim. |
+
+A passing implementation must execute these cases with deterministic stores/providers/workers, assert durable before/after state, event/outbox count, receipt replay and crash/restart behaviour, and preserve exact error/side-effect classification. Catalogue presence alone is not test evidence.
