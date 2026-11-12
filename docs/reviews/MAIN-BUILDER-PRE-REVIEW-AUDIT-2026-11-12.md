@@ -236,3 +236,17 @@ At revision `d7c72b3214fc7ec20fdfd798ec214de348464b5d`, the owner-mandated Build
 Subsequent task-control work adds proposed events migration v3, owner-scoped task-control authorization and idempotency semantics for `task.start`, `task.pause`, `task.resume` and `task.cancel`, plus twelve specified acceptance cases. The task-control entries now remove the two generic unresolved bindings for owner/device scope and idempotency; they retain per-entry conflict/replay/recovery assertions and remain non-dispatchable.
 
 This follow-up does not change the overall NOT READY disposition. Migration v3 is unexecuted; no runtime handler or executable test has been added. The task lifecycle transition matrix still needs reconciliation with the full state machine, and receipt retention/deletion semantics remain open. The exact current PR head must be fetched for any final audit claim.
+
+
+### SQLite smoke test for events migration v3 — limited scope
+
+Executed the v3 statements in an in-memory SQLite **3.46.1** database with prerequisite-compatible `operations`, `task_runs` and `task_checkpoints` tables and the task revision column supplied by the v2 prerequisite. Results:
+
+- Legacy row remained owner-unbound after migration; NULL → verified-owner backfill succeeded.
+- New task insertion without owner was rejected by the trigger.
+- Reassignment/clearing of a bound owner was rejected.
+- Duplicate task-command receipt scope was rejected by the unique constraint.
+- `PRAGMA foreign_key_check`: no rows.
+- `PRAGMA integrity_check`: `ok`.
+
+**This is not full migration validation.** The complete repository base DDL and migration chain were not executed together; no target Termux/Android SQLite build was tested; no crash/rollback, backup/restore, concurrent writer, digest equivalence or runtime handler test was performed. The result is a local in-memory smoke test of the v3 statements and selected invariants only.
