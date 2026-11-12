@@ -40,7 +40,6 @@ def main() -> int:
             fail(f"{name}: missing or incorrect Draft 2020-12 dialect declaration")
         Draft202012Validator.check_schema(schema)
         resource = Resource.from_contents(schema)
-        registry = registry.with_resource(name, resource)
         if schema.get("$id"):
             registry = registry.with_resource(schema["$id"], resource)
 
