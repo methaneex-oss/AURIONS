@@ -429,3 +429,24 @@ GitHub Actions run [43104192873](https://github.com/methaneex-oss/AURIONS/action
 - No implementation authorization exists. The builder must not create production runtime handlers, promote registry entries to dispatchable, choose owner-reserved product/topology decisions, merge either PR, or represent planning CI as runtime acceptance.
 
 **Disposition:** Exact-head CI is VERIFIED for the listed bounded checks only. Overall builder status remains **NOT READY** for independent review or planning-exit approval. No reviewer/tester handoff is issued. The remaining open findings are not closable by further prose-only edits; they require owner-approved contract baseline, authorized implementation, actual target environments and executable evidence.
+
+
+## Builder run — security boundary completion and exact-head refresh (2026-11-12)
+
+**Mandatory fresh governance gate completed before this run:**
+- Project Directorship and Team Operating Standard — freshly retrieved and read; blob `951b9009cbedcf8907b365d611d89559d5a17385`. Part J / EBT-01 and the mandatory per-run governance gate were confirmed.
+- Builder Operating Protocol — freshly retrieved and read; blob `179b02aaef051173b96f54812f451ede1a2eae0d`. Sections 10–11 and builder self-review/testing/handoff duties were confirmed.
+
+**Exact starting repository state:** PR #2 head `a11934f3177880125a67fbb6830ba59a7672c166`; open, draft, unmerged, 90 changed files. Exact-head workflow run [43296040114](https://github.com/methaneex-oss/AURIONS/actions/runs/43296040114) completed successfully. Its single job passed all steps: pinned Python Draft 2020-12 schema/positive-negative fixture validation, governance integrity validation, host SQLite base-schema/ordered migration smoke tests and Android probe shell syntax. This evidence applies to that exact starting head only; the security-document increment below requires its own exact-head CI result.
+
+**BR-009 builder-owned specification increment:** Extended §11.6 of `IMPLEMENTATION-READY-PLANNING-CONTRACTS.md` with §11.7, defining:
+- Provider-independent key-service operations and authority/scope/failure contracts.
+- Trust-boundary/data-flow controls across model, UI, governance, local/cloud key providers, stores, workers, backup, release and external egress.
+- Deterministic host-fake fault scenarios mapped one-to-one to SEC-001…SEC-011, including required durable-state, call-trace and redaction evidence.
+- Explicit implementation/owner gates and fail-closed behaviour without selecting a cloud KMS, Android bridge, recovery custodian, cryptographic library or production algorithm suite.
+
+This closes the missing **builder specification** subtask for the provider-independent interface, trust-boundary map and host-fake procedure. It does not close BR-009: no production cryptographic adapter, host-fake test executable, Android Keystore integration, cloud KMS integration, worker isolation enforcement, signing implementation, backup/recovery exercise or independent security test has been implemented or run. No control is represented as implemented.
+
+**Builder crosswalk recheck:** The canonical roadmap and work-package matrix each contain WP-00…WP-16 (17 packages); the roadmap has 17 package rows and no dependency token outside the canonical WP-00…WP-16 set. The product definition contains workflows 0 and A…F. This is a bounded structural presence check only; it does not establish that each dependency edge, contract binding or acceptance test is semantically complete. PR #1 remains open, draft and unmerged at `742232599a5dc37f48ea33cd9fef77924e060a38`; it remains a minimal version-function scaffold, not a cognitive/runtime implementation.
+
+**Disposition:** BR-009 remains OPEN pending executable host-fake tests and actual platform/cloud evidence. BR-001…BR-004 and BR-008…BR-010 remain open; BR-005…BR-007 remain partially closed for their explicitly bounded evidence only. No owner-reserved decision was made, no implementation authorization is inferred, and no independent-review or tester handoff is issued.
