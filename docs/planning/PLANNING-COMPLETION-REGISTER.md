@@ -257,3 +257,13 @@ This repository check verifies rule presence, not actual agent/human compliance.
 The authoritative team standard now includes Part J, applying to builders, independent reviewers, testers and supporting agents. It makes independent professional judgment, complete role ownership/handoffs, scope discipline, evidence-state separation, evidence-backed disagreement, autonomous correction within authority and outcome-based behavioural evaluation mandatory. The Builder Operating Protocol adds explicit builder duties. The governance validator checks for the required EBT-01 sections and builder obligations.
 
 **Evidence boundary:** the documentation and CI checks establish that the rules are encoded and guarded against accidental removal. They do not establish that all team roles have changed their behaviour. That must be evaluated through completed milestones, builder self-review and handoff quality, independently raised review findings, tester-generated behavioural evidence, correction quality and director acceptance. This change does not close technical planning findings, authorize implementation, or alter PR #2's draft/unmerged state.
+
+
+## First-release command/query scope and gap analysis — BR-001 / BR-002 (2026-11-12)
+
+**Artifact:** [First-Release Command/Query Scope and Gap Analysis](FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md).  
+**Status: BUILDER ANALYSIS ADDED; BR-001 and BR-002 remain OPEN.**
+
+The builder mapped the proposed first-release workflows (cloud runtime, offline conversation, recall, bounded objective, permitted local action, later outcome use and permission/resource controls) to a bounded P0/P1 command/query surface. It identified that the current registry's `goal.*` commands do not represent the distinct objective lifecycle, and that the context-independent objective/entity/relationship/situation/affordance/interaction/outcome payload and event additions are not yet represented by corresponding command/query contracts. The artifact also defines the per-query and per-command semantic fields and executable acceptance assertions required before dispatch readiness.
+
+**Evidence boundary:** This is a planning analysis, not owner approval of the proposed first-release product definition, not implementation, not dispatch authorization, and not a test result. The existing 45-command/21-query registry remains design-only/non-dispatchable. The cloud/mobile cognitive-history topology and first Android action remain owner decisions. Exact per-entry bindings, fixtures, handler tests and full semantic reconciliation remain outstanding.
