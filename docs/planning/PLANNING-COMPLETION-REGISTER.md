@@ -249,3 +249,11 @@ The test-development failures were investigated and corrected: the pip cache dep
 **Status: SPECIFIED AND AUTOMATED CHECK ADDED; execution compliance remains per-run evidence.** The authoritative team standard and Builder Operating Protocol now require every director, builder, independent reviewer, tester and supporting agent to freshly retrieve and read the current authoritative governance and applicable role protocol before every run, regardless of task size or type. Prior reads, memory, summaries and prior-chat context do not satisfy the gate. The role must record the source revision and confirm the applicable scope/acceptance gate; inability to establish the current source revision is a stop condition. Governance integrity validation now checks that the rule remains present in both authoritative documents.
 
 This repository check verifies rule presence, not actual agent/human compliance. Each execution must retain its own source-revision/read confirmation. The rule does not alter the existing technical planning status, independent review gate or implementation-authorization boundary.
+
+## EBT-01 — mandatory engineering behaviour transition (2026-11-12)
+
+**Status: SPECIFIED AND AUTOMATED PRESENCE CHECK ADDED; behavioural compliance is not yet independently demonstrated.**
+
+The authoritative team standard now includes Part J, applying to builders, independent reviewers, testers and supporting agents. It makes independent professional judgment, complete role ownership/handoffs, scope discipline, evidence-state separation, evidence-backed disagreement, autonomous correction within authority and outcome-based behavioural evaluation mandatory. The Builder Operating Protocol adds explicit builder duties. The governance validator checks for the required EBT-01 sections and builder obligations.
+
+**Evidence boundary:** the documentation and CI checks establish that the rules are encoded and guarded against accidental removal. They do not establish that all team roles have changed their behaviour. That must be evaluated through completed milestones, builder self-review and handoff quality, independently raised review findings, tester-generated behavioural evidence, correction quality and director acceptance. This change does not close technical planning findings, authorize implementation, or alter PR #2's draft/unmerged state.
