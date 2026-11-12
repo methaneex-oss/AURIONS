@@ -218,3 +218,8 @@ A proposed `aurion_events.migration_v3.sql` adds nullable ownership to legacy ta
 Registry entries for those four commands now carry the task-specific authorization and idempotency semantics; two corresponding generic unresolved bindings were removed. Their per-entry conflict/replay/recovery assertions remain unresolved, and they remain non-dispatchable.
 
 **Not verified:** SQLite migration execution, trigger/DDL compatibility, lifecycle transition legality against every task state, RFC 8785 digest equivalence across C++/Python, receipt retention/tombstone policy, executable fault-injection/replay tests, and runtime handlers. This is a bounded design closure, not task-control completion.
+
+
+### Migration v3 smoke-test evidence
+
+An in-memory SQLite 3.46.1 smoke test of the v3 statements against prerequisite-compatible task/event tables passed selected invariants: legacy NULL-owner preservation and verified backfill, rejection of new ownerless task rows, rejection of reassignment after owner binding, unique receipt-scope enforcement, empty foreign-key check and `integrity_check=ok`. The complete base DDL/migration chain, target SQLite, crash/rollback, restore, concurrency, canonical digest equivalence and runtime handlers remain untested. Status remains IN PROGRESS.
