@@ -460,3 +460,10 @@ This closes event producer catalogue integrity only. Event consumers, owner tran
 Added a scenario-contract schema and three integrated scenario fixtures (INT-001…INT-003), with 28 ordered steps, nine negative controls and explicit restart/replay, concurrency, fault, held-out and acceptance-threshold controls. CI validates fixture shape and command/query/event/source-scenario references. Exact code/fixture revision `a27260dfcd3ec7a7a77ca725b437f2565bd762ae` passed run [43320550842](https://github.com/methaneex-oss/AURIONS/actions/runs/43320550842).
 
 This is specified test design, not execution evidence. Runtime scenario runner, production handlers and the complete individual CM/AD scenario fixture set remain absent. The current learning command surface also lacks a canonical acceptance/activation transition; this remains an explicit blocker rather than an invented command. BR-004 remains OPEN.
+
+
+## BR-004 builder increment — all canonical scenario fixtures specified (2026-11-12)
+
+The scenario-contract corpus now contains all 39 canonical probes (INT-001…INT-003, CM-001…CM-021, AD-001…AD-015), with 172 ordered steps and 45 negative controls plus restart/replay, concurrency, fault and held-out controls. The schema/validator enforce exact scenario inventory and references. Exact revision `4e509a194f206c52d41fda1f6d3b3599bc5c0375` passed CI run [43320967492](https://github.com/methaneex-oss/AURIONS/actions/runs/43320967492).
+
+This closes scenario fixture specification coverage, not execution. A runtime scenario runner, production handlers and independent behavioural evidence remain absent. BR-004 remains OPEN.
