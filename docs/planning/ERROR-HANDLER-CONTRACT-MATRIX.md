@@ -214,3 +214,57 @@ An entry remains `seed` until all of the following exist and pass:
 - Integration into the runtime registry with an explicit registration lifecycle and rollback path.
 
 The current 35 entries are mapped to these design contracts and have one schema-shaped payload fixture each. This closes the **design mapping** gap only. It does not close runtime handler implementation, code-specific recovery coverage, full JSON Schema validation, or production registration.
+
+## Code-specific recovery acceptance assertions
+
+The following are **design-level acceptance assertions** for each registry code. They convert the category contracts into concrete per-code expected behaviour. They are not executed runtime tests. The fixture in the final column remains a payload-shape fixture until a handler-level test drives the named branch and asserts durable state.
+
+| Recovery test | Error code | Required branch assertion | Forbidden result | Existing payload fixture |
+|---|---|---|---|---|
+| EHR-001 | `contract.schema.SCHEMA_MALFORMED` | Reject malformed input before domain handler invocation; persist a bounded, redacted diagnostic. | Aggregate mutation, outbox append or dispatch. | EHC-001 |
+| EHR-002 | `contract.schema.SCHEMA_MAJOR_UNSUPPORTED` | Reject unsupported major version and return supported-version negotiation evidence. | Silent downgrade or side effect under an incompatible contract. | EHC-002 |
+| EHR-003 | `contract.schema.SCHEMA_CONDITION_UNSUPPORTED` | Reject an unsupported required condition and identify the incompatible requirement. | Silently dropping security- or meaning-bearing fields/conditions. | EHC-003 |
+| EHR-004 | `provider.identity.PROVIDER_UNKNOWN` | Quarantine the exact provider identity/version until independent provenance and validation evidence exists. | Provider self-registration as trusted or dispatch. | EHC-004 |
+| EHR-005 | `provider.identity.PROVIDER_UNTRUSTED` | Preserve the untrusted status and reject invocation; require an independent trust decision. | Trust promotion from provider-supplied claims or prior success. | EHC-005 |
+| EHR-006 | `provider.identity.PROVIDER_VERSION_UNVALIDATED` | Treat the changed version as a new validation subject and block its use until validated. | Reusing validation evidence for a different version without compatibility proof. | EHC-006 |
+| EHR-007 | `provider.availability.PROVIDER_UNAVAILABLE` | Preserve actual per-attempt dispatch state; retry only after non-dispatch is proven or reconciliation resolves the effect. | Blind retry when dispatch is unknown. | EHC-007 |
+| EHR-008 | `provider.availability.PROVIDER_RATE_LIMITED` | Apply bounded backoff only when retry is safe; retain deadline/budget and reconcile if dispatch may have occurred. | Unbounded retry or duplicate side effect. | EHC-008 |
+| EHR-009 | `capability.validity.CAPABILITY_STALE` | Invalidate the exact stale descriptor revision and dependent plans/checkpoints; rediscover before dispatch. | Dispatch using stale descriptor or stale cached permission. | EHC-009 |
+| EHR-010 | `capability.validity.CAPABILITY_REVOKED` | Block queued/future use of the revoked descriptor and preserve revocation evidence. | Re-enabling from cached discovery or previous success. | EHC-010 |
+| EHR-011 | `capability.validity.CAPABILITY_INCOMPATIBLE` | Reject the incompatible interface/version and require compatible negotiation or re-discovery. | Best-effort invocation with mismatched input/output semantics. | EHC-011 |
+| EHR-012 | `evidence.precondition.EVIDENCE_INSUFFICIENT` | Preserve the precondition as unknown/insufficient and select evidence acquisition, clarification or deferral. | Coercing insufficient evidence into true or false. | EHC-012 |
+| EHR-013 | `evidence.precondition.PRECONDITION_FALSE` | Reject the transition while the precondition is evidenced false; permit reconsideration only after new relevant evidence. | Dispatch or state transition that requires the false precondition. | EHC-013 |
+| EHR-014 | `evidence.precondition.PRECONDITION_UNKNOWN` | Block the dependent transition and retain the unknown state until evidence resolves it. | Treating unknown as satisfied or as a universal prohibition. | EHC-014 |
+| EHR-015 | `platform.permission.PLATFORM_GRANT_MISSING` | Deny the platform operation and route any permission request through the OS-controlled grant flow. | Synthesized grant or AURIONS policy being treated as OS permission. | EHC-015 |
+| EHR-016 | `platform.permission.PLATFORM_GRANT_REVOKED` | Re-read current OS permission and block affected queued/future dispatch until a fresh grant is observed. | Reliance on a previously cached grant. | EHC-016 |
+| EHR-017 | `governance.authorization.POLICY_DENIED` | Persist the denial under governance ownership and reject the exact operation. | Model, planner or error handler creating a replacement approval. | EHC-017 |
+| EHR-018 | `governance.authorization.APPROVAL_EXPIRED` | Invalidate the expired approval and require a new exact-scope decision if the operation is still justified. | Extending expiry or reusing the expired approval. | EHC-018 |
+| EHR-019 | `governance.authorization.APPROVAL_MISMATCH` | Reject when canonical operation digest, target, parameters, effects or scope differs from the approved record. | Partial-match acceptance or dispatch after digest mismatch. | EHC-019 |
+| EHR-020 | `governance.authorization.APPROVAL_REVOKED` | Apply revocation at the execution boundary and preserve the audit reference. | Dispatch based on a previously valid but revoked approval. | EHC-020 |
+| EHR-021 | `operation.conflict.EXPECTED_REVISION_CONFLICT` | Return current aggregate revision and require reload/re-evaluation before a new command. | Last-write-wins overwrite or silent retry against stale state. | EHC-021 |
+| EHR-022 | `operation.conflict.DEPENDENCY_VERSION_STALE` | Invalidate dependent plan/checkpoint and revalidate all bound dependency versions. | Executing a plan with stale dependency state. | EHC-022 |
+| EHR-023 | `operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH` | Reject the conflicting digest as an integrity violation and preserve both request identities for audit. | Treating the collision as a replay or retrying under the same key. | EHC-023 |
+| EHR-024 | `operation.budget.DEADLINE_EXCEEDED` | Stop new work at a safe point, preserve checkpoint and reconcile any dispatched/unknown attempt. | Reporting cancellation or non-dispatch without evidence. | EHC-024 |
+| EHR-025 | `operation.budget.RESOURCE_BUDGET_EXCEEDED` | Stop resource-consuming work, persist budget exhaustion and checkpoint only committed state. | Continuing dispatch or silently expanding the budget. | EHC-025 |
+| EHR-026 | `operation.budget.CANCELLED_BEFORE_DISPATCH` | Mark cancellation effective only after durable evidence proves dispatch did not occur. | Marking a possibly dispatched operation cancelled as if its effect were reversed. | EHC-026 |
+| EHR-027 | `operation.dispatch.ADAPTER_DISPATCH_FAILED` | Inspect attempt-level dispatch evidence; reconcile the target whenever dispatch may have occurred. | Blind retry based solely on adapter exception. | EHC-027 |
+| EHR-028 | `operation.dispatch.DISPATCH_RECEIPT_MISSING` | Mark attempt uncertain and reconcile provider/target state before any retry. | Treating missing receipt as proof of non-dispatch. | EHC-028 |
+| EHR-029 | `operation.outcome.OUTCOME_UNCERTAIN` | Preserve uncertainty and obtain independent observation or explicit manual intervention. | Converting uncertainty into success or failure without evidence. | EHC-029 |
+| EHR-030 | `operation.outcome.POSTCONDITION_UNVERIFIED` | Keep the operation unverified until its declared postcondition is independently evidenced. | Reporting completion from provider acknowledgement alone. | EHC-030 |
+| EHR-031 | `operation.outcome.PROVIDER_RESULT_CONTRADICTED` | Preserve provider report and contradictory observation as separate evidence; require reconciliation before learning or success claims. | Overwriting either source or attributing causality without evidence. | EHC-031 |
+| EHR-032 | `provider.contract.PROVIDER_CONTRACT_VIOLATION` | Quarantine the exact provider version, validate the response boundary and reconcile any possible effect. | Reusing the violating provider version or retrying an uncertain operation blindly. | EHC-032 |
+| EHR-033 | `provider.contract.PROVIDER_INTEGRITY_FAILURE` | Quarantine the provider subject, preserve integrity evidence and escalate the trust-boundary incident. | Continuing invocation or allowing provider-controlled trust promotion. | EHC-033 |
+| EHR-034 | `runtime.internal.INTERNAL_FAILURE` | Recover from authoritative durable state and replay only work proven idempotent and not already committed/dispatched. | Assuming process failure means transaction rollback. | EHC-034 |
+| EHR-035 | `runtime.internal.STORAGE_COMMIT_UNCERTAIN` | Reconcile the authoritative store/transaction outcome before accepting a duplicate command or continuing dependent work. | Reissuing a write or external effect while commit outcome remains unknown. | EHC-035 |
+
+### Execution gate
+
+For each EHR case, the eventual handler-level test must:
+1. Start from a deterministic fixture and explicit pre-state.
+2. Inject the exact error at the owning boundary, including relevant dispatch/commit state.
+3. Assert the durable aggregate, attempt, event/outbox, audit and checkpoint state after handling.
+4. Assert the forbidden result did not occur.
+5. Repeat relevant cases across restart/replay and concurrency where the owning contract permits those conditions.
+6. Record the implementation revision, test runner, fixture hash and actual result.
+
+A payload fixture passing JSON Schema is not execution of an EHR assertion. All EHR-001…EHR-035 remain **specified, not executed** until the corresponding runtime handler and test exist.
