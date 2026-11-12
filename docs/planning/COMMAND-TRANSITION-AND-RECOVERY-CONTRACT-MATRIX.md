@@ -1,7 +1,7 @@
 # Command Transition, Authority and Recovery Contract Matrix
 
 **Status:** Builder contract proposal; no owner-approved first-release API scope and no runtime dispatch authorization.  
-**Scope:** BR-001 — 43 mapped command entries. The two device pairing/revocation entries remain deferred.  
+**Scope:** BR-001 — 51 mapped command entries. The two device pairing/revocation entries remain deferred. The two device pairing/revocation entries remain deferred.  
 **Normative distinction:** A command requests a domain transition. Acceptance is not completion; a proposal is not authorization; a provider receipt is not an observed outcome.
 
 ## 1. Shared command execution contract
@@ -138,7 +138,7 @@ Task controls retain their existing TC-001…TC-012 cases plus per-command repla
 
 ## 5. Completion boundary
 
-This matrix and the command registry now carry per-entry semantic bindings and 43 unique acceptance-case IDs for the 43 mapped commands. A machine-enforced validator checks those fields, known error/event references, exact command inventory and one-to-one acceptance-case presence. This closes the builder's first-pass specification/registry-binding subtask for BR-001, not BR-001 overall. Six command/event or command/query classification mismatches remain explicitly unresolved; all 43 acceptance cases remain design criteria, not executed handler tests. The first-release command subset remains proposed pending owner acceptance. All mapped commands remain `design_only_not_dispatchable`; device pairing/revocation remain deferred. No implementation authorization or owner decision is implied.
+This matrix and the command registry carry per-entry semantic bindings and 51 unique acceptance-case IDs for the 51 mapped commands. A machine-enforced validator checks those fields, known error/event references, exact command inventory and one-to-one acceptance-case presence. The initial six event/classification mismatches have been resolved through dedicated event/payload bindings. This closes the builder's first-pass specification/registry-binding subtask for BR-001, not BR-001 overall. All 51 acceptance cases remain design criteria, not executed handler tests. The first-release command subset remains proposed pending owner acceptance. All mapped commands remain `design_only_not_dispatchable`; device pairing/revocation remain deferred. No implementation authorization or owner decision is implied.
 
 
 ## 4. Per-command acceptance case catalogue
