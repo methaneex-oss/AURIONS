@@ -19,7 +19,8 @@
       "assumptions": [],
       "uncertainty": {
         "custodian_identity": "not yet established"
-      }
+      },
+      "owner_ref": "owner:primary"
     },
     "entity": {
       "entity_id": "entity:fixture:custodian",
@@ -32,14 +33,14 @@
       ],
       "scope": {
         "context_ref": "situation:fixture:1",
-        "owner_ref": null,
         "valid_from": null,
         "valid_until": null
       },
       "attributes": {
         "role_claim": "possible custodian"
       },
-      "sensitivity": 1
+      "sensitivity": 1,
+      "owner_ref": "owner:primary"
     },
     "relationship": {
       "relationship_id": "relationship:fixture:1",
@@ -53,7 +54,8 @@
       ],
       "valid_from": "2026-11-12T08:00:01Z",
       "valid_until": null,
-      "context_ref": "situation:fixture:1"
+      "context_ref": "situation:fixture:1",
+      "owner_ref": "owner:primary"
     },
     "situation": {
       "situation_id": "situation:fixture:1",
@@ -86,7 +88,8 @@
       "evidence_refs": [
         "evidence:user-mentioned-custodian"
       ],
-      "context_ref": null
+      "context_ref": null,
+      "owner_ref": "owner:primary"
     },
     "evidence": {
       "evidence_id": "evidence:user-mentioned-custodian",
@@ -102,7 +105,8 @@
       "limitations": [
         "No independent confirmation has been obtained."
       ],
-      "sensitivity": 1
+      "sensitivity": 1,
+      "owner_ref": "owner:primary"
     },
     "affordanceHypothesis": {
       "hypothesis_id": "means:fixture:ask-custodian",
@@ -139,7 +143,8 @@
       "limitations": [
         "This hypothesis does not establish reachability or consent."
       ],
-      "composition_refs": []
+      "composition_refs": [],
+      "owner_ref": "owner:primary"
     },
     "interactionProposal": {
       "interaction_id": "interaction:fixture:1",
@@ -168,7 +173,8 @@
       "deadline": null,
       "status": "proposal_only_not_authorized",
       "authorization_ref": null,
-      "execution_binding_ref": null
+      "execution_binding_ref": null,
+      "owner_ref": "owner:primary"
     },
     "interactionOutcome": {
       "outcome_id": "outcome:fixture:1",
@@ -185,7 +191,8 @@
         "status": "not_applicable",
         "hypotheses": []
       },
-      "side_effects": []
+      "side_effects": [],
+      "owner_ref": "owner:primary"
     },
     "relatedEntities": [
       {
@@ -199,14 +206,14 @@
         ],
         "scope": {
           "context_ref": "situation:fixture:1",
-          "owner_ref": null,
           "valid_from": null,
           "valid_until": null
         },
         "attributes": {
           "requested_artifact": true
         },
-        "sensitivity": 1
+        "sensitivity": 1,
+        "owner_ref": "owner:primary"
       }
     ]
   }
