@@ -377,3 +377,12 @@ The builder completed the query-side semantic specification increment for all 21
 Exact code revision `f27123b389d232654ee0edf0df4b2101a78a2a8d` passed GitHub Actions run [43317444472](https://github.com/methaneex-oss/AURIONS/actions/runs/43317444472), including the new query contract integrity guard and all existing schema, event, governance, host SQLite and Android shell checks.
 
 This closes BR-002's **design/specification and registry-binding portion only**. BR-002 remains OPEN pending target-measured resource budgets and actual handler-level executable tests. All 21 queries remain non-dispatchable. The first-release query subset is still proposed pending owner acceptance; no implementation authorization is implied.
+
+
+## BR-001 builder increment — command contract registry bindings (2026-11-12)
+
+The builder freshly retrieved/read the mandatory governance standard (blob `951b9009cbedcf8907b365d611d89559d5a17385`) and Builder Operating Protocol (blob `179b02aaef051173b96f54812f451ede1a2eae0d`) before this run; EBT-01 and the fresh-read gate were confirmed.
+
+All 43 mapped command entries now carry machine-readable aggregate revision/transition, owner/actor authorization and risk scope, RFC 8785 idempotency/replay, deadline/cancellation, side-effect/reconciliation, typed error and unambiguous event bindings. Added CC-001…CC-043 positive/negative acceptance criteria and a validator guard for semantic field presence, known error/event references, exact registry/matrix inventory and one-to-one acceptance cases. Device pairing/revocation remain deferred. Six command/event or command/query classification mismatches remain explicit blockers.
+
+This completes BR-001's first-pass specification/registry-binding subtask only. The acceptance cases are not executed handler tests; no production command handlers exist in this planning PR. BR-001 remains OPEN pending owner selection of the first-release subset, resolution of semantic blockers, implementation authorization and executed handler/replay/crash/recovery tests. All commands remain non-dispatchable.
