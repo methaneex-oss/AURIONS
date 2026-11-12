@@ -227,3 +227,12 @@ Added `schemas/event-registry.v1.schema.json` and `schemas/event-registry.v1.jso
 ## Source-specification and persistence-chain reconciliation (2026-11-12)
 
 Added an explicit interpretation addendum to `INITIAL-ENGINEERING-SPECIFICATION.md` so earlier Android/device/capability terminology cannot be misread as the universal architecture. The source specification now references the foundational open-world model, separates device-specific integrations from general possible means, and records the proposed memory migration v4 without altering owner decisions. Migration v4 was reconciled to include eight tables: `objective_records`, `evidence_details`, `world_entities`, `world_relationships`, `situation_snapshots`, `affordance_hypotheses`, `interaction_proposals` and `interaction_outcomes`. The DDL remains proposed/unexecuted; canonical ID encoding, cross-record referential integrity, event/handler semantics, retention/deletion and cross-store recovery remain open.
+
+
+## 11. Builder follow-up after the initial audit
+
+At revision `d7c72b3214fc7ec20fdfd798ec214de348464b5d`, the owner-mandated Builder Operating Protocol was added and linked from the project entry points and completion register.
+
+Subsequent task-control work adds proposed events migration v3, owner-scoped task-control authorization and idempotency semantics for `task.start`, `task.pause`, `task.resume` and `task.cancel`, plus twelve specified acceptance cases. The task-control entries now remove the two generic unresolved bindings for owner/device scope and idempotency; they retain per-entry conflict/replay/recovery assertions and remain non-dispatchable.
+
+This follow-up does not change the overall NOT READY disposition. Migration v3 is unexecuted; no runtime handler or executable test has been added. The task lifecycle transition matrix still needs reconciliation with the full state machine, and receipt retention/deletion semantics remain open. The exact current PR head must be fetched for any final audit claim.
