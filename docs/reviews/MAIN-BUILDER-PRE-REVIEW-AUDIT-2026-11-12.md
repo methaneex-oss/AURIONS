@@ -307,3 +307,13 @@ Owner directive EBT-01 is now incorporated as Part J of the authoritative team s
 **Builder's own conduct in this increment:** the builder did not wait for the owner to separately request a validator change. After integrating EBT-01 into the standard and builder protocol, it identified that the existing governance validator would otherwise allow the behavioural rule to be removed without detection, so it added explicit EBT-01 integrity assertions. This is evidence of one autonomous engineering correction in this run; it is not proof of sustained or team-wide compliance.
 
 **Remaining evidence:** run CI against the final revision; inspect the actual workflow result; then evaluate role behaviour through later completed builder handoffs, independent review findings, tester-generated test evidence and director acceptance. Documentation and presence checks alone cannot prove behavioural transformation. No technical finding is closed, implementation is not authorized, and PR #2 remains draft/open/unmerged.
+
+
+## BR-001 / BR-002 builder increment — first-release command/query scope and gap analysis (2026-11-12)
+
+**Artifact:** `docs/planning/FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md`.  
+**Status: ANALYSIS ADDED; BOTH FINDINGS REMAIN OPEN.**
+
+The builder mapped the proposed product workflows to P0, conditional P1 and excluded interface families. The analysis identified a concrete model mismatch: `goal.*` cannot stand in for the objective lifecycle because the product/architecture explicitly distinguish owner objectives from derived goals and plans. It also identified that the context-independent world/interaction payloads and event families do not yet have corresponding command/query contracts in the registry. The artifact sets out proposed objective/world/means/interaction interfaces and per-entry semantic/acceptance requirements.
+
+The artifact does not make a product decision or select the owner-reserved first Android action or cloud/mobile history topology. The current command/query registry remains design-only/non-dispatchable. No handler implementation or executable command/query tests were added. BR-001 and BR-002 remain open; the overall builder verdict remains NOT READY. The next step is schema/registry and contract reconciliation, followed by entry-specific fixtures and executable verification—not a generic dispatch-status change.
