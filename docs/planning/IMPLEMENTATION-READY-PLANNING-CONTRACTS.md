@@ -980,7 +980,7 @@ For `task.start`, `task.pause`, `task.resume` and `task.cancel`, the deduplicati
 The request digest is SHA-256 over RFC 8785 JSON Canonicalization Scheme bytes for the semantic command tuple:
 `owner_id`, `actor_identity`, `command_type`, `command_version`, `operation_id`, `deadline`, `requested_capability`, `data_classification`, `approval_reference`, and the exact validated command payload. Exclude transport-attempt fields `command_id`, `issued_at` and `idempotency_key`; the key is already part of the unique scope. Do not normalize, reorder or reinterpret payload strings beyond RFC 8785 canonicalization.
 
-- First use reserves and commits the receipt in the same local SQLite transaction as the task projection transition, immutable transition event, and outbox record.
+- First use reserves and commits the receipt in the same local SQLite transaction as the durable control-request event and outbox record. If the request can transition immediately, the task projection update and immutable transition event are included in that same transaction. If it must wait for a safe point, the pending request remains durable and the later task projection update plus transition event commit together in a separate transaction.
 - Same scoped key and same digest returns the stored original command response and does not reapply the transition or emit another event.
 - Same scoped key and different digest is rejected as `operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH`; it must not reveal or overwrite the original response.
 - A crash before transaction commit leaves neither the receipt nor the transition committed. A crash after commit replays the stored response on retry. There is no cross-database atomicity claim.
@@ -990,7 +990,7 @@ The request digest is SHA-256 over RFC 8785 JSON Canonicalization Scheme bytes f
 
 Migration `aurion_events.migration_v3.sql` adds nullable owner binding for legacy task rows, an insert trigger requiring ownership for new rows, and `task_command_receipts`. Existing rows remain unbound; ownership MUST be populated only from authoritative provenance. A NULL owner row cannot be controlled. The receipt ledger intentionally has no task-row foreign key so task deletion cannot silently erase replay evidence.
 
-For a task-control request whose effects are wholly local to the event store, the receipt, task-run revision update, `task.control.requested.v1` / `task.run.transitioned.v1` events as applicable, and outbox insertion MUST commit in one transaction. Event publication is asynchronous from the committed outbox. A task-control transaction MUST NOT perform provider I/O while holding the SQLite write transaction.
+For a task-control request whose effects are wholly local to the event store, the receipt, `task.control.requested.v1` event and outbox insertion MUST commit in one transaction. When the control can be applied immediately, that transaction also includes the task-run revision update and `task.run.transitioned.v1` event. When it must wait for a safe point, the request/receipt are committed as pending; the later task-run revision update and transition event commit atomically in a separate transaction. Event publication is asynchronous from the committed outbox. A task-control transaction MUST NOT perform provider I/O while holding the SQLite write transaction.
 
 #### Acceptance cases to implement and execute
 
