@@ -1,0 +1,212 @@
+# Project Governance Reform — Directorship and Team Operating Standard
+
+**Status:** Mandatory  
+**Effective date:** 12 November 2026  
+**Applies to:** All project directors, builders, independent reviewers, testers and supporting agents.  
+**Scope:** All current and future projects governed by this team.
+
+This standard governs role authority, workflow gates, handoffs, scope control and acceptance. It complements the [Builder Operating Protocol](BUILDER-OPERATING-PROTOCOL.md), which defines the builder's execution and verification obligations. Existing project vision, approved requirements, architecture and non-negotiable constraints remain in force.
+
+## Part A — The new project directorship
+
+The project director is responsible for direction, priorities, boundaries and final acceptance.
+
+The director must:
+
+1. Establish measurable milestones before implementation.
+2. Define what constitutes completion.
+3. Protect the original project vision and architecture.
+4. Prevent uncontrolled scope expansion.
+5. Delegate implementation decisions within clearly defined authority.
+6. Evaluate evidence rather than repeatedly requesting assurances.
+7. Make timely decisions when evidence is sufficient.
+8. Avoid unnecessary intervention in ordinary engineering decisions.
+
+The director must not:
+
+- Constantly supervise routine implementation.
+- Change requirements without evaluating the consequences.
+- Introduce new work before existing commitments are completed.
+- Confuse activity with measurable progress.
+- Accept completion claims without evidence.
+- Demand unnecessary repeated reviews after sufficient verification.
+
+The director retains authority over project direction and acceptance, not every individual implementation decision.
+
+## Part B — Builder accountability
+
+The builder owns the complete implementation responsibility.
+
+Before implementation, the builder must:
+
+- Read the authoritative project documentation.
+- Understand the existing architecture and previous decisions.
+- Identify dependencies and constraints.
+- Confirm scope and acceptance criteria.
+- Identify risks before introducing changes.
+
+During implementation, the builder must:
+
+- Complete the entire assigned scope.
+- Preserve architectural consistency.
+- Avoid unnecessary redesign.
+- Investigate root causes.
+- Avoid superficial patches.
+- Document significant decisions.
+- Keep implementation aligned with project objectives.
+
+Before handoff, the builder must:
+
+- Inspect every relevant change.
+- Perform self-review.
+- Run relevant tests.
+- Fix discovered defects.
+- Check integration points.
+- Document unresolved issues honestly.
+- Prepare a complete handoff with evidence.
+
+A builder must never transfer responsibility for unfinished self-review or obvious defects to the reviewer or tester.
+
+## Part C — Independent reviewer accountability
+
+The reviewer operates independently from the builder.
+
+The reviewer must examine:
+
+1. Requirement completeness.
+2. Architectural compliance.
+3. Implementation correctness.
+4. Integration with existing mechanisms.
+5. Unnecessary complexity.
+6. Missing functionality.
+7. Error handling and failure conditions.
+8. Maintainability and regression risks.
+9. Deviations from established project decisions.
+
+Every finding must include:
+
+- Severity.
+- Exact location or affected component.
+- Explanation of the problem.
+- Evidence.
+- Required correction or justified recommendation.
+
+Review verdicts:
+
+- **APPROVED**
+- **APPROVED WITH DOCUMENTED NON-BLOCKING ISSUES**
+- **REJECTED — CORRECTIONS REQUIRED**
+
+The reviewer must not approve work merely because the builder claims it is complete. The reviewer must not silently redesign the project or introduce new requirements.
+
+## Part D — Independent tester accountability
+
+The tester verifies actual behaviour independently.
+
+Testing must cover, where applicable:
+
+- Unit tests.
+- Integration tests.
+- End-to-end behaviour.
+- Regression tests.
+- Boundary conditions.
+- Invalid inputs.
+- Failure handling.
+- Persistence and state transitions.
+- Relevant performance and reliability requirements.
+
+The tester must:
+
+- Verify the actual implementation.
+- Use reproducible test procedures.
+- Record actual outcomes.
+- Preserve failure evidence.
+- Distinguish untested behaviour from passing behaviour.
+- Rerun failed tests after corrections.
+- Identify test coverage gaps.
+
+Test verdicts:
+
+- **PASS**
+- **PASS WITH DOCUMENTED NON-BLOCKING LIMITATIONS**
+- **FAIL**
+- **BLOCKED**
+
+A blocked test must never be represented as a passing test.
+
+## Part E — Workflow and handoff control
+
+The mandatory sequence is:
+
+1. Director authorizes a bounded milestone.
+2. Builder implements and self-verifies.
+3. Builder submits a complete handoff.
+4. Independent reviewer examines the complete scope.
+5. Builder resolves review findings.
+6. Reviewer confirms corrections.
+7. Independent tester executes the test plan.
+8. Builder corrects implementation defects.
+9. Tester verifies corrections.
+10. Director evaluates final evidence and authorizes completion.
+
+Do not start independent review while the builder is still making unrelated implementation changes. Do not start final testing against an unstable implementation. Maintain a clear record of implementation, review, correction and testing outcomes.
+
+## Part F — Scope and change control
+
+Every milestone must have a defined scope.
+
+New discoveries must be classified as:
+
+- Required to complete current scope.
+- Critical defect.
+- Architectural dependency.
+- Future improvement.
+- Unrelated suggestion.
+
+Only necessary changes should enter the current milestone. Future improvements must be recorded without automatically expanding current commitments.
+
+Any material change must include its justification, impact and approval.
+
+## Part G — Completion and evidence
+
+A deliverable is complete only when:
+
+- The agreed scope is implemented.
+- Builder self-review is complete.
+- Independent review has reached an acceptable verdict.
+- Required corrections are verified.
+- Independent testing has reached an acceptable verdict.
+- Remaining limitations are documented.
+- Evidence is available.
+- Director acceptance is recorded.
+
+A successful build alone is insufficient. A passing isolated test suite alone is insufficient. A large implementation alone is insufficient.
+
+## Part H — Continuous improvement
+
+Recurring failures must result in process improvements.
+
+Teams must:
+
+- Identify recurring root causes.
+- Correct underlying engineering practices.
+- Improve automated checks where practical.
+- Update authoritative documentation.
+- Prevent previously resolved defects from recurring.
+
+Do not create unnecessary rules for every isolated incident. Improve the underlying process where evidence justifies it.
+
+## Part I — Governing principle
+
+The project must not depend on constant director intervention to maintain engineering quality.
+
+- Builders own implementation.
+- Reviewers own independent technical scrutiny.
+- Testers own independent behavioural verification.
+- The director owns direction, boundaries and final acceptance.
+
+Every role is accountable for its responsibilities.
+
+**The objective is not merely to build more. It is to build the right things, finish them, verify them and make measurable progress without repeatedly losing ground.**
+
+**Build completely. Review independently. Test rigorously. Correct properly. Deliver verifiable results.**
