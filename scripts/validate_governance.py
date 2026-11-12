@@ -93,6 +93,33 @@ def main() -> int:
         if phrase not in builder:
             fail(f"builder protocol missing mandatory pre-run rule: {phrase}")
 
+    # EBT-01: enforce the presence of accountable engineering behaviour rules.
+    required_ebt_standard = [
+        "Part J — EBT-01: mandatory engineering behaviour and accountable ownership",
+        "Independent professional judgment",
+        "Role ownership and complete handoffs",
+        "Scope discipline",
+        "Evidence-based reporting",
+        "Evidence-backed professional disagreement",
+        "Autonomous correction within authority",
+        "Behavioural compliance and evaluation",
+        "from instruction-following activity to accountable engineering ownership",
+    ]
+    for phrase in required_ebt_standard:
+        if phrase not in standard:
+            fail(f"team operating standard missing EBT-01 requirement: {phrase}")
+
+    required_ebt_builder = [
+        "## 11. EBT-01 — builder behaviour and ownership",
+        "Independently derive the necessary next engineering steps",
+        "Correct defects within builder authority autonomously",
+        "Report specification, implementation, verification, independent review and acceptance as separate states.",
+        "Compliance is judged by the completed artifact",
+    ]
+    for phrase in required_ebt_builder:
+        if phrase not in builder:
+            fail(f"builder protocol missing EBT-01 requirement: {phrase}")
+
     entrypoints = {
         "README.md": read("README.md"),
         "docs/planning/README.md": read("docs/planning/README.md"),
