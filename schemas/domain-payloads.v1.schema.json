@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:aurions:schema:domain-payloads:1",
   "title": "AURIONS version 1 cognitive and operation domain payloads",
-  "description": "Language-neutral payload schemas for cognitive and operation contracts. The common envelope and capability descriptor body are defined in separate canonical schemas under schemas/. These schemas describe data shape, not authorization or proof of execution.",
+  "description": "Language-neutral payload schemas for cognitive and operational contracts. The common envelope and provider/interface-specific capability descriptor body are defined separately. Environment observation, discovery and capability descriptor records in this schema are device/provider-scoped integrations, not the universal representation of the world or of possible means. Context-independent objective, entity, relationship, situation, evidence, affordance, interaction and outcome contracts are defined in schemas/world-interaction.v1.schema.json. These schemas describe data shape, not authorization or proof of execution.",
   "$defs": {
     "uuid": {
       "type": "string",
@@ -1272,7 +1272,8 @@
         "created_at": {
           "$ref": "#/$defs/timestamp"
         }
-      }
+      },
+      "description": "Evidence-backed revision about one device/provider/interface-specific descriptor in an explicit context. It must not be treated as universal competence or authority."
     },
     "environmentObserved": {
       "type": "object",
@@ -1349,7 +1350,8 @@
             "null"
           ]
         }
-      }
+      },
+      "description": "Device/platform-specific observation record. The required device_id and platform_context fields are intentional for this integration family; use the context-independent world-interaction contracts for non-device entities, actors, resources and situations."
     },
     "selfModelUpdated": {
       "type": "object",
@@ -1772,7 +1774,8 @@
             "null"
           ]
         }
-      }
+      },
+      "description": "Request to a registered device/provider-specific discovery mechanism. This is not a universal requirement for discovering possible means; human-mediated and other non-provider means may be represented by the open-world interaction contracts."
     },
     "discoveryResult": {
       "type": "object",
@@ -1834,7 +1837,8 @@
             "type": "object"
           }
         }
-      }
+      },
+      "description": "Result from a device/provider-specific discovery mechanism. It reports only the scope and evidence actually observed and does not define the complete set of possible means."
     },
     "memoryRecord": {
       "type": "object",
@@ -2430,7 +2434,8 @@
         "descriptor_body": {
           "$ref": "urn:aurions:schema:capability-descriptor-body:1"
         }
-      }
+      },
+      "description": "Immutable device/provider/interface-specific descriptor record. This is one evidence source for an affordance hypothesis, not the universal ontology or action-space boundary."
     },
     "representationRevised": {
       "type": "object",
