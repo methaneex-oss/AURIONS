@@ -308,3 +308,11 @@ Added `docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md` with all 17 c
 Workflow run [43291566387](https://github.com/methaneex-oss/AURIONS/actions/runs/43291566387) passed on revision `35edf0345f3d1b4b8a7a5fbf5624051f6de99624`, including schema/fixture validation, governance integrity, host SQLite migration smoke tests and Android probe shell syntax.
 
 **Evidence boundary:** BR-010 remains OPEN pending independent/owner validation of package boundaries, package-specific executable evidence, target build validation and post-planning PR #1 reconciliation. BR-008 remains OPEN pending semantic architecture-wide reconciliation. No implementation authorization or independent-review handoff is implied.
+
+## Builder increment — per-code error recovery assertion catalogue (2026-11-12)
+
+Added EHR-001…EHR-035 to `docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md`, with one concrete recovery assertion and forbidden result for every current error code. Extended `scripts/validate_schemas.py` to enforce exact 35-code coverage, unique EHR IDs and matching fixture pointers, in addition to the existing machine-registry/Markdown mapping parity check.
+
+The new validation passed in GitHub Actions run [43291982511](https://github.com/methaneex-oss/AURIONS/actions/runs/43291982511) on code revision `07a7219942579d604d933891b9fcb373cf8a4dc9`. Schema/fixture, governance, host SQLite migration and Android probe syntax steps all passed.
+
+**Evidence boundary:** EHR cases are specified, not executed. BR-003 remains OPEN until actual handlers and per-code durable-state/replay/fault tests exist. All 35 error registry entries remain `seed` and non-dispatchable.
