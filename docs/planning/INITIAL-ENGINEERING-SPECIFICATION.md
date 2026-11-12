@@ -1213,7 +1213,7 @@ This section's former status table and WP-00/WP-01 planning-exit statement were 
 In particular:
 - The earlier checked/drafted status did not establish COMPLETE — VERIFIED.
 - The former recommendation to begin WP-00/WP-01 is not current implementation authorization.
-- Android capability discovery, cognitive mechanism contracts, cross-document consistency and canonical work-package reconciliation remain builder-owned planning work.
+- Foundational objective/world/means contracts, cognitive mechanism contracts, cross-document consistency, Android-specific interaction realization and canonical work-package reconciliation remain builder-owned planning work.
 - External validation, independent review of the exact final revision and explicit owner approval remain separate gates.
 
 **Current status:** Planning is IN PROGRESS. Implementation is not authorized.
@@ -1339,7 +1339,7 @@ Every autonomous task receives a budget envelope: wall-clock deadline, CPU time/
 
 ## 42. Planning status and owner gate — corrected status record
 
-This specification contains a substantial proposed engineering baseline. The presence of the sections below does not mean the corresponding planning layers are complete or verified. The later builder audit identified remaining design work, particularly the Android environment/capability architecture, cognitive mechanism contracts, architecture-wide consistency, and reconciliation of competing work-package roadmaps.
+This specification contains a substantial proposed engineering baseline. The presence of the sections below does not mean the corresponding planning layers are complete or verified. The later builder audit identified remaining design work, particularly the foundational open-world interaction model and dependent contracts, cognitive mechanism contracts, architecture-wide consistency, platform-specific validation and canonical work-package reconciliation.
 
 **Status vocabulary:** SPECIFIED means documented; REVIEWED means consistency-checked; VALIDATED means tested against executable schemas, tools or measured environments; IMPLEMENTED means present in code; VERIFIED means acceptance evidence demonstrates the requirement. These states must not be conflated.
 
@@ -1347,7 +1347,8 @@ This specification contains a substantial proposed engineering baseline. The pre
 | --- | --- |
 | Mission, non-goals and owner decisions | SPECIFIED; consistency audit in progress |
 | Architecture and module responsibilities | SPECIFIED at logical level; mechanism/interface completeness in progress |
-| Android environment/capability architecture | IN PROGRESS; general discovery and learning architecture not yet complete |
+| Open-world objective/world/means architecture | IN PROGRESS; foundational model and first contract/persistence mapping added, dependent semantic and executable reconciliation outstanding |
+| Android platform interaction realization | IN PROGRESS; one context-specific implementation design, target API/permission/lifecycle validation outstanding |
 | Database entities and initial DDL | Drafted; execution and target-runtime validation outstanding |
 | Event/worker contracts | Semantics specified; complete executable schemas/fixtures and component traceability outstanding |
 | Cross-store transaction/recovery | Protocol specified; fault-injection validation outstanding |
@@ -1381,3 +1382,16 @@ The previous checklist's checked boxes represented that text had been drafted, n
 - No implementation code, database migration, device configuration or repository changes were performed by this planning update.
 
 - 2026-11-11: Corrected the former planning checklist: checked boxes had indicated documented sections, not verified completion. Replaced the implied completion claim with explicit specified/reviewed/validated/implemented/verified status and linked the builder-owned planning completion register.
+
+
+## 27. Open-world interaction interpretation addendum — 2026-11-12
+
+This addendum clarifies the architectural meaning of device, platform and capability language used in earlier sections of this owner specification. It does not alter owner decisions, select additional platforms, choose a first external action or authorize implementation.
+
+The foundational [Open-World Interaction and Means Architecture](../architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) is the authoritative conceptual model. AURIONS is organized around objectives and relevant changing situations, not around Android, desktop, iOS, devices, applications, tools, connectors or a capability registry. The model distinguishes objectives, entities and actors, relationships, observations/evidence, beliefs/uncertainty, context-dependent affordances and possible means, authority/consent, interactions, effects and outcomes.
+
+Earlier references to Android environment observation, device agents, capability descriptors, platform permissions and device-specific discovery are scoped to those concrete integrations. They describe one possible source and realization of interaction means; they do not define the complete world, action space or intelligence architecture. A device capability descriptor is not required for a human-mediated, physical, institutional, service-based or otherwise non-device means. No task must be routed through a platform adapter or a fixed registry. The system may observe, ask, wait, delegate, combine means, choose a supported alternative or stop when evidence/authority is insufficient.
+
+The owner-selected Android target remains a concrete mobile engineering/validation target, not the sole environment or universal capability model. Desktop and iOS are acknowledged as possible contexts, not commitments that their integrations are already designed, implemented or validated. Their future treatment must follow task requirements and actual evidence, not a predetermined platform hierarchy.
+
+The initial machine-readable open-world contracts are schemas/world-interaction.v1.schema.json, its fixtures and the proposed memory migration v4. They remain design-only and IN PROGRESS: full JSON Schema conformance, command/query and machine-enforced event bindings, stable identifier/reference semantics, DDL execution, retention/deletion, cross-store operation linkage, C++ ownership and executable acceptance tests remain open. The first permitted local action remains an owner decision. No implementation authorization follows from this addendum.
