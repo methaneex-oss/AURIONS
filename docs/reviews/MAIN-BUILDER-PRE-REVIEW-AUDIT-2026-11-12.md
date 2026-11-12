@@ -210,3 +210,10 @@ This does **not** close the finding. Remaining dependent documents and machine-r
 ## Event-contract expansion — open-world domain events (2026-11-12)
 
 The event catalogue in the implementation-ready contract supplement now adds eight context-independent event families: `evidence.recorded.v1`, `objective.created.v1`, `world.entity.observed.v1`, `world.relationship.revised.v1`, `situation.snapshot.created.v1`, `means.affordance.proposed.v1`, `interaction.proposed.v1` and `interaction.outcome.observed.v1`. Their body mappings point to the new `world-interaction.v1.schema.json` definitions or the existing evidence payload. This expands the documented event catalogue from 76 to 84 event types. The textual event-to-payload mapping has been updated; machine-enforced event registry validation, event-specific fixtures, command/query bindings, handler ownership and end-to-end consumer tests are still outstanding. Do not treat the catalogue addition as dispatchable event support.
+
+
+## Expanded no-hardcoding and cognitive acceptance coverage (2026-11-12)
+
+Added `CM-022`…`CM-029` to the cognitive mechanism architecture for objective/plan separation, provisional entity/relationship knowledge, non-device and human-mediated means, no-supported-route handling, context-scoped affordance validity, proposal-versus-authorization, outcome epistemics and multi-context state/authority boundaries. Added `NHC-009`…`NHC-016` to the canonical roadmap and implementation contract test catalogue. The owner decision traceability matrix now maps broad access to objective-led world/means reasoning rather than only dynamic device capability discovery. These are specified acceptance scenarios; no executable implementation tests have been run for them.
+
+A bounded custom structural validator was run against the new world-interaction schema and fixture: the positive fixture produced no structural errors; the negative entity fixture was rejected (including missing evidence). JSON syntax was separately parsed. This custom check does not establish full JSON Schema Draft 2020-12 conformance, semantic reference integrity or cross-language validator equivalence.
