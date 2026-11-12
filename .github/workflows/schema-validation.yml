@@ -6,6 +6,7 @@ on:
       - "schemas/**"
       - "scripts/validate_schemas.py"
       - "scripts/validate_sqlite_ddl.py"
+      - "scripts/probe_android_termux.sh"
       - "scripts/validate_governance.py"
       - "docs/governance/**"
       - "docs/planning/README.md"
@@ -18,6 +19,7 @@ on:
       - "schemas/**"
       - "scripts/validate_schemas.py"
       - "scripts/validate_sqlite_ddl.py"
+      - "scripts/probe_android_termux.sh"
       - ".github/workflows/schema-validation.yml"
   workflow_dispatch:
 
@@ -43,3 +45,5 @@ jobs:
         run: python scripts/validate_governance.py
       - name: Execute SQLite DDL and migration smoke tests
         run: python scripts/validate_sqlite_ddl.py
+      - name: Validate Android probe shell syntax
+        run: sh -n scripts/probe_android_termux.sh
