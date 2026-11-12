@@ -1419,7 +1419,10 @@
         "event_specific_acceptance"
       ],
       "command_producers": [
-        "task.start"
+        "task.start",
+        "task.pause",
+        "task.resume",
+        "task.cancel"
       ],
       "command_producer_binding_status": "bound"
     },
@@ -1437,7 +1440,10 @@
         "event_specific_acceptance"
       ],
       "command_producers": [
-        "task.start"
+        "task.start",
+        "task.pause",
+        "task.resume",
+        "task.cancel"
       ],
       "command_producer_binding_status": "bound"
     },
