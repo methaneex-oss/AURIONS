@@ -594,17 +594,21 @@ Each DB has its own migration ledger, backup/restore procedure, integrity check 
 - SQLite connections use explicit transaction scopes, foreign keys within each DB, busy timeout and WAL only after target-device validation. Durability/synchronous settings must be documented and tested against power-loss expectations.
 
 ### 8.3 DDL and migration acceptance
-The canonical proposed SQL is under [`schemas/persistence/`](../../schemas/persistence/README.md): three base schemas plus memory migrations v2/v3 and event/recovery migration v2. The source specification Section 26 links to these machine-readable files. Proposed minimum SQLite version is 3.38.0 (STRICT tables plus built-in JSON functions); target Termux/Android compile options remain unverified. All scripts remain unexecuted proposals. Before implementation approval:
-- Parse/execute all three base schemas and all three additive migrations against the pinned minimum SQLite version.
+The canonical SQL is under [`schemas/persistence/`](../../schemas/persistence/README.md): three base schemas plus memory migrations v2/v3/v4 and event/recovery migrations v2/v3. The source specification Section 26 links to these machine-readable files. Proposed minimum SQLite version is 3.38.0 (STRICT tables plus built-in JSON functions); target Termux/Android compile options remain unverified.
+
+**Host evidence:** CI has executed all three base schemas and all five additive migrations in order on host SQLite. The exact-head run [43324236645](https://github.com/methaneex-oss/AURIONS/actions/runs/43324236645) passed foreign-key enforcement, foreign-key integrity and database integrity checks after each file, plus selected objective insert, event sequence allocation and task-owner trigger invariants. This is bounded host smoke evidence, not target compatibility or complete recovery validation.
+
+Before implementation approval:
+- Repeat all three base schemas and all five additive migrations against the pinned minimum SQLite build and actual target Termux/Android SQLite library.
 - Enable foreign keys and verify every declared FK.
 - Run schema lint for missing indexes on foreign keys, owner scope, status, timestamps, retrieval predicates and idempotency keys.
 - Validate uniqueness for IDs, idempotency keys and active approval nonces.
-- Test each store from empty DB and each supported prior schema version; apply memory migrations v2 then v3 and event migration v2 in order.
-- Test interrupted migration and recovery from verified backup.
+- Test each store from empty DB and each supported prior schema version; apply memory v2, v3, v4 and event v2, v3 in order with independent migration ledgers/checksums.
+- Test interrupted migration before/after commit and recovery from verified backup.
 - Test constraint violations, busy/locked behaviour, WAL checkpoint, disk full, read-only/corrupt DB and process crash during commit.
 - Verify no cross-file FK or direct database-file replication exists.
 - Record query plans and target-device timings for representative retrieval and writes.
-- DDL is not approved merely because it parses; semantic invariants and failure tests must pass.
+- DDL is not approved merely because it parses or passes host smoke tests; semantic invariants and target failure/recovery tests must pass.
 
 ## 9. Multi-device synchronization and deletion protocol
 
