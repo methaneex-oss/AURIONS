@@ -393,3 +393,16 @@ Extended `scripts/validate_schemas.py` to require exactly 35 unique EHR IDs, one
 CI run [43291982511](https://github.com/methaneex-oss/AURIONS/actions/runs/43291982511) passed on code revision `07a7219942579d604d933891b9fcb373cf8a4dc9`, including the new 35-case assertion catalogue guard, schema/fixture validation, governance integrity, host SQLite DDL/migration smoke tests and Android probe shell syntax.
 
 **BR-003 remains OPEN.** EHR-001…EHR-035 are specified, not executed. Closing the finding still requires actual owning handlers, deterministic branch tests asserting durable state, replay/restart/fault coverage, and production registration controls. No registry entry has been promoted from `seed`; no dispatchability or implementation is claimed.
+
+## Builder inspection — PR #1 WP-00 scaffold reconciliation baseline (2026-11-12)
+
+The builder inspected PR #1 without modifying it. Exact inspected PR head: `742232599a5dc37f48ea33cd9fef77924e060a38`. PR #1 is open, draft and unmerged, with nine changed files. The current scope is limited to:
+- One dependency-free C++ static library exposing a version function.
+- One smoke test and CTest registration.
+- CMake configuration requiring C++20.
+- One hosted configure/build/test workflow.
+- Repository ignore rules and WP-00 scope documentation.
+
+GitHub Actions run [43104192873](https://github.com/methaneex-oss/AURIONS/actions/runs/43104192873), retrieved for that exact PR head, completed successfully through configure, build and CTest. This proves only the hosted scaffold smoke test. The current workflow uses `actions/checkout@v4` by major tag and `ubuntu-latest`; action commit and runner image are not immutable. C++20 remains provisional. No local clean build, actual Termux/ARM64 build, target ABI check, dependency/license inventory or reproducible offline build is evidenced.
+
+**Reconciliation conclusion:** PR #1 is a minimal scaffold and contains no cognitive/runtime, persistence, inference, memory, learning, worker or action implementation. It must remain separate and unmerged until PR #2 planning exit is accepted; only then should it be rebased/reconciled against the accepted baseline and retested. This inspection improves BR-010 evidence but does not close it.
