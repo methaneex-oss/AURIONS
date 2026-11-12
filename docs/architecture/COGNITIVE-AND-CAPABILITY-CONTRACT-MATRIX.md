@@ -1,9 +1,9 @@
-# AURIONS — Cognitive and Capability Contract Matrix
+# AURIONS — Cognitive, World and Interaction Contract Matrix
 
 - **Status:** Builder-authored contract reconciliation; IN PROGRESS.
-- **Purpose:** Connect the cognitive and Android capability architectures to authoritative state ownership, persistence, APIs, events, work packages and verification.
+- **Purpose:** Connect the foundational open-world interaction architecture and cognitive mechanisms to authoritative state ownership, persistence, APIs, events, work packages and verification.
 - **Authority:** The owner decision register in `INITIAL-ENGINEERING-SPECIFICATION.md` remains authoritative. This matrix clarifies engineering ownership; it does not create owner decisions.
-- **Governing invariant:** Engineer mechanisms; acquire behaviour and capability knowledge through evidence and experience. Do not replace discovery, reasoning, learning or adaptation with developer-authored task-to-action mappings.
+- **Governing invariant:** The [Open-World Interaction and Means Architecture](OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) is foundational. Engineer mechanisms; acquire behaviour, world knowledge and possible-means knowledge through evidence and experience. Do not replace objective-led reasoning with developer-authored task-to-action mappings or a closed platform/tool catalogue.
 
 ## 1. Contract rules
 
@@ -36,7 +36,7 @@
 | Self-model | Self-model subsystem; `self_model_revisions` | self-model update proposal/query; `self_model.updated.v1` | WP-13 | CM-016 |
 | Evolution | Evolution subsystem; `evolution_proposals`, candidate artifacts, governance approval and activation audit | evolution proposal/evaluate/approve/activate/rollback | WP-13 | CM-017, protected-change tests |
 
-## 3. Android environment and capability ownership matrix
+\n> **Scope correction:** The following matrix is only the Android-specific realization. It does not define the complete ownership model for world understanding, entity/actor relationships, task semantics, non-device means, human-mediated interaction or other contexts. Those concepts are governed by the open-world architecture and must be reconciled into authoritative contracts before implementation. An Android capability descriptor is not the universal representation of an affordance or possible means.\n\n## 3. Android-specific interaction realization ownership matrix
 
 | Mechanism | Owner | Durable state / authority | Contract family | Verification |
 |---|---|---|---|---|
