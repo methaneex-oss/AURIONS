@@ -53,8 +53,10 @@
         "owner_transition",
         "event_specific_acceptance"
       ],
-      "command_producers": [],
-      "command_producer_binding_status": "unresolved"
+      "command_producers": [
+        "objective.create"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "world.entity.observed.v1": {
       "event_version": "1.0",
@@ -69,8 +71,10 @@
         "owner_transition",
         "event_specific_acceptance"
       ],
-      "command_producers": [],
-      "command_producer_binding_status": "unresolved"
+      "command_producers": [
+        "world.entity.observe"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "world.relationship.revised.v1": {
       "event_version": "1.0",
@@ -85,8 +89,10 @@
         "owner_transition",
         "event_specific_acceptance"
       ],
-      "command_producers": [],
-      "command_producer_binding_status": "unresolved"
+      "command_producers": [
+        "world.relationship.revise"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "situation.snapshot.created.v1": {
       "event_version": "1.0",
@@ -101,8 +107,10 @@
         "owner_transition",
         "event_specific_acceptance"
       ],
-      "command_producers": [],
-      "command_producer_binding_status": "unresolved"
+      "command_producers": [
+        "situation.snapshot.create"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "means.affordance.proposed.v1": {
       "event_version": "1.0",
@@ -117,8 +125,10 @@
         "owner_transition",
         "event_specific_acceptance"
       ],
-      "command_producers": [],
-      "command_producer_binding_status": "unresolved"
+      "command_producers": [
+        "means.affordance.propose"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "interaction.proposed.v1": {
       "event_version": "1.0",
@@ -133,8 +143,10 @@
         "owner_transition",
         "event_specific_acceptance"
       ],
-      "command_producers": [],
-      "command_producer_binding_status": "unresolved"
+      "command_producers": [
+        "interaction.propose"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "interaction.outcome.observed.v1": {
       "event_version": "1.0",
@@ -149,8 +161,10 @@
         "owner_transition",
         "event_specific_acceptance"
       ],
-      "command_producers": [],
-      "command_producer_binding_status": "unresolved"
+      "command_producers": [
+        "interaction.outcome.record"
+      ],
+      "command_producer_binding_status": "bound"
     },
     "representation.created.v1": {
       "event_version": "1.0",
@@ -1511,7 +1525,11 @@
         "consumer_semantics",
         "owner_transition",
         "event_specific_acceptance"
-      ]
+      ],
+      "command_producers": [
+        "objective.revise"
+      ],
+      "command_producer_binding_status": "bound"
     }
   }
 }
