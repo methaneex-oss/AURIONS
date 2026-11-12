@@ -1435,13 +1435,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the Action Gateway accepts a persisted proposed operation revision and begins schema, target, descriptor, deadline and policy preflight. No provider invocation or external effect has occurred.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1469,13 +1468,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when preflight succeeds but the exact operation digest requires owner approval that is absent, expired or undecided. Dispatch remains blocked pending a separate governance decision.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1503,13 +1501,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when all pre-dispatch checks are current, the operation digest is unchanged, required approval is valid and required platform permission is present. Readiness is not dispatch; the final authorization check still runs at the invocation boundary.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1537,13 +1534,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted only after the Action Gateway persists a unique attempt/idempotency identity and crosses the provider invocation boundary for the exact request digest. A crash or missing receipt after this point is uncertain and must be reconciled before retry.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1574,13 +1570,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the provider returns an accepted asynchronous execution identity and explicitly reports that the exact attempt is running. This is not success or verified outcome.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1608,13 +1603,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the provider returns a final success receipt bound to the exact attempt and request digest. This is provider-reported success only; independent postcondition evidence remains required.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1642,13 +1636,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the provider returns a definitive failure for the exact attempt. If evidence does not establish side-effect absence, the operation remains/enters uncertain and must be reconciled; failure is not permission to retry.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1660,7 +1653,7 @@
           "purpose": "Separates provider receipts, observed outcomes, reconciliation and immutable audit."
         }
       ],
-      "owner_transition_contract": "Record provider failure; side-effect uncertainty remains until reconciliation establishes effect absence/presence.",
+      "owner_transition_contract": "Record definitive provider failure for the exact attempt; side-effect absence must be established by reconciliation before retry. If effect state remains uncertain, retain/transition to uncertain rather than claiming no effect.",
       "consumer_transition_summary": "Action gateway: Record provider failure; side-effect uncertainty remains until reconciliation establishes effect absence/presence. Intended consumers: Task scheduler; Outcome evaluator and audit.",
       "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
       "failure_recovery_contract": "Commit aggregate mutation with its event/outbox in one owning-store transaction. Deliver at least once; consumers must be idempotent. On crash replay from durable checkpoint; on missing predecessor hold and reconcile the gap; quarantine poison/unknown-version events without dropping them. Cross-store consumers use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
@@ -1676,13 +1669,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when schema, scope, policy, target, descriptor or final authority validation denies the operation before the provider invocation boundary. No provider call is permitted.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1710,13 +1702,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the operation deadline or required approval expires before provider invocation. If invocation may already have crossed the boundary, emit/retain uncertain and reconcile rather than assume no effect.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1744,13 +1735,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when the gateway receives a governance approval, permission or capability revocation for the exact queued operation before provider invocation and invalidates that attempt. In-flight attempts remain separately reconciled; revocation is not rollback.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1848,13 +1838,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when a dispatched/running/reconciling attempt has a timeout, lost receipt, contradictory provider evidence, crash boundary or unavailable reconciliation source that prevents a truthful terminal determination. Blind retry is prohibited.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1956,13 +1945,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted only after independent observation establishes an effect that violates the accepted postcondition or requires reversal under approved policy, and a technically available compensating operation is identified. Compensation requires separate authorization.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -1990,13 +1978,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when a separately authorized compensation attempt is persisted and crosses its own provider invocation boundary. Compensation remains uncertain until independently verified.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -2024,13 +2011,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted only after independent postcondition evidence confirms the compensating effect for the exact compensation attempt. Original action and compensation lineage remain immutable.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
@@ -2058,13 +2044,12 @@
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
         "runtime_handler",
-        "exact_internal_producer_trigger",
         "event_specific_acceptance_execution"
       ],
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "action_gateway_internal_transition",
-      "producer_trigger_contract": "No public command producer is bound. The named owning domain may emit this only on its internal/platform/worker/sync/retention transition; exact runtime trigger remains unimplemented and is a release blocker.",
+      "producer_trigger_contract": "Emitted when bounded automated reconciliation/compensation is exhausted, evidence remains contradictory, or the effect is irreversible/unsafe to retry. Automated retry/compensation stops pending authorized owner resolution.",
       "owning_component": "Action gateway",
       "consumer_contracts": [
         {
