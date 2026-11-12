@@ -1,0 +1,772 @@
+{
+  "registry_id": "aurions.scenario-contracts",
+  "registry_version": "1.0",
+  "status": "design_specified_not_executed",
+  "source_matrix": "docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md",
+  "scenarios": [
+    {
+      "scenario_id": "INT-001",
+      "title": "Evidence revision, outcome evaluation and quarantined learning candidate",
+      "purpose": "Verify that experience and contradictory evidence revise provisional understanding, predictions remain immutable, and candidate learning is evaluated against a frozen baseline without silently changing active behaviour.",
+      "source_scenario_ids": [
+        "CM-001",
+        "CM-003",
+        "CM-004",
+        "CM-009",
+        "CM-011",
+        "CM-012",
+        "CM-013",
+        "CM-014",
+        "CM-016"
+      ],
+      "contract_refs": [
+        "experience.submit",
+        "representation.create",
+        "belief.revise",
+        "prediction.create",
+        "means.affordance.propose",
+        "interaction.propose",
+        "operation.propose",
+        "interaction.outcome.record",
+        "outcome.evaluate",
+        "learning.update.propose",
+        "learning.experiment.submit",
+        "learning.candidate.evaluate",
+        "CG-001",
+        "CG-004",
+        "CG-005",
+        "CG-006",
+        "LE-001",
+        "LE-004",
+        "LE-005",
+        "LE-006"
+      ],
+      "initial_state": [
+        "An owner-authored objective and success criteria are immutable version 1 inputs.",
+        "The synthetic environment contains two related but non-identical contexts and one unrelated control context.",
+        "The baseline strategy, evaluation data IDs, scoring protocol and artifact digests are frozen before any candidate is generated.",
+        "No learning candidate is active; all candidate artifacts begin quarantined."
+      ],
+      "deterministic_fakes": {
+        "clock": "Monotonic virtual clock with fixed seed and explicit time advancement.",
+        "inference": "Deterministic model adapter with recorded seed, fixed model artifact and repeatable structured outputs; no network access.",
+        "stores": "Isolated memory, event and governance SQLite stores with transaction snapshots and crash injection.",
+        "provider": "Synthetic provider that records exact request digest, can return success/unknown/contradictory receipt and never touches external resources.",
+        "authority": "Test-only authority fixture that can deny or allow an exact digest; it cannot modify production policy or grant itself authority."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Receive a synthetic owner observation with source, timestamp, scope and limitations.",
+          "contract_action": "command:experience.submit",
+          "expected_transitions": [
+            "Append one immutable experience and linked evidence in one owning-store transaction."
+          ],
+          "expected_events": [
+            "experience.observed.v1",
+            "evidence.recorded.v1"
+          ],
+          "durable_assertions": [
+            "Source observation bytes and provenance remain unchanged after downstream processing.",
+            "Duplicate idempotency replay returns the stored receipt without duplicate experience, event or outbox rows."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Create a modality-neutral representation from the recorded experience.",
+          "contract_action": "command:representation.create",
+          "expected_transitions": [
+            "Create a new representation revision linked to exact experience ID and revision."
+          ],
+          "expected_events": [
+            "representation.created.v1"
+          ],
+          "durable_assertions": [
+            "Representation provenance points to the exact source experience revision.",
+            "No source experience or evidence row is overwritten."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Introduce a second independently sourced observation that conflicts with the current provisional belief.",
+          "contract_action": "command:belief.revise",
+          "expected_transitions": [
+            "Append a belief revision with both supporting and contradictory evidence links.",
+            "Preserve the prior belief revision and its confidence."
+          ],
+          "expected_events": [
+            "belief.revised.v1"
+          ],
+          "durable_assertions": [
+            "Contradiction remains queryable and is not silently collapsed into a single fact.",
+            "The belief revision records the scope and uncertainty of the conflict."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Generate a prediction and evaluation criteria before any simulated interaction.",
+          "contract_action": "command:prediction.create",
+          "expected_transitions": [
+            "Persist an immutable prediction with horizon, confidence and criteria."
+          ],
+          "expected_events": [
+            "prediction.created.v1"
+          ],
+          "durable_assertions": [
+            "Prediction digest and criteria are frozen before the outcome is revealed.",
+            "Later evaluation cannot mutate the original prediction."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Evaluate possible means using current context and evidence, without a task-to-action lookup.",
+          "contract_action": "command:means.affordance.propose",
+          "expected_transitions": [
+            "Append a context-scoped affordance hypothesis with evidence, preconditions and uncertainty."
+          ],
+          "expected_events": [
+            "means.affordance.proposed.v1"
+          ],
+          "durable_assertions": [
+            "The affordance is a hypothesis, not a capability grant or permission.",
+            "No fixed objective-to-operation mapping is consulted as an authoritative answer."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Propose an exact interaction and operation under the synthetic provider context.",
+          "contract_action": "command:interaction.propose",
+          "expected_transitions": [
+            "Persist a proposal bound to exact objective, target, means hypothesis, effects and authority context.",
+            "No provider effect occurs at proposal time."
+          ],
+          "expected_events": [
+            "interaction.proposed.v1"
+          ],
+          "durable_assertions": [
+            "Proposal existence does not create approval or dispatch.",
+            "The operation request digest binds the exact proposal and current descriptor/policy versions."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "The test authority fixture allows the exact operation digest and the synthetic provider returns an accepted receipt.",
+          "contract_action": "fake:provider.dispatch",
+          "expected_transitions": [
+            "Record the provider receipt separately from independently observed outcome evidence.",
+            "Mark the effect unverified until observation."
+          ],
+          "expected_events": [
+            "operation.dispatched.v1"
+          ],
+          "durable_assertions": [
+            "Receipt success alone does not set verified outcome status.",
+            "The exact operation digest and attempt identity are retained."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Observe the simulated world independently after the provider receipt.",
+          "contract_action": "command:interaction.outcome.record",
+          "expected_transitions": [
+            "Append an interaction outcome with observation evidence and unresolved effects."
+          ],
+          "expected_events": [
+            "interaction.outcome.observed.v1"
+          ],
+          "durable_assertions": [
+            "Observed effect evidence is distinct from provider receipt.",
+            "Attribution remains uncertain unless the evidence supports it."
+          ]
+        },
+        {
+          "step_id": "S09",
+          "trigger": "Evaluate the frozen prediction against the independently observed outcome.",
+          "contract_action": "command:outcome.evaluate",
+          "expected_transitions": [
+            "Append an evaluation linked to prediction revision, observation evidence and attribution limits."
+          ],
+          "expected_events": [
+            "outcome.evaluated.v1"
+          ],
+          "durable_assertions": [
+            "Original prediction remains byte-for-byte unchanged.",
+            "Evaluation cannot claim causal certainty beyond evidence."
+          ]
+        },
+        {
+          "step_id": "S10",
+          "trigger": "Propose an evidence-linked learning update and run a quarantined candidate experiment.",
+          "contract_action": "command:learning.update.propose",
+          "expected_transitions": [
+            "Persist candidate lineage to experience, outcome, hypothesis, frozen baseline and evaluation protocol.",
+            "Candidate remains quarantined pending separate acceptance/activation authority."
+          ],
+          "expected_events": [
+            "learning.update.proposed.v1"
+          ],
+          "durable_assertions": [
+            "No active model, policy, strategy or capability state changes at proposal or experiment completion.",
+            "Experiment artifacts include code/data/model hashes, seed, environment and metrics."
+          ]
+        },
+        {
+          "step_id": "S11",
+          "trigger": "Evaluate the candidate on held-out related variations and unrelated controls.",
+          "contract_action": "command:learning.candidate.evaluate",
+          "expected_transitions": [
+            "Record candidate metrics, regression checks, unseen controls and decision evidence."
+          ],
+          "expected_events": [
+            "learning.candidate.evaluated.v1"
+          ],
+          "durable_assertions": [
+            "Candidate is rejected if held-out evidence is contaminated or incomplete.",
+            "No candidate activation is inferred; current registry lacks an accepted learning-update activation transition, which remains an explicit design blocker."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "NC-001",
+          "injection": "Replay the same experience.submit idempotency key with a different payload digest.",
+          "expected_disposition": "Reject with key-reuse mismatch and preserve the original receipt and state.",
+          "must_not_change": [
+            "Original experience/evidence rows",
+            "Original event/outbox count",
+            "Original receipt"
+          ]
+        },
+        {
+          "control_id": "NC-002",
+          "injection": "Attempt to use the provider receipt as the only outcome evidence.",
+          "expected_disposition": "Keep outcome unverified and refuse a verified-success claim.",
+          "must_not_change": [
+            "Frozen prediction",
+            "Independent observation evidence requirement"
+          ]
+        },
+        {
+          "control_id": "NC-003",
+          "injection": "Attempt to activate the learning candidate without a canonical acceptance/activation transition and exact approval.",
+          "expected_disposition": "Keep candidate quarantined; no active pointer or behaviour changes.",
+          "must_not_change": [
+            "Active model/strategy/policy version",
+            "Governance policy and permission state"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash after experience commit but before response; restart must replay the stored receipt without duplicating the event.",
+        "Crash after provider dispatch but before receipt persistence; recovery must reconcile before any retry.",
+        "Restart after candidate evaluation; baseline, candidate, dataset hashes and quarantine state must be identical."
+      ],
+      "concurrency_controls": [
+        "Submit two belief revisions against the same expected revision; exactly one may commit and the other must receive a typed conflict.",
+        "Run two evaluations against the same frozen baseline; they must not mutate each other's candidate artifacts."
+      ],
+      "fault_controls": [
+        "Inject storage commit uncertainty and prove no duplicate append.",
+        "Inject provider timeout after dispatch and prove no blind retry.",
+        "Inject worker timeout and prove candidate artifact remains quarantined and incomplete."
+      ],
+      "held_out_controls": [
+        "Use related unseen environment variations not present in the candidate training set.",
+        "Use unrelated control objectives to detect broad regression.",
+        "Freeze data IDs and content hashes before candidate evaluation; reject train/test overlap."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Unauthorized dispatches = 0.",
+          "Duplicate external effects after replay/recovery = 0.",
+          "Source observation rewrites = 0.",
+          "Prediction rewrites after outcome = 0.",
+          "Candidate activations without explicit authority = 0."
+        ],
+        "learning_metric_rule": "Pre-register the metric, minimum improvement, sample size and confidence procedure before evaluation; do not invent numeric thresholds in this planning fixture. Candidate must improve on held-out related variations and remain within predeclared unrelated-regression tolerance.",
+        "evidence_requirement": "Record exact implementation commit, fixture hash, toolchain, runtime environment, seeds, durable-state snapshots, provider traces, artifact hashes and complete metrics."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "INT-002",
+      "title": "Open-world objective with unknown and changing means",
+      "purpose": "Verify objective-led reasoning across a changing synthetic world, including unknown entities, conflicting evidence, non-device/human-mediated means and newly discovered interfaces without a closed task/action catalogue.",
+      "source_scenario_ids": [
+        "CM-002",
+        "CM-007",
+        "CM-019",
+        "AD-002",
+        "AD-003",
+        "AD-004",
+        "AD-015"
+      ],
+      "contract_refs": [
+        "objective.create",
+        "world.entity.observe",
+        "world.relationship.revise",
+        "situation.snapshot.create",
+        "context.assemble",
+        "means.affordance.propose",
+        "capability.discover",
+        "capability.verify",
+        "plan.propose",
+        "plan.revise",
+        "NHC-001",
+        "NHC-002",
+        "NHC-003",
+        "NHC-007",
+        "NHC-014"
+      ],
+      "initial_state": [
+        "Owner objective is supplied independently of any device/provider list and includes explicit success evidence and constraints.",
+        "The initial situation contains one partially observed entity and one unresolved relationship.",
+        "The first context has no validated provider descriptor for a relevant means; unknown is not treated as unavailable or prohibited.",
+        "A second context is introduced later with a new schema-compatible descriptor and changed preconditions."
+      ],
+      "deterministic_fakes": {
+        "clock": "Monotonic virtual clock with controlled context-change points.",
+        "inference": "Deterministic inference adapter that returns hypotheses with explicit evidence references and uncertainty.",
+        "stores": "Isolated stores retaining objective revisions, observations, relationships, situation snapshots and plan dependencies.",
+        "provider": "Synthetic discovery adapters: one unknown interface, one schema-compatible newly introduced interface, and one human-mediated option represented as data.",
+        "authority": "Default-deny authority fixture; discovery and affordance evaluation never mutate permissions or approvals."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Record owner intent and success criteria without selecting a means.",
+          "contract_action": "command:objective.create",
+          "expected_transitions": [
+            "Create owner objective revision 1 with source and constraints."
+          ],
+          "expected_events": [
+            "objective.created.v1"
+          ],
+          "durable_assertions": [
+            "Objective remains distinct from derived goal and plan.",
+            "No operation or capability is created by objective capture."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Observe a partially known entity with provenance and bounded scope.",
+          "contract_action": "command:world.entity.observe",
+          "expected_transitions": [
+            "Append provisional entity observation and evidence links."
+          ],
+          "expected_events": [
+            "world.entity.observed.v1"
+          ],
+          "durable_assertions": [
+            "Unknown identity remains provisional.",
+            "Observation does not imply the entity is a resource or capability."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Create a situation snapshot with unknowns and contradictory claims explicit.",
+          "contract_action": "command:situation.snapshot.create",
+          "expected_transitions": [
+            "Create versioned situation linked to exact objective, entities, observations and evidence."
+          ],
+          "expected_events": [
+            "situation.snapshot.created.v1"
+          ],
+          "durable_assertions": [
+            "Unknown and contradictory evidence remain explicit.",
+            "Context snapshot does not rewrite source evidence."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Generate possible means from current evidence, including a non-device or human-mediated candidate.",
+          "contract_action": "command:means.affordance.propose",
+          "expected_transitions": [
+            "Append one or more context-scoped affordance hypotheses with preconditions and expected effects."
+          ],
+          "expected_events": [
+            "means.affordance.proposed.v1"
+          ],
+          "durable_assertions": [
+            "Means candidates are evidence-backed hypotheses, not a fixed action list.",
+            "Human-mediated means can be represented without requiring a device descriptor."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Attempt discovery against an interface whose schema/version is unknown.",
+          "contract_action": "command:capability.discover",
+          "expected_transitions": [
+            "Record discovery as unknown or unsupported without manufacturing an invocation contract."
+          ],
+          "expected_events": [
+            "capability.discovery.completed.v1"
+          ],
+          "durable_assertions": [
+            "Unknown interface remains unknown.",
+            "No permission request, approval or operation dispatch is generated by discovery alone."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Change the world context and introduce a new compatible provider descriptor.",
+          "contract_action": "fake:environment.change",
+          "expected_transitions": [
+            "Append new observation/context revision and invalidate dependent stale situation/plan assumptions."
+          ],
+          "expected_events": [
+            "environment.observed.v1"
+          ],
+          "durable_assertions": [
+            "Old context and evidence remain available as history.",
+            "The same objective is retained; feasible means are recomputed from new evidence."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Discover and verify the newly introduced descriptor through the generic contract path.",
+          "contract_action": "command:capability.verify",
+          "expected_transitions": [
+            "Persist validated descriptor provenance, version, constraints and lifecycle state."
+          ],
+          "expected_events": [
+            "capability.verified.v1"
+          ],
+          "durable_assertions": [
+            "No task-specific core branch or closed enum is added.",
+            "Descriptor validation remains separate from permission and owner authorization."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Revise the plan against the new situation and exact descriptor version.",
+          "contract_action": "command:plan.revise",
+          "expected_transitions": [
+            "Append plan revision bound to current objective, situation, evidence and descriptor versions."
+          ],
+          "expected_events": [
+            "plan.revised.v1"
+          ],
+          "durable_assertions": [
+            "Stale prior plan cannot dispatch.",
+            "Objective success criteria remain unchanged."
+          ]
+        },
+        {
+          "step_id": "S09",
+          "trigger": "Inspect candidate route under default-deny authority.",
+          "contract_action": "query:permission.inspect",
+          "expected_transitions": [
+            "Return no grant unless a separately authorized decision exists."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Discoverability and technical feasibility do not imply permission.",
+            "System may ask, wait, delegate or stop when no safe authorized means exists."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "NC-001",
+          "injection": "Remove required provenance or provide an unsupported major descriptor version.",
+          "expected_disposition": "Reject validation or preserve unknown state; do not infer missing interface fields.",
+          "must_not_change": [
+            "Objective revision",
+            "Permission/approval state",
+            "Provider dispatch count"
+          ]
+        },
+        {
+          "control_id": "NC-002",
+          "injection": "Hold objective constant while changing context and descriptor evidence, then replay the previous plan.",
+          "expected_disposition": "Reject stale plan dependencies and require re-evaluation.",
+          "must_not_change": [
+            "Owner objective and success criteria",
+            "Historical situation/evidence snapshots"
+          ]
+        },
+        {
+          "control_id": "NC-003",
+          "injection": "Present a human-mediated means without a device capability descriptor.",
+          "expected_disposition": "Represent it as a possible means with explicit constraints; do not reject it solely for lacking a device provider.",
+          "must_not_change": [
+            "Capability registry inventory",
+            "OS permission state"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Restart after observation and prove entity/situation provenance and unknowns persist.",
+        "Replay capability discovery result and prove no duplicate descriptor or permission grant.",
+        "Restart after context change and reject the stale plan revision."
+      ],
+      "concurrency_controls": [
+        "Race a context revision against plan.revise; stale dependency must conflict or trigger explicit recomputation.",
+        "Race descriptor invalidation against capability verification; only the current descriptor epoch may be used."
+      ],
+      "fault_controls": [
+        "Inject discovery timeout and retain unknown/attempt status without claiming absence.",
+        "Inject malformed provider schema and quarantine descriptor.",
+        "Inject storage failure during situation snapshot; no partial objective/entity relation commit."
+      ],
+      "held_out_controls": [
+        "Introduce a novel entity type and schema-compatible provider not present in baseline fixtures.",
+        "Vary the same objective across physical, social and digital contexts without adding task-specific branches.",
+        "Include an environment with no safe available means; expected behaviour is to ask, wait, delegate or stop."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Objective rewrites caused by planning/execution = 0.",
+          "Unauthorized dispatches = 0.",
+          "Unknown interfaces invoked = 0.",
+          "Stale plan dispatches = 0.",
+          "Hardcoded objective-to-operation branches introduced = 0."
+        ],
+        "learning_metric_rule": "No learning-improvement claim is made by this scenario; candidate means must be generated from the supplied evidence and context, and held-out environment variations must be processed through the same generic mechanisms.",
+        "evidence_requirement": "Record objective/situation/descriptor revisions, unknown/conflict state, candidate means, plan dependency digests, permission query result and provider call trace."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "INT-003",
+      "title": "Exact-operation authority revocation and uncertain external effect",
+      "purpose": "Verify that proposal, authorization, provider dispatch, receipts, independent outcome observation and recovery remain separate under revocation, crash, duplicate delivery and uncertain side effects.",
+      "source_scenario_ids": [
+        "CM-006",
+        "CM-008",
+        "CM-010",
+        "CM-018",
+        "AD-001",
+        "AD-005",
+        "AD-006",
+        "AD-007",
+        "AD-014"
+      ],
+      "contract_refs": [
+        "interaction.propose",
+        "operation.propose",
+        "approval.request",
+        "approval.revoke",
+        "operation.reconcile",
+        "operation.status",
+        "permission.inspect",
+        "interaction.outcome.record",
+        "AU-001",
+        "AU-002",
+        "AU-006",
+        "OP-001",
+        "OP-003",
+        "OP-004",
+        "OP-005",
+        "OP-006",
+        "OP-009",
+        "DB-012",
+        "DB-014"
+      ],
+      "initial_state": [
+        "A synthetic provider and exact target are seeded with a stable descriptor/version and reversible test effect.",
+        "OS permission and AURIONS policy are represented as separate authority inputs.",
+        "An approval fixture is bound to one exact operation digest, target, parameters, effects, risk and expiry.",
+        "Provider can commit an effect while dropping the response to create an uncertain receipt."
+      ],
+      "deterministic_fakes": {
+        "clock": "Virtual clock controls approval expiry, deadlines and cancellation races.",
+        "inference": "Deterministic planner proposes an exact operation but cannot create authority or mutate policy.",
+        "stores": "Separate isolated operation, event and governance stores with crash points before/after commit and dispatch.",
+        "provider": "Idempotent fake provider that can apply an effect then drop its receipt; exposes read-only reconciliation evidence.",
+        "authority": "Independent policy and OS-permission fakes; revocation and expiry are controlled separately."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Create an interaction proposal bound to an exact objective, target, descriptor and effects.",
+          "contract_action": "command:interaction.propose",
+          "expected_transitions": [
+            "Persist proposal as non-dispatchable intent."
+          ],
+          "expected_events": [
+            "interaction.proposed.v1"
+          ],
+          "durable_assertions": [
+            "Proposal cannot dispatch or create an approval by itself.",
+            "Proposal digest includes exact target, parameters and descriptor version."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Request approval for the exact operation digest.",
+          "contract_action": "command:approval.request",
+          "expected_transitions": [
+            "Persist approval request with scope, risk, expiry and operation digest."
+          ],
+          "expected_events": [
+            "approval.requested.v1"
+          ],
+          "durable_assertions": [
+            "Any change to target, data, parameters, effects or descriptor invalidates the approval binding.",
+            "Owner and actor identity come from authenticated context, not model text."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Test authority fixture records an explicit allow decision while OS permission is independently present.",
+          "contract_action": "fake:authority.allow_exact_digest",
+          "expected_transitions": [
+            "Record a current approval and separate platform permission evidence."
+          ],
+          "expected_events": [
+            "approval.decided.v1",
+            "permission.evaluated.v1"
+          ],
+          "durable_assertions": [
+            "Governance approval and OS permission remain separate records.",
+            "Neither is inferred from provider discovery or model confidence."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Dispatch the exact operation; provider applies the effect but drops the receipt.",
+          "contract_action": "fake:provider.apply_then_drop_receipt",
+          "expected_transitions": [
+            "Persist attempt as dispatched/uncertain according to observed boundary; do not assume failure or success."
+          ],
+          "expected_events": [
+            "operation.dispatched.v1",
+            "operation.uncertain.v1"
+          ],
+          "durable_assertions": [
+            "One provider effect at most for the idempotency key.",
+            "Unknown side-effect state prohibits blind retry."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Crash after provider effect and before receipt persistence, then restart runtime.",
+          "contract_action": "fake:runtime.crash_and_restart",
+          "expected_transitions": [
+            "Recover operation as uncertain and request fresh provider reconciliation evidence."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No automatic redispatch occurs during restart.",
+            "Operation and attempt state remain distinct."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Reconcile the uncertain attempt using read-only provider evidence.",
+          "contract_action": "command:operation.reconcile",
+          "expected_transitions": [
+            "Advance only to a state supported by fresh provider evidence; retain uncertainty if evidence is absent or contradictory."
+          ],
+          "expected_events": [
+            "operation.reconciled.v1"
+          ],
+          "durable_assertions": [
+            "Reconciliation does not execute the operation again.",
+            "Provider receipt/effect evidence is not confused with independent world observation."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Revoke approval and remove OS permission after reconciliation.",
+          "contract_action": "command:approval.revoke",
+          "expected_transitions": [
+            "Append approval revocation; deny any future dispatch under the revoked grant."
+          ],
+          "expected_events": [
+            "approval.revoked.v1"
+          ],
+          "durable_assertions": [
+            "Revocation does not claim to reverse an already committed external effect.",
+            "A new operation requires a fresh permission and approval evaluation."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Record independent postcondition evidence and evaluate the outcome.",
+          "contract_action": "command:interaction.outcome.record",
+          "expected_transitions": [
+            "Append observed outcome and evidence with attribution uncertainty."
+          ],
+          "expected_events": [
+            "interaction.outcome.observed.v1"
+          ],
+          "durable_assertions": [
+            "Outcome status is based on independent observation, not only provider receipt.",
+            "No causal claim exceeds the evidence."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "NC-001",
+          "injection": "Modify one parameter after approval and reuse the old approval.",
+          "expected_disposition": "Reject before dispatch because the operation digest no longer matches.",
+          "must_not_change": [
+            "Provider call count",
+            "Approval scope",
+            "Operation terminal state"
+          ]
+        },
+        {
+          "control_id": "NC-002",
+          "injection": "Retry after a dispatched attempt whose receipt is unknown.",
+          "expected_disposition": "Require reconciliation; no second provider invocation.",
+          "must_not_change": [
+            "Provider effect count",
+            "Original attempt receipt",
+            "Operation idempotency record"
+          ]
+        },
+        {
+          "control_id": "NC-003",
+          "injection": "Revoke approval while a second dispatch is queued.",
+          "expected_disposition": "Block the queued dispatch at the final authority boundary.",
+          "must_not_change": [
+            "Historical committed effect",
+            "Revocation record",
+            "Operation attempt history"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before local operation commit; restart must show no dispatched effect.",
+        "Crash after dispatch before receipt; restart must mark uncertain and reconcile before retry.",
+        "Replay approval revoke and operation reconcile messages; each state transition is applied at most once."
+      ],
+      "concurrency_controls": [
+        "Race approval revocation with dispatch; final enforcement boundary must serialize/resolve so revoked authority cannot authorize a later dispatch.",
+        "Race two identical operation commands; only one external effect may occur and the duplicate receives the stored receipt/reconciliation result.",
+        "Race reconciliation with cancellation; preserve truthful pending/succeeded/uncertain state without claiming external reversal."
+      ],
+      "fault_controls": [
+        "Provider applies effect and drops response.",
+        "Event/outbox commit becomes uncertain after operation state mutation.",
+        "Governance store unavailable at final authorization check; fail closed.",
+        "OS permission revoked between planning and dispatch."
+      ],
+      "held_out_controls": [
+        "Use a second provider implementation with the same declared contract but different receipt timing.",
+        "Vary the operation target and parameter digest while retaining the original approval.",
+        "Test absent, expired and revoked OS permission independently from absent, expired and revoked AURIONS approval."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Dispatches without current exact-operation authorization = 0.",
+          "Duplicate external effects after replay/recovery = 0.",
+          "Blind retries after dispatched/unknown state = 0.",
+          "Provider receipts treated as verified outcomes without independent evidence = 0.",
+          "Revoked/expired approvals used for future dispatch = 0."
+        ],
+        "learning_metric_rule": "Not a learning scenario; no behavioural update is permitted from an uncertain or unverified effect.",
+        "evidence_requirement": "Record exact operation/approval digests, authority decisions, OS permission evidence, provider call/effect trace, event/outbox state, restart snapshots and independent outcome evidence."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    }
+  ]
+}
