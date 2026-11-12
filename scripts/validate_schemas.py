@@ -266,6 +266,9 @@ def main() -> int:
 
     fixture_cache = {}
 
+    # Shared cache must exist before command/query fixture validation invokes the helper.
+    fixture_cache = {}
+
     def validate_bound_fixture(reference: str, selected_schema_ref: str, label: str):
         fixture_path, separator, fixture_pointer = reference.partition("#")
         if not separator or not fixture_path.startswith("schemas/fixtures/"):
