@@ -8,8 +8,9 @@
 - `command_producers` is the exact set of command registry entries whose `emitted_event_bindings` names the event. The validator enforces this relationship in both directions.
 - `command_producer_binding_status: bound` means at least one command producer is explicitly declared. It does **not** establish the complete event producer set; platform ingress, internal domain transitions, workers, sync and owner interactions are not assumed or excluded.
 - `command_producer_binding_status: unresolved` means no command producer is currently bound. It does **not** mean the event is invalid or that no producer exists.
-- All events remain `design_only_not_dispatchable`. A producer binding does not create a handler, consumer, authorization, owner transition, or dispatch permission.
-- Every event still requires event-specific producer trigger/ownership, consumer semantics, owner transition, event-specific acceptance assertions, and executable replay/restart/fault evidence.
+- All 89 events now carry proposed producer-origin/trigger, owning-component, consumer-contract, owner-transition, ordering/idempotency, failure/recovery and scenario-reference specifications. These are builder contracts, not owner acceptance or runtime evidence.
+- 38 events have no command producer binding. Their producer-origin category and owning component are named, but the exact internal/platform/worker/sync/retention trigger remains unresolved and is a release blocker.
+- All events remain `design_only_not_dispatchable`. A producer/consumer specification does not create a runtime handler, authorization or dispatch permission; event-specific acceptance execution remains open.
 
 ## 2. Inventory
 
@@ -109,7 +110,7 @@
 
 Before an event can be considered implementation-ready, its owning component must implement and execute evidence for the following contracts (the intended consumer and owner-transition specification is now present in the registry):
 
-1. **Production trigger and owner:** exact state transition or trusted ingress that creates the event; command, platform, worker, sync or internal transition origin; authenticated owner/actor and scope.
+1. **Production trigger and owner:** verify the exact state transition or trusted ingress that creates the event. For 51 events the command producer is bound; for 38 events the exact trigger is still unresolved. Verify authenticated owner/actor and scope.
 2. **Aggregate and revision:** authoritative aggregate, expected/current revision rule, event sequence allocation, causation/correlation identifiers and ordering scope.
 3. **Atomicity:** execute the owning-store transaction that commits aggregate mutation with immutable event/outbox; cross-store work must use durable saga semantics, not a distributed-transaction claim.
 4. **Consumer implementation:** implement the named consumers, accepted event/schema versions, idempotency key, duplicate/replay behaviour, ordering/gap recovery, poison-message quarantine and bounded retry/reconciliation.
@@ -123,9 +124,9 @@ Before an event can be considered implementation-ready, its owning component mus
 - Events with one or more explicit command producers: **51**.
 - Events with no command producer binding: **38**.
 - All events now carry specified owner, producer-origin, consumer, owner-transition, ordering/idempotency and failure/recovery contracts. Remaining unresolved bindings are runtime handler implementation and executed event-specific acceptance; 38 events also lack a command producer and retain an exact internal producer-trigger gate.
-- The command producer and event payload/consumer-transition crosswalks are machine-enforced against the command/event registries; this is specification integrity, not semantic or runtime validation.
+- The command producer and event payload/consumer-transition/scenario-reference crosswalks are machine-enforced against the command/event/scenario registries; this is specification integrity, not semantic or runtime validation.
 - No event is dispatchable. No handler/consumer implementation, transaction execution, replay/restart test or independent review is claimed.
 
 ## 5. Decision and implementation boundary
 
-This matrix does not choose a producer for an unbound event, invent consumer ownership, change event names or payloads, promote dispatch status, select a runtime topology, or authorize production implementation. Where an event requires an owner-reserved product, platform or authority decision, the dependency remains explicit for the owner.
+This matrix does not invent a public command producer or exact internal trigger for the 38 unbound events, change event names or payloads, promote dispatch status, select a runtime topology, or authorize production implementation. Consumer/owner-transition entries are proposed contracts pending owner review and runtime validation. Where an event requires an owner-reserved product, platform or authority decision, the dependency remains explicit for the owner.
