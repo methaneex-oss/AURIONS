@@ -1,10 +1,10 @@
 # AURIONS — First Usable Release Product Definition
 
-**Status:** Proposed product definition for owner review. This document translates the existing owner-approved mission and first-milestone requirements into a bounded first-release proposal. It does not authorize implementation or silently settle unresolved product choices.
+**Status:** Proposed product definition for owner review. This document translates the existing owner-approved mission and first-milestone requirements into a bounded first-release proposal under the foundational [Open-World Interaction and Means Architecture](../architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md). It does not authorize implementation or silently settle unresolved product choices.
 
 ## 1. Product purpose
 
-The first usable release is a persistent, adaptive personal intelligence system available through concurrent cloud operation and offline-capable mobile operation. Both deployment contexts use the same authoritative cognitive architecture and versioned contracts. The mobile runtime must complete its required local workflows without cloud connectivity. The system can converse, retain and retrieve relevant experiences, reason through bounded objectives, use discovered capabilities through owner-authorized boundaries, observe consequences and use evidence in later related interactions.
+The first usable release is a persistent, adaptive personal intelligence system available through concurrent cloud operation and offline-capable mobile operation. Both deployment contexts use the same authoritative cognitive architecture and versioned contracts. The mobile runtime must complete its required local workflows without cloud connectivity. The system can converse, retain and retrieve relevant experiences, understand bounded objectives in their relevant situations, reason about evidence-supported possible means, interact only through applicable authority boundaries, observe consequences and use evidence in later related interactions. Means are not limited to device capabilities, registered tools or platform adapters.
 
 It is a first working system, not a finished general intelligence, unrestricted autonomous agent, multi-device ecosystem or proof of general learning.
 
@@ -18,7 +18,7 @@ The release must demonstrate interacting mechanisms and durable state changes. I
 
 **Target user:** The owner operating AURIONS through the first CLI interface, with concurrent cloud and offline-capable mobile runtime targets. The initial mobile engineering baseline is the supported Termux environment on the target Android device; a native Android UI is not yet selected.
 
-**Primary job:** Help the owner carry a bounded task across interactions and process restarts: understand the objective, retain relevant context, retrieve evidence, form and track a plan, perform an authorized low-risk action, record what happened and use that experience later.
+**Primary job:** Help the owner carry a bounded task across interactions and process restarts: understand the requested outcome, represent relevant entities and situation, retain context, retrieve evidence, form and track a plan, select among currently evidenced and authorized means (which may be non-device or human-mediated), record what happened and use that experience later.
 
 The system must remain useful when remote services are unavailable. Remote model/provider use is optional and governed by data disclosure and spending policy.
 
@@ -109,8 +109,8 @@ The system must remain useful when remote services are unavailable. Remote model
 | Memory retrieval | Required | Provenance-aware retrieval; vector DB not required |
 | Context and representation | Required at a testable baseline | Must not collapse into untraceable prompt assembly |
 | Knowledge/belief handling | Minimum explicit representation and evidence links needed for the first feedback workflow | No claim of mature general knowledge |
-| Bounded reasoning and planning | Required | Objective distinct from versioned plan and task state |
-| Outcome observation/evaluation | Required | Evidence linked to operation and expectation |
+| Bounded reasoning and planning | Required | Objective distinct from versioned plan and task state; route is derived from task-relevant evidence and constraints, not a fixed task-to-action mapping |
+| Outcome observation/evaluation | Required | Evidence linked to the proposed interaction, expected effects and independently observed outcome; provider receipts alone are insufficient |
 | Use of prior outcome | Required | Later related interaction must use retrieved outcome |
 | Recovery | Required for committed persistence and operation reconciliation | Process survival is not guaranteed by Android/Termux |
 | Governance | Required baseline | Execution-boundary enforcement, audit and owner authority |
@@ -118,11 +118,11 @@ The system must remain useful when remote services are unavailable. Remote model
 | Proactive autonomy | Architectural requirement; narrow first-release task execution only | No unrestricted background activity |
 | Model training/fine-tuning | Not required to claim first release works | Training infrastructure and evaluation are separate work |
 | General learning improvement | Not claimed by the feedback workflow | Requires held-out evaluation described in architecture |
-| Offline-capable mobile runtime | Required concurrently with cloud operation; local environment/capability discovery, cognition, persistence and governed local operation must work without cloud availability | The CLI remains the first user-facing interface. A native Android UI is not selected; mobile UI technology and core boundary remain engineering decisions subject to platform validation |
+| Offline-capable mobile runtime | Required concurrently with cloud operation; local cognition, persistence, situation understanding and governed interactions available in the validated local context must work without cloud availability | The CLI remains the first user-facing interface. A native Android UI is not selected; mobile UI technology and core boundary remain engineering decisions subject to platform validation |
 | Cloud runtime | Required concurrently with offline-capable mobile operation; uses the same cognitive architecture/contracts and independently enforces owner, provider, disclosure and operation policy | Cloud availability does not authorize mobile-local operations or imply automatic cross-runtime state synchronization |
 | Voice, camera and continuous sensing | Excluded from first release | Separate permissions, privacy and feasibility gates |
 | Automatic cross-runtime state synchronization | Not assumed in first release | Cloud and mobile runtime state ownership/continuity must be explicitly specified; any synchronization is a separate governed capability and must not be inferred from shared contracts |
-| Desktop/web clients | Excluded from first release | Later clients must use stable core contracts |
+| Desktop/web user-facing clients | Excluded from first release | This is a client/deployment scope decision only; it does not exclude desktop, web, iOS, human-mediated or other contexts from the general world model or from later task-relevant interaction reasoning |
 | Broad external integrations | Excluded from first release | Add one by one under capability and disclosure policy |
 
 ## 5. Explicit non-goals
@@ -194,7 +194,7 @@ These items cannot be silently decided by the architecture author or implementat
 6. **Any additional first-release capability:** Must be justified against the primary workflow and must not displace mandatory acceptance criteria.
 7. **Cloud/mobile state continuity:** The owner decision requires concurrent cloud and offline-mobile operation but does not explicitly settle whether experiences, memories, beliefs, goals and learning state must remain continuous across those runtimes in the first release. The builder has recommended selective domain synchronization (Option B) if continuity is required. If adopted, bringing any cross-runtime synchronization into first-release scope requires owner approval; it must not be silently inferred from shared contracts.
 
-The architecture/platform validation work must establish a general Android environment and capability-discovery strategy, including OS permission boundaries and empirical feasibility on the actual target device. Numerical performance thresholds remain measurement-dependent.
+The architecture/validation work must establish the general objective-led world/situation and means-reasoning contracts independently of any platform, then validate each selected context-specific realization separately. Android OS permission boundaries and empirical feasibility on the actual target device remain a distinct platform gate. Numerical performance thresholds remain measurement-dependent.
 
 ## 9. Dependencies and implementation gate
 
@@ -213,7 +213,7 @@ This proposal operationalizes, without replacing, the existing decisions concern
 - C++ authoritative core and model-independent inference.
 - SQLite initial persistence with separate memory, events/recovery and governance stores.
 - Typed contracts and separate Python workers.
-- Provenance-aware memory, provisional beliefs and evidence-based revision.
+- Provenance-aware memory, provisional beliefs and evidence-based revision.\n- Objective-led open-world understanding, context-dependent possible means, and separation of proposal, authority, execution and verified outcome.
 - Policy enforcement at the execution boundary and exact owner approval.
 - Proactive bounded autonomy with explicit limits.
 - Held-out learning evaluation and regression testing.
