@@ -733,3 +733,30 @@ Both non-command trigger matrices are now machine-checked against the event regi
 Exact HEAD `2f4218c669ced79920af16ff122e5ab7080124b4` passed GitHub Actions run [43323863934](https://github.com/methaneex-oss/AURIONS/actions/runs/43323863934). All steps passed: JSON Schema/fixture/event/scenario validation, mandatory governance integrity, work-package graph validation, host SQLite DDL/migration smoke tests and Android probe shell syntax.
 
 **Boundary:** This closes producer-trigger specification and matrix-parity validation, not owner acceptance, runtime handler implementation, event delivery execution or event-specific behavioural acceptance. BR-008 remains OPEN pending independent semantic review and runtime evidence.
+
+
+## Builder run verification — exact revision and remaining gates (2026-11-12)
+
+**Fresh governance gate:** Re-fetched and read the current authoritative sources before this verification:
+- Project Directorship and Team Operating Standard — blob 951b9009cbedcf8907b365d611d89559d5a17385.
+- Builder Operating Protocol — blob 179b02aaef051173b96f54812f451ede1a2eae0d.
+EBT-01 and the mandatory fresh-read gate were confirmed in both.
+
+**Exact revision:** 7c81d2629cfe40701f3319f33c19c0ec2ebf2ee0. GitHub Actions run [43324236645](https://github.com/methaneex-oss/AURIONS/actions/runs/43324236645) passed all workflow steps:
+1. Draft 2020-12 schemas, registry bindings, fixtures and event/scenario checks.
+2. Mandatory governance contract and entry-point integrity.
+3. WP-00…WP-16 traceability/dependency graph.
+4. Host SQLite base schemas and ordered migration smoke tests.
+5. Android probe shell syntax.
+
+**Exact inventory/parity self-check:** 10 schema documents; 8 registry/fixture pairs; 89 reusable domain-schema definitions; 81 positive domain fixtures; 29 negative controls; 11 world-interaction examples; 53 command records (51 mapped, two deferred); 29 queries; 89 events; 35 error codes; 39 scenario specifications (172 steps, 45 negative controls); 17 work packages. Event producer/consumer crosswalk covers all 89 events: 51 command-bound, 15 Action Gateway internal triggers and 23 other non-command triggers; both trigger matrices match registry producer-origin, trigger and owner-transition fields exactly. All 89 event unresolved ledgers now contain only runtime-handler and event-specific-acceptance-execution gates.
+
+**CI failures were retained and corrected, not hidden:**
+- Run 43323580428 exposed a local regex-module import shadowing the module before event-matrix checks; moved the import to module scope and removed the function-local import.
+- Run 43324051005 exposed that operation.reconciled.v1 is a reconciliation result event, not a persistent operation state; validator now distinguishes it from state-valued lifecycle events.
+- Run 43324152003 exposed matrix coverage extraction scanning prose as well as table rows; validator now derives operation-event coverage from actual table rows.
+- The corrected exact head passed in run 43324236645.
+
+**Repository state:** PR #2 remains open/draft/unmerged with 99 changed files. PR #1 remains a separate open/draft/unmerged nine-file scaffold. No merge, implementation authorization, reviewer handoff or tester handoff was performed.
+
+**Disposition:** The bounded builder specification/structural-validation increment is verified. The overall builder phase is **NOT READY for planning-exit approval or independent review** because full semantic review of cross-store saga/transaction ownership, canonical entity/DDL transitions, query field projections, product acceptance and owner decision traceability remains open. Runtime handlers, executable scenario behaviour, target Android/Termux measurements, C++ validator equivalence and production security enforcement are not implemented or authorized. These are not represented as complete.
