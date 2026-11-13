@@ -185,6 +185,29 @@ def main() -> int:
         matrix_row = f"| `{command_type}` |"
         if matrix_row not in command_matrix:
             fail(f"{command_type}: missing per-command transition matrix row")
+        if item["dispatch_status"] != "deferred_by_scope":
+            matching_rows = [
+                line for line in command_matrix.splitlines()
+                if line.startswith(matrix_row)
+            ]
+            if len(matching_rows) != 1:
+                fail(f"{command_type}: expected exactly one per-command transition row")
+            row_cells = [
+                cell.strip()
+                for cell in matching_rows[0].strip().strip("|").split("|")
+            ]
+            if len(row_cells) != 4:
+                fail(f"{command_type}: transition row must have four columns")
+            matrix_events = set(re.findall(
+                r"\\b[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)+\\.v\\d+\\b",
+                row_cells[2],
+            ))
+            registry_events = set(item.get("emitted_event_bindings", []))
+            if matrix_events != registry_events:
+                fail(
+                    f"{command_type}: transition-matrix event boundary differs from registry; "
+                    f"matrix={sorted(matrix_events)}; registry={sorted(registry_events)}"
+                )
         if item["dispatch_status"] == "deferred_by_scope":
             if item.get("acceptance_case_id") or item.get("error_code_bindings") or item.get("emitted_event_bindings"):
                 fail(f"{command_type}: deferred command must not have active contract bindings")
