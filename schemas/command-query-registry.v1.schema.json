@@ -400,6 +400,15 @@
               "minLength": 1
             },
             "description": "Result schema fields with no direct, _json or _ms candidate column in the declared table bindings. These remain unresolved until explicit mapping."
+          },
+          "projection_resolved_fields": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Result fields with an explicit proposed source or derivation in the query projection reconciliation report. This is specification coverage, not runtime SQL verification."
           }
         },
         "required": [
@@ -426,7 +435,8 @@
           "table_bindings",
           "aggregate_binding_status",
           "projection_contract",
-          "projection_unresolved_fields"
+          "projection_unresolved_fields",
+          "projection_resolved_fields"
         ]
       }
     },
