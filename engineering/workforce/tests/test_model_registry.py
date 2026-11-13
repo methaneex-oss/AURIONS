@@ -27,7 +27,7 @@ class ModelRegistryTests(unittest.TestCase):
             profile = role_assignment(role)
             self.assertIn(profile["provider"], {"groq", "cloudflare"})
             self.assertTrue(profile["api_url"].startswith("https://"))
-            self.assertTrue(profile["key_env"].endswith("_API_KEY"))
+            self.assertTrue(profile["key_env"].endswith(("_API_KEY", "_API_TOKEN")))
             self.assertIn(profile["cost_class"], {"free", "free_daily_allowance"})
             if profile["provider"] == "cloudflare":
                 self.assertEqual(profile["account_env"], "CLOUDFLARE_ACCOUNT_ID")
