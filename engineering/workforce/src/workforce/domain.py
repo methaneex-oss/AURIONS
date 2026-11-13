@@ -70,6 +70,8 @@ class TaskContract:
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> "TaskContract":
+        if not isinstance(value, dict):
+            raise ContractError("task contract must be an object")
         required = (
             "work_package_id", "authorization_ref", "objective", "base_commit_sha",
             "permitted_paths", "prohibited_paths", "canonical_sources",
