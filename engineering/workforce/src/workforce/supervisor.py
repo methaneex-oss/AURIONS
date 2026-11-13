@@ -45,7 +45,7 @@ def recover_once(conn) -> dict[str, int]:
         expired = cur.fetchall()
         for row in expired:
             cur.execute(
-                "INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json) VALUES (%s,'LEASE_EXPIRED','supervisor',jsonb_build_object('resulting_state',%s))",
+                "INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json) VALUES (%s,'LEASE_EXPIRED','supervisor',jsonb_build_object('resulting_state',%s::text))",
                 (row["task_id"], row["state"]),
             )
         cur.execute("""
