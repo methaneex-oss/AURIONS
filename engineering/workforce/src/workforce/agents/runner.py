@@ -95,22 +95,24 @@ class Worker:
 
         profile = role_assignment(role)
         self.provider = profile["provider"]
-        self.model = os.getenv("MODEL_ID", profile["model"])
-        self.api_url = os.getenv("MODEL_API_URL", profile["api_url"])
-        if self.model != profile["model"] or self.api_url != profile["api_url"]:
-            raise RuntimeError(
-                f"role {role} is pinned to {profile['provider']} / {profile['model']}; "
-                "model or endpoint overrides are not permitted"
-            )
+        self.model = profile["model"]
+        self.api_url = profile["api_url"]
+        if self.provider == "cloudflare":
+            account_id = os.environ.get(profile["account_env"], "")
+            if not account_id:
+                raise RuntimeError(f"{profile['account_env']} is required for the selected Cloudflare role endpoint")
+            self.api_url = self.api_url.format(account_id=account_id)
+        if os.getenv("MODEL_ID") and os.environ["MODEL_ID"] != self.model:
+            raise RuntimeError("role/model overrides are not permitted; update the reviewed model registry")
+        if os.getenv("MODEL_API_URL") and os.environ["MODEL_API_URL"] != self.api_url:
+            raise RuntimeError("role/endpoint overrides are not permitted; update the reviewed model registry")
         self.api_key = os.environ.get(profile["key_env"], "")
         if not self.api_key:
             raise RuntimeError(
                 f"{profile['key_env']} is required for the selected {profile['provider']} role endpoint"
             )
-        if profile["cost_class"] != "free":
+        if profile["cost_class"] not in {"free", "free_daily_allowance"}:
             raise RuntimeError("free-only policy: selected role model is not registered as free")
-        if self.provider == "openrouter" and not self.model.endswith(":free"):
-            raise RuntimeError("free-only policy: OpenRouter role model must identify a :free model")
         if max_calls <= 0 or max_tokens <= 0 or max_total_tokens <= 0:
             raise ValueError("model-call and token budgets must be positive")
 
@@ -206,14 +208,14 @@ class Worker:
         )
         messages = [{"role": "system", "content": system + "\n\nAUTHORITATIVE CONTEXT:\n" + "\n".join(context)}, {"role": "user", "content": task}]
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
-        if self.provider == "openrouter":
-            headers.update({"HTTP-Referer": "https://github.com/methaneex-oss/AURIONS", "X-Title": "AURIONS Engineering Workforce"})
+        if self.provider == "cloudflare":
+            headers["Content-Type"] = "application/json"
         while self.calls < self.max_calls and self.total_tokens < self.max_total_tokens:
             self.calls += 1
             remaining = self.max_total_tokens - self.total_tokens
             payload = {"model": self.model, "messages": messages, "tools": TOOLS, "tool_choice": "auto", "max_tokens": min(self.max_tokens, remaining), "temperature": 0.2}
-            if self.provider == "openrouter":
-                payload["provider"] = {"data_collection": "deny"}
+            if self.provider == "cloudflare":
+                payload["reject_if_busy"] = True
             response = httpx.post(self.api_url, headers=headers, json=payload, timeout=120)
             if response.status_code == 429 or response.status_code >= 500:
                 raise RuntimeError(f"provider unavailable or rate limited (HTTP {response.status_code}); stopped without paid fallback")
