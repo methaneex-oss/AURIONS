@@ -21,20 +21,20 @@ See [WORKFORCE-MODEL-SELECTION.md](../../docs/workforce/WORKFORCE-MODEL-SELECTIO
 | Role | Provider | Model |
 |---|---|---|
 | Lead builder | Groq direct | `openai/gpt-oss-120b` |
-| Specialist builder | OpenRouter | `cohere/north-mini-code:free` |
-| Architecture reviewer | OpenRouter | `nvidia/nemotron-3-ultra-550b-a55b:free` |
+| Specialist builder | Cloudflare Workers AI | `@cf/google/gemma-4-26b-a4b-it` |
+| Architecture reviewer | Cloudflare Workers AI | `@cf/zai-org/glm-4.7-flash` |
 | Code reviewer | Groq direct | `qwen/qwen3.8-27b` |
-| Negative tester | OpenRouter | `nvidia/nemotron-3.5-super-vl:free` |
-| Integration verifier | Groq direct | `openai/gpt-oss-20b` |
+| Negative tester | Groq direct | `openai/gpt-oss-20b` |
+| Integration verifier | Cloudflare Workers AI | `@cf/mistralai/mistral-small-3.1-24b-instruct` |
 
 Each role has a unique model assignment. These assignments are provisional selections, not agent qualifications.
 
 ## Required GitHub Actions secrets
 
-- `GROQ_API_KEY` for lead builder, code reviewer and integration verifier.
-- `OPENROUTER_API_KEY` for specialist builder, architecture reviewer and negative tester.
+- `GROQ_API_KEY` for lead builder, code reviewer and negative tester.
+- `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for specialist builder, architecture reviewer and integration verifier.
 
-Set them under repository Settings → Secrets and variables → Actions. Never put keys in source files, workflow YAML, prompts, artifacts or chat. Paid fallback is disabled. The runner rejects role/model/endpoint overrides and requests OpenRouter endpoints that declare data collection denied.
+Set them under repository Settings → Secrets and variables → Actions. Never put keys in source files, workflow YAML, prompts, artifacts or chat. Paid fallback is disabled. Cloudflare's daily free Neuron allowance is shared across the three Cloudflare roles.
 
 ## First supervised run
 
