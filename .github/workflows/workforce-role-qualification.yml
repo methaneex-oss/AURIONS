@@ -1,0 +1,52 @@
+name: AURIONS workforce — independent role screening
+
+on:
+  push:
+    branches:
+      - feat/engineering-workforce-foundation
+    paths:
+      - "engineering/workforce/evaluation/role_qualification.py"
+      - ".github/workflows/workforce-role-qualification.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aurions-role-screening-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  role-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        role:
+          - lead_builder
+          - specialist_builder
+          - architecture_reviewer
+          - code_reviewer
+          - negative_tester
+          - integration_verifier
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install bounded screening dependency
+        run: python -m pip install httpx==0.28.1
+      - name: Run one-shot independent role screen
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: nvidia/nemotron-3.5-lightning:free
+          ROLE: ${{ matrix.role }}
+          OUTPUT_FILE: ${{ matrix.role }}-screening.json
+        run: python engineering/workforce/evaluation/role_qualification.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: role-screen-${{ matrix.role }}
+          path: ${{ matrix.role }}-screening.json
+          if-no-files-found: ignore
