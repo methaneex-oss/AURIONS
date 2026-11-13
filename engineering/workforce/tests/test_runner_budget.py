@@ -10,7 +10,7 @@ from unittest.mock import patch
 import httpx
 
 from workforce.agents import runner as runner_module
-from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES, TOOLS, Worker
+from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES, TOOLS, Worker, is_sensitive_path, safe_path
 
 
 class RunnerBudgetTests(unittest.TestCase):
@@ -129,6 +129,22 @@ class RunnerBudgetTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "exceeded the configured aggregate token budget"):
                 worker.run("small task", [])
         self.assertEqual(worker.total_tokens, 0)
+
+    def test_secret_and_token_filename_patterns_are_denied(self):
+        names = [
+            "settings.api_key.json",
+            "production-password.txt",
+            "oauth_access_token.json",
+            "client_secret.json",
+            "private_key.pem",
+            ".env.production",
+            ".ssh/id_ed25519",
+        ]
+        for name in names:
+            with self.subTest(name=name):
+                self.assertTrue(is_sensitive_path(Path(name)))
+                with self.assertRaises(ValueError):
+                    safe_path(self.root, name)
 
     def test_test_subprocess_does_not_inherit_provider_or_control_plane_secrets(self):
         env = {
