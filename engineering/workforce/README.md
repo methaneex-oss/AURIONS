@@ -13,7 +13,7 @@ This directory contains engineering-workforce infrastructure only. It is not par
 - Append-only evidence digests and artifact references bound to each lifecycle gate; Director acceptance must reference the exact integrated evidence record.
 - A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces task-duration deadlines.
 - Separate API and supervisor containers with non-root, read-only filesystems.
-- Six distinct pinned model assignments and per-process hard ceilings (100 calls, 32,768 completion tokens/call, 200,000 reported total tokens and 360 minutes); prompt bytes plus protocol overhead are reserved before inference.
+- Six distinct pinned model assignments; runner hard ceilings of 100 calls, 32,768 completion tokens/call, 200,000 total tokens and 360 minutes. Every CLI task execution requires a live control-plane lease and atomically reserves/settles per-work-package/per-role token and call budgets in PostgreSQL. Reservations left by a crashed or fenced worker are conservatively charged at their full reserved amount.
 - Paid inference fallback remains disabled.
 
 ## Required deployment secrets
@@ -28,6 +28,8 @@ Provide these values through a protected secret manager or deployment environmen
 
 The API rejects missing credentials. Rotate credentials if exposed. Use distinct random tokens for every actor. The Director token is required to authorize task creation and accept a completed task; the orchestrator token cannot accept work. Worker tokens are role-scoped.
 
+The worker CLI additionally requires `WORKFORCE_CONTROL_PLANE_URL`, `WORKFORCE_TASK_ID`, `WORKFORCE_WORKER_TOKEN` and `WORKFORCE_LEASE_TOKEN`. The runner fails closed when these are absent; direct in-process unit tests may instantiate the worker without them, but CLI task execution cannot bypass the durable ledger.
+
 Provider secrets remain separate:
 - `GROQ_API_KEY` for the three Groq roles.
 - `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for the three Cloudflare roles.
@@ -36,7 +38,7 @@ Provider secrets remain separate:
 
 Run `docker compose -f engineering/workforce/compose.yaml up --build` from the repository root after setting the protected environment variables. The API binds to loopback port 8000. PostgreSQL data is persisted in the named volume. The supervisor runs independently and polls every five seconds.
 
-Apply new SQL files in `migrations/` to an existing database in lexical order (including `003_immutable_evidence.sql`). The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
+Apply new SQL files in `migrations/` to an existing database in lexical order (including `003_immutable_evidence.sql` and `004_agent_budget_ledger.sql`). The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
 
 ## Verification
 
@@ -44,6 +46,6 @@ The workforce test workflow starts a disposable PostgreSQL 17 service, applies e
 
 ## Explicit status and limitations
 
-The control-plane security, evidence and recovery work is an implementation candidate until the PostgreSQL integration suite and independent review pass. Evidence references record hashes and locations; an independent verifier must still retrieve each artifact and confirm its bytes match the recorded digest. Provider connectivity and role qualification are separate gates: configured model assignments do not prove that credentials work or that agents are competent. The runner's call/token ceilings are per process and reset on a retry; a durable cross-process/per-agent inference ledger and provider quota reconciliation remain required before claiming global budget enforcement. No persistent multi-agent run, GitHub write broker or AURIONS runtime implementation is authorized by this infrastructure work.
+The control-plane security, evidence and recovery work is an implementation candidate until the PostgreSQL integration suite and independent review pass. Evidence references record hashes and locations; an independent verifier must still retrieve each artifact and confirm its bytes match the recorded digest. Provider connectivity and role qualification are separate gates: configured model assignments do not prove that credentials work or that agents are competent. The PostgreSQL ledger enforces cumulative per-role budgets across tasks and retries in a work package; local process ceilings are an additional guard. Provider-side quota reconciliation remains separate because providers expose different accounting and shared daily limits. No persistent multi-agent run, GitHub write broker or AURIONS runtime implementation is authorized by this infrastructure work.
 
 The first-run workflow remains dormant. No merge to `main`, paid fallback, production activation or AURIONS runtime implementation is authorized.
