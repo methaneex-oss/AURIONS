@@ -142,6 +142,8 @@ class RunnerBudgetTests(unittest.TestCase):
             "WORKFORCE_WORKER_CREDENTIALS_JSON": "{}",
             "DATABASE_URL": "postgresql://user:password@localhost/db",
         }
+        (self.root / "engineering/workforce/src").mkdir(parents=True)
+        (self.root / "engineering/workforce/tests").mkdir(parents=True)
         with patch.dict("os.environ", env, clear=True):
             worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
         completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
@@ -154,6 +156,7 @@ class RunnerBudgetTests(unittest.TestCase):
                 self.assertNotIn(secret_name, child_env)
             self.assertIn("PYTHONPATH", child_env)
             self.assertIn("PATH", child_env)
+            self.assertNotEqual(call.kwargs["cwd"], self.root)
 
     def test_cli_claims_starts_runs_and_publishes_report_evidence(self):
         env = {
