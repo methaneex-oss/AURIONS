@@ -61,14 +61,16 @@
             "experiences",
             "evidence_items",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -123,14 +125,16 @@
           "tables": [
             "representations",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -185,14 +189,16 @@
           "tables": [
             "contexts",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -247,14 +253,16 @@
           "tables": [
             "contexts",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -321,14 +329,16 @@
             "evidence_items",
             "experiences",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -392,14 +402,16 @@
             "capability_descriptors",
             "capability_discovery_evidence",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -465,14 +477,16 @@
             "capability_descriptors",
             "capability_discovery_evidence",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -537,14 +551,16 @@
           "tables": [
             "capability_descriptors",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -601,14 +617,16 @@
             "capability_knowledge_evidence",
             "capability_relationships",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -665,14 +683,16 @@
             "capability_knowledge_evidence",
             "capability_relationships",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -728,14 +748,16 @@
             "memory_records",
             "memory_links",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -797,14 +819,16 @@
             "evidence_items",
             "belief_revision_evidence",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -866,14 +890,16 @@
             "evidence_items",
             "belief_revision_evidence",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -928,14 +954,16 @@
           "tables": [
             "predictions",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -993,14 +1021,16 @@
           "tables": [
             "prediction_evaluations",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1055,14 +1085,16 @@
           "tables": [
             "appraisal_records",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1117,7 +1149,8 @@
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1176,14 +1209,16 @@
           "tables": [
             "reasoning_assessments",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1240,14 +1275,16 @@
             "goal_revisions",
             "outbox",
             "goal_revision_objective_bindings"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1304,14 +1341,16 @@
             "goal_revisions",
             "outbox",
             "goal_revision_objective_bindings"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1368,14 +1407,16 @@
             "goal_revisions",
             "outbox",
             "goal_revision_objective_bindings"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1433,14 +1474,16 @@
             "plan_step_dependencies",
             "plan_step_contracts",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1498,14 +1541,16 @@
             "plan_step_dependencies",
             "plan_step_contracts",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1562,7 +1607,8 @@
             "task_checkpoint_details",
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1617,14 +1663,16 @@
           "tables": [
             "decision_records",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1698,7 +1746,8 @@
             "operation_attempts",
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1764,7 +1813,8 @@
             "operation_attempts",
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1831,7 +1881,8 @@
             "operation_attempts",
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1888,7 +1939,8 @@
             "approval_decisions",
             "governance_audit",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -1944,7 +1996,8 @@
             "approval_decisions",
             "governance_audit",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2005,7 +2058,8 @@
             "permissions",
             "governance_audit",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2064,14 +2118,16 @@
             "outcome_evaluations",
             "prediction_evaluations",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2132,14 +2188,16 @@
             "artifacts",
             "artifact_lineage",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2201,14 +2259,16 @@
             "artifacts",
             "artifact_lineage",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2270,14 +2330,16 @@
             "artifacts",
             "artifact_lineage",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2335,14 +2397,16 @@
           "tables": [
             "self_model_revisions",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2402,7 +2466,8 @@
             "artifacts",
             "artifact_lineage",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_governance.db",
@@ -2410,14 +2475,16 @@
             "approval_requests",
             "approval_decisions",
             "governance_audit"
-          ]
+          ],
+          "binding_role": "read_dependency"
         },
         {
           "store": "aurion_events.db",
           "tables": [
             "events",
             "outbox"
-          ]
+          ],
+          "binding_role": "async_archive"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2479,16 +2546,17 @@
             "artifacts",
             "artifact_lineage",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_governance.db",
           "tables": [
             "approval_requests",
             "approval_decisions",
-            "governance_audit",
-            "outbox"
-          ]
+            "governance_audit"
+          ],
+          "binding_role": "read_dependency"
         },
         {
           "store": "aurion_events.db",
@@ -2497,7 +2565,8 @@
             "outbox",
             "operations",
             "recovery_journal"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2563,7 +2632,8 @@
             "artifacts",
             "artifact_lineage",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_governance.db",
@@ -2572,7 +2642,8 @@
             "approval_decisions",
             "governance_audit",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
@@ -2581,7 +2652,8 @@
             "outbox",
             "operations",
             "recovery_journal"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2647,7 +2719,8 @@
             "artifacts",
             "artifact_lineage",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_governance.db",
@@ -2656,7 +2729,8 @@
             "approval_decisions",
             "governance_audit",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         },
         {
           "store": "aurion_events.db",
@@ -2665,7 +2739,8 @@
             "outbox",
             "operations",
             "recovery_journal"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2726,7 +2801,8 @@
             "event_receipts",
             "outbox",
             "recovery_journal"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2787,7 +2863,8 @@
             "event_receipts",
             "outbox",
             "recovery_journal"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2848,7 +2925,8 @@
             "event_receipts",
             "outbox",
             "recovery_journal"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -2909,7 +2987,8 @@
             "event_receipts",
             "outbox",
             "recovery_journal"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3020,7 +3099,8 @@
           "tables": [
             "objective_records",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3077,7 +3157,8 @@
           "tables": [
             "objective_records",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3134,7 +3215,8 @@
           "tables": [
             "world_entities",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3191,7 +3273,8 @@
           "tables": [
             "world_relationships",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3248,7 +3331,8 @@
           "tables": [
             "situation_snapshots",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3305,7 +3389,8 @@
           "tables": [
             "affordance_hypotheses",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3362,7 +3447,8 @@
           "tables": [
             "interaction_proposals",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3419,7 +3505,8 @@
           "tables": [
             "interaction_outcomes",
             "outbox"
-          ]
+          ],
+          "binding_role": "authoritative_write"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3464,7 +3551,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "environment_observations"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3527,7 +3615,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "capability_descriptors"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3589,7 +3678,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "capability_descriptors"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3653,7 +3743,8 @@
             "capability_knowledge_revisions",
             "capability_knowledge_evidence",
             "capability_relationships"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3712,7 +3803,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "representations"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3770,7 +3862,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "contexts"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3829,7 +3922,8 @@
           "tables": [
             "memory_records",
             "memory_links"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3888,7 +3982,8 @@
             "belief_revisions",
             "evidence_items",
             "belief_revision_evidence"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -3946,7 +4041,8 @@
             "belief_revisions",
             "evidence_items",
             "belief_revision_evidence"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4005,7 +4101,8 @@
           "tables": [
             "predictions",
             "prediction_evaluations"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4063,7 +4160,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "appraisal_records"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4121,7 +4219,8 @@
           "store": "aurion_events.db",
           "tables": [
             "events"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "runtime_state_with_event_history",
@@ -4180,7 +4279,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "reasoning_assessments"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4240,7 +4340,8 @@
             "goals",
             "goal_revisions",
             "goal_revision_objective_bindings"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4302,7 +4403,8 @@
             "plan_steps",
             "plan_step_dependencies",
             "plan_step_contracts"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4360,7 +4462,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "decision_records"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4419,7 +4522,8 @@
             "task_runs",
             "task_checkpoints",
             "task_checkpoint_details"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4483,7 +4587,8 @@
             "operation_steps",
             "operations",
             "recovery_journal"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4547,7 +4652,8 @@
             "provider_permissions",
             "approval_requests",
             "approval_decisions"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4608,7 +4714,8 @@
           "tables": [
             "governance_audit",
             "data_disclosures"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4669,7 +4776,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "capability_descriptors"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4731,7 +4839,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "objective_records"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4791,7 +4900,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "world_entities"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4851,7 +4961,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "world_entities"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4911,7 +5022,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "world_relationships"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -4972,7 +5084,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "situation_snapshots"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -5033,7 +5146,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "affordance_hypotheses"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -5099,7 +5213,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "interaction_proposals"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
@@ -5163,7 +5278,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "interaction_outcomes"
-          ]
+          ],
+          "binding_role": "read_projection"
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
