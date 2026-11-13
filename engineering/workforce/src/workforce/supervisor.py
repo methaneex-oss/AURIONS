@@ -24,7 +24,7 @@ def recover_once(conn) -> dict[str, int]:
         cur.execute("""
             UPDATE wf_tasks
                SET state = CASE
-                     WHEN created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) <= now()
+                     WHEN wf_task_deadline(created_at, contract_json) <= now()
                        THEN 'FAILED'
                      WHEN attempt_count >= max_attempts THEN 'FAILED'
                      ELSE 'RETRY_WAIT'
@@ -33,7 +33,7 @@ def recover_once(conn) -> dict[str, int]:
                    lease_token_hash = NULL,
                    lease_expires_at = NULL,
                    retry_after = CASE
-                     WHEN created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) <= now()
+                     WHEN wf_task_deadline(created_at, contract_json) <= now()
                        OR attempt_count >= max_attempts THEN NULL
                      ELSE now() + interval '30 seconds'
                    END,
@@ -53,7 +53,7 @@ def recover_once(conn) -> dict[str, int]:
                SET state='FAILED', lease_worker=NULL, lease_token_hash=NULL,
                    lease_expires_at=NULL, retry_after=NULL, updated_at=now()
              WHERE state IN ('QUEUED','RETRY_WAIT','CLAIMED','RUNNING','CHECKPOINTED','CANDIDATE_READY','TESTING','REVIEWING','INTEGRATION','AWAITING_DIRECTOR','BLOCKED')
-               AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) <= now()
+               AND wf_task_deadline(created_at, contract_json) <= now()
             RETURNING task_id
         """)
         overdue = cur.fetchall()
@@ -76,7 +76,7 @@ def recover_once(conn) -> dict[str, int]:
                        t.lease_generation <> r.lease_generation
                        OR t.state NOT IN ('CLAIMED','RUNNING','CHECKPOINTED')
                        OR t.lease_expires_at IS NULL OR t.lease_expires_at <= now()
-                       OR t.created_at + make_interval(mins => (t.contract_json->>'max_duration_minutes')::int) <= now()
+                       OR wf_task_deadline(t.created_at, t.contract_json) <= now()
                    )
                 RETURNING r.work_package_id,r.role,r.reserved_tokens
             ),
