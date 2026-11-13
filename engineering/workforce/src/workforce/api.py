@@ -324,11 +324,11 @@ def transition(
         if body.director_decision_ref:
             raise HTTPException(status_code=422, detail="Director decision reference is only valid for acceptance")
     with connect() as conn, conn.cursor() as cur:
-        cur.execute("SELECT state, created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) AS deadline_at FROM wf_tasks WHERE task_id=%s FOR UPDATE", (task_id,))
+        cur.execute("SELECT state, (created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()) AS before_deadline FROM wf_tasks WHERE task_id=%s FOR UPDATE", (task_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="task not found")
-        if row["deadline_at"] <= datetime.now(timezone.utc):
+        if not row["before_deadline"]:
             raise HTTPException(status_code=409, detail="task deadline has passed; further transitions are forbidden")
         current = TaskState(row["state"])
         if principal.role == "orchestrator" and body.target in {TaskState.CLAIMED, TaskState.RUNNING, TaskState.CHECKPOINTED}:
