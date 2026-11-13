@@ -727,3 +727,8 @@ Updated both schema and SQLite validators to strip parenthetical transform annot
 ## BR-001 command transition inventory — uniqueness for deferred entries
 
 The command validator now requires exactly one transition-matrix row for every registry command, including deferred `device.pair` and `device.revoke`; previously duplicate deferred rows were not rejected. Exact code head `3c140b1e77cc3c1f337656287a482258420c6c7f` passed all nine workflow steps in [run 43432388726](https://github.com/methaneex-oss/AURIONS/actions/runs/43432388726). This is structural matrix validation, not command implementation or execution of acceptance cases.
+
+
+## BR-001 command transaction-matrix parity — 13 November 2026
+
+Added validator parity checks for all 54 command rows: exact row shape, transaction mode, authoritative-store set and local-outbox set must match the registry. Deferred commands require \`DEFERRED\`, no authoritative stores and no outbox. Independent scan found zero mismatches. Exact code head \`3267cc744225d33ae90b4c97732262049bf368be\` passed all nine workflow steps in [run 43432722355](https://github.com/methaneex-oss/AURIONS/actions/runs/43432722355). This is structural consistency evidence, not runtime transaction or handler verification.
