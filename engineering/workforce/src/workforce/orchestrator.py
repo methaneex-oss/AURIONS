@@ -74,13 +74,14 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
         raise OrchestrationError("test_paths must be a non-empty list of safe repository-relative paths")
     value["test_paths"] = test_paths
     test_commands = value.get("test_commands", [])
-    if not isinstance(test_commands, list):
-        raise OrchestrationError("test_commands must be a list of argument arrays")
+    if not isinstance(test_commands, list) or len(test_commands) > 20:
+        raise OrchestrationError("test_commands must be a list of at most 20 argument arrays")
     allowed_commands = {"python", "python3", "pytest", "cmake", "ctest", "ninja", "cargo", "go", "dotnet"}
     for command in test_commands:
-        if not isinstance(command, list) or not command or not all(isinstance(arg, str) and arg for arg in command):
-            raise OrchestrationError("each test command must be a non-empty argument array")
-        executable = Path(command[0]).name
+        if (not isinstance(command, list) or not command or len(command) > 100
+                or not all(isinstance(arg, str) and arg and len(arg) <= 1024 for arg in command)):
+            raise OrchestrationError("each test command must be a bounded non-empty argument array")
+        executable = command[0]
         if executable not in allowed_commands:
             raise OrchestrationError(f"test executable is not allowed: {executable}")
         if executable in {"python", "python3"} and (len(command) < 3 or command[1] != "-m" or command[2] not in {"unittest", "pytest", "compileall"}):
@@ -284,8 +285,8 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
     if root not in report_dir.parents:
         raise OrchestrationError("report directory must be inside the workspace")
     report_rel = report_dir.relative_to(root).as_posix()
-    if ".workforce-artifacts" not in report_rel.split("/"):
-        raise OrchestrationError("report directory must be under an ignored .workforce-artifacts directory")
+    if Path(report_rel).parts[:3] != ("engineering", "workforce", ".workforce-artifacts"):
+        raise OrchestrationError("report directory must be under engineering/workforce/.workforce-artifacts")
     control = os.environ.get("WORKFORCE_CONTROL_PLANE_URL", "").rstrip("/")
     director = os.environ.get("DIRECTOR_APPROVAL_TOKEN", "")
     orchestrator = os.environ.get("WORKFORCE_ORCHESTRATOR_TOKEN", "")
@@ -297,6 +298,19 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         raise OrchestrationError("workspace must be clean before the authorized work package starts")
     if actual_base.lower() != manifest["base_commit_sha"].lower():
         raise OrchestrationError(f"workspace HEAD {actual_base} does not match authorized base SHA")
+    from workforce.model_registry import role_assignment
+    for role in ROLES:
+        profile = role_assignment(role)
+        if not os.environ.get(profile["key_env"]):
+            raise OrchestrationError(f"required provider credential is missing for {role}: {profile['key_env']}")
+        if profile["account_env"] and not os.environ.get(profile["account_env"]):
+            raise OrchestrationError(f"required provider account identifier is missing for {role}: {profile['account_env']}")
+        for context_file in manifest["roles"][role]["context_files"]:
+            if not safe_path(root, context_file).is_file():
+                raise OrchestrationError(f"required {role} context file does not exist: {context_file}")
+    for test_path in manifest["test_paths"]:
+        if not safe_path(root, test_path).exists():
+            raise OrchestrationError(f"declared test input does not exist: {test_path}")
     report_dir.mkdir(parents=True, exist_ok=True)
     headers = {"X-Orchestrator-Token": orchestrator, "X-Director-Approval-Token": director}
     task_ids = {role: f"wf-{manifest['run_id']}-{role}" for role in ROLES}
