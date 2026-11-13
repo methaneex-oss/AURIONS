@@ -48,6 +48,43 @@ class OrchestratorTests(unittest.TestCase):
         with self.assertRaises(OrchestrationError):
             validate_manifest(value)
 
+    def test_manifest_rejects_shell_and_unapproved_test_commands(self):
+        value = valid_manifest()
+        value["test_commands"] = [["bash", "-c", "echo unsafe"]]
+        with self.assertRaisesRegex(OrchestrationError, "not allowed"):
+            validate_manifest(value)
+        value["test_commands"] = [["python", "arbitrary_script.py"]]
+        with self.assertRaisesRegex(OrchestrationError, "Python test commands"):
+            validate_manifest(value)
+
+    def test_manifest_accepts_explicit_cmake_and_ctest_commands(self):
+        value = valid_manifest()
+        value["test_commands"] = [
+            ["cmake", "-S", "core/cpp", "-B", "build"],
+            ["cmake", "--build", "build", "--parallel", "2"],
+            ["ctest", "--test-dir", "build", "--output-on-failure"],
+        ]
+        self.assertEqual(validate_manifest(value)["test_commands"], value["test_commands"])
+
+    def test_test_snapshot_copies_only_declared_inputs_and_skips_secrets(self):
+        from workforce.orchestrator import _copy_test_snapshot
+        with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
+            source = Path(source_dir)
+            target = Path(target_dir)
+            (source / "engineering/workforce/src").mkdir(parents=True)
+            (source / "engineering/workforce/tests").mkdir(parents=True)
+            (source / "core/cpp").mkdir(parents=True)
+            (source / "engineering/workforce/src/module.py").write_text("value = 1\n", encoding="utf-8")
+            (source / "engineering/workforce/tests/test_module.py").write_text("assert True\n", encoding="utf-8")
+            (source / "core/cpp/main.cpp").write_text("int main() {}\n", encoding="utf-8")
+            (source / "core/cpp/api_key.json").write_text("must not copy", encoding="utf-8")
+            (source / "core/cpp/.env.production").write_text("must not copy", encoding="utf-8")
+            _copy_test_snapshot(source, target, ["core/cpp"])
+            self.assertTrue((target / "core/cpp/main.cpp").is_file())
+            self.assertTrue((target / "engineering/workforce/src/module.py").is_file())
+            self.assertFalse((target / "core/cpp/api_key.json").exists())
+            self.assertFalse((target / "core/cpp/.env.production").exists())
+
     def test_manifest_rejects_unfilled_placeholders(self):
         value = valid_manifest()
         value["authorization_ref"] = "REPLACE_WITH_DIRECTOR_APPROVAL"
