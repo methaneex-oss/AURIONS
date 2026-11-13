@@ -408,7 +408,8 @@ def transition(
     with connect() as conn, conn.cursor() as cur:
         cur.execute(
             """SELECT state,attempt_count,
-                      CASE WHEN state IN ('CLAIMED','RUNNING','CHECKPOINTED')
+                      CASE WHEN state IN ('CLAIMED','RUNNING','CHECKPOINTED','RETRY_WAIT')
+                                  OR (state='QUEUED' AND started_at IS NOT NULL)
                            THEN wf_task_deadline(started_at, contract_json) > now()
                            ELSE wf_task_absolute_deadline(contract_json) > now()
                       END AS before_deadline
