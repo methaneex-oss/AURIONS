@@ -72,6 +72,7 @@ class Transition(StrictModel):
     reason: str = Field(min_length=1, max_length=1000)
     director_decision_ref: str | None = Field(default=None, max_length=300)
     evidence_sha256: str | None = Field(default=None, pattern=r"^[0-9a-fA-F]{64}$")
+    evidence_ref: str | None = Field(default=None, min_length=1, max_length=512)
 
 
 @app.get("/health")
@@ -313,6 +314,8 @@ def worker_transition(
         raise HTTPException(status_code=403, detail="worker target is not permitted")
     if body.target == TaskState.CANDIDATE_READY and (not body.evidence_sha256 or not body.evidence_ref):
         raise HTTPException(status_code=422, detail="completed worker output requires an evidence SHA-256 and artifact reference")
+    if body.target != TaskState.CANDIDATE_READY and (body.evidence_sha256 or body.evidence_ref):
+        raise HTTPException(status_code=422, detail="worker evidence is only valid when publishing candidate output")
     with connect() as conn, conn.cursor() as cur:
         cur.execute(
             """SELECT state,lease_generation FROM wf_tasks
