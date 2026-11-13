@@ -2,56 +2,47 @@
 
 This directory contains engineering-workforce infrastructure only. It is not part of the AURIONS cognitive/runtime architecture.
 
-## Implemented foundation
+## Implemented components
 
-- FastAPI control-plane service and PostgreSQL task/checkpoint/audit schema.
-- Mandatory task-contract validation and deterministic task-state transition rules.
-- Expiring worker leases, checkpoint writes and append-only audit events.
-- Six exclusive role identities with one pinned, unique model per role.
-- Mandatory fresh-read governance, EBT-01 and role-induction context on every worker run.
-- Read-only reviewer/tester roles and builder path allowlists.
-- No arbitrary shell tool; the only execution tool runs the fixed workforce test suite.
-- Free-only model registry, provider-specific credentials and per-agent call/token ceilings.
-- Docker Compose deployment definition with a non-root, read-only API container.
+- PostgreSQL task, checkpoint and append-only audit storage.
+- Strict task contracts and deterministic lifecycle transitions.
+- Separate Director, orchestrator and role-scoped worker credentials.
+- Worker identity and role derived from credentials, never caller-supplied IDs.
+- Atomic role-matched task claims, lease generations and expiry fencing.
+- Idempotent checkpoint writes tied to the current live lease.
+- A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces task-duration deadlines.
+- Separate API and supervisor containers with non-root, read-only filesystems.
+- Six distinct pinned model assignments and per-run local call/token ceilings.
+- Paid inference fallback remains disabled.
 
-## Selected model roster
+## Required deployment secrets
 
-See [WORKFORCE-MODEL-SELECTION.md](../../docs/workforce/WORKFORCE-MODEL-SELECTION.md) for rationale and current free-tier limits.
+Provide these values through a protected secret manager or deployment environment; never commit them:
 
-| Role | Provider | Model |
-|---|---|---|
-| Lead builder | Groq direct | `openai/gpt-oss-120b` |
-| Specialist builder | Cloudflare Workers AI | `@cf/google/gemma-4-26b-a4b-it` |
-| Architecture reviewer | Cloudflare Workers AI | `@cf/zai-org/glm-4.7-flash` |
-| Code reviewer | Groq direct | `qwen/qwen3.8-27b` |
-| Negative tester | Groq direct | `openai/gpt-oss-20b` |
-| Integration verifier | Cloudflare Workers AI | `@cf/mistralai/mistral-small-3.1-24b-instruct` |
+- `WORKFORCE_DB_PASSWORD`
+- `DIRECTOR_APPROVAL_TOKEN`
+- `WORKFORCE_ORCHESTRATOR_TOKEN`
+- `WORKFORCE_WORKER_CREDENTIALS_JSON` — JSON mapping worker IDs to an individual token and exactly one role, for example:
+  `{"builder-01":{"token":"...","role":"lead_builder"},"reviewer-01":{"token":"...","role":"code_reviewer"}}`
 
-Each role has a unique model assignment. These assignments are provisional selections, not agent qualifications.
+The API rejects missing credentials. Rotate credentials if exposed. Use distinct random tokens for every actor. The Director token is required to authorize task creation and accept a completed task; the orchestrator token cannot accept work. Worker tokens are role-scoped.
 
-## Required GitHub Actions secrets
+Provider secrets remain separate:
+- `GROQ_API_KEY` for the three Groq roles.
+- `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for the three Cloudflare roles.
 
-- `GROQ_API_KEY` for lead builder, code reviewer and negative tester.
-- `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for specialist builder, architecture reviewer and integration verifier.
+## Deployment
 
-Set them under repository Settings → Secrets and variables → Actions. Never put keys in source files, workflow YAML, prompts, artifacts or chat. Paid fallback is disabled. Cloudflare's daily free Neuron allowance is shared across the three Cloudflare roles.
+Run `docker compose -f engineering/workforce/compose.yaml up --build` from the repository root after setting the protected environment variables. The API binds to loopback port 8000. PostgreSQL data is persisted in the named volume. The supervisor runs independently and polls every five seconds.
 
-## First supervised run
+Apply new SQL files in `migrations/` to an existing database in lexical order. The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
 
-The existing `.github/workflows/workforce-first-long-run.yml` still contains a prewritten WF-01 workforce-infrastructure task. It is manually gated and must not be dispatched as the user's first task. Replace its task instructions with the Director-approved task contract before execution. Its current pipeline is finite and is not a persistent overnight supervisor.
+## Verification
 
-## Local deployment
+The workforce test workflow starts a disposable PostgreSQL 17 service, applies every migration, compiles the source and runs the full unittest suite. No provider calls are made by this CI workflow.
 
-Set WORKFORCE_DB_PASSWORD and DIRECTOR_APPROVAL_TOKEN through a protected environment. Do not commit .env files or credentials.
+## Explicit status and limitations
 
-Run: `docker compose -f compose.yaml up --build`
+The control-plane security and recovery work is an implementation candidate until the PostgreSQL integration suite and independent review pass. Provider connectivity and role qualification are separate gates: configured model assignments do not prove that credentials work or that agents are competent. The runner's existing token ceilings are per process; a durable, cross-process global inference ledger and provider quota reconciliation remain a separate required gate. No persistent multi-agent run, GitHub write broker or AURIONS runtime implementation is authorized by this infrastructure work.
 
-The API listens on 127.0.0.1:8000; health check: GET /health.
-
-## Explicit limitations
-
-This is an initial implementation candidate, not a production-ready autonomous workforce. The runner operates within GitHub Actions job isolation and returns candidate artifacts; it does not yet provide a persistent cloud worker supervisor, GitHub write broker, full API authentication, deployment/backup hardening, or production-grade lease recovery. Do not connect repository write credentials or launch AURIONS runtime implementation until those controls are independently tested and authorized.
-
-## Status
-
-WF-01/WF-02 foundation code is present. The model roster is selected but not yet executed or qualified. No AURIONS runtime implementation or merge is authorized.
+The first-run workflow remains dormant. No merge to `main`, paid fallback, production activation or AURIONS runtime implementation is authorized.
