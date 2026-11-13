@@ -1123,3 +1123,14 @@ Added exact EHC-001…EHC-035 uniqueness/coverage and per-row checks that the re
 **Exact code head:** \`d7adcb416193dcb1d37ce8cdc9fec71b848974e7\`. [Workflow 43434073974](https://github.com/methaneex-oss/AURIONS/actions/runs/43434073974) passed all nine steps.
 
 **Boundary:** Cross-artifact identity integrity only. The handler catalogue and EHR assertions remain specifications; no runtime recovery execution is claimed.
+
+
+## BR-008 event consumer-summary integrity — 2026-11-13
+
+The event registry and producer/consumer matrix were reconciled on inventory and copied summary text, but the validator did not verify that every structured \`consumer_contracts[].component\` was actually named in the event's consumer/transition summary. A summary could omit an intended consumer while still matching the registry string.
+
+Added checks requiring every event to declare unique consumer components and requiring each component name to appear in the consumer/transition summary. Independent scan: all 89 events have unique consumers and all intended components appear in their summaries.
+
+**Exact code head:** \`7732d8b1823c9ac69fa96d481a20bb1c935b3c1d\`. [Workflow 43434350081](https://github.com/methaneex-oss/AURIONS/actions/runs/43434350081) passed all nine steps.
+
+**Evidence boundary:** This is event registry/matrix semantic-summary consistency only. It does not prove consumer implementations, subscriptions, delivery, ordering, idempotency under execution or owner-state transitions. BR-008 remains OPEN.
