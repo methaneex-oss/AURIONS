@@ -59,7 +59,7 @@ def reserve(
                 WHERE task_id=%s AND role=%s AND lease_worker=%s
                   AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                   AND lease_expires_at > now()
-                  AND wf_task_deadline(created_at, contract_json) > now()
+                  AND wf_task_deadline(created_at, started_at, contract_json) > now()
                   AND state IN ('CLAIMED','RUNNING','CHECKPOINTED') FOR UPDATE""",
             (task_id, worker.role, worker.actor_id, body.lease_token),
         )
@@ -114,7 +114,7 @@ def settle(
                 WHERE task_id=%s AND role=%s AND lease_worker=%s
                   AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                   AND lease_expires_at > now()
-                  AND wf_task_deadline(created_at, contract_json) > now()
+                  AND wf_task_deadline(created_at, started_at, contract_json) > now()
                   AND state IN ('CLAIMED','RUNNING','CHECKPOINTED')
                 FOR UPDATE""",
             (task_id, worker.role, worker.actor_id, body.lease_token),
