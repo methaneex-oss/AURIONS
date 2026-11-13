@@ -557,6 +557,15 @@ def main() -> int:
             )
         if matrix_summary != event.get("consumer_transition_summary"):
             fail(f"{event_type}: event matrix consumer/transition summary does not match registry")
+        consumer_components = [
+            consumer.get("component", "")
+            for consumer in event.get("consumer_contracts", [])
+        ]
+        if not consumer_components or len(consumer_components) != len(set(consumer_components)):
+            fail(f"{event_type}: consumer contracts must name unique intended components")
+        for component in consumer_components:
+            if not component or component not in matrix_summary:
+                fail(f"{event_type}: consumer summary omits intended component {component!r}")
         for field in (
             "producer_origin", "producer_trigger_contract", "owning_component",
             "consumer_contracts", "owner_transition_contract",
