@@ -24,7 +24,7 @@ class Principal:
 
 def _matches_configured_secret(env_name: str, supplied: str | None) -> bool:
     expected = os.environ.get(env_name, "")
-    return bool(expected and supplied and hmac.compare_digest(expected, supplied))
+    return bool(expected and supplied and len(expected) >= 32 and hmac.compare_digest(expected, supplied))
 
 
 def require_orchestrator(token: str | None) -> Principal:
@@ -59,7 +59,7 @@ def authenticate_worker(token: str | None) -> Principal:
             raise AuthenticationError("worker credential registry has an invalid entry")
         expected = entry.get("token")
         role = entry.get("role")
-        if not isinstance(expected, str) or not expected or role not in ROLES or not worker_id:
+        if not isinstance(expected, str) or len(expected) < 32 or not isinstance(role, str) or role not in ROLES or not worker_id:
             raise AuthenticationError("worker credential registry has an invalid entry")
         if expected in seen_tokens:
             raise AuthenticationError("worker credential registry contains duplicate tokens")
