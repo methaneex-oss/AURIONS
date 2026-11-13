@@ -72,7 +72,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-001"
+      "acceptance_case_id": "CC-001",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "representation.create",
@@ -133,7 +134,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-002"
+      "acceptance_case_id": "CC-002",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "context.assemble",
@@ -194,7 +196,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-003"
+      "acceptance_case_id": "CC-003",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "context.invalidate",
@@ -255,7 +258,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-004"
+      "acceptance_case_id": "CC-004",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "environment.observe",
@@ -327,7 +331,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-005"
+      "acceptance_case_id": "CC-005",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "capability.discover",
@@ -397,7 +402,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-006"
+      "acceptance_case_id": "CC-006",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "capability.verify",
@@ -469,7 +475,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-007"
+      "acceptance_case_id": "CC-007",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "capability.invalidate",
@@ -540,7 +547,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-008"
+      "acceptance_case_id": "CC-008",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "capability.knowledge.propose",
@@ -603,7 +611,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-009"
+      "acceptance_case_id": "CC-009",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "capability.knowledge.revise",
@@ -666,7 +675,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-010"
+      "acceptance_case_id": "CC-010",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "memory.retrieve",
@@ -728,7 +738,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-011"
+      "acceptance_case_id": "CC-011",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "belief.propose",
@@ -796,7 +807,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-012"
+      "acceptance_case_id": "CC-012",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "belief.revise",
@@ -864,7 +876,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-013"
+      "acceptance_case_id": "CC-013",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "prediction.create",
@@ -925,7 +938,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-014"
+      "acceptance_case_id": "CC-014",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "prediction.evaluate",
@@ -989,7 +1003,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-015"
+      "acceptance_case_id": "CC-015",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "appraisal.evaluate",
@@ -1050,7 +1065,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-016"
+      "acceptance_case_id": "CC-016",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "attention.allocate",
@@ -1104,7 +1120,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-017"
+      "acceptance_case_id": "CC-017",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_events.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "reasoning.assess",
@@ -1169,7 +1186,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-018"
+      "acceptance_case_id": "CC-018",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "goal.create",
@@ -1231,7 +1249,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-019"
+      "acceptance_case_id": "CC-019",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "goal.revise",
@@ -1293,7 +1312,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-020"
+      "acceptance_case_id": "CC-020",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "goal.cancel",
@@ -1355,7 +1375,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-021"
+      "acceptance_case_id": "CC-021",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "plan.propose",
@@ -1419,7 +1440,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-022"
+      "acceptance_case_id": "CC-022",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "plan.revise",
@@ -1483,7 +1505,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-023"
+      "acceptance_case_id": "CC-023",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "plan.checkpoint",
@@ -1539,7 +1562,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-024"
+      "acceptance_case_id": "CC-024",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_events.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "decision.record",
@@ -1600,7 +1624,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-025"
+      "acceptance_case_id": "CC-025",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "operation.propose",
@@ -1673,7 +1698,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-026"
+      "acceptance_case_id": "CC-026",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_events.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "operation.cancel",
@@ -1738,7 +1764,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-027"
+      "acceptance_case_id": "CC-027",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_events.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "operation.reconcile",
@@ -1804,7 +1831,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-028"
+      "acceptance_case_id": "CC-028",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_events.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "approval.request",
@@ -1860,7 +1888,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-029"
+      "acceptance_case_id": "CC-029",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_governance.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "approval.revoke",
@@ -1920,7 +1949,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-030"
+      "acceptance_case_id": "CC-030",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_governance.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "outcome.evaluate",
@@ -1985,7 +2015,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-031"
+      "acceptance_case_id": "CC-031",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "learning.update.propose",
@@ -2052,7 +2083,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-032"
+      "acceptance_case_id": "CC-032",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "learning.experiment.submit",
@@ -2120,7 +2152,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-033"
+      "acceptance_case_id": "CC-033",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "learning.candidate.evaluate",
@@ -2188,7 +2221,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-034"
+      "acceptance_case_id": "CC-034",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "self_model.update.propose",
@@ -2252,7 +2286,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-035"
+      "acceptance_case_id": "CC-035",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "evolution.change.propose",
@@ -2326,7 +2361,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-036"
+      "acceptance_case_id": "CC-036",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "evolution.candidate.evaluate",
@@ -2406,7 +2442,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-037"
+      "acceptance_case_id": "CC-037",
+      "transaction_contract": "CROSS_STORE_SAGA: aurion_memory.db + aurion_governance.db + aurion_events.db participate through separate local transactions; each authoritative store commits its own state change with its local outbox. The event/recovery store operations and recovery_journal coordinate saga progress. No distributed ACID transaction is claimed. Recovery must reconcile every committed step and use explicit compensation where required."
     },
     {
       "command_type": "evolution.candidate.activate",
@@ -2489,7 +2526,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-038"
+      "acceptance_case_id": "CC-038",
+      "transaction_contract": "CROSS_STORE_SAGA: aurion_memory.db + aurion_governance.db + aurion_events.db participate through separate local transactions; each authoritative store commits its own state change with its local outbox. The event/recovery store operations and recovery_journal coordinate saga progress. No distributed ACID transaction is claimed. Recovery must reconcile every committed step and use explicit compensation where required."
     },
     {
       "command_type": "evolution.candidate.rollback",
@@ -2572,7 +2610,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-039"
+      "acceptance_case_id": "CC-039",
+      "transaction_contract": "CROSS_STORE_SAGA: aurion_memory.db + aurion_governance.db + aurion_events.db participate through separate local transactions; each authoritative store commits its own state change with its local outbox. The event/recovery store operations and recovery_journal coordinate saga progress. No distributed ACID transaction is claimed. Recovery must reconcile every committed step and use explicit compensation where required."
     },
     {
       "command_type": "task.start",
@@ -2632,7 +2671,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-040"
+      "acceptance_case_id": "CC-040",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_events.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "task.pause",
@@ -2692,7 +2732,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-041"
+      "acceptance_case_id": "CC-041",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_events.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "task.resume",
@@ -2752,7 +2793,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-042"
+      "acceptance_case_id": "CC-042",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_events.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "task.cancel",
@@ -2812,7 +2854,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-043"
+      "acceptance_case_id": "CC-043",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_events.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "device.pair",
@@ -2920,7 +2963,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-044"
+      "acceptance_case_id": "CC-044",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "objective.revise",
@@ -2976,7 +3020,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-045"
+      "acceptance_case_id": "CC-045",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "world.entity.observe",
@@ -3032,7 +3077,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-046"
+      "acceptance_case_id": "CC-046",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "world.relationship.revise",
@@ -3088,7 +3134,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-047"
+      "acceptance_case_id": "CC-047",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "situation.snapshot.create",
@@ -3144,7 +3191,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-048"
+      "acceptance_case_id": "CC-048",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "means.affordance.propose",
@@ -3200,7 +3248,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-049"
+      "acceptance_case_id": "CC-049",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "interaction.propose",
@@ -3256,7 +3305,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-050"
+      "acceptance_case_id": "CC-050",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     },
     {
       "command_type": "interaction.outcome.record",
@@ -3312,7 +3362,8 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-051"
+      "acceptance_case_id": "CC-051",
+      "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_memory.db commits the authoritative aggregate mutation and its local outbox row in one SQLite transaction. Central event-archive publication is asynchronous, at-least-once and deduplicated by stable message ID; relay failure leaves the source outbox pending and does not roll back the committed aggregate."
     }
   ],
   "queries": [
