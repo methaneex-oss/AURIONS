@@ -11,50 +11,49 @@ The semantic pass distinguishes a genuinely absent persisted field from a field 
 
 The query registry declares 29 result-item projections. A scan of the current DDL identified candidate source columns by exact field name, JSON-column suffix (`_json`) and timestamp suffix (`_ms`). It found fields with no direct/JSON/timestamp-named source in the query's bound tables.
 
-This scan is deliberately conservative:
-- A field listed as mapped has only a candidate storage column; the exact source table, join, JSON pointer, alias and conversion still require an explicit projection contract.
-- A field listed as unmapped has no direct, `_json`, or `_ms` candidate in the query's declared tables. It must be backed by a specified join/artifact source, added to the DDL, or removed/changed in the result schema.
-- No field is assumed to be derived from a different owner, an unbound table, an opaque artifact or an event payload without an explicit contract.
+This reconciliation is deliberately conservative:
+- A field with a proposed source/derivation below is not considered runtime-verified; exact SELECT expressions, joins, JSON pointers, aliases, nullability and owner filters still require implementation tests.
+- A field listed as unresolved has no defensible source/derivation in the current proposed DDL and remains a blocker for the owning query contract.
+- No field is inferred from a different owner, an unbound table or an opaque artifact. Event-payload derivations name the exact event table and payload field.
 
 | Query | Result schema | Fields | Unmapped projection fields |
 |---|---|---:|---|
 | `environment.inspect` | `environmentObserved` | 14 | `observation_id`, `owner_id`, `device_id`, `environment_scope`, `source_id`, `collection_method`, `collector_version`, `platform_context`, `observed_facts`, `limitations`, `validity` |
-| `capability.search` | `capabilityDescriptorRecord` | 13 | `descriptor_schema_version`, `descriptor_body` |
-| `capability.inspect` | `capabilityDescriptorRecord` | 13 | `descriptor_schema_version`, `descriptor_body` |
-| `capability.knowledge.inspect` | `capabilityKnowledgeRevision` | 10 | None by direct/JSON/timestamp name scan |
-| `representation.inspect` | `representationCreated` | 9 | `method_id`, `method_version`, `source_refs` |
+| `capability.search` | `capabilityDescriptorRecord` | 13 | `descriptor_schema_version` |
+| `capability.inspect` | `capabilityDescriptorRecord` | 13 | `descriptor_schema_version` |
+| `capability.knowledge.inspect` | `capabilityKnowledgeRevision` | 10 | None — proposed source/derivation recorded below |
+| `representation.inspect` | `representationCreated` | 9 | `method_version`, `source_refs` |
 | `context.get` | `contextSnapshot` | 9 | `provenance_refs`, `uncertainty` |
-| `memory.search` | `memoryRetrieval` | 6 | `retrieval_id`, `query_ref`, `scope`, `candidate_refs`, `access_decision_ref` |
-| `knowledge.search` | `knowledgeItem` | 6 | None by direct/JSON/timestamp name scan |
-| `belief.inspect` | `beliefRevision` | 9 | `evidence_refs` |
-| `prediction.inspect` | `predictionCreated` | 9 | `conditions`, `horizon`, `confidence`, `evidence_refs` |
-| `appraisal.inspect` | `appraisalUpdated` | 9 | None by direct/JSON/timestamp name scan |
-| `attention.inspect` | `attentionAllocated` | 10 | `allocation_id`, `context_id`, `context_version`, `candidate_refs`, `selected_refs`, `deferred_refs`, `resource_budget`, `rationale_ref`, `created_at`, `valid_until` |
-| `reasoning.inspect` | `reasoningHypothesisProposed` | 9 | None by direct/JSON/timestamp name scan |
-| `goal.get` | `goalRevision` | 10 | None by direct/JSON/timestamp name scan |
-| `plan.get` | `planRevision` | 9 | `step_refs`, `context_version_ref`, `capability_epoch_digest` |
-| `decision.inspect` | `decisionRecorded` | 8 | None by direct/JSON/timestamp name scan |
-| `task.status` | `taskRunStatus` | 10 | `checkpoint_refs`, `failure_ref`, `revision` |
-| `operation.status` | `operationLifecycleEvent` | 11 | `occurred_at`, `policy_decision_ref`, `attempt_state` |
-| `permission.inspect` | `permissionRecord` | 11 | `owner_id`, `capability_ref`, `target_scope`, `status`, `granted_by`, `approval_ref` |
-| `audit.lookup` | `auditRecord` | 12 | `owner_id`, `actor_identity`, `action_type`, `approval_ref`, `evidence_refs`, `correlation_id` |
-| `device.capabilities` | `capabilityDescriptorRecord` | 13 | `descriptor_schema_version`, `descriptor_body` |
-| `objective.inspect` | `objective` | 11 | None by direct/JSON/timestamp name scan |
-| `world.entity.search` | `entity` | 11 | None by direct/JSON/timestamp name scan |
-| `world.entity.inspect` | `entity` | 11 | None by direct/JSON/timestamp name scan |
-| `world.relationship.search` | `relationship` | 12 | None by direct/JSON/timestamp name scan |
-| `situation.inspect` | `situation` | 12 | None by direct/JSON/timestamp name scan |
-| `means.affordance.search` | `affordanceHypothesis` | 17 | None by direct/JSON/timestamp name scan |
-| `interaction.inspect` | `interactionProposal` | 15 | `deadline`, `execution_binding_ref` |
-| `interaction.outcome.inspect` | `interactionOutcome` | 11 | None by direct/JSON/timestamp name scan |
-
+| `memory.search` | `memoryRetrieval` | 6 | `candidate_refs` |
+| `knowledge.search` | `knowledgeItem` | 6 | None — proposed source/derivation recorded below |
+| `belief.inspect` | `beliefRevision` | 9 | None — proposed source/derivation recorded below |
+| `prediction.inspect` | `predictionCreated` | 9 | `conditions`, `confidence`, `evidence_refs` |
+| `appraisal.inspect` | `appraisalUpdated` | 9 | None — proposed source/derivation recorded below |
+| `attention.inspect` | `attentionAllocated` | 10 | None — proposed source/derivation recorded below |
+| `reasoning.inspect` | `reasoningHypothesisProposed` | 9 | None — proposed source/derivation recorded below |
+| `goal.get` | `goalRevision` | 10 | None — proposed source/derivation recorded below |
+| `plan.get` | `planRevision` | 9 | `context_version_ref`, `capability_epoch_digest` |
+| `decision.inspect` | `decisionRecorded` | 8 | None — proposed source/derivation recorded below |
+| `task.status` | `taskRunStatus` | 10 | `failure_ref` |
+| `operation.status` | `operationLifecycleEvent` | 11 | `policy_decision_ref` |
+| `permission.inspect` | `permissionRecord` | 11 | `owner_id`, `status`, `approval_ref` |
+| `audit.lookup` | `auditRecord` | 12 | `owner_id`, `evidence_refs`, `correlation_id` |
+| `device.capabilities` | `capabilityDescriptorRecord` | 13 | `descriptor_schema_version` |
+| `objective.inspect` | `objective` | 11 | None — proposed source/derivation recorded below |
+| `world.entity.search` | `entity` | 11 | None — proposed source/derivation recorded below |
+| `world.entity.inspect` | `entity` | 11 | None — proposed source/derivation recorded below |
+| `world.relationship.search` | `relationship` | 12 | None — proposed source/derivation recorded below |
+| `situation.inspect` | `situation` | 12 | None — proposed source/derivation recorded below |
+| `means.affordance.search` | `affordanceHypothesis` | 17 | None — proposed source/derivation recorded below |
+| `interaction.inspect` | `interactionProposal` | 15 | None — proposed source/derivation recorded below |
+| `interaction.outcome.inspect` | `interactionOutcome` | 11 | None — proposed source/derivation recorded below |
 ## 2. Field-level candidate inventory
 
 ### `environment.inspect`
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/environmentObserved`
 - Bound tables: `experiences`, `evidence_items`
-- Unmapped by direct/JSON/timestamp column-name scan: `observation_id`, `owner_id`, `device_id`, `environment_scope`, `source_id`, `collection_method`, `collector_version`, `platform_context`, `observed_facts`, `limitations`, `validity`
+- Remaining unresolved source/derivation fields: `observation_id`, `owner_id`, `device_id`, `environment_scope`, `source_id`, `collection_method`, `collector_version`, `platform_context`, `observed_facts`, `limitations`, `validity`
 
 - `observation_id` → **UNMAPPED in the bound DDL columns**
 - `owner_id` → **UNMAPPED in the bound DDL columns**
@@ -75,7 +74,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord`
 - Bound tables: `capability_descriptors`
-- Unmapped by direct/JSON/timestamp column-name scan: `descriptor_schema_version`, `descriptor_body`
+- Remaining unresolved source/derivation fields: `descriptor_schema_version`
 
 - `capability_id` → capability_descriptors.capability_id
 - `descriptor_version` → capability_descriptors.descriptor_version
@@ -95,7 +94,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord`
 - Bound tables: `capability_descriptors`
-- Unmapped by direct/JSON/timestamp column-name scan: `descriptor_schema_version`, `descriptor_body`
+- Remaining unresolved source/derivation fields: `descriptor_schema_version`
 
 - `capability_id` → capability_descriptors.capability_id
 - `descriptor_version` → capability_descriptors.descriptor_version
@@ -115,7 +114,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/capabilityKnowledgeRevision`
 - Bound tables: `capability_knowledge_revisions`, `capability_knowledge_evidence`, `capability_relationships`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `knowledge_revision_id` → capability_knowledge_revisions.knowledge_revision_id; capability_knowledge_evidence.knowledge_revision_id
 - `capability_id` → capability_knowledge_revisions.capability_id
@@ -132,7 +131,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/representationCreated`
 - Bound tables: `representations`
-- Unmapped by direct/JSON/timestamp column-name scan: `method_id`, `method_version`, `source_refs`
+- Remaining unresolved source/derivation fields: `method_version`, `source_refs`
 
 - `representation_id` → representations.representation_id
 - `experience_id` → representations.experience_id
@@ -148,7 +147,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/contextSnapshot`
 - Bound tables: `contexts`
-- Unmapped by direct/JSON/timestamp column-name scan: `provenance_refs`, `uncertainty`
+- Remaining unresolved source/derivation fields: `provenance_refs`, `uncertainty`
 
 - `context_id` → contexts.context_id
 - `version` → contexts.version
@@ -164,7 +163,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/memoryRetrieval`
 - Bound tables: `memory_records`, `memory_links`
-- Unmapped by direct/JSON/timestamp column-name scan: `retrieval_id`, `query_ref`, `scope`, `candidate_refs`, `access_decision_ref`
+- Remaining unresolved source/derivation fields: `candidate_refs`
 
 - `retrieval_id` → generated per query execution; ephemeral and not persisted by this read-only query
 - `query_ref` → query-envelope/request reference supplied by the authenticated query execution
@@ -177,7 +176,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/knowledgeItem`
 - Bound tables: `knowledge_items`, `beliefs`, `belief_revisions`, `evidence_items`, `belief_revision_evidence`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `knowledge_id` → knowledge_items.knowledge_id; beliefs.knowledge_id
 - `proposition` → knowledge_items.proposition
@@ -190,7 +189,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/beliefRevision`
 - Bound tables: `beliefs`, `belief_revisions`, `evidence_items`, `belief_revision_evidence`
-- Unmapped by direct/JSON/timestamp column-name scan: `evidence_refs`
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `belief_id` → beliefs.belief_id; belief_revisions.belief_id
 - `knowledge_id` → beliefs.knowledge_id
@@ -206,7 +205,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/predictionCreated`
 - Bound tables: `predictions`, `prediction_evaluations`
-- Unmapped by direct/JSON/timestamp column-name scan: `conditions`, `horizon`, `confidence`, `evidence_refs`
+- Remaining unresolved source/derivation fields: `conditions`, `confidence`, `evidence_refs`
 
 - `prediction_id` → predictions.prediction_id; prediction_evaluations.prediction_id
 - `subject_ref` → predictions.subject_ref
@@ -222,7 +221,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/appraisalUpdated`
 - Bound tables: `appraisal_records`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `appraisal_id` → appraisal_records.appraisal_id
 - `context_id` → appraisal_records.context_id
@@ -238,7 +237,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/attentionAllocated`
 - Bound tables: `events`
-- Unmapped by direct/JSON/timestamp column-name scan: `allocation_id`, `context_id`, `context_version`, `candidate_refs`, `selected_refs`, `deferred_refs`, `resource_budget`, `rationale_ref`, `created_at`, `valid_until`
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `allocation_id` → events.payload_json $.allocation_id (attention.allocated.v1 body)
 - `context_id` → events.payload_json $.context_id
@@ -255,7 +254,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/reasoningHypothesisProposed`
 - Bound tables: `reasoning_assessments`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `reasoning_id` → reasoning_assessments.reasoning_id
 - `context_id` → reasoning_assessments.context_id
@@ -271,7 +270,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/goalRevision`
 - Bound tables: `goals`, `goal_revisions`, `goal_revision_objective_bindings`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `goal_id` → goals.goal_id; goal_revisions.goal_id; goal_revision_objective_bindings.goal_id
 - `revision` → goal_revisions.revision
@@ -288,7 +287,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/planRevision`
 - Bound tables: `plans`, `plan_steps`, `plan_step_dependencies`, `plan_step_contracts`
-- Unmapped by direct/JSON/timestamp column-name scan: `step_refs`, `context_version_ref`, `capability_epoch_digest`
+- Remaining unresolved source/derivation fields: `context_version_ref`, `capability_epoch_digest`
 
 - `plan_id` → plans.plan_id; plan_steps.plan_id
 - `goal_id` → plans.goal_id
@@ -304,7 +303,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/decisionRecorded`
 - Bound tables: `decision_records`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `decision_id` → decision_records.decision_id
 - `goal_id` → decision_records.goal_id
@@ -319,7 +318,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/taskRunStatus`
 - Bound tables: `task_runs`, `task_checkpoints`, `task_checkpoint_details`
-- Unmapped by direct/JSON/timestamp column-name scan: `checkpoint_refs`, `failure_ref`, `revision`
+- Remaining unresolved source/derivation fields: `failure_ref`
 
 - `task_run_id` → task_runs.task_run_id; task_checkpoints.task_run_id
 - `task_definition_ref` → task_runs.task_definition_ref
@@ -335,8 +334,8 @@ This scan is deliberately conservative:
 ### `operation.status`
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent`
-- Bound tables: `operations`, `operation_steps`, `recovery_journal`, `operation_details`, `operation_attempts`
-- Unmapped by direct/JSON/timestamp column-name scan: `occurred_at`, `policy_decision_ref`, `attempt_state`
+- Bound tables: `operations`, `operation_steps`, `recovery_journal`, `operation_details`, `operation_attempts`, `events`
+- Remaining unresolved source/derivation fields: `policy_decision_ref`
 
 - `operation_id` → operations.operation_id; operation_steps.operation_id; recovery_journal.operation_id; operation_details.operation_id; operation_attempts.operation_id
 - `attempt_id` → operation_attempts.attempt_id
@@ -354,7 +353,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/permissionRecord`
 - Bound tables: `permissions`, `policies`, `provider_permissions`, `approval_requests`, `approval_decisions`
-- Unmapped by direct/JSON/timestamp column-name scan: `owner_id`, `capability_ref`, `target_scope`, `status`, `granted_by`, `approval_ref`
+- Remaining unresolved source/derivation fields: `owner_id`, `status`, `approval_ref`
 
 - `permission_id` → permissions.permission_id
 - `owner_id` → **UNMAPPED in the bound DDL columns**
@@ -372,7 +371,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/auditRecord`
 - Bound tables: `governance_audit`, `data_disclosures`
-- Unmapped by direct/JSON/timestamp column-name scan: `owner_id`, `actor_identity`, `action_type`, `approval_ref`, `evidence_refs`, `correlation_id`
+- Remaining unresolved source/derivation fields: `owner_id`, `evidence_refs`, `correlation_id`
 
 - `audit_id` → governance_audit.audit_id
 - `owner_id` → **UNMAPPED in the bound DDL columns**
@@ -391,7 +390,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord`
 - Bound tables: `capability_descriptors`
-- Unmapped by direct/JSON/timestamp column-name scan: `descriptor_schema_version`, `descriptor_body`
+- Remaining unresolved source/derivation fields: `descriptor_schema_version`
 
 - `capability_id` → capability_descriptors.capability_id
 - `descriptor_version` → capability_descriptors.descriptor_version
@@ -411,7 +410,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/world-interaction.v1.schema.json#/$defs/objective`
 - Bound tables: `objective_records`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `objective_id` → objective_records.objective_id
 - `statement` → objective_records.statement
@@ -429,7 +428,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/world-interaction.v1.schema.json#/$defs/entity`
 - Bound tables: `world_entities`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `entity_id` → world_entities.entity_id
 - `identity_status` → world_entities.identity_status
@@ -447,7 +446,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/world-interaction.v1.schema.json#/$defs/entity`
 - Bound tables: `world_entities`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `entity_id` → world_entities.entity_id
 - `identity_status` → world_entities.identity_status
@@ -465,7 +464,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/world-interaction.v1.schema.json#/$defs/relationship`
 - Bound tables: `world_relationships`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `relationship_id` → world_relationships.relationship_id
 - `subject_ref` → world_relationships.subject_ref
@@ -484,7 +483,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/world-interaction.v1.schema.json#/$defs/situation`
 - Bound tables: `situation_snapshots`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `situation_id` → situation_snapshots.situation_id
 - `version` → situation_snapshots.version
@@ -503,7 +502,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/world-interaction.v1.schema.json#/$defs/affordanceHypothesis`
 - Bound tables: `affordance_hypotheses`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `hypothesis_id` → affordance_hypotheses.hypothesis_id
 - `objective_ref` → affordance_hypotheses.objective_ref
@@ -527,7 +526,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/world-interaction.v1.schema.json#/$defs/interactionProposal`
 - Bound tables: `interaction_proposals`
-- Unmapped by direct/JSON/timestamp column-name scan: `deadline`, `execution_binding_ref`
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `interaction_id` → interaction_proposals.interaction_id
 - `objective_ref` → interaction_proposals.objective_ref
@@ -549,7 +548,7 @@ This scan is deliberately conservative:
 
 - Result schema: `schemas/world-interaction.v1.schema.json#/$defs/interactionOutcome`
 - Bound tables: `interaction_outcomes`
-- Unmapped by direct/JSON/timestamp column-name scan: none
+- Remaining unresolved source/derivation fields: None; proposed mappings/derivations are listed below and remain unverified
 
 - `outcome_id` → interaction_outcomes.outcome_id
 - `interaction_ref` → interaction_outcomes.interaction_ref
