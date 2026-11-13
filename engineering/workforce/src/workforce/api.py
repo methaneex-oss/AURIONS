@@ -4,7 +4,6 @@ from __future__ import annotations
 import json
 import os
 import uuid
-from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import psycopg
@@ -140,14 +139,13 @@ def claim_task(
 ):
     worker = _auth(authenticate_worker, x_worker_token)
     token = uuid.uuid4().hex + uuid.uuid4().hex
-    expires = datetime.now(timezone.utc) + timedelta(seconds=body.lease_seconds)
     with connect() as conn, conn.cursor() as cur:
         cur.execute(
             """UPDATE wf_tasks
                   SET state='CLAIMED', lease_worker=%s,
                       lease_token_hash=encode(digest(%s,'sha256'),'hex'),
                       lease_generation=lease_generation+1,
-                      lease_expires_at=%s, attempt_count=attempt_count+1,
+                      lease_expires_at=now() + (%s * interval '1 second'), attempt_count=attempt_count+1,
                       retry_after=NULL, updated_at=now()
                 WHERE task_id=%s AND role=%s
                   AND state IN ('QUEUED','RETRY_WAIT')
@@ -155,7 +153,7 @@ def claim_task(
                   AND attempt_count < max_attempts
                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
              RETURNING task_id, role, state, lease_generation, attempt_count, lease_expires_at""",
-            (worker.actor_id, token, expires, task_id, worker.role),
+            (worker.actor_id, token, body.lease_seconds, task_id, worker.role),
         )
         row = cur.fetchone()
         if not row:
@@ -164,7 +162,7 @@ def claim_task(
             """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
                VALUES (%s,'TASK_CLAIMED',%s,%s::jsonb)""",
             (task_id, worker.actor_id,
-             json.dumps({"role": worker.role, "lease_generation": row["lease_generation"], "attempt": row["attempt_count"], "lease_expires_at": expires.isoformat()})),
+             json.dumps({"role": worker.role, "lease_generation": row["lease_generation"], "attempt": row["attempt_count"], "lease_expires_at": row["lease_expires_at"].isoformat()})),
         )
         return {**row, "worker_id": worker.actor_id, "lease_token": token}
 
@@ -176,17 +174,16 @@ def heartbeat(
     x_worker_token: str | None = Header(default=None, alias="X-Worker-Token"),
 ):
     worker = _auth(authenticate_worker, x_worker_token)
-    expires = datetime.now(timezone.utc) + timedelta(seconds=body.lease_seconds)
     with connect() as conn, conn.cursor() as cur:
         cur.execute(
-            """UPDATE wf_tasks SET lease_expires_at=%s, updated_at=now()
+            """UPDATE wf_tasks SET lease_expires_at=now() + (%s * interval '1 second'), updated_at=now()
                  WHERE task_id=%s AND role=%s AND lease_worker=%s
                    AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                    AND lease_expires_at > now()
                    AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
                    AND state IN ('CLAIMED','RUNNING','CHECKPOINTED')
              RETURNING task_id, lease_generation, lease_expires_at""",
-            (expires, task_id, worker.role, worker.actor_id, body.lease_token),
+            (body.lease_seconds, task_id, worker.role, worker.actor_id, body.lease_token),
         )
         row = cur.fetchone()
         if not row:
@@ -203,14 +200,14 @@ def start_task(
     worker = _auth(authenticate_worker, x_worker_token)
     with connect() as conn, conn.cursor() as cur:
         cur.execute(
-            """UPDATE wf_tasks SET state='RUNNING', updated_at=now()
+            """UPDATE wf_tasks SET state='RUNNING', lease_expires_at=GREATEST(lease_expires_at, now() + (%s * interval '1 second')), updated_at=now()
                  WHERE task_id=%s AND role=%s AND lease_worker=%s
                    AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                    AND lease_expires_at > now()
                    AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
                    AND state IN ('CLAIMED','CHECKPOINTED')
              RETURNING task_id,state,lease_generation""",
-            (task_id, worker.role, worker.actor_id, body.lease_token),
+            (body.lease_seconds, task_id, worker.role, worker.actor_id, body.lease_token),
         )
         row = cur.fetchone()
         if not row:
@@ -284,7 +281,8 @@ def worker_transition(
             """SELECT state,lease_generation FROM wf_tasks
                  WHERE task_id=%s AND role=%s AND lease_worker=%s
                    AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
-                   AND lease_expires_at > now() FOR UPDATE""",
+                   AND lease_expires_at > now()
+                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now() FOR UPDATE""",
             (task_id, worker.role, worker.actor_id, body.lease_token),
         )
         row = cur.fetchone()
@@ -326,11 +324,15 @@ def transition(
         if body.director_decision_ref:
             raise HTTPException(status_code=422, detail="Director decision reference is only valid for acceptance")
     with connect() as conn, conn.cursor() as cur:
-        cur.execute("SELECT state FROM wf_tasks WHERE task_id=%s FOR UPDATE", (task_id,))
+        cur.execute("SELECT state, created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) AS deadline_at FROM wf_tasks WHERE task_id=%s FOR UPDATE", (task_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="task not found")
+        if row["deadline_at"] <= datetime.now(timezone.utc):
+            raise HTTPException(status_code=409, detail="task deadline has passed; further transitions are forbidden")
         current = TaskState(row["state"])
+        if principal.role == "orchestrator" and body.target in {TaskState.CLAIMED, TaskState.RUNNING, TaskState.CHECKPOINTED}:
+            raise HTTPException(status_code=403, detail="only the authenticated lease holder can enter worker execution states")
         try:
             validate_transition(current, body.target, director_decision=(principal.role == "director"))
         except TransitionError as exc:
