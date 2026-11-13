@@ -688,3 +688,8 @@ The existing owning-store source-column validator remains in place. The first CI
 ### Verification correction — query projection validator section boundary
 
 The documentation-updated head first failed the SQLite DDL step because `validate_query_projection_inventory()` searched for a literal escaped newline rather than the next Markdown heading. This made the first query's inventory scan include later query sections and falsely report duplicate fields. Corrected the delimiter in `0f69d48dd99fece42ebf44e0ae5e5c75291bf45a`; exact head passed all nine steps in [run 43431379174](https://github.com/methaneex-oss/AURIONS/actions/runs/43431379174). The earlier failure `43431248189` remains recorded as validator failure evidence, not as a schema or DDL failure.
+
+
+### BR-002 follow-on — all relational projection sources checked against DDL
+
+Extended the host SQLite projection validator to check every `table.column` source on each resolved query-field mapping, rather than only the first source token. Each source must be declared by the query, owned by the tested store and present in the actual table columns. Exact code head `49f24f3874e4d632779dfc4e5b1ed4fc27fc6bd1` passed all nine workflow steps in [run 43431572932](https://github.com/methaneex-oss/AURIONS/actions/runs/43431572932). This is static candidate-source/DDL validation, not executable SQL or query behaviour verification; all 29 queries remain design-only/non-dispatchable.
