@@ -460,7 +460,7 @@ def test_events() -> None:
          step_key,target_store,idempotency_key,request_digest)
         VALUES (?,?,?,?,?,?,?,?,?,?)""",
         (bytes([47])*16,operation_id,1,bytes([48])*16,"pending",12,
-         "memory.activate","aurion_memory.db",
+         "governance.audit","aurion_governance.db",
          "saga-idem-1:governance.authorize","b"*64),
     )
     expect_integrity_error(
