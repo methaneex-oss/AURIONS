@@ -1,6 +1,9 @@
 name: Manually approved six-role workforce run
 
 on:
+  push:
+    branches:
+      - feat/workforce-control-plane-hardening
   workflow_dispatch:
     inputs:
       manifest_path:
@@ -17,12 +20,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: aurions-workforce-${{ github.ref }}-${{ inputs.manifest_path }}
+  group: aurions-workforce-${{ github.ref }}-${{ github.event_name == 'push' && 'engineering/workforce/work-package.json' || inputs.manifest_path }}
   cancel-in-progress: false
 
 jobs:
   orchestrated-run:
-    if: ${{ inputs.confirm_run == true }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.confirm_run == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[RUN-WORKFORCE]')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 360
     services:
@@ -43,7 +46,7 @@ jobs:
       DATABASE_URL: postgresql://workforce:workforce-ephemeral-password@localhost:5432/workforce
       PYTHONPATH: engineering/workforce/src
       WORKFORCE_CONTROL_PLANE_URL: http://127.0.0.1:8000
-      MANIFEST_PATH: ${{ inputs.manifest_path }}
+      MANIFEST_PATH: ${{ github.event_name == 'push' && 'engineering/workforce/work-package.json' || inputs.manifest_path }}
       WORKSPACE_DIR: ${{ runner.temp }}/aurions-workspace
       WORKFORCE_MANIFEST_COPY: ${{ runner.temp }}/work-package.json
     steps:
