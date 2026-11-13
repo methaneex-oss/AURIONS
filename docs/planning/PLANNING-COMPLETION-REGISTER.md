@@ -533,3 +533,20 @@ Extended `scripts/validate_planning_traceability.py` to parse the canonical prod
 **Prior exact-head baseline:** PR #2 head `a8127f4a7ebadb8498db08f0dbbf96f2c09a400a` passed workflow [43324753767](https://github.com/methaneex-oss/AURIONS/actions/runs/43324753767). The new crosswalk and validator changes are later commits; exact-head CI for the updated revision is pending and must pass before this increment is marked validated.
 
 **Evidence boundary:** This closes a builder-owned product-acceptance traceability artifact and its structural inventory guard only. It does not execute PR-01…PR-18, close the cross-store saga/transaction review, prove query projection semantics, establish target-platform readiness, approve the product definition, settle topology/action decisions, authorize implementation, or authorize independent-review/tester handoff. Overall builder disposition remains NOT READY.
+
+## BR-005 / BR-008 builder increment — store-local transactional outbox correction (2026-11-13)
+
+The builder's semantic review found a concrete contradiction: the cross-store protocol requires each authoritative database to commit its aggregate mutation and outbox row in one local transaction, but the earlier DDL defined an outbox only in `aurion_events.db`. Memory and governance mutations could not be atomic with an outbox in that separate file.
+
+Corrections made:
+- Added `aurion_memory.migration_v5.sql` and `aurion_governance.migration_v2.sql`, each adding the same durable outbox shape to its owning store. The event store retains its own outbox for event-store-owned state and downstream dispatch.
+- Updated the command registry so every active command binds a local outbox for every authoritative `persistence_stores` entry. Clarified that table references can include read dependencies and central event-archive records; they do not imply one cross-file transaction.
+- Added a required per-command `transaction_contract`: single-store local outbox or cross-store saga. Reclassified nine memory-domain commands that only referenced the event archive as memory-owned writes with asynchronous archive relay.
+- Defined the three remaining cross-store evolution workflows with the event/recovery database as durable saga coordinator and local outboxes in each participating store. Activation/rollback no longer claim cross-database atomicity.
+- Added `docs/planning/STORE-LOCAL-OUTBOX-AND-CROSS-STORE-SAGA-MATRIX.md` with all 53 command records, relay semantics and saga step proposals.
+- Extended schema validation to require the outbox DDL and registry binding for every authoritative store, exact command/matrix inventory, explicit transaction class and saga coordinator tables.
+- Extended host SQLite validation to execute memory v5 and governance v2 and perform rollback probes for a memory aggregate plus outbox and a governance policy plus outbox.
+
+**CI failure retained and root-caused:** Run [43381677423](https://github.com/methaneex-oss/AURIONS/actions/runs/43381677423) failed in the new transaction-matrix inventory guard because the parser also included the store-ownership table's backticked store names as command IDs. Corrected the parser to filter candidates against the exact 53-command registry inventory in commit `5bea96e3dee36493905ff6cf12203f614dc21139`. Exact-head CI after this correction is pending; no pass is claimed yet.
+
+**Evidence boundary:** The correction addresses a real design/DDL mismatch and adds host rollback probes. It does not implement the outbox relay, central archive ingestion/deduplication under crash, consumer inbox processing, multi-store saga runtime, compensation, power-loss safety or target Android/Termux validation. Those remain open. All commands/events remain non-dispatchable; no implementation authorization or protected activation authority is implied.
