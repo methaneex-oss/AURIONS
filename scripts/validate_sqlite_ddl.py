@@ -519,6 +519,16 @@ def test_events() -> None:
         (operation_id,),
     )
     expect_integrity_error(
+        db, "saga idempotency key rewrite",
+        "UPDATE operations SET idempotency_key='rewritten' WHERE operation_id=?",
+        (operation_id,),
+    )
+    expect_integrity_error(
+        db, "saga operation history deletion",
+        "DELETE FROM operations WHERE operation_id=?",
+        (operation_id,),
+    )
+    expect_integrity_error(
         db, "recovery journal store reassignment",
         "UPDATE recovery_journal SET local_store='aurion_memory.db' WHERE journal_id=?",
         (bytes([49])*16,),
