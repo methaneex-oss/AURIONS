@@ -76,5 +76,40 @@ jobs:
           PY
       - name: Compile workforce
         run: python -m compileall -q engineering/workforce/src engineering/workforce/tests
+      - name: Build credential-free candidate test image
+        run: |
+          docker pull postgres:17-alpine
+          docker build --pull --file engineering/workforce/Dockerfile.test-runner --tag aurions-workforce-test-runner:ci .
+      - name: Execute workforce suite inside the isolated candidate sandbox
+        run: |
+          python - <<'PY'
+          import tempfile
+          from pathlib import Path
+          from workforce.orchestrator import _copy_test_snapshot, _run_candidate_tests
+
+          with tempfile.TemporaryDirectory(prefix="workforce-sandbox-ci-") as temp:
+              root = Path(temp)
+              _copy_test_snapshot(
+                  Path.cwd(),
+                  root,
+                  ["engineering/workforce/src", "engineering/workforce/tests"],
+              )
+              results = _run_candidate_tests(
+                  test_root=root,
+                  test_commands=[
+                      ["python3", "-m", "compileall", "-q", "engineering/workforce/src", "engineering/workforce/tests"],
+                      ["python3", "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
+                  ],
+                  test_image="aurions-workforce-test-runner:ci",
+                  remaining_seconds=lambda: 600,
+              )
+              for result in results:
+                  print(f"Sandbox command exit={result['returncode']}: {result['command']}")
+                  print(result["stdout"][-4000:])
+                  if result["stderr"]:
+                      print(result["stderr"][-2000:])
+              if any(result["returncode"] for result in results):
+                  raise SystemExit("isolated candidate test sandbox failed")
+          PY
       - name: Run all workforce tests
         run: python -m unittest discover -s engineering/workforce/tests -v
