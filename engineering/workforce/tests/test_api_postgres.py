@@ -165,11 +165,67 @@ class ControlPlaneApiTests(unittest.TestCase):
         )
         self.assertEqual(stale.status_code, 409)
 
+    def test_worker_must_supply_evidence_before_candidate_ready(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        headers = {"X-Worker-Token": BUILDER}
+        claimed = self.client.post(f"/v1/tasks/{self.task_id}/claim", headers=headers, json={}).json()
+        started = self.client.post(
+            f"/v1/tasks/{self.task_id}/start",
+            headers=headers,
+            json={"lease_token": claimed["lease_token"]},
+        )
+        self.assertEqual(started.status_code, 200, started.text)
+        no_evidence = self.client.post(
+            f"/v1/tasks/{self.task_id}/worker-transition",
+            headers=headers,
+            json={"lease_token": claimed["lease_token"], "target": "CANDIDATE_READY", "reason": "done"},
+        )
+        self.assertEqual(no_evidence.status_code, 422)
+        completed = self.client.post(
+            f"/v1/tasks/{self.task_id}/worker-transition",
+            headers=headers,
+            json={
+                "lease_token": claimed["lease_token"],
+                "target": "CANDIDATE_READY",
+                "reason": "completed with evidence",
+                "evidence_sha256": "d" * 64,
+            },
+        )
+        self.assertEqual(completed.status_code, 200, completed.text)
+        self.assertEqual(completed.json()["state"], "CANDIDATE_READY")
+
+    def test_orchestrator_cannot_forge_worker_completion(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        with psycopg.connect(DB) as conn:
+            conn.execute("UPDATE wf_tasks SET state='RUNNING' WHERE task_id=%s", (self.task_id,))
+        response = self.client.post(
+            f"/v1/tasks/{self.task_id}/transition",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR},
+            json={"target": "CANDIDATE_READY", "reason": "forged completion"},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_deadline_stops_review_stage_tasks(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        with psycopg.connect(DB) as conn:
+            conn.execute(
+                "UPDATE wf_tasks SET state='REVIEWING', created_at=now()-interval '61 minutes' WHERE task_id=%s",
+                (self.task_id,),
+            )
+        recovered = self.client.post(
+            "/v1/maintenance/recover",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR},
+        )
+        self.assertEqual(recovered.status_code, 200, recovered.text)
+        with psycopg.connect(DB) as conn:
+            state = conn.execute("SELECT state FROM wf_tasks WHERE task_id=%s", (self.task_id,)).fetchone()[0]
+        self.assertEqual(state, "FAILED")
+
     def test_only_director_can_accept_and_actor_cannot_be_spoofed(self):
         self.assertEqual(self.create_task().status_code, 201)
         with psycopg.connect(DB) as conn:
             conn.execute("UPDATE wf_tasks SET state='AWAITING_DIRECTOR' WHERE task_id=%s", (self.task_id,))
-        payload = {"target": "ACCEPTED", "reason": "test acceptance", "director_decision_ref": "decision-test"}
+        payload = {"target": "ACCEPTED", "reason": "test acceptance", "director_decision_ref": "decision-test", "evidence_sha256": "c" * 64}
         self.assertEqual(self.client.post(f"/v1/tasks/{self.task_id}/transition", json=payload).status_code, 401)
         self.assertEqual(
             self.client.post(
