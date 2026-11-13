@@ -10,9 +10,21 @@ The system is not intended to be a chatbot wrapper or a collection of hardcoded 
 
 ## Project status
 
-**Current stage:** repository foundation / WP-00.
+**Current project stage:** architecture planning and technical design; implementation planning remains in progress.
 
-The initial planning design is consolidated. Implementation-readiness evidence gates remain; see the [planning status and owner gate](docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md). Do not interpret a documented design as implemented functionality.
+This branch contains only a proposed WP-00 repository/build scaffold. It is not authorization to begin application implementation. PR #2 contains the evolving planning baseline and must be approved before implementation work proceeds. A green hosted scaffold build does not establish device feasibility or completion of WP-00.
+
+## Build the C++ foundation
+
+Requires CMake 3.20+ and a C++20-capable compiler. The C++20 setting is provisional until validated on the target Termux environment.
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DAURIONS_BUILD_TESTS=ON
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+```
+
+See [WP-00 foundation record](docs/engineering/WP-00-FOUNDATION.md) for scope and outstanding validation.
 
 ## Start here
 
