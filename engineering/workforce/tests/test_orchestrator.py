@@ -96,6 +96,83 @@ class OrchestratorTests(unittest.TestCase):
             with self.assertRaisesRegex(OrchestrationError, "exactly one"):
                 _worker_tokens()
 
+    def test_full_orchestration_dry_run_creates_six_tasks_and_director_packet(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "engineering/workforce/src/workforce").mkdir(parents=True)
+            (root / "engineering/workforce/tests").mkdir(parents=True)
+            (root / "engineering/workforce/src/workforce/__init__.py").write_text("", encoding="utf-8")
+            (root / "engineering/workforce/tests/__init__.py").write_text("", encoding="utf-8")
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Workforce Test"], cwd=root, check=True)
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "base"], cwd=root, check=True)
+            base = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True).stdout.strip()
+
+            manifest = valid_manifest()
+            manifest["base_commit_sha"] = base
+            manifest["run_id"] = "test-run-001"
+            registry = {
+                f"worker-{index}": {"token": f"worker-token-{index}-" + ("x" * 40), "role": role}
+                for index, role in enumerate(ROLES)
+            }
+            api_calls = []
+            def fake_post(url, *, headers, payload):
+                api_calls.append((url, headers, payload))
+                if url.endswith("/v1/tasks"):
+                    return {"task_id": payload["task_id"], "state": "QUEUED"}
+                return {"state": payload.get("target", "ok")}
+
+            real_run = subprocess.run
+            def fake_run(command, **kwargs):
+                if command and command[0] == "git":
+                    return real_run(command, **kwargs)
+                if "workforce.agents.runner" in command:
+                    role = command[command.index("--role") + 1]
+                    task_id = kwargs["env"]["WORKFORCE_TASK_ID"]
+                    report_rel = command[command.index("--report-path") + 1]
+                    report = root / report_rel
+                    report.parent.mkdir(parents=True, exist_ok=True)
+                    report.write_text(json.dumps({
+                        "task_id": task_id,
+                        "role": role,
+                        "status": "CANDIDATE_READY",
+                        "final": f"dry-run report for {role}",
+                    }), encoding="utf-8")
+                    if role == "lead_builder":
+                        (root / "engineering/workforce/src/workforce/lead_output.py").write_text("value = 1\n", encoding="utf-8")
+                    if role == "specialist_builder":
+                        (root / "engineering/workforce/tests/generated_test.py").write_text("assert True\n", encoding="utf-8")
+                    return subprocess.CompletedProcess(command, 0, stdout="dry-run", stderr="")
+                return subprocess.CompletedProcess(command, 0, stdout="tests passed", stderr="")
+
+            with patch.dict(os.environ, {
+                "WORKFORCE_CONTROL_PLANE_URL": "https://control.example",
+                "DIRECTOR_APPROVAL_TOKEN": "d" * 40,
+                "WORKFORCE_ORCHESTRATOR_TOKEN": "o" * 40,
+                "WORKFORCE_WORKER_CREDENTIALS_JSON": json.dumps(registry),
+                "GROQ_API_KEY": "not-used",
+                "CLOUDFLARE_API_TOKEN": "not-used",
+                "CLOUDFLARE_ACCOUNT_ID": "not-used",
+            }, clear=True):
+                with patch("workforce.orchestrator._post", side_effect=fake_post):
+                    with patch("workforce.orchestrator.subprocess.run", side_effect=fake_run):
+                        result = run_work_package(
+                            manifest,
+                            root,
+                            root / "engineering/workforce/.workforce-artifacts",
+                        )
+
+            created = [call for call in api_calls if call[0].endswith("/v1/tasks")]
+            transitions = [call for call in api_calls if call[0].endswith("/transition")]
+            self.assertEqual(len(created), 6)
+            self.assertEqual(len(transitions), 4)
+            self.assertEqual(result["status"], "AWAITING_DIRECTOR_REVIEW")
+            self.assertTrue((root / result["director_packet"]).is_file())
+            self.assertTrue((root / result["candidate_manifest"]).is_file())
+            self.assertEqual(set(result["role_reports"]), set(ROLES))
+
     def test_workspace_manifest_hashes_only_scoped_candidate_files(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
