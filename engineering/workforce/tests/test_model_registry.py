@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from workforce.agents.runner import Worker
+from workforce.agents.runner import Worker, is_sensitive_path, safe_path
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS, role_assignment, validate_registry
 
 
@@ -79,6 +79,23 @@ class ModelRegistryTests(unittest.TestCase):
     def test_unknown_role_is_rejected(self):
         with self.assertRaises(ValueError):
             role_assignment("combined_builder_reviewer")
+
+    def test_sensitive_credential_paths_are_denied(self):
+        root = Path("/tmp/workspace")
+        for relative in (
+            ".env.production", ".aws/credentials", ".ssh/id_ed25519",
+            "config/private.pem", "secrets.json", "service-account-prod.json",
+        ):
+            with self.subTest(relative=relative):
+                with self.assertRaises(ValueError):
+                    safe_path(root, relative)
+
+    def test_ordinary_source_files_remain_readable(self):
+        self.assertFalse(is_sensitive_path(Path("src/workforce/runner.py")))
+        self.assertFalse(is_sensitive_path(Path("docs/workforce/constitution.md")))
+
+    def test_yaml_duplicate_registry_is_removed(self):
+        self.assertFalse((Path(__file__).resolve().parents[3] / "model_registry.yaml").exists())
 
 
 if __name__ == "__main__":
