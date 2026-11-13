@@ -171,8 +171,7 @@ class ControlPlaneApiTests(unittest.TestCase):
         self.assertNotEqual(new.json()["lease_token"], old["lease_token"])
         restored = self.client.get(
             f"/v1/tasks/{self.task_id}/checkpoints/latest",
-            headers=headers,
-            params={"lease_token": new.json()["lease_token"]},
+            headers={**headers, "X-Worker-Lease-Token": new.json()["lease_token"]},
         )
         self.assertEqual(restored.status_code, 200, restored.text)
         self.assertEqual(restored.json()["payload_json"], {"durable_progress": 7})
