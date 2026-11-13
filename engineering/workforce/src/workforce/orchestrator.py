@@ -192,29 +192,27 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
     report_dir.mkdir(parents=True, exist_ok=True)
     headers = {"X-Orchestrator-Token": orchestrator, "X-Director-Approval-Token": director}
     task_ids = {role: f"wf-{manifest['run_id']}-{role}" for role in ROLES}
-    existing = _post(f"{control}/v1/tasks", headers=headers, payload={
-        "task_id": task_ids[ROLES[0]], "role": ROLES[0], "contract": _task_contract(manifest, ROLES[0]),
-    })
-    created = [ROLES[0]]
-    # The first task is created above to ensure the control plane is reachable.
-    try:
-        for role in ROLES[1:]:
+    created: list[str] = []
+    completed: set[str] = set()
+    for role in ROLES:
+        try:
             _post(f"{control}/v1/tasks", headers=headers, payload={
                 "task_id": task_ids[role], "role": role, "contract": _task_contract(manifest, role),
             })
             created.append(role)
-    except Exception:
-        for role in created:
-            try:
-                _post(f"{control}/v1/tasks/{task_ids[role]}/transition",
-                      headers={"X-Orchestrator-Token": orchestrator},
-                      payload={"target": "CANCELLED", "reason": "work-package task creation incomplete"})
-            except Exception:
-                pass
-        raise
+        except Exception:
+            for pending in created:
+                try:
+                    _post(f"{control}/v1/tasks/{task_ids[pending]}/transition",
+                          headers={"X-Orchestrator-Token": orchestrator},
+                          payload={"target": "CANCELLED", "reason": "work-package task creation incomplete"})
+                except Exception:
+                    pass
+            raise
 
     reports: dict[str, dict[str, Any]] = {}
-    for role in ROLES:
+
+    def run_role(role: str, extra_context: list[str] | None = None) -> None:
         spec = manifest["roles"][role]
         worker_id, worker_token = workers[role]
         env = os.environ.copy()
@@ -236,7 +234,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         ]
         for path in spec["permitted_paths"]:
             command.extend(["--permitted-path", path])
-        for path in spec["context_files"]:
+        for path in spec["context_files"] + (extra_context or []):
             command.extend(["--context-file", path])
         try:
             result = subprocess.run(
@@ -267,78 +265,132 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             "report_sha256": hashlib.sha256(report_path.read_bytes()).hexdigest(),
             "status": "CANDIDATE_READY",
         }
+        completed.add(role)
 
-    builder_paths = manifest["roles"]["lead_builder"]["permitted_paths"] + manifest["roles"]["specialist_builder"]["permitted_paths"]
-    candidate_files = workspace_manifest(root, manifest["base_commit_sha"], builder_paths)
-    candidate = {
-        "run_id": manifest["run_id"],
-        "work_package_id": manifest["work_package_id"],
-        "base_commit_sha": manifest["base_commit_sha"],
-        "candidate_files": candidate_files,
-        "role_reports": reports,
-    }
-    candidate_path = report_dir / f"{manifest['run_id']}-candidate-manifest.json"
-    candidate_bytes = json.dumps(candidate, indent=2).encode("utf-8")
-    candidate_path.write_bytes(candidate_bytes)
-    candidate_sha = hashlib.sha256(candidate_bytes).hexdigest()
+    try:
+        # Builders work sequentially in disjoint path scopes. Reviewers only see
+        # the frozen candidate and test evidence produced after both builders.
+        for role in BUILDERS:
+            run_role(role)
 
-    # Final role is the lifecycle record. Intermediate agents remain CANDIDATE_READY.
-    integration_task = task_ids["integration_verifier"]
-    test_report = report_dir / f"{manifest['run_id']}-test-results.json"
-    test_env = os.environ.copy()
-    test_env["PYTHONPATH"] = str(root / "engineering/workforce/src")
-    test_commands = [
-        [sys.executable, "-m", "compileall", "-q", "engineering/workforce/src", "engineering/workforce/tests"],
-        [sys.executable, "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
-    ]
-    test_results = []
-    for command in test_commands:
-        run = subprocess.run(command, cwd=root, env=test_env, capture_output=True, text=True, timeout=300, check=False)
-        test_results.append({"command": command[1:], "returncode": run.returncode,
-                             "stdout": run.stdout[-12000:], "stderr": run.stderr[-12000:]})
-        if run.returncode:
-            raise OrchestrationError("candidate test suite failed; see " + test_report.as_posix())
-    test_bytes = json.dumps(test_results, indent=2).encode("utf-8")
-    test_report.write_bytes(test_bytes)
-    test_sha = hashlib.sha256(test_bytes).hexdigest()
+        builder_paths = manifest["roles"]["lead_builder"]["permitted_paths"] + manifest["roles"]["specialist_builder"]["permitted_paths"]
+        candidate_files = workspace_manifest(root, manifest["base_commit_sha"], builder_paths)
+        candidate = {
+            "run_id": manifest["run_id"],
+            "work_package_id": manifest["work_package_id"],
+            "base_commit_sha": manifest["base_commit_sha"],
+            "candidate_files": candidate_files,
+            "builder_reports": {r: reports[r] for r in BUILDERS},
+        }
+        candidate_path = report_dir / f"{manifest['run_id']}-candidate-manifest.json"
+        candidate_bytes = json.dumps(candidate, indent=2).encode("utf-8")
+        candidate_path.write_bytes(candidate_bytes)
+        candidate_sha = hashlib.sha256(candidate_bytes).hexdigest()
 
-    review_records = [reports[r] for r in REVIEWERS]
-    review_bundle = json.dumps(review_records, sort_keys=True, separators=(",", ":")).encode()
-    review_sha = hashlib.sha256(review_bundle).hexdigest()
-    integrated = {
-        "run_id": manifest["run_id"],
-        "base_commit_sha": manifest["base_commit_sha"],
-        "candidate_manifest_sha256": candidate_sha,
-        "test_results_sha256": test_sha,
-        "review_reports": review_records,
-        "integration_verifier_report": reports["integration_verifier"],
-        "status": "AWAITING_DIRECTOR_REVIEW",
-    }
-    integrated_path = report_dir / f"{manifest['run_id']}-director-packet.json"
-    integrated_bytes = json.dumps(integrated, indent=2).encode("utf-8")
-    integrated_path.write_bytes(integrated_bytes)
-    integrated_sha = hashlib.sha256(integrated_bytes).hexdigest()
+        # Never point the test suite at the live control-plane database. Full
+        # PostgreSQL tests run only when an explicit disposable test DB is supplied.
+        test_env = os.environ.copy()
+        test_env.pop("DATABASE_URL", None)
+        test_env.pop("DIRECTOR_APPROVAL_TOKEN", None)
+        test_env.pop("WORKFORCE_ORCHESTRATOR_TOKEN", None)
+        test_env.pop("WORKFORCE_WORKER_CREDENTIALS_JSON", None)
+        test_database = os.environ.get("WORKFORCE_TEST_DATABASE_URL", "")
+        if test_database:
+            required_test = (
+                "WORKFORCE_TEST_DIRECTOR_TOKEN",
+                "WORKFORCE_TEST_ORCHESTRATOR_TOKEN",
+                "WORKFORCE_TEST_WORKER_CREDENTIALS_JSON",
+            )
+            missing = [key for key in required_test if not os.environ.get(key)]
+            if missing:
+                raise OrchestrationError("disposable integration DB requires: " + ", ".join(missing))
+            test_env.update({
+                "DATABASE_URL": test_database,
+                "DIRECTOR_APPROVAL_TOKEN": os.environ["WORKFORCE_TEST_DIRECTOR_TOKEN"],
+                "WORKFORCE_ORCHESTRATOR_TOKEN": os.environ["WORKFORCE_TEST_ORCHESTRATOR_TOKEN"],
+                "WORKFORCE_WORKER_CREDENTIALS_JSON": os.environ["WORKFORCE_TEST_WORKER_CREDENTIALS_JSON"],
+            })
+        test_env["PYTHONPATH"] = str(root / "engineering/workforce/src")
+        test_commands = [
+            [sys.executable, "-m", "compileall", "-q", "engineering/workforce/src", "engineering/workforce/tests"],
+            [sys.executable, "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
+        ]
+        test_results = []
+        for command in test_commands:
+            run = subprocess.run(command, cwd=root, env=test_env, capture_output=True, text=True, timeout=300, check=False)
+            test_results.append({
+                "command": command[1:],
+                "returncode": run.returncode,
+                "stdout": run.stdout[-12000:],
+                "stderr": run.stderr[-12000:],
+            })
+            if run.returncode:
+                raise OrchestrationError("candidate test suite failed; no reviewer or integration task will proceed")
+        test_report = report_dir / f"{manifest['run_id']}-test-results.json"
+        test_bytes = json.dumps(test_results, indent=2).encode("utf-8")
+        test_report.write_bytes(test_bytes)
+        test_sha = hashlib.sha256(test_bytes).hexdigest()
 
-    transitions = [
-        ("TESTING", "candidate evidence recorded", candidate_sha, candidate_path.relative_to(root).as_posix()),
-        ("REVIEWING", "test evidence recorded", test_sha, test_report.relative_to(root).as_posix()),
-        ("INTEGRATION", "independent review evidence bundled", review_sha, f"sha256:{review_sha}"),
-        ("AWAITING_DIRECTOR", "integrated evidence packet prepared", integrated_sha, integrated_path.relative_to(root).as_posix()),
-    ]
-    for target, reason, digest, ref in transitions:
-        _post(f"{control}/v1/tasks/{integration_task}/transition",
-              headers={"X-Orchestrator-Token": orchestrator},
-              payload={"target": target, "reason": reason, "evidence_sha256": digest, "evidence_ref": ref})
-    return {
-        "run_id": manifest["run_id"],
-        "task_ids": task_ids,
-        "role_reports": reports,
-        "candidate_manifest": candidate_path.relative_to(root).as_posix(),
-        "test_results": test_report.relative_to(root).as_posix(),
-        "director_packet": integrated_path.relative_to(root).as_posix(),
-        "director_packet_sha256": integrated_sha,
-        "status": "AWAITING_DIRECTOR_REVIEW",
-    }
+        shared_context = [
+            candidate_path.relative_to(root).as_posix(),
+            test_report.relative_to(root).as_posix(),
+        ]
+        for role in REVIEWERS:
+            run_role(role, shared_context)
+
+        integration_context = shared_context + [reports[r]["report_ref"] for r in REVIEWERS]
+        run_role("integration_verifier", integration_context)
+
+        review_records = [reports[r] for r in REVIEWERS]
+        review_bundle = json.dumps(review_records, sort_keys=True, separators=(",", ":")).encode()
+        review_sha = hashlib.sha256(review_bundle).hexdigest()
+        integrated = {
+            "run_id": manifest["run_id"],
+            "work_package_id": manifest["work_package_id"],
+            "base_commit_sha": manifest["base_commit_sha"],
+            "candidate_manifest_sha256": candidate_sha,
+            "test_results_sha256": test_sha,
+            "review_reports": review_records,
+            "integration_verifier_report": reports["integration_verifier"],
+            "status": "AWAITING_DIRECTOR_REVIEW",
+        }
+        integrated_path = report_dir / f"{manifest['run_id']}-director-packet.json"
+        integrated_bytes = json.dumps(integrated, indent=2).encode("utf-8")
+        integrated_path.write_bytes(integrated_bytes)
+        integrated_sha = hashlib.sha256(integrated_bytes).hexdigest()
+
+        integration_task = task_ids["integration_verifier"]
+        transitions = [
+            ("TESTING", "candidate evidence recorded", candidate_sha, candidate_path.relative_to(root).as_posix()),
+            ("REVIEWING", "test evidence recorded", test_sha, test_report.relative_to(root).as_posix()),
+            ("INTEGRATION", "independent review evidence bundled", review_sha, f"sha256:{review_sha}"),
+            ("AWAITING_DIRECTOR", "integrated evidence packet prepared", integrated_sha, integrated_path.relative_to(root).as_posix()),
+        ]
+        for target, reason, digest, ref in transitions:
+            _post(f"{control}/v1/tasks/{integration_task}/transition",
+                  headers={"X-Orchestrator-Token": orchestrator},
+                  payload={"target": target, "reason": reason, "evidence_sha256": digest, "evidence_ref": ref})
+        return {
+            "run_id": manifest["run_id"],
+            "task_ids": task_ids,
+            "role_reports": reports,
+            "candidate_manifest": candidate_path.relative_to(root).as_posix(),
+            "test_results": test_report.relative_to(root).as_posix(),
+            "director_packet": integrated_path.relative_to(root).as_posix(),
+            "director_packet_sha256": integrated_sha,
+            "status": "AWAITING_DIRECTOR_REVIEW",
+        }
+    except Exception:
+        for role in ROLES:
+            if role in completed:
+                continue
+            try:
+                _post(f"{control}/v1/tasks/{task_ids[role]}/transition",
+                      headers={"X-Orchestrator-Token": orchestrator},
+                      payload={"target": "CANCELLED", "reason": "work package stopped after upstream failure"})
+            except Exception:
+                pass
+        raise
 
 
 def main() -> None:
