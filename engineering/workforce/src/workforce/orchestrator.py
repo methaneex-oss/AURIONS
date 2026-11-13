@@ -196,7 +196,7 @@ def _task_contract(manifest: dict[str, Any], role: str) -> dict[str, Any]:
         "authorization_ref": manifest["authorization_ref"],
         "objective": manifest["objective"],
         "base_commit_sha": manifest["base_commit_sha"],
-        "permitted_paths": spec["permitted_paths"] or ["engineering/workforce"],
+        "permitted_paths": spec["permitted_paths"],
         "prohibited_paths": ["docs/governance", "docs/workforce", "src/aurions", "core", ".github/workflows"],
         "canonical_sources": manifest["canonical_sources"],
         "acceptance_criteria": manifest["acceptance_criteria"],
