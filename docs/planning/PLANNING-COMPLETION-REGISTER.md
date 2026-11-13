@@ -6,7 +6,7 @@
 - **Mandatory builder standard:** [Builder Operating Protocol](../governance/BUILDER-OPERATING-PROTOCOL.md); builders must satisfy its self-review, testing, correction and evidence requirements.
 - **Current phase:** Architecture planning and technical design, with implementation planning in progress.
 - **Implementation authorization:** Not granted.
-- **Last builder audit:** 2026-11-12 (task-run revision/event reconciliation, schema/fixture crosswalk and repository contract scan).
+- **Last builder audit:** 2026-11-13 (continued command/query/event/recovery/scenario/work-package cross-artifact integrity and validation hardening; see the dated appendices in the main-builder audit).
 - **Authority:** Existing owner decision register in `INITIAL-ENGINEERING-SPECIFICATION.md`; this register tracks completion and does not replace owner decisions.
 - **Governance integration evidence:** [Governance Standard Validation Results](../reviews/GOVERNANCE-STANDARD-VALIDATION-RESULTS-2026-11-12.md) — CI verified the mandatory role/workflow document structure and repository entry-point links; this does not prove human compliance or close technical findings.
 
