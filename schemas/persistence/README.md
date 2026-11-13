@@ -1,14 +1,14 @@
 # AURIONS proposed SQLite DDL
 
-**Status: proposed planning artifacts. All three base schemas and seven additive migrations have executed in host-side CI smoke tests; they have not been applied to a user database or validated against the target Termux/Android SQLite build.**
+**Status: proposed planning artifacts. All three base schemas and eight additive migrations have executed in host-side CI smoke tests; they have not been applied to a user database or validated against the target Termux/Android SQLite build.**
 
-These files are the machine-readable DDL source for the three independent SQLite stores. Memory migration v5 adds the memory-store transactional outbox required by the cross-store protocol. Governance migration v2 adds the corresponding governance-store outbox. Memory migration v4 proposes owner-scoped, versioned persistence for objective records (distinct from derived goals), owner/scope details for existing evidence records, open-world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The explanatory source specification in `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md` Section 26 links to these files; do not maintain a second inline SQL copy there.
+These files are the machine-readable DDL source for the three independent SQLite stores. Memory migration v5 adds the memory-store transactional outbox required by the cross-store protocol. Memory migration v6 adds an owner-scoped binding from every new derived goal revision to an exact objective revision. Governance migration v2 adds the corresponding governance-store outbox. Memory migration v4 proposes owner-scoped, versioned persistence for objective records (distinct from derived goals), owner/scope details for existing evidence records, open-world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The explanatory source specification in `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md` Section 26 links to these files; do not maintain a second inline SQL copy there.
 
 ## Base schemas and migration order
 
 | Store | Initial schema | Additive migrations |
 |---|---|---|
-| `aurion_memory.db` | [aurion_memory.base.sql](./aurion_memory.base.sql) | [migration v2](./aurion_memory.migration_v2.sql), [migration v3](./aurion_memory.migration_v3.sql), then [migration v4](./aurion_memory.migration_v4.sql), then [migration v5](./aurion_memory.migration_v5.sql) |
+| `aurion_memory.db` | [aurion_memory.base.sql](./aurion_memory.base.sql) | [migration v2](./aurion_memory.migration_v2.sql), [migration v3](./aurion_memory.migration_v3.sql), then [migration v4](./aurion_memory.migration_v4.sql), then [migration v5](./aurion_memory.migration_v5.sql), then [migration v6](./aurion_memory.migration_v6.sql) |
 | `aurion_events.db` | [aurion_events.base.sql](./aurion_events.base.sql) | [migration v2](./aurion_events.migration_v2.sql), then [migration v3](./aurion_events.migration_v3.sql) |
 | `aurion_governance.db` | [aurion_governance.base.sql](./aurion_governance.base.sql) | [migration v2](./aurion_governance.migration_v2.sql) |
 
@@ -32,7 +32,7 @@ This result establishes host-side DDL execution for that exact revision only. It
 ## Required validation before implementation approval
 
 1. Execute each base schema on a clean database using the pinned minimum SQLite build.
-2. Apply memory v2…v5, events v2…v3 and governance v2 in order, with independent migration ledgers and checksums. Events v3 leaves legacy task owners NULL pending authoritative owner backfill; verify this gate and the new-task owner trigger.
+2. Apply memory v2…v6, events v2…v3 and governance v2 in order, with independent migration ledgers and checksums. Events v3 leaves legacy task owners NULL pending authoritative owner backfill; verify this gate and the new-task owner trigger.
 3. Run `PRAGMA foreign_key_check`, `PRAGMA integrity_check`, JSON-function probes and migration-specific invariants after each step.
 4. Test empty install, every supported upgrade, interrupted migration before/after commit, checksum mismatch, restore, disk-full, busy/locked, read-only/corrupt DB and process crash.
 5. Verify all indexes, uniqueness/idempotency constraints, owner-scope query plans and target-device timings.
@@ -52,3 +52,10 @@ The cross-store protocol requires the authoritative store to commit its aggregat
 Memory migration v5 and governance migration v2 add an identically shaped local `outbox` table to their respective stores. The existing event-store outbox remains for event-store-owned mutations and downstream dispatch. A relay copies committed local outbox envelopes into the central event archive using stable message IDs and payload digests; delivery is at least once and consumers deduplicate. A relay failure leaves the source outbox pending and does not roll back or misreport the already-committed domain mutation.
 
 CI now executes the new migrations and verifies the common outbox columns. It also performs rollback probes proving that a memory aggregate insert and its local outbox row, and a governance policy insert and its local outbox row, roll back together. This is host-side SQLite evidence only; relay crash/replay, multi-store saga, target Android/Termux and power-loss tests remain open.
+
+
+## Owner-bound objective-to-goal lineage
+
+Memory migration v6 adds `goal_revision_objective_bindings`. Every new `goal_revisions` row must be paired in the same transaction with a binding to an exact `objective_records(objective_id, version, owner_ref)` row. The composite foreign key prevents a goal from referencing a missing objective revision or crossing owner scope. A trigger rejects new goal revisions without a binding. Insert the binding row first and the goal revision second in one transaction; deferred foreign keys validate both parent rows at commit.
+
+Legacy goal revisions without a binding are not assigned an objective by inference. They must be quarantined from valid derived-goal queries and explicitly reconciled before they can be revised or treated as current owner-derived goals. Host CI tests valid linkage, missing-binding rejection and cross-owner rejection. This does not prove the goal handlers or legacy-data reconciliation runtime.
