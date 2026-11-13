@@ -36,9 +36,6 @@ jobs:
           --health-retries 20
     env:
       DATABASE_URL: postgresql://workforce:workforce-test-password@localhost:5432/workforce
-      DIRECTOR_APPROVAL_TOKEN: test-director-token
-      WORKFORCE_ORCHESTRATOR_TOKEN: test-orchestrator-token
-      WORKFORCE_WORKER_CREDENTIALS_JSON: '{"builder-01":{"token":"test-builder-token","role":"lead_builder"},"reviewer-01":{"token":"test-reviewer-token","role":"code_reviewer"}}'
       PYTHONPATH: engineering/workforce/src
     steps:
       - uses: actions/checkout@v4
@@ -49,6 +46,22 @@ jobs:
           cache-dependency-path: engineering/workforce/requirements.txt
       - name: Install workforce dependencies
         run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Generate ephemeral test-only actor credentials
+        run: |
+          python - <<'PY' >> "$GITHUB_ENV"
+          import json
+          import secrets
+          director = secrets.token_urlsafe(32)
+          orchestrator = secrets.token_urlsafe(32)
+          builder = secrets.token_urlsafe(32)
+          reviewer = secrets.token_urlsafe(32)
+          print("DIRECTOR_APPROVAL_TOKEN=" + director)
+          print("WORKFORCE_ORCHESTRATOR_TOKEN=" + orchestrator)
+          print("WORKFORCE_WORKER_CREDENTIALS_JSON=" + json.dumps({
+              "builder-01": {"token": builder, "role": "lead_builder"},
+              "reviewer-01": {"token": reviewer, "role": "code_reviewer"},
+          }))
+          PY
       - name: Apply database migrations
         run: |
           python - <<'PY'
