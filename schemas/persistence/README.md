@@ -25,7 +25,7 @@ References:
 
 ## Host-side DDL execution evidence (2026-11-12)
 
-The workflow runs `scripts/validate_sqlite_ddl.py` after schema and governance validation. Latest exact-head run [43324236645](https://github.com/methaneex-oss/AURIONS/actions/runs/43324236645) on PR head `7c81d2629cfe40701f3319f33c19c0ec2ebf2ee0` executed all eight SQL files in the order above on host SQLite. It checked foreign-key enforcement, foreign-key integrity and database integrity after each file, then exercised selected objective insert, event sequence allocation and task-owner trigger invariants. Earlier run 43288000757 is retained as historical evidence.
+The workflow runs `scripts/validate_sqlite_ddl.py` after schema and governance validation. Exact-head run [43383148511](https://github.com/methaneex-oss/AURIONS/actions/runs/43383148511) on PR head `4fe74e09c5d3bbc4d9c03a35e707926bdf9c4b77` executed all eleven SQL files in the order above on host SQLite, including memory v5/v6 and governance v2. It checked foreign-key enforcement, foreign-key integrity and database integrity after each file; objective insert; event sequence allocation; task-owner trigger; memory/governance local-outbox rollback; same-owner interaction-outcome linkage; exact goal-to-objective revision binding; rejection of unbound goal revisions; and rejection of cross-owner objective bindings.
 
 This result establishes host-side DDL execution for that exact revision only. It does not establish target Termux/Android SQLite compatibility, crash/rollback/restore safety, concurrency behaviour, complete application-level invariants, cross-store recovery or runtime handler correctness. The automated check must remain enabled on future SQL and validator changes.
 
