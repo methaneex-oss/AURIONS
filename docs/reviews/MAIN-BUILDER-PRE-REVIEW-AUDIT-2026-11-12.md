@@ -805,3 +805,20 @@ EBT-01 and the mandatory fresh-read gate were confirmed in both.
 **Builder self-review boundary:** The DDL correction makes the local atomicity claim structurally possible and host rollback tests are now specified in the runner. It does not implement the outbox relay, central archive deduplication/replay, consumer inbox transactions, crash-safe saga progression, compensation, or target-platform behaviour. The three evolution saga sequences remain proposed contracts requiring runtime and independent verification. No command/event becomes dispatchable.
 
 **Disposition:** BR-005 and BR-008 remain OPEN overall. This is a substantive builder correction, not planning-exit completion. Overall builder work remains NOT READY for independent review until the remaining cross-store saga semantics, canonical entity/DDL transitions, query projections, full owner-decision traceability and remaining builder-owned checks are completed. No implementation authorization, merge, reviewer handoff or tester handoff was made.
+
+## Builder run — query projection/persistence reconciliation (2026-11-13)
+
+**Fresh governance gate:** The current Project Directorship and Team Operating Standard and Builder Operating Protocol were re-fetched and read before this run; the previously recorded current blob hashes were re-confirmed from the current branch. EBT-01 and the mandatory fresh-read rule were observed.
+
+**Work performed:** Scanned all 29 query registry entries, their result-item schema properties (including world-interaction definitions) and the DDL columns in all three stores. Added `docs/planning/QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md`. Added required `projection_contract` and `projection_unresolved_fields` metadata to all 29 query entries and the registry JSON Schema. Extended `validate_schemas.py` to resolve each result schema pointer, ensure declared unresolved fields belong to the result schema, and require each query and its unmapped fields to be represented in the reconciliation report.
+
+**Static scan result:** 62 result fields across 16 queries have no direct, `_json` or `_ms` candidate column in their declared table bindings. Material examples:
+- `environment.inspect`: 11 fields without direct candidates, including observation/owner/device identity, collection method/version, platform context and observed facts.
+- `memory.search`: five retrieval-receipt fields without a mapped persistence source; the result schema is retrieval metadata rather than an explicit memory-candidate projection.
+- `attention.inspect`: all ten fields require an event-payload projection contract not expressed by its current DDL bindings.
+- `permission.inspect` and `audit.lookup`: six fields each lack direct candidates, including owner/actor/scope/approval/evidence/correlation semantics.
+- `representation.inspect`, `prediction.inspect`, `context.get` and `interaction.inspect` have missing method/source, confidence/evidence, provenance/uncertainty and deadline/execution-binding mappings respectively.
+
+Thirteen queries have no fields missing by the direct/JSON/timestamp name scan, but this does not prove the correct source table, joins, alias, JSON pointer, conversion, nullability, owner filter, redaction, snapshot or cursor. The report explicitly treats all candidate matches as unverified.
+
+**Disposition:** BR-002 remains OPEN. This increment exposes the result-schema/DDL gap and makes it machine-visible; it does not close the actual query SQL/projection contracts or execute handlers. Queries remain design-only/non-dispatchable. Exact-head CI after this increment is pending; no pass is claimed.
