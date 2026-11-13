@@ -130,6 +130,12 @@ def _worker_tokens() -> dict[str, tuple[str, str]]:
         result[role] = (worker_id, token)
     if set(result) != set(ROLES):
         raise OrchestrationError("exactly one worker credential is required for each of the six roles")
+    privileged = [
+        os.environ.get("DIRECTOR_APPROVAL_TOKEN", ""),
+        os.environ.get("WORKFORCE_ORCHESTRATOR_TOKEN", ""),
+    ]
+    if any(token == value for _, token in result.values() for value in privileged if value):
+        raise OrchestrationError("worker credentials must be distinct from Director and orchestrator credentials")
     return result
 
 
