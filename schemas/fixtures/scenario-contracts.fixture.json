@@ -5585,8 +5585,8 @@
       "contract_refs": [
         "payload:objective",
         "payload:objectiveRevision",
-        "command:objective.create",
-        "command:plan.propose",
+        "objective.create",
+        "plan.propose",
         "objective.created.v1",
         "plan.proposed.v1",
         "catalogue:NHC-016"
@@ -5717,8 +5717,8 @@
         "payload:entity",
         "payload:relationship",
         "payload:evidence",
-        "command:world.entity.observe",
-        "command:world.relationship.revise",
+        "world.entity.observe",
+        "world.relationship.revise",
         "world.entity.observed.v1",
         "world.relationship.revised.v1",
         "catalogue:NHC-009"
@@ -5848,7 +5848,7 @@
       "contract_refs": [
         "payload:affordanceHypothesis",
         "payload:interactionProposal",
-        "command:means.affordance.propose",
+        "means.affordance.propose",
         "means.affordance.proposed.v1",
         "catalogue:NHC-010"
       ],
@@ -5977,8 +5977,8 @@
       "contract_refs": [
         "payload:affordanceHypothesis",
         "payload:interactionProposal",
-        "command:reasoning.assess",
-        "command:means.affordance.propose",
+        "reasoning.assess",
+        "means.affordance.propose",
         "means.affordance.proposed.v1",
         "catalogue:NHC-013"
       ],
@@ -6107,8 +6107,8 @@
       "contract_refs": [
         "payload:affordanceHypothesis",
         "payload:situation",
-        "command:means.affordance.propose",
-        "command:context.invalidate",
+        "means.affordance.propose",
+        "context.invalidate",
         "means.affordance.proposed.v1",
         "context.invalidated.v1",
         "catalogue:NHC-014"
@@ -6237,7 +6237,7 @@
       ],
       "contract_refs": [
         "payload:interactionProposal",
-        "command:interaction.propose",
+        "interaction.propose",
         "interaction.proposed.v1",
         "catalogue:NHC-012",
         "catalogue:NHC-005"
@@ -6366,7 +6366,7 @@
       ],
       "contract_refs": [
         "payload:interactionOutcome",
-        "command:interaction.outcome.record",
+        "interaction.outcome.record",
         "interaction.outcome.observed.v1",
         "outcome.observed.v1",
         "catalogue:NHC-015"
@@ -6496,8 +6496,8 @@
       "contract_refs": [
         "payload:objective",
         "payload:interactionProposal",
-        "command:task.start",
-        "command:task.pause",
+        "task.start",
+        "task.pause",
         "task.run.transitioned.v1",
         "task.control.requested.v1",
         "catalogue:NHC-011"
