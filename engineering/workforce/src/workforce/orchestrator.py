@@ -450,13 +450,6 @@ def main() -> None:
     manifest_path = Path(args.manifest).resolve()
     if not manifest_path.is_file():
         parser.error("manifest file does not exist")
-    if root == manifest_path or root in manifest_path.parents:
-        try:
-            manifest_rel = manifest_path.relative_to(root).as_posix()
-        except ValueError:
-            manifest_rel = ""
-        if ".workforce-artifacts" not in manifest_rel.split("/"):
-            parser.error("keep the work-package manifest outside the repository or under .workforce-artifacts/")
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         result = run_work_package(manifest, root, root / args.report_dir)
