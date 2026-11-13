@@ -121,6 +121,9 @@ class ControlPlaneApiTests(unittest.TestCase):
         self.assertEqual(second.status_code, 201, second.text)
         self.assertFalse(first.json()["idempotent_replay"])
         self.assertTrue(second.json()["idempotent_replay"])
+        conflicting = {**payload, "payload": {"progress": "tampered"}}
+        conflict = self.client.post(f"/v1/tasks/{self.task_id}/checkpoint", headers=headers, json=conflicting)
+        self.assertEqual(conflict.status_code, 409)
         with psycopg.connect(DB) as conn:
             count = conn.execute("SELECT count(*) FROM wf_checkpoints WHERE task_id=%s", (self.task_id,)).fetchone()[0]
         self.assertEqual(count, 1)
