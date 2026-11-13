@@ -13,6 +13,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ROADMAP = ROOT / "docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md"
 MATRIX = ROOT / "docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md"
+PRODUCT = ROOT / "docs/product/FIRST-USABLE-RELEASE-DEFINITION.md"
+ACCEPTANCE_MATRIX = ROOT / "docs/planning/FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md"
 
 
 class TraceabilityError(AssertionError):
@@ -74,6 +76,64 @@ def parse_table_rows(path: Path, label: str) -> dict[str, list[str]]:
             fail(f"{label}:{line_number}: duplicate {wp_id} row")
         rows[wp_id] = cells
     return rows
+
+
+
+def parse_acceptance_rows(path: Path, label: str) -> dict[str, list[str]]:
+    if not path.is_file():
+        fail(f"missing {label}: {path.relative_to(ROOT)}")
+    rows: dict[str, list[str]] = {}
+    in_acceptance_section = label != "product acceptance definition"
+    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if label == "product acceptance definition":
+            if line.startswith("## 6. First-release acceptance protocol"):
+                in_acceptance_section = True
+                continue
+            if in_acceptance_section and line.startswith("## 7. "):
+                break
+        if not in_acceptance_section or not line.startswith("| PR-"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        match = re.match(r"^(PR-\\d{2})\\b", cells[0])
+        if not match:
+            fail(f"{label}:{line_number}: malformed acceptance identifier")
+        acceptance_id = match.group(1)
+        if acceptance_id in rows:
+            fail(f"{label}:{line_number}: duplicate {acceptance_id} row")
+        rows[acceptance_id] = cells
+    return rows
+
+
+def validate_acceptance_crosswalk() -> tuple[int, int]:
+    product_rows = parse_acceptance_rows(PRODUCT, "product acceptance definition")
+    matrix_rows = parse_acceptance_rows(ACCEPTANCE_MATRIX, "first-release acceptance matrix")
+    expected = {f"PR-{number:02d}" for number in range(1, 19)}
+    for label, rows in (("product acceptance definition", product_rows),
+                        ("first-release acceptance matrix", matrix_rows)):
+        actual = set(rows)
+        if actual != expected:
+            fail(
+                f"{label} inventory mismatch: missing={sorted(expected - actual)}; "
+                f"unexpected={sorted(actual - expected)}"
+            )
+    known_wps = {f"WP-{number:02d}" for number in range(17)}
+    for acceptance_id, cells in matrix_rows.items():
+        if len(cells) != 7:
+            fail(f"{acceptance_id}: acceptance traceability row must have seven cells, found {len(cells)}")
+        for label, cell in zip(
+            cells[1:],
+            ("contract/architecture trace", "accountable work packages",
+             "scenario/test evidence", "required acceptance evidence", "owner/external gate"),
+        ):
+            if not cell:
+                fail(f"{acceptance_id}: missing {label}")
+        wp_refs = set(parse_wp_ids(cells[2]))
+        if not wp_refs:
+            fail(f"{acceptance_id}: no accountable work package is mapped")
+        unknown = wp_refs - known_wps
+        if unknown:
+            fail(f"{acceptance_id}: unknown work-package references {sorted(unknown)}")
+    return len(product_rows), len(matrix_rows)
 
 
 def validate() -> tuple[int, int]:
@@ -141,6 +201,10 @@ def validate() -> tuple[int, int]:
     if not has_cycle({"WP-00": {"WP-01"}, "WP-01": {"WP-00"}}):
         fail("dependency-cycle detector self-test failed")
 
+    product_count, acceptance_count = validate_acceptance_crosswalk()
+    if product_count != 18 or acceptance_count != 18:
+        fail("first-release acceptance crosswalk must cover PR-01…PR-18 exactly")
+
     return len(graph), edge_count
 
 
@@ -149,7 +213,7 @@ def main() -> int:
     print(
         f"PASS: {package_count} roadmap packages and {package_count} traceability rows; "
         f"{edge_count} dependency edges; graph acyclic; WP-15 first-release path "
-        "and WP-14/WP-16 boundaries preserved."
+        "and WP-14/WP-16 boundaries preserved; PR-01…PR-18 acceptance crosswalk exact."
     )
     return 0
 
