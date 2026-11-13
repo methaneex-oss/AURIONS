@@ -580,30 +580,30 @@ The event body records the previous/current state and revision, cause, actor, ti
 
 ### 8.1 Store ownership
 - `aurion_memory.db`: experience/representation/context, memories, knowledge, evidence, beliefs, predictions, goals, plans, immutable artifact metadata/lineage, versioned discovered capability descriptors and learned capability knowledge, durable appraisal/decision/outcome summaries, self-model revisions, evolution proposals and learning metadata.
-- `aurion_events.db`: event log, capability discovery/execution events, operations, operation steps, task runs/checkpoints, outbox/inbox and recovery journal.
+- `aurion_events.db`: central event archive, event receipts/consumers, operations, operation steps, task runs/checkpoints, event-store-local outbox/inbox and recovery journal.
 - `aurion_governance.db`: owner/device identities and trust, policies, permission grants, approval requests/decisions, revocations, disclosure records and security audit. A capability descriptor is not a permission grant; the OS and governance authorities are rechecked independently at execution.
 
-Each DB has its own migration ledger, backup/restore procedure, integrity check and schema version. Cross-file foreign keys are prohibited. Cross-store references use UUIDs validated by application services.
+Each DB has its own migration ledger, backup/restore procedure, integrity check, schema version and local transactional outbox. Memory migration v5 and governance migration v2 add their outbox tables; the event store retains its own outbox for event-store-owned state and downstream dispatch. Cross-file foreign keys are prohibited. Cross-store references use UUIDs validated by application services.
 
 ### 8.2 Transaction pattern
-- A domain command writes its aggregate and an outbox record in one transaction within the owning DB.
-- Outbox publisher retries until acknowledged; event ID deduplicates consumers.
-- Consumer records inbox receipt and state change in one local transaction.
+- A domain command writes its aggregate and an outbox record in one transaction within the authoritative owning DB. It does not synchronously write the central event archive as part of that transaction.
+- A per-store relay copies committed outbox envelopes to the central event archive using stable message IDs and payload digests. Delivery is at least once; source acknowledgement follows durable archive receipt. Retries do not repeat the domain mutation.
+- The central event archive deduplicates repeated message IDs. A consumer records its inbox receipt and its own state change in one local transaction whenever both are in the same store; otherwise it uses a durable saga step and reconciliation.
 - Cross-store workflows use durable operation/saga state and compensating actions; never imply a distributed ACID commit.
 - A write spanning governance and operation stores first obtains a signed/immutable decision reference, then writes the operation record; if either step fails, reconcile from durable audit and fail closed.
 - SQLite connections use explicit transaction scopes, foreign keys within each DB, busy timeout and WAL only after target-device validation. Durability/synchronous settings must be documented and tested against power-loss expectations.
 
 ### 8.3 DDL and migration acceptance
-The canonical SQL is under [`schemas/persistence/`](../../schemas/persistence/README.md): three base schemas plus memory migrations v2/v3/v4 and event/recovery migrations v2/v3. The source specification Section 26 links to these machine-readable files. Proposed minimum SQLite version is 3.38.0 (STRICT tables plus built-in JSON functions); target Termux/Android compile options remain unverified.
+The canonical SQL is under [`schemas/persistence/`](../../schemas/persistence/README.md): three base schemas plus memory migrations v2…v5, event/recovery migrations v2…v3 and governance migration v2. The source specification Section 26 links to these machine-readable files. Proposed minimum SQLite version is 3.38.0 (STRICT tables plus built-in JSON functions); target Termux/Android compile options remain unverified.
 
-**Host evidence:** CI has executed all three base schemas and all five additive migrations in order on host SQLite. The exact-head run [43324236645](https://github.com/methaneex-oss/AURIONS/actions/runs/43324236645) passed foreign-key enforcement, foreign-key integrity and database integrity checks after each file, plus selected objective insert, event sequence allocation and task-owner trigger invariants. This is bounded host smoke evidence, not target compatibility or complete recovery validation.
+**Host evidence:** CI has executed all three base schemas and all seven additive migrations in order on host SQLite. The exact-head run [43324236645](https://github.com/methaneex-oss/AURIONS/actions/runs/43324236645) passed foreign-key enforcement, foreign-key integrity and database integrity checks after each file, plus selected objective insert, event sequence allocation and task-owner trigger invariants. This is bounded host smoke evidence, not target compatibility or complete recovery validation.
 
 Before implementation approval:
-- Repeat all three base schemas and all five additive migrations against the pinned minimum SQLite build and actual target Termux/Android SQLite library.
+- Repeat all three base schemas and all seven additive migrations against the pinned minimum SQLite build and actual target Termux/Android SQLite library.
 - Enable foreign keys and verify every declared FK.
 - Run schema lint for missing indexes on foreign keys, owner scope, status, timestamps, retrieval predicates and idempotency keys.
 - Validate uniqueness for IDs, idempotency keys and active approval nonces.
-- Test each store from empty DB and each supported prior schema version; apply memory v2, v3, v4 and event v2, v3 in order with independent migration ledgers/checksums.
+- Test each store from empty DB and each supported prior schema version; apply memory v2…v5, event v2…v3 and governance v2 in order with independent migration ledgers/checksums.
 - Test interrupted migration before/after commit and recovery from verified backup.
 - Test constraint violations, busy/locked behaviour, WAL checkpoint, disk full, read-only/corrupt DB and process crash during commit.
 - Verify no cross-file FK or direct database-file replication exists.
