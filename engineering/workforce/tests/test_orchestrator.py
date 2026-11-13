@@ -206,16 +206,48 @@ class OrchestratorTests(unittest.TestCase):
                 for index, role in enumerate(ROLES)
             }
             api_calls = []
+            task_state = {}
+            task_evidence = {}
+            worker_ids = {entry["role"]: worker_id for worker_id, entry in registry.items()}
+            agent_runs = []
+
             def fake_post(url, *, headers, payload):
                 api_calls.append((url, headers, payload))
                 if url.endswith("/v1/tasks"):
+                    task_state[payload["task_id"]] = {
+                        "task_id": payload["task_id"],
+                        "role": payload["role"],
+                        "state": "QUEUED",
+                        "contract_json": payload["contract"],
+                        "attempt_count": 0,
+                    }
                     return {"task_id": payload["task_id"], "state": "QUEUED"}
-                return {"state": payload.get("target", "ok")}
+                task_id = url.split("/v1/tasks/", 1)[1].split("/", 1)[0]
+                target = payload.get("target")
+                current = task_state[task_id]["state"]
+                if target in {"TESTING", "REVIEWING", "INTEGRATION", "AWAITING_DIRECTOR"}:
+                    stage = {
+                        "TESTING": "CANDIDATE",
+                        "REVIEWING": "TEST",
+                        "INTEGRATION": "REVIEW_BUNDLE",
+                        "AWAITING_DIRECTOR": "INTEGRATED",
+                    }[target]
+                    task_evidence.setdefault(task_id, []).append({
+                        "stage": stage,
+                        "sha256": payload["evidence_sha256"],
+                        "evidence_ref": payload["evidence_ref"],
+                        "actor": "orchestrator",
+                        "attempt_count": task_state[task_id]["attempt_count"],
+                    })
+                task_state[task_id]["state"] = target if current != "AWAITING_DIRECTOR" else current
+                return {"state": task_state[task_id]["state"]}
 
             def fake_get(url, *, headers, allow_404=False):
                 if url.endswith("/evidence"):
-                    return []
-                return None
+                    task_id = url.split("/v1/tasks/", 1)[1].split("/", 1)[0]
+                    return task_evidence.get(task_id, [])
+                task_id = url.rsplit("/", 1)[-1]
+                return task_state.get(task_id)
 
             real_run = subprocess.run
             def fake_run(command, **kwargs):
@@ -237,6 +269,17 @@ class OrchestratorTests(unittest.TestCase):
                         (root / "engineering/workforce/src/workforce/lead_output.py").write_text("value = 1\n", encoding="utf-8")
                     if role == "specialist_builder":
                         (root / "engineering/workforce/tests/generated_test.py").write_text("assert True\n", encoding="utf-8")
+                    digest = hashlib.sha256(report.read_bytes()).hexdigest()
+                    task_state[task_id]["state"] = "CANDIDATE_READY"
+                    task_state[task_id]["attempt_count"] = 1
+                    task_evidence[task_id] = [{
+                        "stage": "WORKER_OUTPUT",
+                        "actor": worker_ids[role],
+                        "attempt_count": 1,
+                        "sha256": digest,
+                        "evidence_ref": report_rel,
+                    }]
+                    agent_runs.append(role)
                     return subprocess.CompletedProcess(command, 0, stdout="dry-run", stderr="")
                 return subprocess.CompletedProcess(command, 0, stdout="tests passed", stderr="")
 
