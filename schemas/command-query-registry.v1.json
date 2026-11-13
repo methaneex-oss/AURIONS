@@ -1947,7 +1947,7 @@
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
-      "acceptance_case_id": "CC-044",
+      "acceptance_case_id": "CC-052",
       "transaction_contract": "SINGLE_STORE_LOCAL_OUTBOX: aurion_governance.db atomically inserts the one-time owner decision, advances the matching pending approval request, and commits governance audit plus local outbox. Central event-archive publication is asynchronous and idempotent."
     },
     {
