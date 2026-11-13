@@ -199,7 +199,7 @@ def main() -> int:
             if len(row_cells) != 4:
                 fail(f"{command_type}: transition row must have four columns")
             matrix_events = set(re.findall(
-                r"\\b[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)+\\.v\\d+\\b",
+                r"\b[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+\.v\d+\b",
                 row_cells[2],
             ))
             registry_events = set(item.get("emitted_event_bindings", []))
