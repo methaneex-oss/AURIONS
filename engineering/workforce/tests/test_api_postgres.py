@@ -93,6 +93,38 @@ class ControlPlaneApiTests(unittest.TestCase):
         )
         self.assertEqual(too_large.status_code, 429)
 
+    def test_budget_overrun_is_recorded_and_stops_the_task(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        headers = {"X-Worker-Token": BUILDER}
+        claim = self.client.post(f"/v1/tasks/{self.task_id}/claim", headers=headers, json={})
+        lease = claim.json()["lease_token"]
+        reserved = self.client.post(
+            f"/v1/tasks/{self.task_id}/budget/reserve",
+            headers=headers,
+            json={"lease_token": lease, "requested_tokens": 1000},
+        )
+        self.assertEqual(reserved.status_code, 200, reserved.text)
+        overrun = self.client.post(
+            f"/v1/tasks/{self.task_id}/budget/settle",
+            headers=headers,
+            json={"lease_token": lease, "reservation_id": reserved.json()["reservation_id"], "actual_tokens": 1001},
+        )
+        self.assertEqual(overrun.status_code, 409)
+        with psycopg.connect(DB) as conn:
+            state = conn.execute("SELECT state FROM wf_tasks WHERE task_id=%s", (self.task_id,)).fetchone()[0]
+            usage = conn.execute(
+                """SELECT used_model_calls,used_tokens,reserved_calls,reserved_tokens
+                     FROM wf_agent_budgets WHERE work_package_id=%s AND role='lead_builder'""",
+                (self.task_id,),
+            ).fetchone()
+            reservation_state = conn.execute(
+                "SELECT state FROM wf_budget_reservations WHERE reservation_id=%s",
+                (reserved.json()["reservation_id"],),
+            ).fetchone()[0]
+        self.assertEqual(state, "FAILED")
+        self.assertEqual(usage, (1, 1001, 0, 0))
+        self.assertEqual(reservation_state, "OVERRUN")
+
     def test_orphaned_budget_reservation_is_charged_on_lease_recovery(self):
         self.assertEqual(self.create_task().status_code, 201)
         headers = {"X-Worker-Token": BUILDER}
