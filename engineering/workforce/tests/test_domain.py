@@ -73,6 +73,17 @@ class DomainTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaisesRegex(ContractError, field):
                 TaskContract.from_dict(contract)
 
+    def test_contract_allows_empty_write_scope_for_read_only_roles(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Review",
+            "base_commit_sha": "a" * 40, "permitted_paths": [],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["review report"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"],
+        }
+        self.assertEqual(TaskContract.from_dict(value).permitted_paths, ())
+
     def test_contract_rejects_unknown_fields(self):
         value = {
             "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
