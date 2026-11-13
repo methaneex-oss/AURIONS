@@ -4,6 +4,7 @@
   "authorization_ref": "REPLACE_WITH_EXPLICIT_DIRECTOR_APPROVAL_REFERENCE",
   "objective": "REPLACE_WITH_ONE_BOUNDED_WORK_PACKAGE_OBJECTIVE",
   "base_commit_sha": "0000000000000000000000000000000000000000",
+  "max_total_duration_minutes": 330,
   "canonical_sources": [
     "docs/workforce/WORKFORCE-CONSTITUTION.md",
     "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
@@ -53,7 +54,7 @@
       "max_model_calls": 6,
       "max_tokens": 12000,
       "max_completion_tokens": 3072,
-      "max_duration_minutes": 120
+      "max_duration_minutes": 60
     },
     "architecture_reviewer": {
       "task": "Independently assess the exact candidate against canonical architecture, scope, authority and lifecycle requirements. Read-only.",
@@ -64,7 +65,7 @@
       "max_model_calls": 4,
       "max_tokens": 6000,
       "max_completion_tokens": 3072,
-      "max_duration_minutes": 90
+      "max_duration_minutes": 30
     },
     "code_reviewer": {
       "task": "Independently inspect the exact candidate for correctness, security, concurrency, error handling and regressions. Read-only.",
@@ -73,7 +74,7 @@
       "max_model_calls": 4,
       "max_tokens": 6000,
       "max_completion_tokens": 3072,
-      "max_duration_minutes": 90
+      "max_duration_minutes": 30
     },
     "negative_tester": {
       "task": "Attempt to falsify the candidate's invariants with reproducible adversarial cases. Read-only.",
@@ -82,7 +83,7 @@
       "max_model_calls": 4,
       "max_tokens": 6000,
       "max_completion_tokens": 3072,
-      "max_duration_minutes": 90
+      "max_duration_minutes": 30
     },
     "integration_verifier": {
       "task": "Reconcile exact base, candidate, test, review and integrated evidence SHAs. Prepare a Director packet; do not accept or merge.",
@@ -91,7 +92,7 @@
       "max_model_calls": 4,
       "max_tokens": 6000,
       "max_completion_tokens": 3072,
-      "max_duration_minutes": 90
+      "max_duration_minutes": 45
     }
   }
 }
