@@ -262,6 +262,42 @@ def workspace_manifest(root: Path, base_sha: str, permitted_builder_paths: list[
     return records
 
 
+def _verify_artifact_digest(root: Path, reference: str, expected_sha256: str) -> dict[str, Any]:
+    if not isinstance(reference, str) or not reference or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
+        raise OrchestrationError("artifact reference or expected SHA-256 is invalid")
+    path = safe_path(root, reference)
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_REPORT_BYTES:
+        raise OrchestrationError(f"evidence artifact is missing, unsafe or oversized: {reference}")
+    raw = path.read_bytes()
+    actual = hashlib.sha256(raw).hexdigest()
+    if actual != expected_sha256:
+        raise OrchestrationError(f"evidence artifact digest mismatch: {reference}")
+    return {"reference": reference, "sha256": actual, "bytes": len(raw), "verified": True}
+
+
+def _verify_candidate_files(root: Path, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    verified: list[dict[str, Any]] = []
+    for record in records:
+        relative = record.get("path")
+        if not isinstance(relative, str) or not path_is_permitted(relative, (relative,), ()):
+            raise OrchestrationError("candidate manifest contains an unsafe file path")
+        path = safe_path(root, relative)
+        status = record.get("status")
+        if status == "deleted":
+            if path.exists():
+                raise OrchestrationError(f"candidate deletion no longer matches evidence: {relative}")
+            verified.append({"path": relative, "status": "deleted", "verified": True})
+            continue
+        if status != "present" or path.is_symlink() or not path.is_file():
+            raise OrchestrationError(f"candidate file is missing or has an invalid status: {relative}")
+        raw = path.read_bytes()
+        digest = hashlib.sha256(raw).hexdigest()
+        if len(raw) != record.get("bytes") or digest != record.get("sha256"):
+            raise OrchestrationError(f"candidate file changed after snapshot: {relative}")
+        verified.append({"path": relative, "status": "present", "bytes": len(raw), "sha256": digest, "verified": True})
+    return verified
+
+
 def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) -> None:
     selected = list(dict.fromkeys(["engineering/workforce/src", "engineering/workforce/tests", *test_paths]))
     excluded_dirs = {".git", ".venv", "node_modules", "__pycache__", ".pytest_cache", ".workforce-artifacts", ".aws", ".ssh", ".gnupg"}
@@ -679,14 +715,31 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         review_path = report_dir / f"{manifest['run_id']}-review-bundle.json"
         review_path.write_bytes(review_bundle)
         review_sha = hashlib.sha256(review_bundle).hexdigest()
+        verified_candidate_files = _verify_candidate_files(root, candidate_files)
+        verified_reports = {
+            role: _verify_artifact_digest(root, report["report_ref"], report["report_sha256"])
+            for role, report in reports.items()
+        }
+        verified_artifacts = [
+            _verify_artifact_digest(root, candidate_path.relative_to(root).as_posix(), candidate_sha),
+            _verify_artifact_digest(root, test_report.relative_to(root).as_posix(), test_sha),
+            _verify_artifact_digest(root, review_path.relative_to(root).as_posix(), review_sha),
+        ]
         integrated = {
             "run_id": manifest["run_id"],
             "work_package_id": manifest["work_package_id"],
             "base_commit_sha": manifest["base_commit_sha"],
+            "candidate_manifest_ref": candidate_path.relative_to(root).as_posix(),
             "candidate_manifest_sha256": candidate_sha,
+            "candidate_files": verified_candidate_files,
+            "test_results_ref": test_report.relative_to(root).as_posix(),
             "test_results_sha256": test_sha,
+            "review_bundle_ref": review_path.relative_to(root).as_posix(),
+            "review_bundle_sha256": review_sha,
             "review_reports": review_records,
             "integration_verifier_report": reports["integration_verifier"],
+            "verified_reports": verified_reports,
+            "verified_artifacts": verified_artifacts,
             "status": "AWAITING_DIRECTOR_REVIEW",
         }
         integrated_path = report_dir / f"{manifest['run_id']}-director-packet.json"
