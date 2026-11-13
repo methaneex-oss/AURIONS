@@ -732,3 +732,8 @@ The command validator now requires exactly one transition-matrix row for every r
 ## BR-001 command transaction-matrix parity — 13 November 2026
 
 Added validator parity checks for all 54 command rows: exact row shape, transaction mode, authoritative-store set and local-outbox set must match the registry. Deferred commands require \`DEFERRED\`, no authoritative stores and no outbox. Independent scan found zero mismatches. Exact code head \`3267cc744225d33ae90b4c97732262049bf368be\` passed all nine workflow steps in [run 43432722355](https://github.com/methaneex-oss/AURIONS/actions/runs/43432722355). This is structural consistency evidence, not runtime transaction or handler verification.
+
+
+## BR-004 scenario traceability integrity — 13 November 2026
+
+Assigned stable AU-001…AU-012 IDs to the twelve existing baseline policy tests and extended scenario validation to require catalogue references and CM/AD source-scenario references to resolve against canonical documents. Added uniqueness/sequential-order checks for step IDs and uniqueness checks for negative-control IDs. Current corpus: 39 scenarios, 172 ordered steps, 45 negative controls; all 24 catalogue references and all source scenario references resolve. Exact code head \`d7e20808d42e8ab4aa9c5163454c640f6b130c0c\` passed all nine workflow steps in [run 43433557247](https://github.com/methaneex-oss/AURIONS). Scenarios remain specified, not executed; BR-004 remains OPEN.
