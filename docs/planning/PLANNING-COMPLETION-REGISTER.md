@@ -717,3 +717,8 @@ Corrections:
 ### Parallel validation correction — command/event parity matcher
 
 CI exposed an escaped-regex defect in the command transition event parity check: the matcher did not recognize versioned event names and falsely reported an empty event set for `experience.submit`. The matcher was corrected in `4c3007302a4c9e01a92a9cf517650f79029932e5`; exact head passed all nine steps in [run 43431857829](https://github.com/methaneex-oss/AURIONS/actions/runs/43431857829). This closes a validator defect only; command handlers/events remain design-only and non-dispatchable.
+
+
+### BR-002 projection-source completeness hardening — 13 November 2026
+
+Updated both schema and SQLite validators to strip parenthetical transform annotations without truncating later source expressions, then check every relational `table.column` token. This closes the parser gap affecting multi-source fields with per-source timestamp/JSON annotations. Added an explicit one-owning-store-per-query guard in accordance with the no-implicit-cross-store-snapshot contract. Independent scan: 29 queries, 310 mapped fields, zero undeclared relational source tables. Exact code head `d6f5643d913fbdcb6b3202b7183ea9bc9d4e4dd0` passed all nine workflow steps in [run 43432198432](https://github.com/methaneex-oss/AURIONS/actions/runs/43432198432). This remains projection source/DDL verification, not query SQL or runtime behaviour.
