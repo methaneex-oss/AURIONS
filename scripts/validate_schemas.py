@@ -731,6 +731,14 @@ def main() -> int:
     query_types = {item["query_type"] for item in queries}
     domain_payload_defs = set(schema_docs["domain-payloads.v1.schema.json"].get("$defs", {}))
     world_payload_defs = set(schema_docs["world-interaction.v1.schema.json"].get("$defs", {}))
+    catalogue_sources = (
+        ROOT / "docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md",
+        ROOT / "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md",
+    )
+    catalogue_text = "\\n".join(
+        path.read_text(encoding="utf-8") for path in catalogue_sources
+    )
+    catalogue_ids = set(re.findall(r"\\b[A-Z]{2,4}-\\d{3}\\b", catalogue_text))
     expected_event_scenario_refs = {}
     for scenario in scenarios:
         for step in scenario["steps"]:
@@ -768,6 +776,11 @@ def main() -> int:
                 parts = reference.split("-")
                 if len(parts) < 2 or not parts[-1].isdigit():
                     fail(f"{scenario_id}: unresolved contract reference {reference!r}")
+                if reference not in catalogue_ids:
+                    fail(
+                        f"{scenario_id}: catalogue reference {reference!r} "
+                        "does not resolve in the canonical architecture/security catalogues"
+                    )
         for step in scenario["steps"]:
             action = step.get("contract_action", "")
             if action.startswith("command:") and action.split(":", 1)[1] not in command_types:
