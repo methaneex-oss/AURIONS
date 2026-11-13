@@ -1027,3 +1027,14 @@ Corrected both `validate_schemas.py` and `validate_sqlite_ddl.py` to remove each
 **Exact code head:** `d6f5643d913fbdcb6b3202b7183ea9bc9d4e4dd0`. [Workflow 43432198432](https://github.com/methaneex-oss/AURIONS/actions/runs/43432198432) passed all nine steps, including the source-column checks against all three SQLite stores and seventeen ordered DDL files.
 
 **Evidence boundary:** The validator establishes that every documented direct source table/column is declared and exists in the owning-store DDL, and that query projections remain single-store. It does not execute SELECTs or prove join cardinality, owner-filter placement, redaction, cursor/snapshot behaviour, query plans, performance budgets or handler behaviour. BR-002 remains OPEN; all 29 queries remain design-only/non-dispatchable.
+
+
+## BR-001 command transition inventory integrity — deferred-row uniqueness (2026-11-13)
+
+The command transition validator required exactly one transition row for mapped commands, but only required the existence of a row for deferred commands. Duplicate rows for the two deferred entries (`device.pair`, `device.revoke`) could therefore pass the matrix inventory set check.
+
+Moved the exactly-one-row assertion to the common command path so it applies to all 54 registry commands, including both deferred entries, before mapped/deferred-specific validation.
+
+**Exact code head:** `3c140b1e77cc3c1f337656287a482258420c6c7f`. [Workflow 43432388726](https://github.com/methaneex-oss/AURIONS/actions/runs/43432388726) passed all nine steps. Direct matrix scan confirms one row each for `device.pair` and `device.revoke`.
+
+**Evidence boundary:** This closes duplicate/missing transition-row structural integrity only. It does not implement command handlers or execute the 52 mapped command acceptance cases. All commands remain design-only/non-dispatchable.
