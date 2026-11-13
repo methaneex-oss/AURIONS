@@ -347,6 +347,11 @@ def main() -> int:
             fail(f"{query_type}: duplicate query table-binding store")
         if set(query_binding_stores) != set(item.get("persistence_stores", [])):
             fail(f"{query_type}: read-projection table stores differ from declared persistence stores")
+        if len(query_binding_stores) != 1:
+            fail(
+                f"{query_type}: cross-store query projection is unsupported until "
+                "a versioned cross-store consistency protocol is specified"
+            )
         for binding in query_bindings:
             if binding.get("binding_role") != "read_projection":
                 fail(f"{query_type}: query table binding must be read_projection")
