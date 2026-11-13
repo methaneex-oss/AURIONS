@@ -4716,7 +4716,8 @@
           "store": "aurion_governance.db",
           "tables": [
             "governance_audit",
-            "data_disclosures"
+            "data_disclosures",
+            "approval_requests"
           ],
           "binding_role": "read_projection"
         }
