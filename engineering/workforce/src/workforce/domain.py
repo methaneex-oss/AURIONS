@@ -102,16 +102,23 @@ def validate_transition(current: TaskState, target: TaskState, *, director_decis
 
 
 def path_is_permitted(path: str, permitted: tuple[str, ...], prohibited: tuple[str, ...]) -> bool:
-    """Conservative prefix policy; callers must normalize paths before checking."""
-    normalized = path.replace("\\\\", "/").strip("/")
-    if not normalized or normalized.startswith("/") or ":" in normalized.split("/")[0]:
+    """Conservative, platform-independent prefix policy; callers resolve filesystem paths separately."""
+    raw = path.replace("\\\\", "/")
+    if not raw or raw.startswith("/") or ":" in raw.split("/")[0]:
         return False
+    normalized = raw.rstrip("/")
     parts = normalized.split("/")
-    if any(part in {"", ".", ".."} for part in parts):
+    if not normalized or any(part in {"", ".", ".."} for part in parts):
         return False
+
     def matches(candidate: str, prefix: str) -> bool:
         clean = prefix.replace("\\\\", "/").strip("/")
-        return bool(clean) and (candidate == clean or candidate.startswith(clean + "/"))
+        if not clean or clean.startswith("/") or ":" in clean.split("/")[0]:
+            return False
+        if any(part in {"", ".", ".."} for part in clean.split("/")):
+            return False
+        return candidate == clean or candidate.startswith(clean + "/")
+
     if any(matches(normalized, prefix) for prefix in prohibited):
         return False
     return any(matches(normalized, prefix) for prefix in permitted)
