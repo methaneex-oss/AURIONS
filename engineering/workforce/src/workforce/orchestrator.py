@@ -441,6 +441,7 @@ def _run_candidate_tests(
         docker(["network", "create", "--internal", network])
         docker([
             "run", "--detach", "--name", database_container, "--network", network,
+            "--user", "postgres",
             "--memory=1g", "--cpus=1", "--pids-limit=128",
             "--cap-drop=ALL", "--security-opt=no-new-privileges:true",
             "--env", "POSTGRES_USER=workforce",
@@ -460,7 +461,12 @@ def _run_candidate_tests(
                 break
             time.sleep(0.5)
         if not ready:
-            raise OrchestrationError("isolated PostgreSQL test database did not become ready")
+            diagnostic = subprocess.run(
+                ["docker", "logs", database_container],
+                capture_output=True, text=True, timeout=10, check=False,
+            )
+            detail = (diagnostic.stdout + diagnostic.stderr)[-1200:]
+            raise OrchestrationError("isolated PostgreSQL test database did not become ready: " + detail)
 
         migration_code = """import os
 from pathlib import Path
