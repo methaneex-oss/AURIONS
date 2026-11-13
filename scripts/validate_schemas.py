@@ -674,6 +674,42 @@ def main() -> int:
         ):
             fail(f"{event_type}: non-command producer trigger is still generic/unresolved")
 
+    # Keep current narrative inventory summaries derived from the authoritative
+    # registry. Historical append-only audit entries are intentionally excluded.
+    command_bound_event_count = sum(bool(event.get("command_producers")) for event in events.values())
+    total_unbound_event_count = len(action_gateway_events) + len(non_command_events)
+    event_summary_requirements = {
+        event_matrix_path: [
+            f"Events with one or more explicit command producers: **{command_bound_event_count}**.",
+            f"Events with no command producer binding: **{total_unbound_event_count}**.",
+            f"15 of the {total_unbound_event_count} events without command producers",
+            f"the {len(non_command_events)} other non-command events",
+        ],
+        ROOT / "docs/planning/SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md": [
+            f"{command_bound_event_count} events have command producer bindings; {total_unbound_event_count} have no command producer.",
+            f"the other {len(non_command_events)} non-command events have exact trusted-ingress/internal producer triggers",
+            f"owner acceptance of the {total_unbound_event_count} non-command producer-trigger specifications",
+        ],
+        ROOT / "docs/planning/PLANNING-COMPLETION-REGISTER.md": [
+            f"{command_bound_event_count} events have explicit command-producer bindings and {total_unbound_event_count} have no command producer binding.",
+            f"{command_bound_event_count} command-produced events and records {total_unbound_event_count} events without command producers as unresolved",
+            f"{command_bound_event_count} have exact command-producer bindings and {total_unbound_event_count} have no command producer binding",
+            f"All {total_unbound_event_count} non-command event triggers are now specified",
+            f"owner acceptance of the {total_unbound_event_count} non-command producer-trigger specifications",
+            "54 command records (52 mapped, two deferred)",
+        ],
+    }
+    for summary_path, required_fragments in event_summary_requirements.items():
+        if not summary_path.is_file():
+            fail(f"missing current event inventory summary: {summary_path.relative_to(ROOT)}")
+        summary_text = summary_path.read_text(encoding="utf-8")
+        for fragment in required_fragments:
+            if fragment not in summary_text:
+                fail(
+                    f"{summary_path.relative_to(ROOT)}: current inventory summary "
+                    f"does not match registry-derived expectation: {fragment}"
+                )
+
     scenario_contracts = load(SCHEMAS / "fixtures/scenario-contracts.fixture.json")
     scenarios = scenario_contracts["scenarios"]
     expected_scenario_ids = {
