@@ -70,7 +70,7 @@ jobs:
           docker build --pull --file engineering/workforce/Dockerfile.test-runner --tag "$WORKFORCE_TEST_DOCKER_IMAGE" .
       - name: Generate ephemeral Director, orchestrator and six worker credentials
         run: |
-          python - <<'PY' >> "$GITHUB_ENV"
+          python - <<'PY'
           import json
           import secrets
           roles = (
@@ -90,9 +90,10 @@ jobs:
           print("::add-mask::" + director)
           print("::add-mask::" + orchestrator)
           print("::add-mask::" + json.dumps(workers))
-          print("DIRECTOR_APPROVAL_TOKEN=" + director)
-          print("WORKFORCE_ORCHESTRATOR_TOKEN=" + orchestrator)
-          print("WORKFORCE_WORKER_CREDENTIALS_JSON=" + json.dumps(workers))
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write("DIRECTOR_APPROVAL_TOKEN=" + director + "\\n")
+              env_file.write("WORKFORCE_ORCHESTRATOR_TOKEN=" + orchestrator + "\\n")
+              env_file.write("WORKFORCE_WORKER_CREDENTIALS_JSON=" + json.dumps(workers) + "\\n")
           PY
       - name: Validate protected provider secrets and work-package manifest
         env:
