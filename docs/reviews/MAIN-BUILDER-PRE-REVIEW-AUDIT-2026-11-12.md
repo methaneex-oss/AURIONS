@@ -952,3 +952,21 @@ Corrections:
 **Verification:** Exact code head `eb6c90c82a492b659c44900a3495907dbba4486c` passed [workflow 43431156653](https://github.com/methaneex-oss/AURIONS/actions/runs/43431156653), all nine steps. The schema validator log reports 9 Draft 2020-12 schemas, 8 paired registry/fixture checks, 81 positive domain payloads, 29 negative controls and 35 code-specific recovery assertions; governance, work-package traceability, all SQLite DDL/migration smoke tests and Android probe syntax also passed.
 
 **Evidence boundary:** This verifies registry-to-projection source-table declaration consistency, not actual SQL, source-column existence for every mapping, join correctness, owner-scope enforcement, redaction, cursor semantics, query execution or handler behaviour. All 29 queries remain design-only/non-dispatchable; BR-002 remains OPEN and BR-008 remains OPEN.
+
+
+## BR-002 / BR-008 — query projection inventory parity guard (2026-11-13)
+
+A 29-query cross-artifact scan confirmed that the registry's `projection_resolved_fields` inventories and the field-level query projection document currently agree. The previous DDL source validator checked that referenced table/column names existed, but did not enforce complete field-inventory parity; missing, duplicated or unexpected field mappings could therefore drift without failing CI.
+
+Implemented `validate_query_projection_inventory()` in `scripts/validate_sqlite_ddl.py`. It now requires, for every registered query:
+- Exactly one field-level projection entry per field (duplicate field names fail).
+- Every registry-resolved field appears in the projection document.
+- No undocumented extra field appears.
+- Every registry-unresolved field has an explicit `UNMAPPED` marker.
+- A resolved field cannot simultaneously be marked unmapped.
+
+The existing owning-store source-column validator remains in place. The first CI attempt exposed a section-delimiter escaping defect in the new checker; the root cause was corrected and the exact revised head passed.
+
+**Exact verified code revision:** `0f69d48dd99fece42ebf44e0ae5e5c75291bf45a`. [Workflow 43431379174](https://github.com/methaneex-oss/AURIONS/actions/runs/43431379174) passed all nine steps, including the new query projection inventory guard, all three SQLite stores/seventeen ordered DDL files, FK/integrity checks and Android probe shell syntax.
+
+**Evidence boundary:** This verifies registry-to-document field inventory parity and that documented direct table/column references exist in owning-store DDL. It does not execute query SELECTs or prove aliases, JSON decoding, joins, owner scoping, redaction, snapshot/cursor/pagination semantics, query plans or target resource budgets. BR-002 remains OPEN; BR-008 remains OPEN. All 29 queries remain design-only/non-dispatchable.
