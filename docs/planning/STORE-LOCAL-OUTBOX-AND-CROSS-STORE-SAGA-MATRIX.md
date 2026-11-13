@@ -36,6 +36,21 @@ The publication protocol is:
 
 A relay failure leaves the source outbox pending. It does not roll back a committed domain mutation, report that mutation as uncommitted, or trigger a duplicate domain write. The central event-store outbox is not a substitute for the source store's local outbox.
 
+### 2.1 Table-binding roles and write boundaries
+
+The command registry distinguishes authoritative writes from read-only dependencies and asynchronous publication destinations. `persistence_stores` names only the stores whose state is mutated by the command; it does not include stores that are consulted or populated later by an outbox relay.
+
+| Binding role | Meaning | Required invariant |
+|---|---|---|
+| `authoritative_write` | Store is listed in `persistence_stores`; command owns a state transition there. | The aggregate mutation and that store's local outbox commit in one transaction. |
+| `read_dependency` | Store is consulted for policy, approval, descriptor or other evidence; no row is mutated by this command. | Binding must not include an outbox table; no write or receipt is implied. |
+| `async_archive` | Central event archive receives the source store's outbox envelope asynchronously. | Used only for `aurion_events.db` with `events` and `outbox`; it is not part of a single-store source transaction. |
+| `read_projection` | Query reads an authoritative store to produce a result. | Query is read-only; every bound table must exist in the declared store's DDL. |
+
+This distinction is machine-enforced by the registry schema and validator. Every table binding carries a role; all bound table names must exist in the ordered DDL for that store; every authoritative write store must have a local outbox binding; read dependencies cannot claim an outbox; and query bindings must be read projections. The central event archive is not misrepresented as a synchronous write for single-store commands.
+
+In particular, `evolution.change.propose` and `evolution.candidate.evaluate` read governance approval/policy evidence without writing the governance store. `evolution.candidate.evaluate` writes only memory state and its local outbox, with the event/recovery coordinator as its second authoritative saga store. Activation and rollback explicitly write all three stores and remain durable sagas.
+
 ## 3. Command-level transaction classification
 
 `persistence_stores` identifies authoritative stores whose durable state is changed or coordinated by the command. Every listed store must have a local outbox binding. `table_bindings` may additionally name read dependencies and central archive tables; it does not imply that every listed table is written in the same transaction. The `transaction_contract` field is the authoritative statement of the transaction boundary.
