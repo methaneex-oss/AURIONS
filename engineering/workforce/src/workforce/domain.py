@@ -83,9 +83,10 @@ class TaskContract:
         sha = value["base_commit_sha"]
         if len(sha) != 40 or any(c not in "0123456789abcdefABCDEF" for c in sha):
             raise ContractError("base_commit_sha must be a full 40-character Git commit SHA")
-        for key in ("max_model_calls", "max_tokens", "max_duration_minutes"):
-            if not isinstance(value[key], int) or isinstance(value[key], bool) or value[key] <= 0:
-                raise ContractError(f"{key} must be a positive integer")
+        budget_ceilings = {"max_model_calls": 100, "max_tokens": 200000, "max_duration_minutes": 360}
+        for key, ceiling in budget_ceilings.items():
+            if not isinstance(value[key], int) or isinstance(value[key], bool) or value[key] <= 0 or value[key] > ceiling:
+                raise ContractError(f"{key} must be a positive integer no greater than {ceiling}")
         for key in ("permitted_paths", "prohibited_paths", "canonical_sources", "acceptance_criteria", "test_plan", "review_plan", "stop_conditions"):
             if not isinstance(value[key], list) or not all(isinstance(item, str) and item.strip() for item in value[key]):
                 raise ContractError(f"{key} must be a non-empty-string list")
