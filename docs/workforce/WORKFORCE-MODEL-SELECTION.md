@@ -6,51 +6,53 @@
 
 ## Selection method
 
-Models were compared using currently published provider documentation and model capability descriptions. Selection prioritizes:
-- coding and tool-use capability for builders;
-- long-context reasoning for architecture review;
-- code reasoning and structured outputs for code review;
-- reasoning and tool use for adversarial testing;
-- evidence reconciliation and consistent structured reporting for integration verification;
-- direct provider terms, predictable free limits, and role/model separation.
+Models were compared against current provider documentation for:
+- software engineering and tool/function-calling capability;
+- reasoning and long-context suitability for each role;
+- free-tier availability and practical quota;
+- data retention and training policy;
+- API compatibility with the existing worker runner.
 
-These are informed assignments, not empirical qualification results. No claim is made that a model is already competent in its assigned role. The previous six-agent screening remains incomplete and does not qualify the team.
+Selection is a reasoned engineering choice, not an empirical qualification result. The previous six-agent screening did not qualify the team. No model is represented as proven competent in its role.
 
 ## Selected six-agent roster
 
-| Agent | Exclusive responsibility | Provider | Exact model | Why selected |
+| Agent | Exclusive responsibility | Provider | Exact model | Selection rationale |
 |---|---|---|---|---|
-| 1 — Lead Builder | One approved work package: plan, implement, self-review, test, correct and hand off | Groq direct | `openai/gpt-oss-120b` | Strongest available Groq free-tier reasoning/coding candidate with tool use |
-| 2 — Specialist Builder | One separately owned, non-overlapping component only | OpenRouter | `cohere/north-mini-code:free` | Purpose-built agentic coding model with tool use |
-| 3 — Architecture Reviewer | Architecture and principle alignment only; read-only | OpenRouter | `nvidia/nemotron-3-ultra-550b-a55b:free` | Long-context reasoning and multi-step architecture analysis |
+| 1 — Lead Builder | One approved work package: plan, implement, self-review, test, correct and hand off | Groq direct | `openai/gpt-oss-120b` | Strong reasoning/coding candidate with tool use; Groq publishes a standing free plan for this model |
+| 2 — Specialist Builder | One separately owned, non-overlapping component only | Cloudflare Workers AI | `@cf/google/gemma-4-26b-a4b-it` | 256K context, reasoning, coding and function calling |
+| 3 — Architecture Reviewer | Architecture and principle alignment only; read-only | Cloudflare Workers AI | `@cf/zai-org/glm-4.7-flash` | Reasoning, multi-turn tool calling, 131K context and multilingual instruction following |
 | 4 — Code Reviewer | Correctness, security, edge cases and regression review only; read-only | Groq direct | `qwen/qwen3.8-27b` | Coding-oriented model with tool use and structured outputs |
-| 5 — Negative Tester | Falsification and adversarial test execution only; read-only | OpenRouter | `nvidia/nemotron-3.5-super-vl:free` | Reasoning-capable long-context agent model with tool use |
-| 6 — Integration Verifier | Evidence, ancestry, SHA and finding reconciliation only; read-only | Groq direct | `openai/gpt-oss-20b` | Tool use and structured-output support suited to bounded evidence reconciliation |
+| 5 — Negative Tester | Falsification and adversarial test execution only; read-only | Groq direct | `openai/gpt-oss-20b` | Tool-capable reasoning model suitable for bounded adversarial test work |
+| 6 — Integration Verifier | Evidence, ancestry, SHA and finding reconciliation only | Cloudflare Workers AI | `@cf/mistralai/mistral-small-3.1-24b-instruct` | Function calling and 128K context for bounded evidence reconciliation |
 
-**No model is assigned to more than one agent. No agent may combine another role's responsibility.** The orchestrator remains deterministic control software, not a seventh agent.
+**All six model IDs are distinct. Each agent has exactly one role. No agent may take on another role's responsibility or claim another role's gate.** The orchestrator remains deterministic control software, not a seventh agent.
 
-## Better free provider outside OpenRouter
+## Better free providers outside OpenRouter
 
-**Groq is the best direct-provider alternative identified for this workload.** Its current free-plan rate-limit documentation lists GPT-OSS 120B, GPT-OSS 20B and Qwen 3.8 27B at up to 30 requests/minute, 1,000 requests/day, 8,000 tokens/minute and 200,000 tokens/day per model, subject to account-specific limits. Groq documents tool use for these models. This is materially more useful for repeated agent runs than relying exclusively on OpenRouter's free-model cap of 50 requests/day (20/minute) for accounts below its credit threshold.
+**Groq is the strongest direct provider for the high-volume part of this workforce.** Its current rate-limit documentation lists GPT-OSS 120B, GPT-OSS 20B and Qwen 3.8 27B on the free developer plan with up to 30 requests/minute, 1,000 requests/day, 8,000 tokens/minute and 200,000 tokens/day per model. Actual limits remain account-specific. Groq documents tool use for these models.
 
-Groq also states that inference inputs/outputs are not retained by default and are not used to train its models. Reliability/abuse troubleshooting may temporarily retain data for up to 30 days unless Zero Data Retention is enabled. Enable ZDR in the Groq console before sending sensitive repository content if available to the account.
+**Cloudflare Workers AI is the second selected direct provider.** Its Free Workers plan includes 10,000 Neurons per day across Workers AI. The three selected models support function calling; Cloudflare states that standard inference inputs and outputs are not retained after processing and are not used to train models. The daily Neuron allowance is shared across all three Cloudflare agents, so the orchestrator must track usage and stop at the quota boundary.
 
-OpenRouter remains in the roster because its current free catalogue provides specialist models not available in Groq's free-plan list. Its free model variants are capped at 20 requests/minute and 50 requests/day until the account has purchased the qualifying credit amount. Provider data practices vary; this configuration requests providers that declare data collection denied. If no eligible endpoint is available, the run must fail closed rather than route to an unapproved provider.
+OpenRouter is not in the selected roster. Its free variants are limited to 20 requests/minute and 50 requests/day until the qualifying credit threshold is reached. More importantly, free endpoint data practices vary. The current NVIDIA free Nemotron endpoints explicitly state that prompts may be logged and used to improve NVIDIA products and instruct users not to submit confidential information. That is unsuitable for AURIONS repository context. OpenRouter's provider data policy filter cannot override an endpoint's own published terms.
+
+Google AI Studio's free Gemini tier is technically attractive, but Google states that free-tier content may be used to improve its products. It is therefore not selected for private repository code. Z.ai GLM Flash models are free, but the free API's exact rate limits are not publicly specified; its individual-user data terms are not sufficiently clear for this repository workflow. These are not preferred over Groq and Cloudflare for this use.
 
 ## Credentials required
 
-Store these only as GitHub Actions repository secrets:
-- `GROQ_API_KEY` — required by agents 1, 4 and 6.
-- `OPENROUTER_API_KEY` — required by agents 2, 3 and 5.
+Store only as GitHub Actions repository secrets:
+- `GROQ_API_KEY` — lead builder, code reviewer and negative tester.
+- `CLOUDFLARE_API_TOKEN` — specialist builder, architecture reviewer and integration verifier.
+- `CLOUDFLARE_ACCOUNT_ID` — required with the Cloudflare token.
 
-Do not put keys in repository files, workflow literals, prompts, logs or artifacts. Do not configure a paid fallback. Missing credentials must stop only the affected run with a clear error.
+The Cloudflare token should have only the Workers AI inference permissions required for the account. Never place credentials in source files, workflow literals, prompts, logs or artifacts. No paid fallback or automatic provider switching is permitted.
 
 ## Operating constraints
 
-1. Each agent receives only its exclusive role contract and one assigned model.
+1. Each agent receives only its exclusive role contract and one pinned model.
 2. All six receive the same mandatory, freshly read governance and induction sources from the pinned repository revision.
-3. Role assignments are pinned in `engineering/workforce/src/workforce/model_registry.py`; model or endpoint overrides are rejected by the runner.
-4. OpenRouter requests require a provider with data collection denied. No automatic provider fallback is permitted.
+3. Role/model/endpoint overrides are rejected by the runner; assignments are pinned in `engineering/workforce/src/workforce/model_registry.py`.
+4. Cloudflare's daily Neuron allowance is shared; per-role and global consumption must be measured and bounded.
 5. Model availability, free quota and endpoint compatibility must be checked at run time. Published quotas are not guarantees of available capacity.
 6. A model response, onboarding run or policy acknowledgment does not qualify an agent.
 7. Qualification requires repeated role-specific evidence, including a practical failure case, independently scored against the induction rubric.
