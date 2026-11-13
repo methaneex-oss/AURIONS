@@ -12,6 +12,8 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
+import shutil
 import uuid
 from pathlib import Path
 from typing import Any
@@ -338,22 +340,31 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
                 "WORKFORCE_ORCHESTRATOR_TOKEN": os.environ["WORKFORCE_TEST_ORCHESTRATOR_TOKEN"],
                 "WORKFORCE_WORKER_CREDENTIALS_JSON": os.environ["WORKFORCE_TEST_WORKER_CREDENTIALS_JSON"],
             })
-        test_env["PYTHONPATH"] = str(root / "engineering/workforce/src")
         test_commands = [
             [sys.executable, "-m", "compileall", "-q", "engineering/workforce/src", "engineering/workforce/tests"],
             [sys.executable, "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
         ]
         test_results = []
-        for command in test_commands:
-            run = subprocess.run(command, cwd=root, env=test_env, capture_output=True, text=True, timeout=300, check=False)
-            test_results.append({
-                "command": command[1:],
-                "returncode": run.returncode,
-                "stdout": run.stdout[-12000:],
-                "stderr": run.stderr[-12000:],
-            })
-            if run.returncode:
-                raise OrchestrationError("candidate test suite failed; no reviewer or integration task will proceed")
+        # Run the suite against a read-only-intent snapshot, not the live candidate
+        # workspace. Test code cannot mutate the candidate or access its credentials.
+        with tempfile.TemporaryDirectory(prefix="workforce-package-tests-") as test_dir:
+            test_root = Path(test_dir)
+            for relative in ("engineering/workforce/src", "engineering/workforce/tests"):
+                source = root / relative
+                destination = test_root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(source, destination)
+            test_env["PYTHONPATH"] = str(test_root / "engineering/workforce/src")
+            for command in test_commands:
+                run = subprocess.run(command, cwd=test_root, env=test_env, capture_output=True, text=True, timeout=300, check=False)
+                test_results.append({
+                    "command": command[1:],
+                    "returncode": run.returncode,
+                    "stdout": run.stdout[-12000:],
+                    "stderr": run.stderr[-12000:],
+                })
+                if run.returncode:
+                    raise OrchestrationError("candidate test suite failed; no reviewer or integration task will proceed")
         test_report = report_dir / f"{manifest['run_id']}-test-results.json"
         test_bytes = json.dumps(test_results, indent=2).encode("utf-8")
         test_report.write_bytes(test_bytes)
