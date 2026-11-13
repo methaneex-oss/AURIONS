@@ -91,6 +91,8 @@ jobs:
           print("::add-mask::" + director)
           print("::add-mask::" + orchestrator)
           print("::add-mask::" + json.dumps(workers))
+          for worker in workers.values():
+              print("::add-mask::" + worker["token"])
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
               env_file.write("DIRECTOR_APPROVAL_TOKEN=" + director + "\n")
               env_file.write("WORKFORCE_ORCHESTRATOR_TOKEN=" + orchestrator + "\n")
