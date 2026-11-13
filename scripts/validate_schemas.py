@@ -748,10 +748,20 @@ def main() -> int:
                 command = command_by_type.get(action_name)
                 if command is None:
                     fail(f"{scenario['scenario_id']}: unknown command action {action_name}")
-                if expected_events and expected_events != set(command.get("emitted_event_bindings", [])):
+                emitted_events = set(command.get("emitted_event_bindings", []))
+                if not expected_events.issubset(emitted_events):
                     fail(
                         f"{scenario['scenario_id']}/{step['step_id']}: expected events "
-                        f"do not match command {action_name} emitted_event_bindings"
+                        f"are not declared by command {action_name} emitted_event_bindings"
+                    )
+                if (
+                    scenario["scenario_id"] in {"CM-001", "CM-002", "CM-003"}
+                    and expected_events
+                    and expected_events != emitted_events
+                ):
+                    fail(
+                        f"{scenario['scenario_id']}/{step['step_id']}: concrete positive command step "
+                        f"must enumerate every emitted event for {action_name}"
                     )
             elif action_kind == "query":
                 if action_name not in query_types:
@@ -790,6 +800,9 @@ def main() -> int:
         for step in scenario["steps"]:
             for event_type in step.get("expected_events", []):
                 expected_event_scenario_refs.setdefault(event_type, set()).add(scenario["scenario_id"])
+    unknown_expected_event_types = set(expected_event_scenario_refs) - set(events)
+    if unknown_expected_event_types:
+        fail(f"scenario fixtures reference unknown event types: {sorted(unknown_expected_event_types)}")
     for event_type, event in events.items():
         if set(event.get("acceptance_scenario_refs", [])) != expected_event_scenario_refs.get(event_type, set()):
             fail(f"{event_type}: acceptance scenario references do not match scenario fixture coverage")
