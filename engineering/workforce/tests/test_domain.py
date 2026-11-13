@@ -27,8 +27,11 @@ class DomainTests(unittest.TestCase):
 
     def test_path_policy_blocks_windows_traversal_and_absolute_paths(self):
         permitted = ("engineering/workforce",)
-        self.assertFalse(path_is_permitted(r"engineering\\workforce\\..\\..\\main.py", permitted, ()))
-        self.assertFalse(path_is_permitted(r"C:\\repo\\main.py", permitted, ()))
+        separator = chr(92)
+        windows_traversal = "engineering" + separator + "workforce" + separator + ".." + separator + ".." + separator + "main.py"
+        windows_absolute = "C:" + separator + "repo" + separator + "main.py"
+        self.assertFalse(path_is_permitted(windows_traversal, permitted, ()))
+        self.assertFalse(path_is_permitted(windows_absolute, permitted, ()))
         self.assertFalse(path_is_permitted("/etc/passwd", permitted, ()))
 
     def test_task_contract_accepts_complete_authorized_contract(self):
