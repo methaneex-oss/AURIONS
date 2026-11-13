@@ -94,9 +94,9 @@ In particular, `evolution.change.propose` and `evolution.candidate.evaluate` rea
 | `learning.candidate.evaluate` | aurion_memory.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_memory.db:outbox | central event archive referenced; relay is asynchronous |
 | `self_model.update.propose` | aurion_memory.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_memory.db:outbox | central event archive referenced; relay is asynchronous |
 | `evolution.change.propose` | aurion_memory.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_memory.db:outbox | central event archive referenced; relay is asynchronous |
-| `evolution.candidate.evaluate` | aurion_memory.db, aurion_events.db | CROSS_STORE_SAGA | aurion_memory.db:outbox, aurion_events.db:outbox | central event archive referenced; relay is asynchronous |
-| `evolution.candidate.activate` | aurion_memory.db, aurion_governance.db, aurion_events.db | CROSS_STORE_SAGA | aurion_memory.db:outbox, aurion_governance.db:outbox, aurion_events.db:outbox | central event archive referenced; relay is asynchronous |
-| `evolution.candidate.rollback` | aurion_memory.db, aurion_governance.db, aurion_events.db | CROSS_STORE_SAGA | aurion_memory.db:outbox, aurion_governance.db:outbox, aurion_events.db:outbox | central event archive referenced; relay is asynchronous |
+| `evolution.candidate.evaluate` | aurion_memory.db, aurion_events.db | CROSS_STORE_SAGA | aurion_memory.db:outbox, aurion_events.db:outbox | coordinator: operations + operation_steps + recovery_journal; archive relay asynchronous |
+| `evolution.candidate.activate` | aurion_memory.db, aurion_governance.db, aurion_events.db | CROSS_STORE_SAGA | aurion_memory.db:outbox, aurion_governance.db:outbox, aurion_events.db:outbox | coordinator: operations + operation_steps + recovery_journal; archive relay asynchronous |
+| `evolution.candidate.rollback` | aurion_memory.db, aurion_governance.db, aurion_events.db | CROSS_STORE_SAGA | aurion_memory.db:outbox, aurion_governance.db:outbox, aurion_events.db:outbox | coordinator: operations + operation_steps + recovery_journal; archive relay asynchronous |
 | `task.start` | aurion_events.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_events.db:outbox | central event archive referenced; relay is asynchronous |
 | `task.pause` | aurion_events.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_events.db:outbox | central event archive referenced; relay is asynchronous |
 | `task.resume` | aurion_events.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_events.db:outbox | central event archive referenced; relay is asynchronous |
@@ -119,7 +119,7 @@ Only three currently mapped command types declare more than one authoritative st
 ### 4.1 `evolution.candidate.evaluate`
 
 - **Stores:** memory state plus event/recovery coordinator. Governance policy/approval tables are read dependencies, not writes.
-- **Coordinator intent:** create a durable operation/recovery-journal record bound to candidate ID, artifact digest, frozen baseline, held-out dataset revision and evaluation request digest.
+- **Coordinator intent:** create a durable operation plus ordered `operation_steps` row bound to candidate ID, artifact digest, frozen baseline, held-out dataset revision, target store, stable step key, per-target idempotency key, request digest and expected revision. The matching `recovery_journal.operation_step_id` links local commit evidence to that exact step.
 - **Domain commit:** append the immutable candidate evaluation in memory and its memory-local outbox in one transaction. Candidate remains quarantined; evaluation cannot activate it.
 - **Completion:** coordinator records the memory receipt and archive publication state. An interrupted evaluation remains pending/uncertain until the exact evaluation is reconciled; retry cannot create a second evaluation for the same idempotency scope.
 - **Forbidden:** candidate activation, policy mutation or promotion based only on a worker result.
@@ -128,7 +128,7 @@ Only three currently mapped command types declare more than one authoritative st
 
 - **Stores:** memory active-candidate state, governance approval/audit state, and event/recovery coordinator.
 - **Preconditions:** exact candidate and active-pointer revisions; passing evaluation for the exact artifact digest; verified provenance/signature; rollback readiness; current explicit owner/governance grant.
-- **Saga order:** (1) coordinator records activation intent and expected revisions; (2) governance validates the exact approval and durably records its use/activation authorization with its local outbox; (3) memory validates the still-current candidate/pointer and commits the active-pointer transition with its local outbox; (4) coordinator reconciles both local receipts and records completion.
+- **Saga order:** (1) coordinator records activation intent and ordered step identities/expected revisions; (2) governance validates the exact approval and durably records its use/activation authorization with its local outbox; (3) memory validates the still-current candidate/pointer and commits the active-pointer transition with its local outbox; (4) each local commit is linked to its immutable coordinator step and recovery-journal record; (5) coordinator reconciles both local receipts and records completion.
 - **Interruption:** no global atomicity is claimed. The coordinator blocks a competing activation while the saga is unresolved. Recovery repeats idempotent steps or performs an explicit compensating/rollback operation. A partial saga is never reported as fully activated.
 - **Forbidden:** model self-approval, stale approval, silent pointer change, deletion of failed candidates or treating a provider/worker receipt as evaluation acceptance.
 
@@ -136,7 +136,7 @@ Only three currently mapped command types declare more than one authoritative st
 
 - **Stores:** memory active-candidate state, governance rollback-authorization/audit state, and event/recovery coordinator.
 - **Preconditions:** exact current active-pointer revision, exact prior approved artifact digest, verified artifact integrity and explicit rollback authority.
-- **Saga order:** (1) coordinator records rollback intent; (2) governance validates rollback authority and commits the rollback authorization/audit record with its local outbox; (3) memory restores the exact prior artifact pointer and commits its local outbox; (4) coordinator reconciles both local receipts and records completion.
+- **Saga order:** (1) coordinator records rollback intent and ordered step identities/expected revisions; (2) governance validates rollback authority and commits the rollback authorization/audit record with its local outbox; (3) memory restores the exact prior artifact pointer and commits its local outbox; (4) each local commit is linked to its immutable coordinator step and recovery-journal record; (5) coordinator reconciles both local receipts and records completion.
 - **Interruption:** no global atomicity is claimed. The saga remains unresolved until the pointer and governance audit agree. Recovery is idempotent; compensation is a separate explicit operation.
 - **Forbidden:** deleting the failed candidate, restoring an unverified digest, or claiming rollback complete before reconciliation.
 
@@ -148,9 +148,9 @@ Current code-level guards:
 - Each of the three SQLite DDL chains must define a local `outbox` table.
 - Each command's authoritative `persistence_stores` must have an `outbox` table binding.
 - One-store commands must declare `SINGLE_STORE_LOCAL_OUTBOX`.
-- Multi-store commands must declare `CROSS_STORE_SAGA` and bind the event/recovery coordinator's `operations`, `recovery_journal` and `outbox`.
-- The SQLite smoke validator executes memory v5 and governance v2 and performs rollback probes showing a memory aggregate + outbox and governance policy + outbox roll back together.
+- Multi-store commands must declare `CROSS_STORE_SAGA` and bind the event/recovery coordinator's `operations`, `operation_steps`, `recovery_journal` and `outbox`.
+- The SQLite smoke validator executes memory v5/v6/v7, events v3/v4/v5 and governance v2/v3/v4. It checks local outbox rollback, exact approval decision binding, query projection fields, ordered saga-step identity/idempotency, immutable step identity, terminal timestamps and recovery-journal-to-step linkage.
 
-**Not established:** actual outbox relay code, central archive ingestion/deduplication under crash, consumer inbox behaviour, multi-store saga runtime, compensation, power-loss safety, target Android/Termux behaviour or production handlers. Host rollback probes establish only that the same SQLite transaction can roll back both rows in the same database.
+**Not established:** actual outbox relay code, central archive ingestion/deduplication under crash, consumer inbox behaviour, multi-store saga runtime, compensation execution, crash/replay fault injection, power-loss safety, target Android/Termux behaviour or production handlers. Host rollback probes establish only that the same SQLite transaction can roll back both rows in the same database.
 
 All commands and events remain design-only/non-dispatchable. No implementation authorization or protected activation authority is created.
