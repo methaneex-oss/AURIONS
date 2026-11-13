@@ -368,6 +368,21 @@ class Worker:
         raise RuntimeError(f"model-call/token budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
 
 
+def _control_plane_post(url: str, token: str, payload: dict[str, Any]) -> dict[str, Any]:
+    response = httpx.post(
+        url,
+        headers={"X-Worker-Token": token},
+        json=payload,
+        timeout=20,
+    )
+    if response.status_code >= 400:
+        raise RuntimeError(f"workforce control-plane request failed (HTTP {response.status_code})")
+    data = response.json()
+    if not isinstance(data, dict):
+        raise RuntimeError("workforce control plane returned a non-object response")
+    return data
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--role", required=True, choices=sorted(ROLE_INSTRUCTIONS))
@@ -379,17 +394,94 @@ def main() -> None:
     parser.add_argument("--max-tokens", type=int, default=4096)
     parser.add_argument("--max-total-tokens", type=int, default=24000)
     parser.add_argument("--max-duration-minutes", type=int, default=120)
+    parser.add_argument("--report-path")
     args = parser.parse_args()
-    required_budget_env = (
-        "WORKFORCE_CONTROL_PLANE_URL", "WORKFORCE_TASK_ID",
-        "WORKFORCE_WORKER_TOKEN", "WORKFORCE_LEASE_TOKEN",
-    )
-    missing_budget_env = [name for name in required_budget_env if not os.environ.get(name)]
-    if missing_budget_env:
-        parser.error("task execution requires durable global budget and live lease environment: " + ", ".join(missing_budget_env))
-    worker = Worker(Path(args.workspace), args.role, args.permitted_path, args.max_calls, args.max_tokens, args.max_total_tokens, args.max_duration_minutes)
-    result = worker.run(args.task, args.context_file)
-    print(json.dumps(result, indent=2))
+
+    control_plane_url = os.environ.get("WORKFORCE_CONTROL_PLANE_URL", "").rstrip("/")
+    task_id = os.environ.get("WORKFORCE_TASK_ID", "")
+    worker_token = os.environ.get("WORKFORCE_WORKER_TOKEN", "")
+    if not all((control_plane_url, task_id, worker_token)):
+        parser.error("task execution requires WORKFORCE_CONTROL_PLANE_URL, WORKFORCE_TASK_ID and WORKFORCE_WORKER_TOKEN")
+
+    headers = {"X-Worker-Token": worker_token}
+    lease_token = os.environ.get("WORKFORCE_LEASE_TOKEN", "")
+    try:
+        if not lease_token:
+            claimed = _control_plane_post(
+                f"{control_plane_url}/v1/tasks/{task_id}/claim",
+                worker_token,
+                {"lease_seconds": 900},
+            )
+            lease_token = claimed.get("lease_token", "")
+            if not isinstance(lease_token, str) or len(lease_token) < 32:
+                raise RuntimeError("control plane did not issue a valid worker lease token")
+            os.environ["WORKFORCE_LEASE_TOKEN"] = lease_token
+
+        started = _control_plane_post(
+            f"{control_plane_url}/v1/tasks/{task_id}/start",
+            worker_token,
+            {"lease_token": lease_token, "lease_seconds": 900},
+        )
+        if started.get("task_id") != task_id or started.get("state") != "RUNNING":
+            raise RuntimeError("control plane did not confirm the task is RUNNING")
+
+        worker = Worker(
+            Path(args.workspace), args.role, args.permitted_path,
+            args.max_calls, args.max_tokens, args.max_total_tokens,
+            args.max_duration_minutes,
+        )
+        report_path = args.report_path or f".workforce-artifacts/{task_id}-{args.role}.json"
+        report_file = safe_path(Path(args.workspace).resolve(), report_path)
+        report_file.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            result = worker.run(args.task, args.context_file)
+            report = {**result, "task_id": task_id, "status": "CANDIDATE_READY"}
+            report_bytes = json.dumps(report, indent=2, ensure_ascii=False).encode("utf-8")
+            report_file.write_bytes(report_bytes)
+            evidence_sha256 = hashlib.sha256(report_bytes).hexdigest()
+            evidence_ref = report_file.relative_to(Path(args.workspace).resolve()).as_posix()
+            _control_plane_post(
+                f"{control_plane_url}/v1/tasks/{task_id}/worker-transition",
+                worker_token,
+                {
+                    "lease_token": lease_token,
+                    "target": "CANDIDATE_READY",
+                    "reason": "role execution completed; report artifact persisted",
+                    "evidence_sha256": evidence_sha256,
+                    "evidence_ref": evidence_ref,
+                },
+            )
+            print(json.dumps({**report, "evidence_sha256": evidence_sha256, "evidence_ref": evidence_ref}, indent=2))
+        except Exception as exc:
+            failure = {
+                "task_id": task_id,
+                "role": args.role,
+                "status": "FAILED",
+                "error_type": type(exc).__name__,
+                "error": str(exc)[:1000],
+            }
+            report_bytes = json.dumps(failure, indent=2).encode("utf-8")
+            report_file.write_bytes(report_bytes)
+            try:
+                _control_plane_post(
+                    f"{control_plane_url}/v1/tasks/{task_id}/worker-transition",
+                    worker_token,
+                    {
+                        "lease_token": lease_token,
+                        "target": "FAILED",
+                        "reason": f"{type(exc).__name__}: {str(exc)[:900]}",
+                    },
+                )
+            except Exception as stop_exc:
+                failure["stop_transition_error"] = f"{type(stop_exc).__name__}: {str(stop_exc)[:300]}"
+            print(json.dumps(failure, indent=2), file=sys.stderr)
+            raise SystemExit(1) from exc
+    except SystemExit:
+        raise
+    except Exception as exc:
+        print(f"workforce execution stopped: {type(exc).__name__}: {str(exc)[:1000]}", file=sys.stderr)
+        raise SystemExit(1) from exc
 
 
 if __name__ == "__main__":
