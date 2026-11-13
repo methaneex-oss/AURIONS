@@ -409,7 +409,9 @@ def main() -> int:
         for projection_line in projection_section.splitlines():
             if not projection_line.startswith("- `") or " → " not in projection_line:
                 continue
-            source_expression = projection_line.split(" → ", 1)[1].split("(", 1)[0]
+            source_expression = re.sub(
+                r"\([^)]*\)", "", projection_line.split(" → ", 1)[1]
+            )
             source_tables = {
                 table for table, _column in re.findall(
                     r"\b([a-z][a-z0-9_]*)\.([a-z][a-z0-9_]*)\b",
