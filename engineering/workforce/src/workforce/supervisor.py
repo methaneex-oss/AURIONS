@@ -62,7 +62,40 @@ def recover_once(conn) -> dict[str, int]:
                 "INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json) VALUES (%s,'DEADLINE_EXCEEDED','supervisor',jsonb_build_object('enforced',true))",
                 (row["task_id"],),
             )
-    return {"expired_leases": len(expired), "deadline_stops": len(overdue)}
+    # A provider call may have completed just before a worker crash. Its usage is
+    # unknowable if settlement never arrived, so charge the full reservation rather
+    # than releasing it and risking budget reuse/double spending.
+    with conn.cursor() as cur:
+        cur.execute("""
+            WITH abandoned AS (
+                UPDATE wf_budget_reservations r
+                   SET state='ABANDONED', actual_tokens=r.reserved_tokens, settled_at=now()
+                  FROM wf_tasks t
+                 WHERE r.task_id=t.task_id AND r.state='RESERVED'
+                   AND (
+                       t.lease_generation <> r.lease_generation
+                       OR t.state NOT IN ('CLAIMED','RUNNING','CHECKPOINTED')
+                       OR t.lease_expires_at IS NULL OR t.lease_expires_at <= now()
+                       OR t.created_at + make_interval(mins => (t.contract_json->>'max_duration_minutes')::int) <= now()
+                   )
+                RETURNING r.work_package_id,r.role,r.reserved_tokens
+            ),
+            totals AS (
+                SELECT work_package_id,role,count(*)::int AS calls,sum(reserved_tokens)::bigint AS tokens
+                  FROM abandoned GROUP BY work_package_id,role
+            )
+            UPDATE wf_agent_budgets b
+               SET used_model_calls=b.used_model_calls+totals.calls,
+                   used_tokens=b.used_tokens+totals.tokens,
+                   reserved_calls=b.reserved_calls-totals.calls,
+                   reserved_tokens=b.reserved_tokens-totals.tokens,
+                   updated_at=now()
+              FROM totals
+             WHERE b.work_package_id=totals.work_package_id AND b.role=totals.role
+            RETURNING b.work_package_id,b.role
+        """)
+        abandoned_budget = cur.fetchall()
+    return {"expired_leases": len(expired), "deadline_stops": len(overdue), "abandoned_budget_accounts": len(abandoned_budget)}
 
 
 def main() -> None:
