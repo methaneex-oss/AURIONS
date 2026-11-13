@@ -1,7 +1,6 @@
 """Authenticated PostgreSQL-backed workforce control plane."""
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import uuid
