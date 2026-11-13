@@ -578,6 +578,9 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
                 or saved_state.get("base_commit_sha") != manifest["base_commit_sha"]
                 or saved_state.get("manifest_sha256") != manifest_sha256):
             raise OrchestrationError("saved orchestration state does not match this exact authorized manifest")
+        resume_status = saved_state.get("status", "RUNNING")
+        saved_test_results_ref = saved_state.get("test_results_ref")
+        saved_test_results_sha256 = saved_state.get("test_results_sha256")
         started_at_epoch = saved_state.get("started_at_epoch")
         if not isinstance(started_at_epoch, (int, float)) or isinstance(started_at_epoch, bool) or started_at_epoch <= 0 or started_at_epoch > time.time() + 60:
             raise OrchestrationError("saved orchestration start time is invalid")
@@ -590,6 +593,9 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
     else:
         if existing_candidate_files:
             raise OrchestrationError("workspace contains candidate changes but no matching orchestration journal; refusing unsafe resume")
+        resume_status = "NEW"
+        saved_test_results_ref = None
+        saved_test_results_sha256 = None
         started_at_epoch = time.time()
         reports: dict[str, dict[str, Any]] = {}
     journal = {
@@ -600,6 +606,8 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         "manifest_sha256": manifest_sha256,
         "started_at_epoch": started_at_epoch,
         "role_reports": reports,
+        "test_results_ref": saved_test_results_ref,
+        "test_results_sha256": saved_test_results_sha256,
         "status": "RUNNING",
     }
 
@@ -786,28 +794,40 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
                 encoding="utf-8",
             )
 
-        persist_test_results("RUNNING")
-        with tempfile.TemporaryDirectory(prefix="workforce-package-tests-") as test_dir:
-            test_root = Path(test_dir)
-            _copy_test_snapshot(root, test_root, manifest["test_paths"])
-            test_image = os.environ.get("WORKFORCE_TEST_DOCKER_IMAGE", "")
-            if not test_image or not re.fullmatch(r"[A-Za-z0-9._:/@-]{1,200}", test_image):
-                raise OrchestrationError("WORKFORCE_TEST_DOCKER_IMAGE must identify the prebuilt trusted test image")
-            try:
-                test_results.extend(_run_candidate_tests(
-                    test_root=test_root,
-                    test_commands=test_commands,
-                    test_image=test_image,
-                    remaining_seconds=remaining_orchestration_seconds,
-                ))
-            except OrchestrationError:
-                persist_test_results("FAILED")
-                raise
-        persist_test_results("PASSED")
+        test_report_ref = test_report.relative_to(root).as_posix()
+        if saved_test_results_ref:
+            if saved_test_results_ref != test_report_ref or not saved_test_results_sha256:
+                raise OrchestrationError("saved test evidence reference is invalid")
+            _verify_artifact_digest(root, saved_test_results_ref, saved_test_results_sha256)
+            saved_test = json.loads(test_report.read_text(encoding="utf-8"))
+            if not isinstance(saved_test, dict) or saved_test.get("status") != "PASSED" or not isinstance(saved_test.get("results"), list):
+                raise OrchestrationError("saved test evidence is not a completed passing test run")
+            test_results = saved_test["results"]
+            test_sha = saved_test_results_sha256
+        else:
+            persist_test_results("RUNNING")
+            with tempfile.TemporaryDirectory(prefix="workforce-package-tests-") as test_dir:
+                test_root = Path(test_dir)
+                _copy_test_snapshot(root, test_root, manifest["test_paths"])
+                test_image = os.environ.get("WORKFORCE_TEST_DOCKER_IMAGE", "")
+                if not test_image or not re.fullmatch(r"[A-Za-z0-9._:/@-]{1,200}", test_image):
+                    raise OrchestrationError("WORKFORCE_TEST_DOCKER_IMAGE must identify the prebuilt trusted test image")
+                try:
+                    test_results.extend(_run_candidate_tests(
+                        test_root=test_root,
+                        test_commands=test_commands,
+                        test_image=test_image,
+                        remaining_seconds=remaining_orchestration_seconds,
+                    ))
+                except OrchestrationError:
+                    persist_test_results("FAILED")
+                    raise
+            persist_test_results("PASSED")
+            test_bytes = test_report.read_bytes()
+            test_sha = hashlib.sha256(test_bytes).hexdigest()
+            journal["test_results_ref"] = test_report_ref
+            journal["test_results_sha256"] = test_sha
         save_journal("TESTS_PASSED")
-
-        test_bytes = test_report.read_bytes()
-        test_sha = hashlib.sha256(test_bytes).hexdigest()
 
         shared_context = [
             candidate_path.relative_to(root).as_posix(),
