@@ -117,7 +117,7 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
             raise OrchestrationError(f"{role} must have an explicit write allowlist")
         if any(not path_is_permitted(path, (path,), ()) for path in paths):
             raise OrchestrationError(f"{role} contains an unsafe or non-relative write path")
-        if role in REVIEWERS and paths:
+        if role not in BUILDERS and paths:
             raise OrchestrationError(f"{role} is read-only and must not receive write paths")
         if not isinstance(contexts, list) or not all(isinstance(x, str) and x.strip() for x in contexts):
             raise OrchestrationError(f"{role}.context_files must be a list of non-empty strings")
