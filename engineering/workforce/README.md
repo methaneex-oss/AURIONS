@@ -11,7 +11,7 @@ This directory contains engineering-workforce infrastructure only. It is not par
 - Atomic role-matched task claims, lease generations and expiry fencing.
 - Idempotent checkpoint writes tied to the current live lease, with authorized restoration after recovery.
 - Append-only evidence digests and artifact references bound to each lifecycle gate; Director acceptance must reference the exact integrated evidence record.
-- A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces task-duration deadlines.
+- A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces the earlier of the contract's absolute deadline or maximum task lifetime.
 - Separate API and supervisor containers with non-root, read-only filesystems.
 - Six distinct pinned model assignments; runner hard ceilings of 100 calls, 32,768 completion tokens/call, 200,000 total tokens and 360 minutes. Every CLI task execution requires a live control-plane lease and atomically reserves/settles per-work-package/per-role token and call budgets in PostgreSQL. Reservations left by a crashed or fenced worker are conservatively charged at their full reserved amount.
 - Paid inference fallback remains disabled.
@@ -38,7 +38,7 @@ Provider secrets remain separate:
 
 Run `docker compose -f engineering/workforce/compose.yaml up --build` from the repository root after setting the protected environment variables. The API binds to loopback port 8000. PostgreSQL data is persisted in the named volume. The supervisor runs independently and polls every five seconds.
 
-Apply new SQL files in `migrations/` to an existing database in lexical order (including `003_immutable_evidence.sql` and `004_agent_budget_ledger.sql`). The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
+Apply new SQL files in `migrations/` to an existing database in lexical order (including `003_immutable_evidence.sql`, `004_agent_budget_ledger.sql` and `005_absolute_task_deadlines.sql`). The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
 
 ## Six-role orchestration
 
