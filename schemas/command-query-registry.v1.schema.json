@@ -81,7 +81,8 @@
                 "aurion_events.db",
                 "aurion_governance.db"
               ]
-            }
+            },
+            "description": "Authoritative stores whose durable state is changed by this command. Each store must commit its local state mutation and local outbox in one transaction. The central event archive is asynchronous unless the event store owns state or coordinates a multi-store saga."
           },
           "expected_revision_contract": {
             "type": [
@@ -176,7 +177,8 @@
                 "store",
                 "tables"
               ]
-            }
+            },
+            "description": "Tables referenced by the command, including read dependencies and central event-archive records. This is not an atomic transaction declaration; use persistence_stores and transaction_contract for write boundaries."
           },
           "aggregate_binding_status": {
             "enum": [
@@ -190,6 +192,11 @@
               "null"
             ],
             "pattern": "^CC-[0-9]{3}$"
+          },
+          "transaction_contract": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Explicit single-store transactional-outbox or cross-store saga boundary. Never implies distributed ACID."
           }
         },
         "required": [
@@ -212,7 +219,8 @@
           "unresolved_bindings",
           "envelope_schema",
           "table_bindings",
-          "aggregate_binding_status"
+          "aggregate_binding_status",
+          "transaction_contract"
         ]
       }
     },
