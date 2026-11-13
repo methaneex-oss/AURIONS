@@ -529,6 +529,11 @@ def test_events() -> None:
         (bytes([49])*16,),
     )
     expect_integrity_error(
+        db, "recovery journal saga history deletion",
+        "DELETE FROM recovery_journal WHERE journal_id=?",
+        (bytes([49])*16,),
+    )
+    expect_integrity_error(
         db, "terminal saga step inserted without timestamps",
         """INSERT INTO operation_steps
         (operation_step_id,operation_id,step_number,action_id,state,updated_at_ms,
