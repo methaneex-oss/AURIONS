@@ -45,6 +45,8 @@ The static DDL table and foreign-key ownership crosswalk is not SQL execution. T
 
 ## Store-local transactional outbox correction
 
+See [Store-local Outbox and Cross-Store Saga Ownership Matrix](../../docs/planning/STORE-LOCAL-OUTBOX-AND-CROSS-STORE-SAGA-MATRIX.md) for the command-by-command transaction boundary and recovery protocol.
+
 The cross-store protocol requires the authoritative store to commit its aggregate mutation and publication intent in one local transaction. The earlier DDL set violated that requirement: only `aurion_events.db` had an `outbox` table, while memory and governance mutations were mapped to that separate database. A separate event database cannot make those domain commits atomic.
 
 Memory migration v5 and governance migration v2 add an identically shaped local `outbox` table to their respective stores. The existing event-store outbox remains for event-store-owned mutations and downstream dispatch. A relay copies committed local outbox envelopes into the central event archive using stable message IDs and payload digests; delivery is at least once and consumers deduplicate. A relay failure leaves the source outbox pending and does not roll back or misreport the already-committed domain mutation.
