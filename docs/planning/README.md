@@ -21,7 +21,7 @@ This directory contains the canonical planning mirror, detailed technical contra
 - [Planning completion register](PLANNING-COMPLETION-REGISTER.md) — authoritative layer-by-layer status, builder-owned remaining work, external gates and strict completion criteria. This register replaces informal terms such as “substantially complete.”
 - [Canonical implementation roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md)
 - [Semantic architecture reconciliation report](SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md)
-- [Work-package traceability and exit matrix](WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md) — per-package logical owners, inputs, outputs/contracts, acceptance evidence, failure/recovery tests and external/owner gates.
+- [Work-package traceability and exit matrix](WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md)\n- [First-release acceptance traceability matrix](FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md) — maps every PR-01…PR-18 condition to contract families, accountable work packages, required scenarios/evidence and owner/external gates; CI enforces exact acceptance-ID and WP-reference coverage. — per-package logical owners, inputs, outputs/contracts, acceptance evidence, failure/recovery tests and external/owner gates.
 - [Cloud/offline-mobile topology decision](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md) — explicit analysis of shared implementation, shared state and synchronization; the first-release continuity choice remains unresolved.
 - [Notion project control center](https://app.notion.com/p/41505b96eab381778361fc0d0ccf6344?pvs=204) — original planning source and decision history.
 
