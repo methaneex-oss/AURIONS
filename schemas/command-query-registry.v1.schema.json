@@ -386,6 +386,20 @@
           "read_only_invariant": {
             "type": "string",
             "minLength": 1
+          },
+          "projection_contract": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Explicit evidence boundary for query result projection. Must identify unresolved SELECT/source/alias/join semantics."
+          },
+          "projection_unresolved_fields": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Result schema fields with no direct, _json or _ms candidate column in the declared table bindings. These remain unresolved until explicit mapping."
           }
         },
         "required": [
@@ -410,7 +424,9 @@
           "unresolved_bindings",
           "envelope_schema",
           "table_bindings",
-          "aggregate_binding_status"
+          "aggregate_binding_status",
+          "projection_contract",
+          "projection_unresolved_fields"
         ]
       }
     },
