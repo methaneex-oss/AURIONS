@@ -1077,3 +1077,20 @@ A direct crosswalk at the current registry revision found that the machine-reada
 **Verification:** Exact event-summary guard revision `0fe0e43c747d98e991ecb43aecfcfa1e4a4a3c9f` passed [workflow 43433290439](https://github.com/methaneex-oss/AURIONS/actions/runs/43433290439), all nine steps. The subsequent validator catalogue-reference matcher correction at exact HEAD `8e9b557df9ffc27565d4604776aef78787f98b37` passed [workflow 43433453662](https://github.com/methaneex-oss/AURIONS/actions/runs/43433453662), all nine steps, retaining the event-summary guard.
 
 **Evidence boundary:** This closes registry/matrix count parity and current narrative consistency only. It does not complete semantic review of the 89 consumer/owner-transition contracts, owner acceptance of the non-command trigger specifications, runtime handler/consumer implementation, executable event behaviour or dispatch authorization. BR-008 remains OPEN; implementation remains unauthorized.
+
+
+## BR-004 scenario traceability integrity — catalogue and ordered-step references (2026-11-13)
+
+A review of the 39 integrated scenario contracts found that the validator accepted catalogue references based only on a \`PREFIX-NNN\` shape; it did not prove that a referenced catalogue ID existed. The baseline policy test catalogue was also described as AU-001 through AU-012 without assigning those IDs to its twelve individual tests.
+
+Corrections:
+- Assigned stable AU-001…AU-012 IDs to the twelve existing baseline policy tests without changing their requirements.
+- Added canonical catalogue resolution for scenario \`contract_refs\` against the cognitive/world/interaction matrix and implementation-ready security/test contracts.
+- Added source-scenario resolution for CM/AD references against their canonical architecture documents.
+- Required each scenario's step IDs to be unique and sequential from S01; required negative-control IDs to be unique.
+
+**Current fixture evidence:** 39 scenarios, 172 ordered steps and 45 negative controls; all 24 catalogue references resolve, all source scenario IDs resolve, and no step/control identity defects were found.
+
+**Exact code head:** \`d7e20808d42e8ab4aa9c5163454c640f6b130c0c\`. [Workflow 43433557247](https://github.com/methaneex-oss/AURIONS/actions/runs/43433557247) passed all nine steps.
+
+**Evidence boundary:** Scenario specifications and reference integrity only. The scenarios remain \`specified_not_executed\`; no runtime cognitive learning, provider behaviour, restart/replay, concurrency or target-device behaviour is established. BR-004 remains OPEN.
