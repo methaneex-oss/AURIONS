@@ -134,8 +134,8 @@ class Worker:
             )
         if profile["cost_class"] not in {"free", "free_daily_allowance"}:
             raise RuntimeError("free-only policy: selected role model is not registered as free")
-        if max_calls <= 0 or max_tokens <= 0 or max_total_tokens <= 0 or max_duration_minutes <= 0:
-            raise ValueError("model-call, token and duration budgets must be positive")
+        if max_calls <= 0 or max_calls > 100 or max_tokens <= 0 or max_tokens > 32768 or max_total_tokens <= 0 or max_total_tokens > 200000 or max_duration_minutes <= 0 or max_duration_minutes > 360:
+            raise ValueError("budgets must be positive and within hard ceilings: 100 calls, 32768 tokens/call, 200000 total tokens, 360 minutes")
 
     def load_mandatory_governance(self) -> tuple[list[str], list[dict[str, str]]]:
         context: list[str] = []
