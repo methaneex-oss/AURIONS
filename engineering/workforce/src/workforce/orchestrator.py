@@ -204,7 +204,7 @@ def _task_brief(manifest: dict[str, Any], role: str) -> str:
         "Canonical sources:\n" + "\n".join(f"- {item}" for item in manifest["canonical_sources"]),
         "Stop conditions:\n" + "\n".join(f"- {item}" for item in manifest["stop_conditions"]),
         "Permitted write paths:\n" + "\n".join(f"- {item}" for item in permitted),
-        f"Execution limits: {spec.get('max_model_calls', 8)} model calls; {spec.get('max_tokens', 16000)} total tokens; {spec.get('max_duration_minutes', 30)} minutes.",
+        f"Execution limits: {spec.get('max_model_calls', 8)} model calls; {spec.get('max_tokens', 16000)} total tokens; {spec.get('max_duration_minutes', {'lead_builder': 120, 'specialist_builder': 60, 'architecture_reviewer': 30, 'code_reviewer': 30, 'negative_tester': 30, 'integration_verifier': 45}[role])} minutes.",
         "Do not broaden scope, alter protected governance, claim unrun tests passed, or treat review comments as authorization to modify files.",
         "Return a precise completion report with changed files, test evidence, unresolved risks and any blocked acceptance criteria.",
     ]
