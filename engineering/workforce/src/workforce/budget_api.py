@@ -106,8 +106,25 @@ def settle(
     worker = worker_from_token(x_worker_token)
     overrun = False
     with connect() as conn, conn.cursor() as cur:
+        # Lock task first, then reservation: the supervisor uses the same order
+        # when expiring leases and abandoning orphaned reservations.
         cur.execute(
-            """SELECT work_package_id,role,worker_id,reserved_tokens,state
+            """SELECT lease_generation,lease_token_hash,lease_worker
+                 FROM wf_tasks
+                WHERE task_id=%s AND role=%s AND lease_worker=%s
+                  AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
+                  AND lease_expires_at > now()
+                  AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+                  AND state IN ('CLAIMED','RUNNING','CHECKPOINTED')
+                FOR UPDATE""",
+            (task_id, worker.role, worker.actor_id, body.lease_token),
+        )
+        task = cur.fetchone()
+        if not task:
+            raise HTTPException(status_code=409, detail="current live lease required to settle inference budget")
+        cur.execute(
+            """SELECT work_package_id,role,worker_id,reserved_tokens,state,
+                      lease_generation,lease_token_hash
                  FROM wf_budget_reservations
                 WHERE reservation_id=%s AND task_id=%s FOR UPDATE""",
             (body.reservation_id, task_id),
@@ -115,16 +132,10 @@ def settle(
         reservation = cur.fetchone()
         if (not reservation or reservation["state"] != "RESERVED"
                 or reservation["worker_id"] != worker.actor_id
-                or reservation["role"] != worker.role):
-            raise HTTPException(status_code=409, detail="active reservation is missing, settled, or belongs to another worker")
-        cur.execute(
-            """SELECT 1 FROM wf_budget_reservations
-                WHERE reservation_id=%s
-                  AND lease_token_hash=encode(digest(%s,'sha256'),'hex')""",
-            (body.reservation_id, body.lease_token),
-        )
-        if not cur.fetchone():
-            raise HTTPException(status_code=403, detail="reservation lease credential mismatch")
+                or reservation["role"] != worker.role
+                or reservation["lease_generation"] != task["lease_generation"]
+                or reservation["lease_token_hash"] != task["lease_token_hash"]):
+            raise HTTPException(status_code=409, detail="active reservation is missing, stale, settled, or belongs to another lease")
         actual = body.actual_tokens
         overrun = actual > reservation["reserved_tokens"]
         cur.execute(
