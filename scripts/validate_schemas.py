@@ -731,13 +731,42 @@ def main() -> int:
     negative_control_count = sum(len(item["negative_controls"]) for item in scenarios)
     if len(scenarios) != 39 or scenario_ids != expected_scenario_ids:
         fail("scenario contract fixture must contain INT-001…003, CM-001…021 and AD-001…015")
-    if step_count != 172 or negative_control_count != 45:
+    if step_count != 182 or negative_control_count != 45:
         fail(
-            f"scenario fixture expected 172 ordered steps and 45 negative controls; "
+            f"scenario fixture expected 182 ordered steps and 45 negative controls; "
             f"found {step_count} steps and {negative_control_count} controls"
         )
     command_types = {item["command_type"] for item in commands}
     query_types = {item["query_type"] for item in queries}
+    command_by_type = {item["command_type"]: item for item in commands}
+    for scenario in scenarios:
+        for step in scenario["steps"]:
+            action = step["contract_action"]
+            action_kind, _, action_name = action.partition(":")
+            expected_events = set(step.get("expected_events", []))
+            if action_kind == "command":
+                command = command_by_type.get(action_name)
+                if command is None:
+                    fail(f"{scenario['scenario_id']}: unknown command action {action_name}")
+                if expected_events and expected_events != set(command.get("emitted_event_bindings", [])):
+                    fail(
+                        f"{scenario['scenario_id']}/{step['step_id']}: expected events "
+                        f"do not match command {action_name} emitted_event_bindings"
+                    )
+            elif action_kind == "query":
+                if action_name not in query_types:
+                    fail(f"{scenario['scenario_id']}: unknown query action {action_name}")
+                if expected_events:
+                    fail(f"{scenario['scenario_id']}/{step['step_id']}: read-only query cannot emit domain events")
+            elif action_kind == "event" and action_name not in events:
+                fail(f"{scenario['scenario_id']}: unknown event action {action_name}")
+    scenario_by_id = {item["scenario_id"]: item for item in scenarios}
+    for scenario_id in ("CM-001", "CM-002", "CM-003"):
+        scenario = scenario_by_id[scenario_id]
+        if any(step["contract_action"] == "fake:scenario.exercise_contract_sequence" for step in scenario["steps"]):
+            fail(f"{scenario_id}: concrete scenario cannot use the generic exercise_contract_sequence placeholder")
+        if not any(step.get("expected_events") for step in scenario["steps"]):
+            fail(f"{scenario_id}: concrete scenario must declare expected event outcomes")
     domain_payload_defs = set(schema_docs["domain-payloads.v1.schema.json"].get("$defs", {}))
     world_payload_defs = set(schema_docs["world-interaction.v1.schema.json"].get("$defs", {}))
     catalogue_sources = (
