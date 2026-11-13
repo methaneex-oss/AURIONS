@@ -2562,8 +2562,9 @@
           "store": "aurion_events.db",
           "tables": [
             "events",
-            "outbox",
+            "operation_steps",
             "operations",
+            "outbox",
             "recovery_journal"
           ],
           "binding_role": "authoritative_write"
@@ -2649,8 +2650,9 @@
           "store": "aurion_events.db",
           "tables": [
             "events",
-            "outbox",
+            "operation_steps",
             "operations",
+            "outbox",
             "recovery_journal"
           ],
           "binding_role": "authoritative_write"
@@ -2736,8 +2738,9 @@
           "store": "aurion_events.db",
           "tables": [
             "events",
-            "outbox",
+            "operation_steps",
             "operations",
+            "outbox",
             "recovery_journal"
           ],
           "binding_role": "authoritative_write"
