@@ -416,6 +416,20 @@ def test_events() -> None:
 
     # Cross-store evolution sagas require ordered, immutable, idempotent steps.
     operation_id = bytes([40]) * 16
+    expect_integrity_error(
+        db, "saga operation missing idempotency key",
+        """INSERT INTO operations
+        (operation_id,operation_type,state,created_at_ms,updated_at_ms)
+        VALUES (?,?,?,?,?)""",
+        (bytes([39])*16,"evolution.candidate.activate","proposed",9,9),
+    )
+    expect_integrity_error(
+        db, "saga operation empty idempotency key",
+        """INSERT INTO operations
+        (operation_id,operation_type,state,idempotency_key,created_at_ms,updated_at_ms)
+        VALUES (?,?,?,?,?,?)""",
+        (bytes([38])*16,"evolution.candidate.activate","proposed","",9,9),
+    )
     db.execute(
         """INSERT INTO operations
         (operation_id,operation_type,state,idempotency_key,created_at_ms,updated_at_ms)
