@@ -229,9 +229,20 @@ class Worker:
         if self.provider == "cloudflare":
             headers["Content-Type"] = "application/json"
         while self.calls < self.max_calls and self.total_tokens < self.max_total_tokens:
-            self.calls += 1
             remaining = self.max_total_tokens - self.total_tokens
-            output_limit = min(self.max_tokens, remaining)
+            # UTF-8 request bytes conservatively upper-bound tokenizer input tokens;
+            # reserve framing overhead before allowing any paid/free provider request.
+            request_bytes = len(json.dumps(
+                {"messages": messages, "tools": TOOLS}, ensure_ascii=False
+            ).encode("utf-8"))
+            prompt_reserve = request_bytes + 256
+            output_limit = min(self.max_tokens, remaining - prompt_reserve)
+            if output_limit <= 0:
+                raise RuntimeError(
+                    "prompt and protocol overhead exhaust the remaining token budget; "
+                    "provider request was not sent"
+                )
+            self.calls += 1
             payload = {
                 "model": self.model,
                 "messages": messages,
