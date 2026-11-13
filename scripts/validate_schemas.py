@@ -1074,7 +1074,7 @@ def main() -> int:
 
     required_scenario_ids = {
         *(f"INT-{number:03d}" for number in range(1, 4)),
-        *(f"CM-{number:03d}" for number in range(1, 22)),
+        *(f"CM-{number:03d}" for number in range(1, 30)),
         *(f"AD-{number:03d}" for number in range(1, 16)),
     }
     if scenario_ids != required_scenario_ids:
