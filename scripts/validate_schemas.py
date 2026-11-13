@@ -326,7 +326,7 @@ def main() -> int:
         if unknown_events:
             fail(f"{command_type}: unknown event bindings {sorted(unknown_events)}")
         case_id = item.get("acceptance_case_id")
-        if not isinstance(case_id, str) or not re.fullmatch(r"CC-\\d{3}", case_id) or case_id in command_acceptance_ids:
+        if not isinstance(case_id, str) or not re.fullmatch(r"CC-\d{3}", case_id) or case_id in command_acceptance_ids:
             fail(f"{command_type}: missing, malformed or duplicate command acceptance case ID")
         command_acceptance_ids.add(case_id)
         if f"| `{case_id}` | `{command_type}` |" not in command_matrix:
@@ -346,7 +346,7 @@ def main() -> int:
 
     matrix_acceptance_rows = [
         line for line in command_matrix.splitlines()
-        if re.match(r"^\\|\\s*`CC-\\d{3}`s*\\|", line)
+        if re.match(r"^\|\s*\x60CC-\d{3}\x60\s*\|", line)
     ]
     matrix_acceptance_ids = [
         re.match(r"^\\|\\s*`(CC-\\d{3})`", line).group(1)
