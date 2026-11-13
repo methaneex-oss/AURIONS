@@ -683,3 +683,8 @@ The existing owning-store source-column validator remains in place. The first CI
 **Exact verified code revision:** `0f69d48dd99fece42ebf44e0ae5e5c75291bf45a`. [Workflow 43431379174](https://github.com/methaneex-oss/AURIONS/actions/runs/43431379174) passed all nine steps, including the new query projection inventory guard, all three SQLite stores/seventeen ordered DDL files, FK/integrity checks and Android probe shell syntax.
 
 **Evidence boundary:** This verifies registry-to-document field inventory parity and that documented direct table/column references exist in owning-store DDL. It does not execute query SELECTs or prove aliases, JSON decoding, joins, owner scoping, redaction, snapshot/cursor/pagination semantics, query plans or target resource budgets. BR-002 remains OPEN; BR-008 remains OPEN. All 29 queries remain design-only/non-dispatchable.
+
+
+### Verification correction — query projection validator section boundary
+
+The documentation-updated head first failed the SQLite DDL step because `validate_query_projection_inventory()` searched for a literal escaped newline rather than the next Markdown heading. This made the first query's inventory scan include later query sections and falsely report duplicate fields. Corrected the delimiter in `0f69d48dd99fece42ebf44e0ae5e5c75291bf45a`; exact head passed all nine steps in [run 43431379174](https://github.com/methaneex-oss/AURIONS/actions/runs/43431379174). The earlier failure `43431248189` remains recorded as validator failure evidence, not as a schema or DDL failure.
