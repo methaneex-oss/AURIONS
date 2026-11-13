@@ -103,7 +103,7 @@ def validate_transition(current: TaskState, target: TaskState, *, director_decis
 
 def path_is_permitted(path: str, permitted: tuple[str, ...], prohibited: tuple[str, ...]) -> bool:
     """Conservative, platform-independent prefix policy; callers resolve filesystem paths separately."""
-    raw = path.replace("\\\\", "/")
+    raw = path.replace(chr(92), "/")
     if not raw or raw.startswith("/") or ":" in raw.split("/")[0]:
         return False
     normalized = raw.rstrip("/")
@@ -112,7 +112,7 @@ def path_is_permitted(path: str, permitted: tuple[str, ...], prohibited: tuple[s
         return False
 
     def matches(candidate: str, prefix: str) -> bool:
-        clean = prefix.replace("\\\\", "/").strip("/")
+        clean = prefix.replace(chr(92), "/").strip("/")
         if not clean or clean.startswith("/") or ":" in clean.split("/")[0]:
             return False
         if any(part in {"", ".", ".."} for part in clean.split("/")):
