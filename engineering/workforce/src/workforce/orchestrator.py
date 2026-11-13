@@ -129,8 +129,8 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
             if not isinstance(number, int) or isinstance(number, bool) or number < 1 or number > ceiling:
                 raise OrchestrationError(f"{role}.{field} must be between 1 and {ceiling}")
     total_role_minutes = sum(value["roles"][role].get("max_duration_minutes", default_durations[role]) for role in ROLES)
-    if total_role_minutes > max_total:
-        raise OrchestrationError("sum of role duration ceilings exceeds max_total_duration_minutes")
+    if total_role_minutes + 5 > max_total:
+        raise OrchestrationError("role duration ceilings must leave at least five minutes for verification and evidence finalization")
     left = value["roles"]["lead_builder"]["permitted_paths"]
     right = value["roles"]["specialist_builder"]["permitted_paths"]
     for a in left:
