@@ -15,6 +15,8 @@ ROADMAP = ROOT / "docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md"
 MATRIX = ROOT / "docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md"
 PRODUCT = ROOT / "docs/product/FIRST-USABLE-RELEASE-DEFINITION.md"
 ACCEPTANCE_MATRIX = ROOT / "docs/planning/FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md"
+OWNER_SOURCE = ROOT / "docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md"
+OWNER_MATRIX = ROOT / "docs/planning/OWNER-DECISION-TRACEABILITY-MATRIX.md"
 
 
 class TraceabilityError(AssertionError):
@@ -136,6 +138,38 @@ def validate_acceptance_crosswalk() -> tuple[int, int]:
     return len(product_rows), len(matrix_rows)
 
 
+
+def validate_owner_decision_traceability() -> None:
+    if not OWNER_SOURCE.is_file() or not OWNER_MATRIX.is_file():
+        fail("missing authoritative owner-decision source or traceability matrix")
+    source = OWNER_SOURCE.read_text(encoding="utf-8")
+    matrix = OWNER_MATRIX.read_text(encoding="utf-8")
+    source_ids = set(re.findall(r"^\|\s*((?:MP|IP|UQ)-\d{2})\s*\|", source, re.MULTILINE))
+    matrix_ids = set(re.findall(r"\b((?:MP|IP|UQ)-\d{2})\b", matrix))
+    if not source_ids:
+        fail("authoritative owner-decision register contains no MP/IP/UQ identifiers")
+    if source_ids != matrix_ids:
+        fail(
+            "owner-decision ID traceability mismatch: "
+            f"missing={sorted(source_ids - matrix_ids)}; "
+            f"unexpected={sorted(matrix_ids - source_ids)}"
+        )
+    product = PRODUCT.read_text(encoding="utf-8")
+    required_owner_gates = (
+        ("First user-facing interface: **CLI**", "First interface: OWNER DECISION — CLI."),
+        ("Concurrent first-release deployment: **cloud and offline-capable mobile**",
+         "Deployment: OWNER DECISION — cloud and offline mobile concurrently."),
+        ("Cross-context cognitive-history continuity", "Cloud/mobile state continuity"),
+        ("First permitted Android local action", "first permitted local action remains unresolved"),
+        ("Approval of the first-release product definition", "The owner must approve this product definition."),
+    )
+    for matrix_phrase, source_phrase in required_owner_gates:
+        if matrix_phrase not in matrix:
+            fail(f"owner-decision matrix omits required gate: {matrix_phrase}")
+        if source_phrase not in product:
+            fail(f"authoritative product source omits required owner gate: {source_phrase}")
+
+
 def validate() -> tuple[int, int]:
     roadmap_rows = parse_table_rows(ROADMAP, "canonical roadmap")
     matrix_rows = parse_table_rows(MATRIX, "work-package matrix")
@@ -202,6 +236,7 @@ def validate() -> tuple[int, int]:
         fail("dependency-cycle detector self-test failed")
 
     product_count, acceptance_count = validate_acceptance_crosswalk()
+    validate_owner_decision_traceability()
     if product_count != 18 or acceptance_count != 18:
         fail("first-release acceptance crosswalk must cover PR-01…PR-18 exactly")
 
