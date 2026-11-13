@@ -461,10 +461,18 @@ class ControlPlaneApiTests(unittest.TestCase):
         self.assertEqual(manifest.json()[0]["stage"], "CANDIDATE")
 
     def test_queued_task_does_not_consume_execution_duration_before_first_claim(self):
-        self.assertEqual(self.create_task().status_code, 201)
+        task_contract = contract()
+        task_contract["work_package_id"] = self.task_id
+        task_contract["max_duration_minutes"] = 1
+        created = self.client.post(
+            "/v1/tasks",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR, "X-Director-Approval-Token": DIRECTOR},
+            json={"task_id": self.task_id, "role": "lead_builder", "contract": task_contract},
+        )
+        self.assertEqual(created.status_code, 201, created.text)
         with psycopg.connect(DB) as conn:
             conn.execute(
-                "UPDATE wf_tasks SET created_at=now()-interval '61 minutes' WHERE task_id=%s",
+                "UPDATE wf_tasks SET created_at=now()-interval '2 minutes' WHERE task_id=%s",
                 (self.task_id,),
             )
         recovered = self.client.post(
@@ -484,6 +492,28 @@ class ControlPlaneApiTests(unittest.TestCase):
         with psycopg.connect(DB) as conn:
             started_at = conn.execute("SELECT started_at FROM wf_tasks WHERE task_id=%s", (self.task_id,)).fetchone()[0]
         self.assertIsNotNone(started_at)
+
+    def test_orphaned_queued_task_expires_after_dispatch_ttl(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        with psycopg.connect(DB) as conn:
+            conn.execute(
+                "UPDATE wf_tasks SET created_at=now()-interval '11 minutes' WHERE task_id=%s",
+                (self.task_id,),
+            )
+        recovered = self.client.post(
+            "/v1/maintenance/recover",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR},
+        )
+        self.assertEqual(recovered.status_code, 200, recovered.text)
+        with psycopg.connect(DB) as conn:
+            state = conn.execute("SELECT state FROM wf_tasks WHERE task_id=%s", (self.task_id,)).fetchone()[0]
+        self.assertEqual(state, "FAILED")
+        denied = self.client.post(
+            f"/v1/tasks/{self.task_id}/claim",
+            headers={"X-Worker-Token": BUILDER},
+            json={},
+        )
+        self.assertEqual(denied.status_code, 409)
 
     def test_absolute_contract_deadline_stops_queued_task(self):
         task_contract = contract()
