@@ -49,6 +49,7 @@ jobs:
       MANIFEST_PATH: ${{ github.event_name == 'push' && 'engineering/workforce/work-package.json' || inputs.manifest_path }}
       WORKSPACE_DIR: ${{ runner.temp }}/aurions-workspace
       WORKFORCE_MANIFEST_COPY: ${{ runner.temp }}/work-package.json
+      WORKFORCE_TEST_DOCKER_IMAGE: aurions-workforce-test-runner:ci
     steps:
       - name: Checkout selected branch
         uses: actions/checkout@v5
@@ -62,6 +63,10 @@ jobs:
           cache-dependency-path: engineering/workforce/requirements.txt
       - name: Install workforce dependencies
         run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Prepare isolated candidate test runtime
+        run: |
+          docker pull postgres:17-alpine
+          docker build --pull --file engineering/workforce/Dockerfile.test-runner --tag "$WORKFORCE_TEST_DOCKER_IMAGE" .
       - name: Generate ephemeral Director, orchestrator and six worker credentials
         run: |
           python - <<'PY' >> "$GITHUB_ENV"
@@ -128,40 +133,6 @@ jobs:
           manifest_copy = Path(os.environ["WORKFORCE_MANIFEST_COPY"])
           manifest_copy.write_bytes(manifest_path.read_bytes())
           print("Manifest, exact clean base commit, isolated worktree and six role credentials validated.")
-          PY
-      - name: Generate isolated PostgreSQL integration-test credentials
-        run: |
-          python - <<'PY' >> "$GITHUB_ENV"
-          import json
-          import secrets
-          director = secrets.token_urlsafe(32)
-          orchestrator = secrets.token_urlsafe(32)
-          builder = secrets.token_urlsafe(32)
-          reviewer = secrets.token_urlsafe(32)
-          print("WORKFORCE_TEST_DIRECTOR_TOKEN=" + director)
-          print("WORKFORCE_TEST_ORCHESTRATOR_TOKEN=" + orchestrator)
-          print("WORKFORCE_TEST_WORKER_CREDENTIALS_JSON=" + json.dumps({
-              "builder-01": {"token": builder, "role": "lead_builder"},
-              "reviewer-01": {"token": reviewer, "role": "code_reviewer"},
-          }))
-          print("WORKFORCE_TEST_DATABASE_URL=postgresql://workforce:workforce-ephemeral-password@localhost:5432/workforce_test")
-          PY
-      - name: Create separate test database and apply all migrations
-        run: |
-          python - <<'PY'
-          import os
-          from pathlib import Path
-          import psycopg
-
-          with psycopg.connect(os.environ["DATABASE_URL"], autocommit=True) as conn:
-              conn.execute("CREATE DATABASE workforce_test")
-
-          migrations = sorted(Path("engineering/workforce/migrations").glob("*.sql"))
-          for database_url in (os.environ["DATABASE_URL"], os.environ["WORKFORCE_TEST_DATABASE_URL"]):
-              with psycopg.connect(database_url) as conn:
-                  for migration in migrations:
-                      conn.execute(migration.read_text(encoding="utf-8"))
-          print(f"Applied {len(migrations)} migrations to separate control-plane and test databases.")
           PY
       - name: Start authenticated local control plane
         run: |
