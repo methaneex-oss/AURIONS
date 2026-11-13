@@ -496,18 +496,18 @@ Approval record binds:
 Any material change to parameters, recipient, target, data category, capability version or policy version invalidates approval and requires a new request. Approval is single-use and replay-protected. Approval UI presents a human-readable summary derived from the canonical operation, not model-authored prose alone. Durable audit records request, display payload hash, owner decision, execution decision and final receipt.
 
 ### 6.4 Baseline policy tests
-- Invalid/expired/revoked session → deny.
-- Unknown capability or target outside scope → deny.
-- Missing policy store or corrupt policy → deny.
-- Model asks itself for permission → no effect.
-- Changed amount/recipient/target after approval → approval invalid.
-- Replayed approval ID/nonce → deny.
-- Approval from another owner/device session → deny.
-- External disclosure with sensitive data and no explicit approval → deny.
-- OS permission revoked after planning → execution denied.
-- R4/R5 operation without matching approval → deny.
-- Harmless authorized read within scope → no repeated approval prompt.
-- Policy version changes between approval and execution → re-evaluate; stale approval rejected.
+- **AU-001:** Invalid/expired/revoked session → deny.
+- **AU-002:** Unknown capability or target outside scope → deny.
+- **AU-003:** Missing policy store or corrupt policy → deny.
+- **AU-004:** Model asks itself for permission → no effect.
+- **AU-005:** Changed amount/recipient/target after approval → approval invalid.
+- **AU-006:** Replayed approval ID/nonce → deny.
+- **AU-007:** Approval from another owner/device session → deny.
+- **AU-008:** External disclosure with sensitive data and no explicit approval → deny.
+- **AU-009:** OS permission revoked after planning → execution denied.
+- **AU-010:** R4/R5 operation without matching approval → deny.
+- **AU-011:** Harmless authorized read within scope → no repeated approval prompt.
+- **AU-012:** Policy version changes between approval and execution → re-evaluate; stale approval rejected.
 
 ## 7. Durable operation lifecycle and recovery
 
