@@ -106,6 +106,45 @@ def test_memory() -> None:
         raise AssertionError("memory: aggregate survived rollback without its outbox")
     if db.execute("SELECT 1 FROM outbox WHERE message_id=?", (bytes([7]) * 16,)).fetchone():
         raise AssertionError("memory: outbox survived aggregate rollback")
+    # Interaction outcomes must reference a proposal owned by the same owner.
+    db.execute(
+        """INSERT INTO interaction_proposals
+        (interaction_id,owner_ref,objective_ref,actor_ref,target_refs_json,
+         means_hypothesis_refs_json,proposed_effects_json,risk_assessment_json,
+         precondition_evidence_refs_json,status,proposed_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        ("interaction-1", "owner-1", "objective-1", "actor-1", "[]",
+         "[]", "[]", "{}", "[]", "proposed", 4),
+    )
+    db.execute(
+        """INSERT INTO interaction_outcomes
+        (outcome_id,interaction_ref,owner_ref,result_status,observed_effects_json,
+         evidence_refs_json,unresolved_effects_json,attribution_json,side_effects_json,
+         observed_at_ms,recorded_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        ("outcome-1", "interaction-1", "owner-1", "observed", "[]",
+         "[]", "[]", "{}", "[]", 5, 5),
+    )
+    for interaction_ref, owner_ref, outcome_id in (
+        ("missing-interaction", "owner-1", "outcome-missing"),
+        ("interaction-1", "owner-2", "outcome-cross-owner"),
+    ):
+        try:
+            db.execute(
+                """INSERT INTO interaction_outcomes
+                (outcome_id,interaction_ref,owner_ref,result_status,observed_effects_json,
+                 evidence_refs_json,unresolved_effects_json,attribution_json,side_effects_json,
+                 observed_at_ms,recorded_at_ms)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                (outcome_id, interaction_ref, owner_ref, "observed", "[]",
+                 "[]", "[]", "{}", "[]", 6, 6),
+            )
+        except sqlite3.IntegrityError:
+            pass
+        else:
+            raise AssertionError(
+                f"memory: invalid interaction outcome reference was accepted: {outcome_id}"
+            )
     check_database("memory smoke insert", db)
     db.close()
 
