@@ -511,6 +511,42 @@ def test_events() -> None:
         (bytes([49])*16,operation_id,"governance","aurion_governance.db",
          "approval_committed","applied",12,12,bytes([41])*16),
     )
+
+    # Saga identity and recovery linkage must not be mutable after creation.
+    expect_integrity_error(
+        db, "saga operation type downgrade bypass",
+        "UPDATE operations SET operation_type='ordinary.operation' WHERE operation_id=?",
+        (operation_id,),
+    )
+    expect_integrity_error(
+        db, "recovery journal store reassignment",
+        "UPDATE recovery_journal SET local_store='aurion_memory.db' WHERE journal_id=?",
+        (bytes([49])*16,),
+    )
+    expect_integrity_error(
+        db, "recovery journal step unlink",
+        "UPDATE recovery_journal SET operation_step_id=NULL WHERE journal_id=?",
+        (bytes([49])*16,),
+    )
+    expect_integrity_error(
+        db, "terminal saga step inserted without timestamps",
+        """INSERT INTO operation_steps
+        (operation_step_id,operation_id,step_number,action_id,state,updated_at_ms,
+         step_key,target_store,idempotency_key,request_digest)
+        VALUES (?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([51])*16,operation_id,2,bytes([52])*16,"succeeded",13,
+         "memory.activate","aurion_memory.db","saga-idem-1:memory.activate","d"*64),
+    )
+    expect_integrity_error(
+        db, "compensation step references nonexistent prior step",
+        """INSERT INTO operation_steps
+        (operation_step_id,operation_id,step_number,action_id,state,updated_at_ms,
+         step_key,target_store,idempotency_key,request_digest,compensation_for_step_number)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([53])*16,operation_id,2,bytes([54])*16,"pending",13,
+         "governance.compensate","aurion_governance.db",
+         "saga-idem-1:governance.compensate","e"*64,99),
+    )
     db.commit()
     check_database("events smoke insert", db)
     db.close()
