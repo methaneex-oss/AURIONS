@@ -995,3 +995,17 @@ Extended `validate_query_projection_source_columns()` to enumerate every relatio
 Inspection of the actual governance DDL confirmed `approval_requests.owner_ref` is introduced by migration v3 and enforced as non-null for newly inserted approval requests. The `audit.lookup` projection mapping now states that any approval-request join used to resolve `approval_ref` must constrain `approval_requests.owner_ref` to the authenticated owner context. This makes the generic owner-scope rule explicit at the specific cross-record join.
 
 **Boundary:** This is a required query-design constraint only. No query SQL/handler exists to execute or prove the join predicate; cross-owner denial and existence-concealment remain unverified runtime requirements.
+
+
+## BR-001 / BR-008 — command transition event-boundary parity (2026-11-13)
+
+A registry-to-transition-matrix scan found three mapped task-control commands whose matrix rows said only "Same task-control event pair" while the machine registry bound two concrete events. This left the human-readable transition contract less precise than the registry and allowed that drift to pass CI.
+
+Corrections:
+- Replaced the vague event phrase for `task.pause`, `task.resume` and `task.cancel` with the exact `task.control.requested.v1` and `task.run.transitioned.v1` event names.
+- Extended `validate_schemas.py` to require exactly one transition row for every mapped command and exact parity between event names in that row and the registry's `emitted_event_bindings`.
+- A focused 52-command crosswalk confirmed no duplicate mapped rows and no remaining event-boundary mismatches.
+
+**Exact code revision:** `4c3007302a4c9e01a92a9cf517650f79029932e5`. [Workflow 43431857829](https://github.com/methaneex-oss/AURIONS/actions/runs/43431857829) passed all nine steps, including schema/fixture validation, governance, work-package traceability, all SQLite DDL/migration smoke tests and Android probe syntax.
+
+**Evidence boundary:** This closes a command-matrix/registry event-name consistency defect. It does not execute command handlers or prove that emitted events are produced correctly at runtime. All 52 mapped commands remain design-only/non-dispatchable; BR-001 and BR-008 remain OPEN.
