@@ -132,6 +132,23 @@ class ControlPlaneApiTests(unittest.TestCase):
         self.assertEqual(self.create_task().status_code, 201)
         headers = {"X-Worker-Token": BUILDER}
         old = self.client.post(f"/v1/tasks/{self.task_id}/claim", headers=headers, json={}).json()
+        self.client.post(
+            f"/v1/tasks/{self.task_id}/start",
+            headers=headers,
+            json={"lease_token": old["lease_token"]},
+        )
+        checkpoint = self.client.post(
+            f"/v1/tasks/{self.task_id}/checkpoint",
+            headers=headers,
+            json={
+                "lease_token": old["lease_token"],
+                "checkpoint_name": "recoverable",
+                "payload": {"durable_progress": 7},
+                "context_sha256": "e" * 64,
+                "idempotency_key": "recoverable-checkpoint-key-01",
+            },
+        )
+        self.assertEqual(checkpoint.status_code, 201, checkpoint.text)
         with psycopg.connect(DB) as conn:
             conn.execute("UPDATE wf_tasks SET lease_expires_at=now()-interval '1 second' WHERE task_id=%s", (self.task_id,))
         heartbeat = self.client.post(
@@ -152,6 +169,13 @@ class ControlPlaneApiTests(unittest.TestCase):
         new = self.client.post(f"/v1/tasks/{self.task_id}/claim", headers=headers, json={})
         self.assertEqual(new.status_code, 200, new.text)
         self.assertNotEqual(new.json()["lease_token"], old["lease_token"])
+        restored = self.client.get(
+            f"/v1/tasks/{self.task_id}/checkpoints/latest",
+            headers=headers,
+            params={"lease_token": new.json()["lease_token"]},
+        )
+        self.assertEqual(restored.status_code, 200, restored.text)
+        self.assertEqual(restored.json()["payload_json"], {"durable_progress": 7})
         stale = self.client.post(
             f"/v1/tasks/{self.task_id}/start",
             headers=headers,
