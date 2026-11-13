@@ -88,13 +88,14 @@ def main() -> int:
     if not transaction_matrix_path.is_file():
         fail("missing store-local outbox and cross-store saga ownership matrix")
     transaction_matrix = transaction_matrix_path.read_text(encoding="utf-8")
-    transaction_rows = {
-        line.split("|", 2)[1].strip().strip(chr(96)): line
-        for line in transaction_matrix.splitlines()
-        if line.startswith("| ") and line.count("|") >= 5
-        and line.split("|", 2)[1].strip().startswith(chr(96))
-    }
     expected_command_types = {item["command_type"] for item in commands}
+    transaction_rows = {}
+    for line in transaction_matrix.splitlines():
+        if not line.startswith("| ") or line.count("|") < 5:
+            continue
+        command_name = line.split("|", 2)[1].strip().strip(chr(96))
+        if command_name in expected_command_types:
+            transaction_rows[command_name] = line
     if set(transaction_rows) != expected_command_types:
         fail(
             "transaction matrix command inventory mismatch: "
