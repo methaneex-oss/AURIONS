@@ -208,6 +208,14 @@ This section makes the architecture scenario IDs individually traceable to the e
 | CM-019 | `capabilityDescriptorRecord`, `planStepContract` | CAP-004, NHC-001, NHC-007 | New compatible capability is represented and considered through generic mechanisms without a task-specific core branch. |
 | CM-020 | `beliefRevision`, `representationRevised`, `evidenceItem` | CG-004 | Later evidence revises earlier interpretation without rewriting source observation or provenance. |
 | CM-021 | `attentionAllocated`, `taskRunStatus`, `taskCheckpointDetails`, `contextSnapshot` | DB-017, TS-005 | Restart treats prior attention as history and reconstructs current allocation from current state and resources. |
+| CM-022 | `objective`, `objectiveRevision`, `planRevision` | NHC-016, PR-06 | Owner-authored objective and success criteria remain independent from derived goal/plan revisions; replanning cannot rewrite the requested outcome. |
+| CM-023 | `entity`, `relationship`, `evidence` | NHC-009, world/relationship revision checks | Indirect and contradictory evidence creates provisional successor revisions without rewriting source observations or prior history. |
+| CM-024 | `affordanceHypothesis`, `interactionProposal` | NHC-010 | Human-mediated means can be represented without inventing a device descriptor or platform adapter. |
+| CM-025 | `affordanceHypothesis`, `interactionProposal` | NHC-013 | Absence of evidenced/authorized means yields explicit no-route/ask/observe/wait/delegate/stop; no executable route is fabricated. |
+| CM-026 | `affordanceHypothesis`, `situation` | NHC-014 | Means validity is scoped to exact context and evidence revisions; changed/stale context triggers reassessment. |
+| CM-027 | `interactionProposal`, `approvalRequested`, `approvalDecision` | NHC-012, AU-001…AU-012 | Proposal remains non-executable until independent exact-scope authority approves actor, target, effects and parameters. |
+| CM-028 | `interactionOutcome`, `outcomeObserved` | NHC-015, OP-003, OP-004 | Provider receipt, independent observation, unresolved effect and causal attribution remain distinct. |
+| CM-029 | `objective`, `interactionProposal`, `taskRunStatus` | NHC-011, PR-18 | Each context retains its own identity, state ownership, provenance and authority; shared contracts do not imply shared access or atomic state. |
 
 ### 8.2 Android environment and capability scenarios
 
@@ -232,8 +240,8 @@ This section makes the architecture scenario IDs individually traceable to the e
 ### 8.3 Evidence boundary
 
 - The existing `schemas/fixtures/domain-payloads.fixture.json` remains payload-shape coverage only; it does not prove scenario sequences or durable-state assertions.
-- Added `schemas/scenario-contracts.v1.schema.json` and `schemas/fixtures/scenario-contracts.fixture.json` with 39 scenario specifications (INT-001…INT-003, CM-001…CM-021 and AD-001…AD-015), 255 ordered steps and 45 negative controls, restart/replay, concurrency, fault and held-out controls. CI validates the fixture schema and its command/query/event references.
-- These are machine-readable test specifications, **not executed runtime tests**. No AURIONS runtime scenario runner or production handler exists in this planning branch. All 21 CM and 15 AD scenario IDs now have individual fixture entries. The fixtures remain design specifications; they are not executed runtime tests.
+- Added `schemas/scenario-contracts.v1.schema.json` and `schemas/fixtures/scenario-contracts.fixture.json` with 47 scenario specifications (INT-001…INT-003, CM-001…CM-029 and AD-001…AD-015), 287 ordered steps and 53 negative controls, restart/replay, concurrency, fault and held-out controls. CI validates the fixture schema and its command/query/event references.
+- These are machine-readable test specifications, **not executed runtime tests**. No AURIONS runtime scenario runner or production handler exists in this planning branch. All 29 CM and 15 AD scenario IDs now have individual fixture entries. The fixtures remain design specifications; they are not executed runtime tests.
 - Implementation packages must execute the scenarios with isolated stores and deterministic fakes, then record exact code revision, fixture hash, toolchain, environment, durable-state snapshots and results. A scenario may be marked VALIDATED only from a reproducible run against implementation. This matrix remains **SPECIFIED**, not validated.
 
 
