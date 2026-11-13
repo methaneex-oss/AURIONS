@@ -290,9 +290,19 @@ def main() -> int:
             token = token.replace("~1", "/").replace("~0", "~")
             result_node = result_node[token]
         result_fields = set(result_node.get("properties", {}))
-        unknown_projection_fields = set(unresolved_projection_fields) - result_fields
-        if unknown_projection_fields:
-            fail(f"{query_type}: projection gap fields absent from result schema: {sorted(unknown_projection_fields)}")
+        resolved_projection_fields = item.get("projection_resolved_fields", [])
+        if len(resolved_projection_fields) != len(set(resolved_projection_fields)):
+            fail(f"{query_type}: duplicate resolved projection fields")
+        unresolved_set = set(unresolved_projection_fields)
+        resolved_set = set(resolved_projection_fields)
+        if unresolved_set & resolved_set:
+            fail(f"{query_type}: a projection field is both resolved and unresolved")
+        if unresolved_set | resolved_set != result_fields:
+            fail(
+                f"{query_type}: projection field inventory does not exactly cover result schema; "
+                f"missing={sorted(result_fields - (unresolved_set | resolved_set))}; "
+                f"unknown={sorted((unresolved_set | resolved_set) - result_fields)}"
+            )
         if "UNVERIFIED" not in item.get("projection_contract", ""):
             fail(f"{query_type}: projection contract must preserve unverified evidence boundary")
         section_start = projection_matrix.find(f"### {chr(96)}{query_type}{chr(96)}")
@@ -304,6 +314,10 @@ def main() -> int:
             marker = f"- {chr(96)}{field_name}{chr(96)} → **UNMAPPED"
             if marker not in projection_section:
                 fail(f"{query_type}: projection matrix omits unresolved field {field_name}")
+        for field_name in resolved_projection_fields:
+            marker = f"- {chr(96)}{field_name}{chr(96)} → "
+            if marker not in projection_section or marker + "**UNMAPPED" in projection_section:
+                fail(f"{query_type}: resolved projection field {field_name} lacks a proposed source/derivation")
         for field in query_contract_fields:
             if not isinstance(item.get(field), str) or not item[field].strip():
                 fail(f"{query_type}: missing populated {field}")
