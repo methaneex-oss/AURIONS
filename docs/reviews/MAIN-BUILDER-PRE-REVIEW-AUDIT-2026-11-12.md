@@ -1182,3 +1182,15 @@ Corrections:
 **Exact verified code head:** \`c5dbbb631e24302993e1f3c1c45bb54341f995ed\`. [Workflow 43435237021](https://github.com/methaneex-oss/AURIONS/actions/runs/43435237021) passed all nine steps.
 
 **Evidence boundary:** Scenario/registry event-binding integrity only. The 182 steps remain specified, not executed. BR-004 remains OPEN pending runtime cognitive-cycle, persistence, restart/replay, concurrency, fault and held-out learning evidence.
+
+
+
+## BR-004 — concrete cognitive scenario expansion, batch 2 — 2026-11-13
+
+**Batch 2 completed:**
+- CM-004 now specifies prediction creation before independent outcome evidence, separate outcome/prediction evaluations, immutable prediction inspection, attempted post-outcome rewrite rejection and restart/replay.
+- CM-005 now specifies paired appraisal/attention evaluations with the same stimulus but changed context evidence and resource constraints, read-only history inspection, a no-fixed-stimulus-mapping negative control and restart reconstruction from current state.
+- Added the exact scenario references for prediction, observation, outcome-evaluation, appraisal and attention events.
+- Extended the command/query/event validator and concrete-scenario gate to CM-004 and CM-005.
+
+**Updated fixture inventory:** 39 scenarios, 192 ordered steps and 45 negative controls. Five of 36 CM/AD rows are now concrete; 31 remain generic. CM-022…CM-029 remain absent from the fixture corpus. BR-004 remains OPEN; scenarios are design specifications, not executed runtime acceptance.
