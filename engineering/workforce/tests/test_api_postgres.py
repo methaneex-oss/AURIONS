@@ -11,9 +11,9 @@ from fastapi.testclient import TestClient
 
 from workforce.api import app
 
-DB = os.environ["DATABASE_URL"]
-DIRECTOR = os.environ["DIRECTOR_APPROVAL_TOKEN"]
-ORCHESTRATOR = os.environ["WORKFORCE_ORCHESTRATOR_TOKEN"]
+DB = os.environ.get("DATABASE_URL", "")
+DIRECTOR = os.environ.get("DIRECTOR_APPROVAL_TOKEN", "")
+ORCHESTRATOR = os.environ.get("WORKFORCE_ORCHESTRATOR_TOKEN", "")
 BUILDER = "test-builder-token"
 REVIEWER = "test-reviewer-token"
 
@@ -37,6 +37,7 @@ def contract():
     }
 
 
+@unittest.skipUnless(DB and DIRECTOR and ORCHESTRATOR, "requires disposable PostgreSQL and test credentials")
 class ControlPlaneApiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
