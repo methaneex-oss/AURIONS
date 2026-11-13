@@ -8,6 +8,8 @@ import os
 import subprocess
 import sys
 import time
+import tempfile
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -205,22 +207,33 @@ class Worker:
                 [sys.executable, "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
             ]
             outputs = []
-            # Repository tests are untrusted code. Never pass provider, control-plane,
-            # database, cloud, or Director credentials into their subprocess.
-            env = {
-                "PATH": os.environ.get("PATH", ""),
-                "PYTHONPATH": str(self.workspace / "engineering/workforce/src"),
-                "PYTHONDONTWRITEBYTECODE": "1",
-                "CI": "1",
-            }
-            for command in commands:
-                remaining = self.remaining_seconds()
-                if remaining <= 0:
-                    raise TimeoutError("task duration budget exhausted before test execution")
-                result = subprocess.run(command, cwd=self.workspace, env=env, capture_output=True, text=True, timeout=max(1, min(120, remaining)))
-                outputs.append({"command": command, "returncode": result.returncode, "stdout": result.stdout[-12000:], "stderr": result.stderr[-12000:]})
-                if result.returncode:
-                    break
+            # Execute repository tests from an isolated copy. They receive no provider,
+            # control-plane, database, cloud, or Director credentials and cannot mutate
+            # the builder's candidate workspace through their working directory.
+            with tempfile.TemporaryDirectory(prefix="workforce-tests-") as temp_dir:
+                test_root = Path(temp_dir)
+                for relative in ("engineering/workforce/src", "engineering/workforce/tests"):
+                    source = self.workspace / relative
+                    destination = test_root / relative
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copytree(source, destination)
+                env = {
+                    "PATH": os.environ.get("PATH", ""),
+                    "PYTHONPATH": str(test_root / "engineering/workforce/src"),
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "CI": "1",
+                }
+                for command in commands:
+                    remaining = self.remaining_seconds()
+                    if remaining <= 0:
+                        raise TimeoutError("task duration budget exhausted before test execution")
+                    result = subprocess.run(
+                        command, cwd=test_root, env=env, capture_output=True, text=True,
+                        timeout=max(1, min(120, remaining)),
+                    )
+                    outputs.append({"command": command, "returncode": result.returncode, "stdout": result.stdout[-12000:], "stderr": result.stderr[-12000:]})
+                    if result.returncode:
+                        break
             return json.dumps(outputs)
         return "DENIED: unknown tool."
 
