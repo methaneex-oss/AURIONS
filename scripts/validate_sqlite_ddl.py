@@ -56,12 +56,16 @@ def test_memory() -> None:
         "aurion_memory.migration_v3.sql",
         "aurion_memory.migration_v4.sql",
         "aurion_memory.migration_v5.sql",
+        "aurion_memory.migration_v6.sql",
     ])
     require_columns(db, "objective_records", {
         "objective_id", "owner_ref", "version", "success_evidence_json"
     })
     require_columns(db, "evidence_details", {
         "evidence_id", "owner_ref", "epistemic_status", "sensitivity"
+    })
+    require_columns(db, "goal_revision_objective_bindings", {
+        "goal_id", "goal_revision", "owner_ref", "objective_id", "objective_version", "created_at_ms"
     })
     require_columns(db, "outbox", {
         "outbox_id", "message_id", "destination", "envelope_json", "state",
@@ -145,6 +149,76 @@ def test_memory() -> None:
             raise AssertionError(
                 f"memory: invalid interaction outcome reference was accepted: {outcome_id}"
             )
+    # A new goal revision must bind to an exact objective revision owned by the same owner.
+    goal_id = bytes([11]) * 16
+    db.execute("BEGIN")
+    db.execute(
+        "INSERT INTO goals (goal_id,created_at_ms,updated_at_ms) VALUES (?,?,?)",
+        (goal_id, 7, 7),
+    )
+    db.execute(
+        """INSERT INTO goal_revision_objective_bindings
+        (goal_id,goal_revision,owner_ref,objective_id,objective_version,created_at_ms)
+        VALUES (?,?,?,?,?,?)""",
+        (goal_id, 1, "owner-1", "obj-1", 1, 7),
+    )
+    db.execute(
+        """INSERT INTO goal_revisions
+        (goal_id,revision,description,state,priority,constraints_json,reason_ref,created_at_ms)
+        VALUES (?,?,?,?,?,?,?,?)""",
+        (goal_id, 1, "derived goal", "proposed", 0.5, "{}", "source-1", 7),
+    )
+    db.commit()
+    if not db.execute(
+        "SELECT 1 FROM goal_revision_objective_bindings WHERE goal_id=? AND objective_id='obj-1' AND objective_version=1",
+        (goal_id,),
+    ).fetchone():
+        raise AssertionError("memory: exact objective binding was not persisted")
+
+    # A new goal revision without a binding is rejected at insert time.
+    unbound_goal_id = bytes([12]) * 16
+    db.execute(
+        "INSERT INTO goals (goal_id,created_at_ms,updated_at_ms) VALUES (?,?,?)",
+        (unbound_goal_id, 8, 8),
+    )
+    try:
+        db.execute(
+            """INSERT INTO goal_revisions
+            (goal_id,revision,description,state,priority,constraints_json,reason_ref,created_at_ms)
+            VALUES (?,?,?,?,?,?,?,?)""",
+            (unbound_goal_id, 1, "unbound goal", "proposed", 0.5, "{}", "source-1", 8),
+        )
+    except sqlite3.IntegrityError as exc:
+        if "goal_revisions.objective_binding_required" not in str(exc):
+            raise
+    else:
+        raise AssertionError("memory: new goal revision without objective binding was accepted")
+
+    # A binding that crosses owner scope fails its deferred composite FK at commit.
+    cross_owner_goal_id = bytes([13]) * 16
+    db.execute("BEGIN")
+    db.execute(
+        "INSERT INTO goals (goal_id,created_at_ms,updated_at_ms) VALUES (?,?,?)",
+        (cross_owner_goal_id, 9, 9),
+    )
+    db.execute(
+        """INSERT INTO goal_revision_objective_bindings
+        (goal_id,goal_revision,owner_ref,objective_id,objective_version,created_at_ms)
+        VALUES (?,?,?,?,?,?)""",
+        (cross_owner_goal_id, 1, "owner-2", "obj-1", 1, 9),
+    )
+    db.execute(
+        """INSERT INTO goal_revisions
+        (goal_id,revision,description,state,priority,constraints_json,reason_ref,created_at_ms)
+        VALUES (?,?,?,?,?,?,?,?)""",
+        (cross_owner_goal_id, 1, "cross-owner goal", "proposed", 0.5, "{}", "source-1", 9),
+    )
+    try:
+        db.commit()
+    except sqlite3.IntegrityError:
+        db.rollback()
+    else:
+        raise AssertionError("memory: cross-owner objective binding was accepted")
     check_database("memory smoke insert", db)
     db.close()
 
@@ -251,9 +325,9 @@ def main() -> int:
     test_events()
     test_governance()
     print(
-        f"PASS: all three SQLite stores and ten ordered DDL files executed; "
+        f"PASS: all three SQLite stores and eleven ordered DDL files executed; "
         f"SQLite {sqlite3.sqlite_version}; FK/integrity checks passed; "
-        "memory v4/v5, event v3 and governance v2 outbox smoke invariants passed."
+        "memory v4/v5/v6, event v3 and governance v2 outbox/objective-binding smoke invariants passed."
     )
     print(
         "LIMIT: host smoke validation only; Android/Termux baseline, crash/restore, "
