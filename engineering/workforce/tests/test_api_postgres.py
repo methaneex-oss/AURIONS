@@ -45,17 +45,8 @@ class ControlPlaneApiTests(unittest.TestCase):
         cls.client = TestClient(app)
 
     def setUp(self):
-        with psycopg.connect(DB) as conn:
-            conn.execute("DELETE FROM wf_audit_events")
-            conn.execute("DELETE FROM wf_checkpoints")
-            conn.execute("DELETE FROM wf_tasks")
+        # Audit events are intentionally append-only; each test uses an isolated task ID.
         self.task_id = "test-" + uuid.uuid4().hex[:16]
-
-    def tearDown(self):
-        with psycopg.connect(DB) as conn:
-            conn.execute("DELETE FROM wf_audit_events WHERE task_id=%s", (self.task_id,))
-            conn.execute("DELETE FROM wf_checkpoints WHERE task_id=%s", (self.task_id,))
-            conn.execute("DELETE FROM wf_tasks WHERE task_id=%s", (self.task_id,))
 
     def create_task(self, role="lead_builder"):
         return self.client.post(
