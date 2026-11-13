@@ -113,7 +113,7 @@ def main() -> int:
         "aurion_memory.db": [
             "aurion_memory.base.sql", "aurion_memory.migration_v2.sql",
             "aurion_memory.migration_v3.sql", "aurion_memory.migration_v4.sql",
-            "aurion_memory.migration_v5.sql",
+            "aurion_memory.migration_v5.sql", "aurion_memory.migration_v6.sql",
         ],
         "aurion_events.db": [
             "aurion_events.base.sql", "aurion_events.migration_v2.sql",
