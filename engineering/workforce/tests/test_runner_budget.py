@@ -1,11 +1,14 @@
 import json
 import tempfile
 import unittest
+import sys
+import hashlib
 from pathlib import Path
 from unittest.mock import patch
 
 import httpx
 
+from workforce.agents import runner as runner_module
 from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES, TOOLS, Worker
 
 
@@ -125,6 +128,80 @@ class RunnerBudgetTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "exceeded the configured aggregate token budget"):
                 worker.run("small task", [])
         self.assertEqual(worker.total_tokens, 0)
+
+    def test_cli_claims_starts_runs_and_publishes_report_evidence(self):
+        env = {
+            "WORKFORCE_CONTROL_PLANE_URL": "https://control.example",
+            "WORKFORCE_TASK_ID": "task-001",
+            "WORKFORCE_WORKER_TOKEN": "w" * 40,
+        }
+        calls = []
+        class FakeWorker:
+            def __init__(self, *args, **kwargs):
+                pass
+            def run(self, task, context_files):
+                return {"role": "lead_builder", "final": "bounded fake result"}
+
+        def fake_post(url, **kwargs):
+            calls.append((url, kwargs))
+            request = httpx.Request("POST", url)
+            if url.endswith("/claim"):
+                return httpx.Response(200, json={"lease_token": "l" * 64}, request=request)
+            if url.endswith("/start"):
+                return httpx.Response(200, json={"task_id": "task-001", "state": "RUNNING"}, request=request)
+            if url.endswith("/worker-transition"):
+                return httpx.Response(200, json={"state": "CANDIDATE_READY"}, request=request)
+            raise AssertionError(f"unexpected control-plane endpoint: {url}")
+
+        with patch.dict("os.environ", env, clear=True):
+            with patch.object(sys, "argv", [
+                "runner", "--role", "lead_builder", "--task", "test task",
+                "--workspace", str(self.root), "--report-path", "reports/lead.json",
+            ]):
+                with patch.object(runner_module, "Worker", FakeWorker):
+                    with patch.object(runner_module.httpx, "post", side_effect=fake_post):
+                        runner_module.main()
+
+        self.assertEqual(len(calls), 3)
+        self.assertTrue(calls[0][0].endswith("/claim"))
+        self.assertTrue(calls[1][0].endswith("/start"))
+        self.assertTrue(calls[2][0].endswith("/worker-transition"))
+        report = self.root / "reports/lead.json"
+        self.assertTrue(report.is_file())
+        payload = calls[2][1]["json"]
+        self.assertEqual(payload["target"], "CANDIDATE_READY")
+        self.assertEqual(payload["evidence_sha256"], hashlib.sha256(report.read_bytes()).hexdigest())
+        self.assertEqual(payload["evidence_ref"], "reports/lead.json")
+
+    def test_cli_uses_existing_lease_without_claiming_again(self):
+        env = {
+            "WORKFORCE_CONTROL_PLANE_URL": "https://control.example",
+            "WORKFORCE_TASK_ID": "task-002",
+            "WORKFORCE_WORKER_TOKEN": "w" * 40,
+            "WORKFORCE_LEASE_TOKEN": "l" * 64,
+        }
+        calls = []
+        class FakeWorker:
+            def __init__(self, *args, **kwargs):
+                pass
+            def run(self, task, context_files):
+                return {"role": "lead_builder", "final": "resume result"}
+
+        def fake_post(url, **kwargs):
+            calls.append(url)
+            request = httpx.Request("POST", url)
+            if url.endswith("/start"):
+                return httpx.Response(200, json={"task_id": "task-002", "state": "RUNNING"}, request=request)
+            return httpx.Response(200, json={"state": "CANDIDATE_READY"}, request=request)
+
+        with patch.dict("os.environ", env, clear=True):
+            with patch.object(sys, "argv", ["runner", "--role", "lead_builder", "--task", "resume", "--workspace", str(self.root)]):
+                with patch.object(runner_module, "Worker", FakeWorker):
+                    with patch.object(runner_module.httpx, "post", side_effect=fake_post):
+                        runner_module.main()
+        self.assertEqual(len(calls), 2)
+        self.assertTrue(calls[0].endswith("/start"))
+        self.assertTrue(calls[1].endswith("/worker-transition"))
 
 
 if __name__ == "__main__":
