@@ -223,6 +223,35 @@ class ControlPlaneApiTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_orchestrator_gate_requires_and_records_stage_evidence(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        with psycopg.connect(DB) as conn:
+            conn.execute("UPDATE wf_tasks SET state='CANDIDATE_READY' WHERE task_id=%s", (self.task_id,))
+        headers = {"X-Orchestrator-Token": ORCHESTRATOR}
+        missing = self.client.post(
+            f"/v1/tasks/{self.task_id}/transition",
+            headers=headers,
+            json={"target": "TESTING", "reason": "begin tests"},
+        )
+        self.assertEqual(missing.status_code, 422)
+        passed = self.client.post(
+            f"/v1/tasks/{self.task_id}/transition",
+            headers=headers,
+            json={
+                "target": "TESTING",
+                "reason": "candidate digest verified and tests started",
+                "evidence_sha256": "a" * 64,
+                "evidence_ref": "artifact://candidate-bundle",
+            },
+        )
+        self.assertEqual(passed.status_code, 200, passed.text)
+        with psycopg.connect(DB) as conn:
+            evidence = conn.execute(
+                "SELECT stage,sha256,evidence_ref FROM wf_task_evidence WHERE task_id=%s",
+                (self.task_id,),
+            ).fetchone()
+        self.assertEqual(evidence, ("CANDIDATE", "a" * 64, "artifact://candidate-bundle"))
+
     def test_deadline_stops_review_stage_tasks(self):
         self.assertEqual(self.create_task().status_code, 201)
         with psycopg.connect(DB) as conn:
