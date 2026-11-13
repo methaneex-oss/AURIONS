@@ -68,6 +68,52 @@ class RunnerBudgetTests(unittest.TestCase):
                     worker.run("small task", [])
                 provider.assert_not_called()
 
+    def test_runner_reserves_and_settles_durable_budget_around_provider_call(self):
+        env = {
+            "GROQ_API_KEY": "test-key-only",
+            "WORKFORCE_CONTROL_PLANE_URL": "https://control.example",
+            "WORKFORCE_TASK_ID": "task-001",
+            "WORKFORCE_WORKER_TOKEN": "w" * 40,
+            "WORKFORCE_LEASE_TOKEN": "l" * 64,
+        }
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        calls = []
+        def fake_post(url, **kwargs):
+            calls.append(url)
+            request = httpx.Request("POST", url)
+            if url.endswith("/budget/reserve"):
+                amount = kwargs["json"]["requested_tokens"]
+                return httpx.Response(200, json={"reservation_id": "reservation-001", "reserved_tokens": amount}, request=request)
+            if url.endswith("/budget/settle"):
+                return httpx.Response(200, json={"status": "settled"}, request=request)
+            return self.response(100)
+        with patch("workforce.agents.runner.httpx.post", side_effect=fake_post):
+            result = worker.run("small task", [])
+        self.assertEqual(result["total_tokens"], 100)
+        self.assertEqual(len(calls), 3)
+        self.assertTrue(calls[0].endswith("/budget/reserve"))
+        self.assertIn("api.groq.com", calls[1])
+        self.assertTrue(calls[2].endswith("/budget/settle"))
+
+    def test_runner_stops_before_provider_when_durable_budget_denies_reservation(self):
+        env = {
+            "GROQ_API_KEY": "test-key-only",
+            "WORKFORCE_CONTROL_PLANE_URL": "https://control.example",
+            "WORKFORCE_TASK_ID": "task-001",
+            "WORKFORCE_WORKER_TOKEN": "w" * 40,
+            "WORKFORCE_LEASE_TOKEN": "l" * 64,
+        }
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        def deny_reservation(url, **kwargs):
+            return httpx.Response(429, json={"detail": "budget exhausted"}, request=httpx.Request("POST", url))
+        with patch("workforce.agents.runner.httpx.post", side_effect=deny_reservation) as provider:
+            with self.assertRaisesRegex(RuntimeError, "budget refused request"):
+                worker.run("small task", [])
+        self.assertEqual(worker.calls, 0)
+        self.assertEqual(provider.call_count, 1)
+
     def test_provider_reported_usage_over_budget_fails_closed(self):
         worker = self.make_worker(12000)
         with patch("workforce.agents.runner.httpx.post", return_value=self.response(12001)):
