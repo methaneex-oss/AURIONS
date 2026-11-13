@@ -244,6 +244,11 @@ class OrchestratorTests(unittest.TestCase):
             transitions = [call for call in api_calls if call[0].endswith("/transition")]
             self.assertEqual(len(created), 6)
             self.assertEqual(len(transitions), 4)
+            created_scopes = {call[2]["role"]: call[2]["contract"]["permitted_paths"] for call in created}
+            self.assertEqual(created_scopes["lead_builder"], ["engineering/workforce/src/workforce"])
+            self.assertEqual(created_scopes["specialist_builder"], ["engineering/workforce/tests"])
+            for role in ("architecture_reviewer", "code_reviewer", "negative_tester", "integration_verifier"):
+                self.assertEqual(created_scopes[role], [])
             self.assertEqual(result["status"], "AWAITING_DIRECTOR_REVIEW")
             self.assertTrue((root / result["director_packet"]).is_file())
             self.assertTrue((root / result["candidate_manifest"]).is_file())
