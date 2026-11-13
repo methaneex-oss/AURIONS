@@ -50,6 +50,52 @@ def require_columns(connection: sqlite3.Connection, table: str, expected: set[st
     if missing:
         raise AssertionError(f"{table}: missing columns {sorted(missing)}")
 
+def validate_query_projection_inventory() -> None:
+    """Require the field-level projection document to match every registry field inventory."""
+    registry_path = ROOT / "schemas" / "command-query-registry.v1.json"
+    projection_path = ROOT / "docs" / "planning" / "QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    projection = projection_path.read_text(encoding="utf-8")
+
+    for query in registry["queries"]:
+        query_type = query["query_type"]
+        heading = "### `" + query_type + "`"
+        section_start = projection.find(heading)
+        if section_start < 0:
+            raise AssertionError(f"{query_type}: missing field-level projection section")
+        next_section = projection.find("\\n### ", section_start + 1)
+        section = projection[section_start:] if next_section < 0 else projection[section_start:next_section]
+        documented: list[str] = []
+        explicitly_unmapped: set[str] = set()
+        for line in section.splitlines():
+            field_match = re.match(r"^- `([^`]+)` → (.+)$", line)
+            if not field_match:
+                continue
+            field_name, source = field_match.groups()
+            documented.append(field_name)
+            if source.startswith("**UNMAPPED"):
+                explicitly_unmapped.add(field_name)
+
+        duplicates = sorted({name for name in documented if documented.count(name) > 1})
+        if duplicates:
+            raise AssertionError(f"{query_type}: duplicate projection fields {duplicates}")
+
+        expected = set(query.get("projection_resolved_fields", []))
+        unresolved = set(query.get("projection_unresolved_fields", []))
+        actual = set(documented)
+        missing = sorted(expected - actual)
+        unexpected = sorted(actual - expected - unresolved)
+        unresolved_without_marker = sorted(unresolved - explicitly_unmapped)
+        resolved_marked_unmapped = sorted(expected & explicitly_unmapped)
+        if missing or unexpected or unresolved_without_marker or resolved_marked_unmapped:
+            raise AssertionError(
+                f"{query_type}: projection inventory mismatch; "
+                f"missing={missing}, unexpected={unexpected}, "
+                f"unresolved_without_explicit_marker={unresolved_without_marker}, "
+                f"resolved_but_marked_unmapped={resolved_marked_unmapped}"
+            )
+
+
 def validate_query_projection_source_columns(
     store_name: str, connection: sqlite3.Connection
 ) -> None:
@@ -58,6 +104,7 @@ def validate_query_projection_source_columns(
     projection_path = ROOT / "docs" / "planning" / "QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md"
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
     projection = projection_path.read_text(encoding="utf-8")
+    validate_query_projection_inventory()
     actual_tables = {
         row[0] for row in connection.execute(
             "SELECT name FROM sqlite_master WHERE type='table'"
