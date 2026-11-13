@@ -812,7 +812,7 @@ EBT-01 and the mandatory fresh-read gate were confirmed in both.
 
 **Work performed:** Scanned all 29 query registry entries, their result-item schema properties (including world-interaction definitions) and the DDL columns in all three stores. Added `docs/planning/QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md`. Added required `projection_contract` and `projection_unresolved_fields` metadata to all 29 query entries and the registry JSON Schema. Extended `validate_schemas.py` to resolve each result schema pointer, ensure declared unresolved fields belong to the result schema, and require each query and its unmapped fields to be represented in the reconciliation report.
 
-**Static scan result:** 62 result fields across 16 queries have no direct, `_json` or `_ms` candidate column in their declared table bindings. Material examples:
+**Static scan result:** 65 result fields across 16 queries have no direct, `_json` or `_ms` candidate column in their declared table bindings. Material examples:
 - `environment.inspect`: 11 fields without direct candidates, including observation/owner/device identity, collection method/version, platform context and observed facts.
 - `memory.search`: five retrieval-receipt fields without a mapped persistence source; the result schema is retrieval metadata rather than an explicit memory-candidate projection.
 - `attention.inspect`: all ten fields require an event-payload projection contract not expressed by its current DDL bindings.
