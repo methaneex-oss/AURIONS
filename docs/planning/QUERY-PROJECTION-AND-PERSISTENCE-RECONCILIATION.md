@@ -1,6 +1,6 @@
 # AURIONS — Query Projection and Persistence Reconciliation
 
-- **Status:** Builder source-to-projection scan; unresolved fields explicitly recorded.
+- **Status:** All 310 query result fields have a proposed source/derivation; no projection field remains unclassified. Runtime SQL and behavioural verification remain open.
 - **Scope:** All 29 query registry entries, their result-item schemas and currently proposed SQLite DDL.
 - **Evidence:** Exact schema/DDL files at the current branch revision. This is a static column-name reconciliation, not executed SQL or semantic query verification.
 - **Boundary:** A candidate column name is not proof of a correct SELECT, join, owner filter, redaction rule, or stable cursor. All queries remain design-only/non-dispatchable.
@@ -9,11 +9,11 @@
 
 The semantic pass distinguishes a genuinely absent persisted field from a field that is derived from an existing event payload, relational join, stored timestamp, or authenticated read context. A read-only query may construct an ephemeral retrieval envelope; it must not write a retrieval receipt merely to satisfy the result schema. Every mapping below is a proposed source/transform, not executed SQL or a verified owner-scope/redaction implementation.
 
-The query registry declares 29 result-item projections. A scan of the current DDL identified candidate source columns by exact field name, JSON-column suffix (`_json`) and timestamp suffix (`_ms`). The initial name scan was followed by explicit source/derivation decisions and three additive migrations: memory v7, events v4 and governance v4 (governance v3 separately adds approval owner/session binding).
+The query registry declares 29 result-item projections containing 310 fields. The initial name scan exposed 65 fields across 16 queries without direct column-name candidates. The semantic pass and three additive migrations now provide a proposed persisted or query-derived source for all 310 fields: memory v7, events v4 and governance v4; governance v3 separately adds approval owner/session binding. No query SQL or handler is claimed implemented.
 
 This reconciliation is deliberately conservative:
 - A field with a proposed source/derivation below is not considered runtime-verified; exact SELECT expressions, joins, JSON pointers, aliases, nullability and owner filters still require implementation tests.
-- A field listed as unresolved has no defensible source/derivation in the current proposed DDL and remains a blocker for the owning query contract.
+- A field listed as unresolved has no defensible source/derivation in the current proposed DDL and remains a blocker for the owning query contract. The current registry has zero such fields; this does not close runtime verification.
 - No field is inferred from a different owner, an unbound table or an opaque artifact. Event-payload derivations name the exact event table and payload field.
 
 | Query | Result schema | Fields | Unmapped projection fields |
@@ -136,7 +136,7 @@ This reconciliation is deliberately conservative:
 - `representation_id` → representations.representation_id
 - `experience_id` → representations.experience_id
 - `representation_type` → representations.representation_type
-- `method_id` → representations.method (legacy column projected as method_id; method-version and multi-source lineage remain unresolved)
+- `method_id` → representations.method (legacy column projected as method_id; method-version and multi-source lineage are persisted separately by memory migration v7)
 - `method_version` → representations.method_version (legacy NULL rows excluded)
 - `content` → representations.content_json (JSON decode)
 - `uncertainty` → representations.uncertainty_json (JSON decode)
