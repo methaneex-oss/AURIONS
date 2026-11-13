@@ -164,7 +164,7 @@ def _git(root: Path, args: list[str]) -> bytes:
 def workspace_manifest(root: Path, base_sha: str, permitted_builder_paths: list[str]) -> list[dict[str, Any]]:
     changed = set(filter(None, _git(root, ["diff", "--name-only", "-z", base_sha]).decode().split("\0")))
     untracked = set(filter(None, _git(root, ["ls-files", "--others", "--exclude-standard", "-z"]).decode().split("\0")))
-    paths = sorted(p for p in changed | untracked if not p.startswith(".workforce-artifacts/"))
+    paths = sorted(p for p in changed | untracked if ".workforce-artifacts" not in p.split("/"))
     records: list[dict[str, Any]] = []
     for rel in paths:
         if not path_is_permitted(rel, tuple(permitted_builder_paths), ()):
@@ -184,8 +184,11 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
     manifest = validate_manifest(manifest)
     root = workspace.resolve()
     report_dir = report_dir.resolve()
-    if root not in report_dir.parents and report_dir != root:
+    if root not in report_dir.parents:
         raise OrchestrationError("report directory must be inside the workspace")
+    report_rel = report_dir.relative_to(root).as_posix()
+    if ".workforce-artifacts" not in report_rel.split("/"):
+        raise OrchestrationError("report directory must be under an ignored .workforce-artifacts directory")
     control = os.environ.get("WORKFORCE_CONTROL_PLANE_URL", "").rstrip("/")
     director = os.environ.get("DIRECTOR_APPROVAL_TOKEN", "")
     orchestrator = os.environ.get("WORKFORCE_ORCHESTRATOR_TOKEN", "")
@@ -242,7 +245,11 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         ]
         for path in spec["permitted_paths"]:
             command.extend(["--permitted-path", path])
+        from workforce.agents.runner import safe_path
         for path in spec["context_files"] + (extra_context or []):
+            context_path = safe_path(root, path)
+            if not context_path.is_file():
+                raise OrchestrationError(f"{role} context file does not exist: {path}")
             command.extend(["--context-file", path])
         try:
             result = subprocess.run(
@@ -414,7 +421,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the six-role workforce against one authorized work-package manifest.")
     parser.add_argument("--manifest", required=True)
     parser.add_argument("--workspace", default=".")
-    parser.add_argument("--report-dir", default=".workforce-artifacts")
+    parser.add_argument("--report-dir", default="engineering/workforce/.workforce-artifacts")
     args = parser.parse_args()
     root = Path(args.workspace).resolve()
     manifest_path = Path(args.manifest).resolve()
@@ -425,7 +432,7 @@ def main() -> None:
             manifest_rel = manifest_path.relative_to(root).as_posix()
         except ValueError:
             manifest_rel = ""
-        if not manifest_rel.startswith(".workforce-artifacts/"):
+        if ".workforce-artifacts" not in manifest_rel.split("/"):
             parser.error("keep the work-package manifest outside the repository or under .workforce-artifacts/")
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
