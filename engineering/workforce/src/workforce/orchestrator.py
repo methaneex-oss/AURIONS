@@ -56,7 +56,8 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
             raise OrchestrationError(f"{key} must be a non-empty string")
         if value[key].strip().upper().startswith("REPLACE_"):
             raise OrchestrationError(f"{key} still contains a template placeholder")
-    if not re.fullmatch(r"[0-9a-fA-F]{40}", str(value["base_commit_sha"])) or set(value["base_commit_sha"]) == {"0"}:
+    base_sha = value["base_commit_sha"]
+    if not isinstance(base_sha, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", base_sha) or base_sha == "0" * 40:
         raise OrchestrationError("base_commit_sha must be a real full Git SHA")
     if not isinstance(value["roles"], dict) or set(value["roles"]) != set(ROLES):
         raise OrchestrationError("manifest must define each of the six roles exactly once")
