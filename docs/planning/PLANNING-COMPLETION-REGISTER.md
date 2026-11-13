@@ -621,3 +621,17 @@ The defects were reproduced and corrected across three failed runs:
 A second self-review of the new event-store saga migration found that recovery-journal evidence could be deleted and an empty saga operation's identity/idempotency key could be rewritten or deleted before its first step existed. Added triggers preventing those mutations and added negative host-SQLite tests. Exact code revision `dfdf7b8fa85445a58fa2bd7526514bfbf58de688` passed [workflow 43429848541](https://github.com/methaneex-oss/AURIONS/actions/runs/43429848541), all nine steps. The log confirms all three SQLite stores and seventeen ordered DDL files, SQLite 3.46.1, FK/integrity checks, and the complete listed migration smoke invariants.
 
 This closes only additional saga-ledger schema-integrity cases. Runtime saga runner, relay, inbox, recovery worker, cross-store crash/concurrency tests and target Android/Termux verification remain unimplemented/unverified. BR-005 remains PARTIALLY CLOSED; BR-008 remains OPEN; no runtime dispatch or implementation authorization is implied.
+
+
+## Final saga operation idempotency closure — 2026-11-13
+
+A further self-review found that the saga operation table's existing partial unique index allowed NULL idempotency keys, so a saga could be created without a durable deduplication identity. This would weaken replay protection before the first step existed.
+
+Correction:
+- Added `operations_saga_idempotency_required` to reject NULL and empty idempotency keys for all three cross-store evolution saga types at insertion.
+- Added negative host-SQLite tests for both missing and empty keys.
+- Added a negative test proving duplicate `(operation_type,idempotency_key)` saga identity is rejected by the existing unique index.
+
+**Exact code revision:** `5f533aabd171a40ae77c929fae1ba4aef8c17022`. [Workflow 43430178462](https://github.com/methaneex-oss/AURIONS/actions/runs/43430178462) passed all nine steps. The host log confirms all three stores and seventeen ordered DDL files executed on SQLite 3.46.1, with foreign-key/integrity checks and migration smoke invariants passing.
+
+**Bounded closure:** Saga-ledger schema integrity now covers required and unique operation idempotency, immutable operation identity/history, immutable and append-only step/recovery history, terminal timestamps, and valid same-operation/same-store compensation references. This is not a saga runtime implementation or crash/concurrency proof. BR-005 remains PARTIALLY CLOSED; BR-008 remains OPEN; all commands/events remain design-only/non-dispatchable.
