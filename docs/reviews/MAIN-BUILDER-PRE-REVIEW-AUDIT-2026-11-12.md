@@ -1218,3 +1218,16 @@ BR-004 remains OPEN. Event coverage gaps and remaining generic/missing scenario 
 - Extended exact command/query/event validation and the concrete-scenario gate to CM-006 and CM-007.
 
 **Updated fixture inventory:** 39 scenarios, 208 ordered steps and 45 negative controls. Seven of 36 CM/AD rows are now concrete; 29 remain generic. CM-022…CM-029 remain absent. BR-004 remains OPEN; scenarios are design specifications, not executed runtime acceptance.
+
+
+
+## BR-004 — concrete cognitive scenario expansion, batch 4 — 2026-11-13
+
+**Batch 4 completed:**
+- CM-008 now specifies decision/approval separation, independent gateway permission evaluation, explicit owner denial and rejection of decision-ID-as-approval substitution.
+- CM-009 now distinguishes provider-reported success from independently observed postconditions and outcome evaluation.
+- CM-010 now specifies uncertain external effects, same-key replay, reconciliation-before-retry, new-key retry blocking and restart recovery.
+- Added exact event references for decision/approval/permission, provider lifecycle, independent outcome and reconciliation transitions.
+- Extended exact command/query/event validation and the concrete-scenario gate to CM-008…CM-010.
+
+**Updated fixture inventory:** 39 scenarios, 222 ordered steps and 45 negative controls. Ten of 36 CM/AD rows are now concrete; 26 remain generic. CM-022…CM-029 remain absent. BR-004 remains OPEN; scenarios are design specifications, not executed runtime acceptance.
