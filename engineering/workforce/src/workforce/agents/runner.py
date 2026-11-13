@@ -214,8 +214,7 @@ class Worker:
             self.calls += 1
             remaining = self.max_total_tokens - self.total_tokens
             payload = {"model": self.model, "messages": messages, "tools": TOOLS, "tool_choice": "auto", "max_tokens": min(self.max_tokens, remaining), "temperature": 0.2}
-            if self.provider == "cloudflare":
-                payload["reject_if_busy"] = True
+
             response = httpx.post(self.api_url, headers=headers, json=payload, timeout=120)
             if response.status_code == 429 or response.status_code >= 500:
                 raise RuntimeError(f"provider unavailable or rate limited (HTTP {response.status_code}); stopped without paid fallback")
