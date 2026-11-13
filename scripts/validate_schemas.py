@@ -185,6 +185,12 @@ def main() -> int:
         matrix_row = f"| `{command_type}` |"
         if matrix_row not in command_matrix:
             fail(f"{command_type}: missing per-command transition matrix row")
+        matching_rows = [
+            line for line in command_matrix.splitlines()
+            if line.startswith(matrix_row)
+        ]
+        if len(matching_rows) != 1:
+            fail(f"{command_type}: expected exactly one per-command transition row")
         if item["dispatch_status"] != "deferred_by_scope":
             matching_rows = [
                 line for line in command_matrix.splitlines()
