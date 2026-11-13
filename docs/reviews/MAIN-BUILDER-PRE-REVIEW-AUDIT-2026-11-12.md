@@ -937,3 +937,18 @@ Corrections:
 **Exact code/document revision:** `607332a5478b7bb4e10d366162157834333e90a8`. GitHub Actions [run 43430525763](https://github.com/methaneex-oss/AURIONS/actions/runs/43430525763) passed all nine workflow steps, including the new inventory-parity guard, governance, work-package traceability, all seventeen ordered DDL files and Android probe syntax.
 
 **Evidence boundary:** This closes a documentation/registry-count consistency defect only. It does not implement command handlers or execute the 52 CC acceptance cases. All mapped commands remain design-only/non-dispatchable.
+
+
+## BR-002 / BR-008 query projection binding correction — 2026-11-13
+
+A deeper source-expression scan found one actual projection/binding mismatch in `audit.lookup`: the `approval_ref` candidate is joined from `approval_requests.request_id`, but the registry had declared only `governance_audit` and `data_disclosures` as read tables. The `approval_requests` table exists in the governance-store base DDL. The other apparent mismatch (`attention.allocated`) was event-type annotation text, not a relational source; it was correctly excluded from the table-source check.
+
+Corrections:
+- Added `approval_requests` to `audit.lookup`'s governance-store `read_projection` table binding.
+- Updated the field-level projection reconciliation's bound-table inventory.
+- Extended `validate_schemas.py` to parse relational `table.column` sources from each resolved field mapping and reject source tables not declared in that query's read bindings. Parenthetical derivation annotations are excluded from the relational-source parse.
+- Corrected the validator's regular-expression escaping during self-review before accepting the run.
+
+**Verification:** Exact code head `eb6c90c82a492b659c44900a3495907dbba4486c` passed [workflow 43431156653](https://github.com/methaneex-oss/AURIONS/actions/runs/43431156653), all nine steps. The schema validator log reports 9 Draft 2020-12 schemas, 8 paired registry/fixture checks, 81 positive domain payloads, 29 negative controls and 35 code-specific recovery assertions; governance, work-package traceability, all SQLite DDL/migration smoke tests and Android probe syntax also passed.
+
+**Evidence boundary:** This verifies registry-to-projection source-table declaration consistency, not actual SQL, source-column existence for every mapping, join correctness, owner-scope enforcement, redaction, cursor semantics, query execution or handler behaviour. All 29 queries remain design-only/non-dispatchable; BR-002 remains OPEN and BR-008 remains OPEN.
