@@ -93,6 +93,17 @@ def main() -> int:
         fail("command registry inventory differs from its declared mapped/deferred counts or contains duplicate types")
     if len(mapped_commands) != command_counts.get("mapped_command_types"):
         fail("mapped command count differs from registry inventory metadata")
+    semantic_report_path = ROOT / "docs/planning/SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md"
+    semantic_report = semantic_report_path.read_text(encoding="utf-8")
+    expected_inventory_lines = (
+        f"- {len(commands)} command entries: {len(mapped_commands)} mapped to typed request/response",
+        f"- {len(mapped_commands)} mapped commands have unique CC-001…CC-{len(mapped_commands):03d} positive/negative acceptance assertions.",
+        f"- {len(commands)} unique command types, {len(queries)} unique query types and 89 event types.",
+        f"- All {len(mapped_commands)} mapped command entries have semantic fields, known error/event bindings and unique CC-001…CC-{len(mapped_commands):03d} acceptance IDs; the two device commands are deferred.",
+    )
+    for expected_line in expected_inventory_lines:
+        if expected_line not in semantic_report:
+            fail(f"semantic architecture report has stale command/query inventory summary: {expected_line}")
     if len(deferred_commands) != command_counts.get("deferred_command_types"):
         fail("deferred command count differs from registry inventory metadata")
     if command_counts.get("command_envelope_bindings") != len(commands):
