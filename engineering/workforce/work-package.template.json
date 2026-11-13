@@ -1,0 +1,97 @@
+{
+  "work_package_id": "REPLACE_WITH_UNIQUE_WORK_PACKAGE_ID",
+  "run_id": "REPLACE_WITH_UNIQUE_RUN_ID",
+  "authorization_ref": "REPLACE_WITH_EXPLICIT_DIRECTOR_APPROVAL_REFERENCE",
+  "objective": "REPLACE_WITH_ONE_BOUNDED_WORK_PACKAGE_OBJECTIVE",
+  "base_commit_sha": "0000000000000000000000000000000000000000",
+  "canonical_sources": [
+    "docs/workforce/WORKFORCE-CONSTITUTION.md",
+    "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+    "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md"
+  ],
+  "acceptance_criteria": [
+    "REPLACE_WITH_MEASURABLE_ACCEPTANCE_CRITERION"
+  ],
+  "test_plan": [
+    "REPLACE_WITH_EXACT_TEST_REQUIREMENTS"
+  ],
+  "review_plan": [
+    "Architecture reviewer independently checks canonical architecture and scope",
+    "Code reviewer independently checks correctness, security and maintainability",
+    "Negative tester attempts to falsify the candidate's invariants",
+    "Integration verifier reconciles exact SHAs and all evidence"
+  ],
+  "stop_conditions": [
+    "Any authorization conflict or protected-path request",
+    "Provider authentication, quota, or rate-limit failure",
+    "Budget or task deadline exhausted",
+    "A critical defect cannot be corrected and verified within scope"
+  ],
+  "roles": {
+    "lead_builder": {
+      "task": "REPLACE_WITH_THE_LEAD_BUILDER'S_EXACT_DELIVERABLE_AND_BOUNDARIES",
+      "permitted_paths": [
+        "engineering/workforce/src/workforce"
+      ],
+      "context_files": [
+        "engineering/workforce/README.md",
+        "docs/workforce/WORKFORCE-IMPLEMENTATION-ROADMAP.md"
+      ],
+      "max_model_calls": 8,
+      "max_tokens": 16000,
+      "max_completion_tokens": 3072,
+      "max_duration_minutes": 120
+    },
+    "specialist_builder": {
+      "task": "REPLACE_WITH_A_SEPARATE_NON-OVERLAPPING_COMPONENT_OR_TEST_ASSIGNMENT",
+      "permitted_paths": [
+        "engineering/workforce/tests"
+      ],
+      "context_files": [
+        "engineering/workforce/README.md"
+      ],
+      "max_model_calls": 6,
+      "max_tokens": 12000,
+      "max_completion_tokens": 3072,
+      "max_duration_minutes": 120
+    },
+    "architecture_reviewer": {
+      "task": "Independently assess the exact candidate against canonical architecture, scope, authority and lifecycle requirements. Read-only.",
+      "permitted_paths": [],
+      "context_files": [
+        "engineering/workforce/README.md"
+      ],
+      "max_model_calls": 4,
+      "max_tokens": 6000,
+      "max_completion_tokens": 3072,
+      "max_duration_minutes": 90
+    },
+    "code_reviewer": {
+      "task": "Independently inspect the exact candidate for correctness, security, concurrency, error handling and regressions. Read-only.",
+      "permitted_paths": [],
+      "context_files": [],
+      "max_model_calls": 4,
+      "max_tokens": 6000,
+      "max_completion_tokens": 3072,
+      "max_duration_minutes": 90
+    },
+    "negative_tester": {
+      "task": "Attempt to falsify the candidate's invariants with reproducible adversarial cases. Read-only.",
+      "permitted_paths": [],
+      "context_files": [],
+      "max_model_calls": 4,
+      "max_tokens": 6000,
+      "max_completion_tokens": 3072,
+      "max_duration_minutes": 90
+    },
+    "integration_verifier": {
+      "task": "Reconcile exact base, candidate, test, review and integrated evidence SHAs. Prepare a Director packet; do not accept or merge.",
+      "permitted_paths": [],
+      "context_files": [],
+      "max_model_calls": 4,
+      "max_tokens": 6000,
+      "max_completion_tokens": 3072,
+      "max_duration_minutes": 90
+    }
+  }
+}
