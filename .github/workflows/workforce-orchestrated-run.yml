@@ -44,9 +44,13 @@ jobs:
       PYTHONPATH: engineering/workforce/src
       WORKFORCE_CONTROL_PLANE_URL: http://127.0.0.1:8000
       MANIFEST_PATH: ${{ inputs.manifest_path }}
+      WORKSPACE_DIR: ${{ runner.temp }}/aurions-workspace
+      WORKFORCE_MANIFEST_COPY: ${{ runner.temp }}/work-package.json
     steps:
       - name: Checkout selected branch
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -116,13 +120,10 @@ jobs:
           if changed != [manifest_rel]:
               raise SystemExit("the work-package commit must change only the manifest; base SHA must identify the exact clean code baseline")
           _worker_tokens()
-          workspace = Path(os.environ["RUNNER_TEMP"]) / "aurions-workspace"
+          workspace = Path(os.environ["WORKSPACE_DIR"])
           subprocess.run(["git", "worktree", "add", "--detach", str(workspace), base_sha], check=True)
-          manifest_copy = Path(os.environ["RUNNER_TEMP"]) / "work-package.json"
+          manifest_copy = Path(os.environ["WORKFORCE_MANIFEST_COPY"])
           manifest_copy.write_bytes(manifest_path.read_bytes())
-          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
-              env_file.write(f"WORKSPACE_DIR={workspace}\\n")
-              env_file.write(f"WORKFORCE_MANIFEST_COPY={manifest_copy}\\n")
           print("Manifest, exact clean base commit, isolated worktree and six role credentials validated.")
           PY
       - name: Generate isolated PostgreSQL integration-test credentials
@@ -196,7 +197,11 @@ jobs:
           import os
           import subprocess
           from pathlib import Path
-          os.chdir(os.environ["WORKSPACE_DIR"])
+          workspace = Path(os.environ["WORKSPACE_DIR"])
+          if not workspace.is_dir():
+              Path("candidate.patch").write_bytes(b"")
+              raise SystemExit(0)
+          os.chdir(workspace)
           untracked = subprocess.check_output(
               ["git", "ls-files", "--others", "--exclude-standard", "-z"]
           ).decode().split("\\0")
