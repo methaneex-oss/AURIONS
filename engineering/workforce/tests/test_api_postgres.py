@@ -315,6 +315,38 @@ class ControlPlaneApiTests(unittest.TestCase):
         )
         self.assertEqual(stale.status_code, 409)
 
+    def test_read_only_roles_must_have_empty_write_scope(self):
+        read_only_contract = contract()
+        read_only_contract["work_package_id"] = self.task_id
+        read_only_contract["permitted_paths"] = []
+        accepted = self.client.post(
+            "/v1/tasks",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR, "X-Director-Approval-Token": DIRECTOR},
+            json={"task_id": self.task_id, "role": "integration_verifier", "contract": read_only_contract},
+        )
+        self.assertEqual(accepted.status_code, 201, accepted.text)
+
+    def test_builder_cannot_be_created_without_write_scope(self):
+        empty_scope = contract()
+        empty_scope["work_package_id"] = self.task_id
+        empty_scope["permitted_paths"] = []
+        response = self.client.post(
+            "/v1/tasks",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR, "X-Director-Approval-Token": DIRECTOR},
+            json={"task_id": self.task_id, "role": "lead_builder", "contract": empty_scope},
+        )
+        self.assertEqual(response.status_code, 422)
+
+    def test_integration_verifier_cannot_receive_write_scope(self):
+        scoped = contract()
+        scoped["work_package_id"] = self.task_id
+        response = self.client.post(
+            "/v1/tasks",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR, "X-Director-Approval-Token": DIRECTOR},
+            json={"task_id": self.task_id, "role": "integration_verifier", "contract": scoped},
+        )
+        self.assertEqual(response.status_code, 422)
+
     def test_worker_must_supply_evidence_before_candidate_ready(self):
         self.assertEqual(self.create_task().status_code, 201)
         headers = {"X-Worker-Token": BUILDER}
