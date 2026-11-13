@@ -241,6 +241,7 @@ class OrchestratorTests(unittest.TestCase):
                 "GROQ_API_KEY": "not-used",
                 "CLOUDFLARE_API_TOKEN": "not-used",
                 "CLOUDFLARE_ACCOUNT_ID": "not-used",
+                "WORKFORCE_TEST_DOCKER_IMAGE": "aurions-workforce-test-runner:unit",
             }, clear=True):
                 with patch("workforce.orchestrator._post", side_effect=fake_post):
                     with patch("workforce.orchestrator.subprocess.run", side_effect=fake_run):
@@ -263,6 +264,45 @@ class OrchestratorTests(unittest.TestCase):
             self.assertTrue((root / result["director_packet"]).is_file())
             self.assertTrue((root / result["candidate_manifest"]).is_file())
             self.assertEqual(set(result["role_reports"]), set(ROLES))
+
+    def test_candidate_test_container_is_read_only_host_isolated_and_credential_filtered(self):
+        from workforce.orchestrator import _docker_run
+        with tempfile.TemporaryDirectory() as temp:
+            with patch("workforce.orchestrator.subprocess.run") as run:
+                run.return_value = subprocess.CompletedProcess(["docker"], 0, stdout="ok", stderr="")
+                _docker_run(
+                    [sys.executable, "-m", "unittest", "discover"],
+                    test_root=Path(temp),
+                    environment={"PYTHONPATH": "/workspace/engineering/workforce/src", "CI": "1"},
+                    image="trusted-test-image:ci",
+                    network="internal-test-network",
+                    timeout=30,
+                )
+                command = run.call_args.args[0]
+                self.assertIn("--network", command)
+                self.assertIn("internal-test-network", command)
+                self.assertIn("--read-only", command)
+                self.assertIn("--cap-drop=ALL", command)
+                self.assertIn("--security-opt=no-new-privileges:true", command)
+                self.assertIn("--pids-limit=128", command)
+                self.assertIn("--memory=4g", command)
+                self.assertIn("--cpus=2", command)
+                self.assertIn("python3", command)
+                self.assertNotIn("GROQ_API_KEY", " ".join(command))
+                self.assertNotIn("CLOUDFLARE_API_TOKEN", " ".join(command))
+
+    def test_candidate_test_container_rejects_provider_credentials(self):
+        from workforce.orchestrator import _docker_run
+        with tempfile.TemporaryDirectory() as temp:
+            with self.assertRaisesRegex(OrchestrationError, "unapproved variable"):
+                _docker_run(
+                    ["python3", "-m", "unittest"],
+                    test_root=Path(temp),
+                    environment={"GROQ_API_KEY": "must-never-enter-test"},
+                    image="trusted-test-image:ci",
+                    network="internal-test-network",
+                    timeout=30,
+                )
 
     def test_workspace_manifest_hashes_only_scoped_candidate_files(self):
         with tempfile.TemporaryDirectory() as temp:
