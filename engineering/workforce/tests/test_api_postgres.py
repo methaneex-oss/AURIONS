@@ -481,8 +481,54 @@ class ControlPlaneApiTests(unittest.TestCase):
             state = conn.execute("SELECT state FROM wf_tasks WHERE task_id=%s", (self.task_id,)).fetchone()[0]
         self.assertEqual(state, "FAILED")
 
-    def test_deadline_stops_review_stage_tasks(self):
+    def test_execution_duration_stops_running_task_even_with_live_lease(self):
         self.assertEqual(self.create_task().status_code, 201)
+        with psycopg.connect(DB) as conn:
+            conn.execute(
+                """UPDATE wf_tasks SET state='RUNNING',
+                       started_at=now()-interval '61 minutes',
+                       lease_expires_at=now()+interval '10 minutes'
+                     WHERE task_id=%s""",
+                (self.task_id,),
+            )
+        recovered = self.client.post(
+            "/v1/maintenance/recover",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR},
+        )
+        self.assertEqual(recovered.status_code, 200, recovered.text)
+        with psycopg.connect(DB) as conn:
+            state = conn.execute("SELECT state FROM wf_tasks WHERE task_id=%s", (self.task_id,)).fetchone()[0]
+        self.assertEqual(state, "FAILED")
+
+    def test_review_stage_is_not_stopped_by_worker_execution_duration(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        with psycopg.connect(DB) as conn:
+            conn.execute(
+                "UPDATE wf_tasks SET state='REVIEWING', started_at=now()-interval '61 minutes' WHERE task_id=%s",
+                (self.task_id,),
+            )
+        recovered = self.client.post(
+            "/v1/maintenance/recover",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR},
+        )
+        self.assertEqual(recovered.status_code, 200, recovered.text)
+        with psycopg.connect(DB) as conn:
+            state = conn.execute("SELECT state FROM wf_tasks WHERE task_id=%s", (self.task_id,)).fetchone()[0]
+        self.assertEqual(state, "REVIEWING")
+
+    def test_absolute_deadline_stops_review_stage_task(self):
+        task_contract = contract()
+        task_contract["work_package_id"] = self.task_id
+        task_contract["deadline"] = "2000-01-01T00:00:00Z"
+        created = self.client.post(
+            "/v1/tasks",
+            headers={
+                "X-Orchestrator-Token": ORCHESTRATOR,
+                "X-Director-Approval-Token": DIRECTOR,
+            },
+            json={"task_id": self.task_id, "role": "lead_builder", "contract": task_contract},
+        )
+        self.assertEqual(created.status_code, 201, created.text)
         with psycopg.connect(DB) as conn:
             conn.execute(
                 "UPDATE wf_tasks SET state='REVIEWING', started_at=now()-interval '61 minutes' WHERE task_id=%s",
