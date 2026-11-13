@@ -55,12 +55,18 @@ def test_memory() -> None:
         "aurion_memory.migration_v2.sql",
         "aurion_memory.migration_v3.sql",
         "aurion_memory.migration_v4.sql",
+        "aurion_memory.migration_v5.sql",
     ])
     require_columns(db, "objective_records", {
         "objective_id", "owner_ref", "version", "success_evidence_json"
     })
     require_columns(db, "evidence_details", {
         "evidence_id", "owner_ref", "epistemic_status", "sensitivity"
+    })
+    require_columns(db, "outbox", {
+        "outbox_id", "message_id", "destination", "envelope_json", "state",
+        "attempt_count", "next_attempt_at_ms", "created_at_ms", "published_at_ms",
+        "last_error_ref",
     })
     for table in (
         "world_entities", "world_relationships", "situation_snapshots",
@@ -79,6 +85,27 @@ def test_memory() -> None:
                 '[]','[]','[]','[]',1)"""
     )
     db.commit()
+    # Aggregate and publication intent share one owning-store transaction.
+    db.execute("BEGIN")
+    db.execute(
+        """INSERT INTO objective_records
+        (objective_id,owner_ref,version,statement,request_source_ref,status,
+         success_evidence_json,constraints_json,assumptions_json,uncertainty_json,
+         created_at_ms)
+        VALUES ('obj-rollback','owner-1',1,'rollback probe','source-1','proposed',
+                '[]','[]','[]','[]',2)"""
+    )
+    db.execute(
+        """INSERT INTO outbox
+        (outbox_id,message_id,destination,envelope_json,state,created_at_ms)
+        VALUES (?,?,?,?,?,?)""",
+        (bytes([6]) * 16, bytes([7]) * 16, "event-archive", "{}", "pending", 2),
+    )
+    db.rollback()
+    if db.execute("SELECT 1 FROM objective_records WHERE objective_id='obj-rollback'").fetchone():
+        raise AssertionError("memory: aggregate survived rollback without its outbox")
+    if db.execute("SELECT 1 FROM outbox WHERE message_id=?", (bytes([7]) * 16,)).fetchone():
+        raise AssertionError("memory: outbox survived aggregate rollback")
     check_database("memory smoke insert", db)
     db.close()
 
@@ -141,13 +168,38 @@ def test_events() -> None:
 
 
 def test_governance() -> None:
-    db = execute_chain("governance", ["aurion_governance.base.sql"])
+    db = execute_chain("governance", [
+        "aurion_governance.base.sql", "aurion_governance.migration_v2.sql"
+    ])
+    require_columns(db, "outbox", {
+        "outbox_id", "message_id", "destination", "envelope_json", "state",
+        "attempt_count", "next_attempt_at_ms", "created_at_ms", "published_at_ms",
+        "last_error_ref",
+    })
     for table in ("policies", "permissions", "approval_requests",
                   "approval_decisions", "governance_audit", "data_disclosures"):
         if not db.execute(
             "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
         ).fetchone():
             raise AssertionError(f"governance: missing expected table {table}")
+    db.execute("BEGIN")
+    db.execute(
+        """INSERT INTO policies
+        (policy_id,policy_name,policy_version,policy_document_json,protected,active,created_at_ms)
+        VALUES (?,?,?,?,?,?,?)""",
+        (bytes([8]) * 16, "rollback-probe", 1, "{}", 0, 1, 3),
+    )
+    db.execute(
+        """INSERT INTO outbox
+        (outbox_id,message_id,destination,envelope_json,state,created_at_ms)
+        VALUES (?,?,?,?,?,?)""",
+        (bytes([9]) * 16, bytes([10]) * 16, "event-archive", "{}", "pending", 3),
+    )
+    db.rollback()
+    if db.execute("SELECT 1 FROM policies WHERE policy_name='rollback-probe'").fetchone():
+        raise AssertionError("governance: policy survived rollback without its outbox")
+    if db.execute("SELECT 1 FROM outbox WHERE message_id=?", (bytes([10]) * 16,)).fetchone():
+        raise AssertionError("governance: outbox survived policy rollback")
     db.close()
 
 
@@ -160,9 +212,9 @@ def main() -> int:
     test_events()
     test_governance()
     print(
-        f"PASS: all three SQLite stores and eight ordered DDL files executed; "
+        f"PASS: all three SQLite stores and ten ordered DDL files executed; "
         f"SQLite {sqlite3.sqlite_version}; FK/integrity checks passed; "
-        "memory v4 and event v3 smoke invariants passed."
+        "memory v4/v5, event v3 and governance v2 outbox smoke invariants passed."
     )
     print(
         "LIMIT: host smoke validation only; Android/Termux baseline, crash/restore, "
