@@ -49,14 +49,81 @@ class ControlPlaneApiTests(unittest.TestCase):
         self.task_id = "test-" + uuid.uuid4().hex[:16]
 
     def create_task(self, role="lead_builder"):
+        task_contract = contract()
+        task_contract["work_package_id"] = self.task_id
         return self.client.post(
             "/v1/tasks",
             headers={
                 "X-Orchestrator-Token": ORCHESTRATOR,
                 "X-Director-Approval-Token": DIRECTOR,
             },
-            json={"task_id": self.task_id, "role": role, "contract": contract()},
+            json={"task_id": self.task_id, "role": role, "contract": task_contract},
         )
+
+    def test_durable_budget_reserve_and_settle_are_atomic_and_persistent(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        headers = {"X-Worker-Token": BUILDER}
+        claim = self.client.post(f"/v1/tasks/{self.task_id}/claim", headers=headers, json={})
+        self.assertEqual(claim.status_code, 200, claim.text)
+        lease = claim.json()["lease_token"]
+        reserved = self.client.post(
+            f"/v1/tasks/{self.task_id}/budget/reserve",
+            headers=headers,
+            json={"lease_token": lease, "requested_tokens": 6000},
+        )
+        self.assertEqual(reserved.status_code, 200, reserved.text)
+        self.assertEqual(reserved.json()["reserved_tokens"], 6000)
+        settled = self.client.post(
+            f"/v1/tasks/{self.task_id}/budget/settle",
+            headers=headers,
+            json={"lease_token": lease, "reservation_id": reserved.json()["reservation_id"], "actual_tokens": 1200},
+        )
+        self.assertEqual(settled.status_code, 200, settled.text)
+        with psycopg.connect(DB) as conn:
+            budget = conn.execute(
+                """SELECT used_model_calls,used_tokens,reserved_calls,reserved_tokens
+                     FROM wf_agent_budgets WHERE work_package_id=%s AND role='lead_builder'""",
+                (self.task_id,),
+            ).fetchone()
+        self.assertEqual(budget, (1, 1200, 0, 0))
+        too_large = self.client.post(
+            f"/v1/tasks/{self.task_id}/budget/reserve",
+            headers=headers,
+            json={"lease_token": lease, "requested_tokens": 9000},
+        )
+        self.assertEqual(too_large.status_code, 429)
+
+    def test_orphaned_budget_reservation_is_charged_on_lease_recovery(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        headers = {"X-Worker-Token": BUILDER}
+        claim = self.client.post(f"/v1/tasks/{self.task_id}/claim", headers=headers, json={})
+        self.assertEqual(claim.status_code, 200, claim.text)
+        lease = claim.json()["lease_token"]
+        reserved = self.client.post(
+            f"/v1/tasks/{self.task_id}/budget/reserve",
+            headers=headers,
+            json={"lease_token": lease, "requested_tokens": 1500},
+        )
+        self.assertEqual(reserved.status_code, 200, reserved.text)
+        with psycopg.connect(DB) as conn:
+            conn.execute("UPDATE wf_tasks SET lease_expires_at=now()-interval '1 second' WHERE task_id=%s", (self.task_id,))
+        recovered = self.client.post(
+            "/v1/maintenance/recover",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR},
+        )
+        self.assertEqual(recovered.status_code, 200, recovered.text)
+        with psycopg.connect(DB) as conn:
+            budget = conn.execute(
+                """SELECT used_model_calls,used_tokens,reserved_calls,reserved_tokens
+                     FROM wf_agent_budgets WHERE work_package_id=%s AND role='lead_builder'""",
+                (self.task_id,),
+            ).fetchone()
+            reservation_state = conn.execute(
+                "SELECT state,actual_tokens FROM wf_budget_reservations WHERE reservation_id=%s",
+                (reserved.json()["reservation_id"],),
+            ).fetchone()
+        self.assertEqual(budget, (1, 1500, 0, 0))
+        self.assertEqual(reservation_state, ("ABANDONED", 1500))
 
     def test_task_creation_requires_both_authorities_and_listing_is_private(self):
         payload = {"task_id": self.task_id, "role": "lead_builder", "contract": contract()}
