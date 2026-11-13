@@ -272,7 +272,9 @@
       "scope": "fixture"
     },
     "reason_ref": "urn:fixture:goal:reason",
-    "created_at": "2026-11-11T08:00:08Z"
+    "created_at": "2026-11-11T08:00:08Z",
+    "objective_id": "objective-fixture-1",
+    "objective_version": 1
   },
   "capabilityKnowledgeRevision": {
     "knowledge_revision_id": "a5000000-0000-4000-8000-000000000001",
