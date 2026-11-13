@@ -742,3 +742,8 @@ Assigned stable AU-001…AU-012 IDs to the twelve existing baseline policy tests
 ## BR-003 error/recovery contract parity — 13 November 2026
 
 Extended validation across all 35 error entries: fixture category, side-effect default, payload side-effect state and retry posture must match the registry; each code-level handler mapping must resolve to a real category heading; referenced handler headings must exactly match the matrix inventory. Current scan: 35/35 fixture defaults align, 35 code rows resolve, 35 EHR assertions remain mapped. Exact code head \`a45ad914aee564d0815ff61cadbd8db74688f27b\` passed all nine steps in [run 43433876661](https://github.com/methaneex-oss/AURIONS). All entries remain seed and EHR tests remain specified, not executed; BR-003 remains OPEN.
+
+
+### BR-003 error fixture identity parity
+
+Added exact EHC-001…EHC-035 uniqueness/coverage and per-code matrix checks proving that each EHC row points to the fixture for the same error code and category handler. Exact code head \`d7adcb416193dcb1d37ce8cdc9fec71b848974e7\` passed all nine workflow steps in [run 43434073974](https://github.com/methaneex-oss/AURIONS). This is mapping integrity only; handlers and EHR assertions remain unexecuted.
