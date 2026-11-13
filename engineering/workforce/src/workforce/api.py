@@ -139,6 +139,26 @@ def list_tasks(x_orchestrator_token: str | None = Header(default=None, alias="X-
         return cur.fetchall()
 
 
+@app.get("/v1/tasks/{task_id}")
+def get_task(
+    task_id: str,
+    x_orchestrator_token: str | None = Header(default=None, alias="X-Orchestrator-Token"),
+):
+    _auth(require_orchestrator, x_orchestrator_token)
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute(
+            """SELECT task_id,role,state,contract_json,base_commit_sha,
+                      attempt_count,max_attempts,lease_worker,lease_generation,
+                      lease_expires_at,retry_after,created_at,updated_at
+                 FROM wf_tasks WHERE task_id=%s""",
+            (task_id,),
+        )
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="task not found")
+        return row
+
+
 @app.get("/v1/tasks/{task_id}/evidence")
 def list_task_evidence(
     task_id: str,
