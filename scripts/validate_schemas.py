@@ -237,11 +237,16 @@ def main() -> int:
         "ordering_cursor_contract",
         "limits_contract",
         "freshness_cache_contract",
+        "projection_contract",
     )
     query_matrix_path = ROOT / "docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md"
     if not query_matrix_path.is_file():
         fail("missing per-query semantic contract matrix")
     query_matrix = query_matrix_path.read_text(encoding="utf-8")
+    projection_matrix_path = ROOT / "docs/planning/QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md"
+    if not projection_matrix_path.is_file():
+        fail("missing query projection and persistence reconciliation matrix")
+    projection_matrix = projection_matrix_path.read_text(encoding="utf-8")
     query_acceptance_ids = set()
     query_types = {item["query_type"] for item in queries}
     matrix_query_types = set()
@@ -253,6 +258,31 @@ def main() -> int:
             fail(f"{query_type}: unsafe dispatch status")
         if item.get("read_only") is not True:
             fail(f"{query_type}: query must remain read-only")
+        unresolved_projection_fields = item.get("projection_unresolved_fields", [])
+        if len(unresolved_projection_fields) != len(set(unresolved_projection_fields)):
+            fail(f"{query_type}: duplicate unresolved projection fields")
+        result_ref = item["result_item_schema"]
+        result_path, result_pointer = result_ref.split("#", 1)
+        result_document = load(ROOT / result_path)
+        result_node = result_document
+        for token in result_pointer.lstrip("/").split("/"):
+            token = token.replace("~1", "/").replace("~0", "~")
+            result_node = result_node[token]
+        result_fields = set(result_node.get("properties", {}))
+        unknown_projection_fields = set(unresolved_projection_fields) - result_fields
+        if unknown_projection_fields:
+            fail(f"{query_type}: projection gap fields absent from result schema: {sorted(unknown_projection_fields)}")
+        if "UNVERIFIED" not in item.get("projection_contract", ""):
+            fail(f"{query_type}: projection contract must preserve unverified evidence boundary")
+        section_start = projection_matrix.find(f"### {chr(96)}{query_type}{chr(96)}")
+        if section_start < 0:
+            fail(f"{query_type}: missing field-level projection section")
+        next_section = projection_matrix.find("\n### ", section_start + 1)
+        projection_section = projection_matrix[section_start:] if next_section < 0 else projection_matrix[section_start:next_section]
+        for field_name in unresolved_projection_fields:
+            marker = f"- {chr(96)}{field_name}{chr(96)} → **UNMAPPED"
+            if marker not in projection_section:
+                fail(f"{query_type}: projection matrix omits unresolved field {field_name}")
         for field in query_contract_fields:
             if not isinstance(item.get(field), str) or not item[field].strip():
                 fail(f"{query_type}: missing populated {field}")
