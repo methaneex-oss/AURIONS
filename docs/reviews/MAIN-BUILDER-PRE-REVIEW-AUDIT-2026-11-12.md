@@ -822,3 +822,25 @@ EBT-01 and the mandatory fresh-read gate were confirmed in both.
 Thirteen queries have no fields missing by the direct/JSON/timestamp name scan, but this does not prove the correct source table, joins, alias, JSON pointer, conversion, nullability, owner filter, redaction, snapshot or cursor. The report explicitly treats all candidate matches as unverified.
 
 **Disposition:** BR-002 remains OPEN. This increment exposes the result-schema/DDL gap and makes it machine-visible; it does not close the actual query SQL/projection contracts or execute handlers. Queries remain design-only/non-dispatchable. Exact-head CI after this increment is pending; no pass is claimed.
+
+## Builder run — objective/goal lineage and owner-scoped outcome references (2026-11-13)
+
+**Fresh governance gate:** Re-fetched and read the current Project Directorship and Team Operating Standard and Builder Operating Protocol before this run; EBT-01 and the per-run source-read requirement were reconfirmed.
+
+**Root-cause findings:**
+1. `goal.create`/`goal.revise` prose required a goal to link to an exact objective revision, and `goal.get` acceptance promised to return that lineage, but the request/result schema and `goal_revisions` storage model contained no objective ID/version. A derived goal could therefore not be durably traced to the owner objective it was meant to serve.
+2. `interaction_outcomes.interaction_ref` was a plain text field with no same-owner FK to `interaction_proposals`. A missing or cross-owner outcome reference could be inserted despite both records living in the same database.
+
+**Corrections implemented:**
+- Added memory migration v6 with `goal_revision_objective_bindings`, a composite FK to the exact objective ID/version/owner tuple, and a trigger requiring a binding before any new goal revision insert. The binding is inserted first in the same transaction; deferred FKs validate both records at commit.
+- Added `objective_id` and `objective_version` to the `goalRevision` schema and positive fixture; updated goal create/revise/cancel command bindings and `goal.get` query binding/acceptance.
+- Defined legacy unbound goal revisions as untrusted/unresolved: no objective is inferred from description or plan, and unbound revisions must not be returned as valid derived goals or revised until explicitly reconciled.
+- Added `UNIQUE(interaction_id,owner_ref)` and a composite FK from `interaction_outcomes(interaction_ref,owner_ref)` to `interaction_proposals(interaction_id,owner_ref)`.
+- Extended the SQLite runner with positive, missing-binding, cross-owner and interaction-outcome FK tests.
+- Updated the query projection report and PR-06 acceptance trace to include exact objective lineage.
+
+**Verification:** Exact code-bearing PR head `4fe74e09c5d3bbc4d9c03a35e707926bdf9c4b77` passed [workflow 43383148511](https://github.com/methaneex-oss/AURIONS/actions/runs/43383148511), all nine steps. This run included schema/fixture validation, mandatory governance checks, WP/acceptance/owner-decision traceability, all eleven ordered SQLite DDL files (three base plus eight additive migrations), local-outbox rollback probes, same-owner interaction linkage, exact goal/objective binding, unbound-goal rejection, cross-owner rejection and Android probe shell syntax. The later README/owner-matrix evidence refreshes are documentation-only.
+
+**Remaining limits:** No goal/query runtime handler, legacy-goal reconciliation procedure, outbox relay, consumer, saga runner, target Android/Termux test or crash/power-loss test exists. This closes only the DDL/schema/contract linkage defects and host smoke assertions. BR-005 remains PARTIALLY CLOSED; BR-008 and BR-002 remain OPEN.
+
+**Disposition:** Overall builder work remains IN PROGRESS and NOT READY for independent review/planning exit. No implementation authorization, protected activation authority, merge or handoff was made.
