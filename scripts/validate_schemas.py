@@ -739,6 +739,14 @@ def main() -> int:
         path.read_text(encoding="utf-8") for path in catalogue_sources
     )
     catalogue_ids = set(re.findall(r"\b[A-Z]{2,4}-\d{3}\b", catalogue_text))
+    source_scenario_sources = (
+        ROOT / "docs/architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md",
+        ROOT / "docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md",
+    )
+    source_scenario_text = "\n".join(
+        path.read_text(encoding="utf-8") for path in source_scenario_sources
+    )
+    source_scenario_ids = set(re.findall(r"\b(?:CM|AD)-\d{3}\b", source_scenario_text))
     expected_event_scenario_refs = {}
     for scenario in scenarios:
         for step in scenario["steps"]:
@@ -749,6 +757,19 @@ def main() -> int:
             fail(f"{event_type}: acceptance scenario references do not match scenario fixture coverage")
     for scenario in scenarios:
         scenario_id = scenario["scenario_id"]
+        source_refs = scenario.get("source_scenario_ids", [])
+        unknown_source_refs = set(source_refs) - source_scenario_ids
+        if unknown_source_refs:
+            fail(f"{scenario_id}: unknown source scenario IDs {sorted(unknown_source_refs)}")
+        step_ids = [step.get("step_id") for step in scenario["steps"]]
+        expected_step_ids = [
+            f"S{index:02d}" for index in range(1, len(scenario["steps"]) + 1)
+        ]
+        if step_ids != expected_step_ids:
+            fail(f"{scenario_id}: step IDs must be unique and sequential from S01")
+        control_ids = [control.get("control_id") for control in scenario["negative_controls"]]
+        if len(control_ids) != len(set(control_ids)):
+            fail(f"{scenario_id}: duplicate negative-control IDs")
         if scenario.get("execution_status") != "specified_not_executed" or scenario.get("execution_authority") != "none":
             fail(f"{scenario_id}: scenario fixture must not imply execution or authority")
         for field in (
