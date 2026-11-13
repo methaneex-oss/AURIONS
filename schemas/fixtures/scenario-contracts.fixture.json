@@ -2109,7 +2109,7 @@
     },
     {
       "scenario_id": "CM-008",
-      "title": "CM-008 — canonical scenario acceptance probe",
+      "title": "CM-008 — a decision record cannot grant execution authority",
       "purpose": "Decision cannot grant authority; gateway independently enforces current authorization.",
       "source_scenario_ids": [
         "CM-008"
@@ -2122,9 +2122,9 @@
         "catalogue:OP-001"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: decisionRecorded, permissionEvaluated, approvalDecision.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed an authenticated principal, target, current policy revision and an operation proposal with no matching approval or permission grant.",
+        "Prepare a decision record recommending an interaction; keep decision evidence separate from authorization/approval state.",
+        "Prepare an owner approval request for an exact target/effect that will be explicitly denied."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -2136,87 +2136,166 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize principal, target, current policy, operation context and a decision recommendation without an approval grant.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed decision and authorization inputs only; no approval or permission grant is created."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "Decision identity, actor identity, target/effect and current policy revision are fixed; no dispatch authority exists."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Decision cannot grant authority; gateway independently enforces current authorization.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Record the decision recommendation with its evidence, rationale and uncertainty.",
+          "contract_action": "command:decision.record",
           "expected_transitions": [
-            "Decision cannot grant authority; gateway independently enforces current authorization."
+            "Append an immutable decision record linked to its evidence and objective; do not mutate permission or approval state."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "decision.recorded.v1"
+          ],
           "durable_assertions": [
-            "Decision cannot grant authority; gateway independently enforces current authorization.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The decision is auditable as a recommendation/choice only; it creates no approval, permission grant or operation dispatch authority."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Propose the interaction using the decision record as context but without a separate approval.",
+          "contract_action": "command:interaction.propose",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append the interaction proposal and submit it to the independent gateway authorization boundary."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "interaction.proposed.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "The proposal references the decision record but remains non-dispatchable until current policy and exact approval are independently evaluated."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Observe the gateway's independent permission evaluation for the proposal with no approval grant.",
+          "contract_action": "fake:scenario.observe_runtime_transition",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Evaluate current principal, target, effect, policy revision and approval state; reject or hold the operation without dispatch."
+          ],
+          "expected_events": [
+            "permission.evaluated.v1",
+            "operation.rejected.v1"
+          ],
+          "durable_assertions": [
+            "The decision record is not treated as authority; no operation.dispatched or operation.running event occurs; the rejection reason is durable."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Request owner approval for the exact proposed target/effect and current policy revision.",
+          "contract_action": "command:approval.request",
+          "expected_transitions": [
+            "Append an approval request bound to the exact actor, target, effect, scope, expiry and operation reference."
+          ],
+          "expected_events": [
+            "approval.requested.v1"
+          ],
+          "durable_assertions": [
+            "The approval request is separate from the decision record and cannot be widened by model-provided fields or caller filters."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Record an explicit owner denial for the exact approval request.",
+          "contract_action": "command:approval.decide",
+          "expected_transitions": [
+            "Append the denial decision with actor, scope, time and reason; preserve the request and decision history."
+          ],
+          "expected_events": [
+            "approval.decided.v1"
+          ],
+          "durable_assertions": [
+            "The approval is explicitly denied; no authority is granted and no operation is dispatched."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Observe gateway reevaluation after the owner denial.",
+          "contract_action": "fake:scenario.observe_runtime_transition",
+          "expected_transitions": [
+            "Reevaluate current authorization and approval state; retain the rejection and deny dispatch."
+          ],
+          "expected_events": [
+            "permission.evaluated.v1",
+            "operation.rejected.v1"
+          ],
+          "durable_assertions": [
+            "The denied approval remains non-authorizing; no operation.dispatched, operation.running or external effect occurs."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Read the decision record and approval decision by exact owner-scoped IDs.",
+          "contract_action": "query:decision.inspect",
+          "expected_transitions": [
+            "Return the decision recommendation and separate approval request/denial history without mutation."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The decision and approval records remain distinct; read access does not create or imply permission."
+          ]
+        },
+        {
+          "step_id": "S09",
+          "trigger": "Attempt to reuse the decision ID as an approval reference or substitute it for a permission grant.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Reject the forged/mismatched approval reference and preserve the denied authorization state."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No approval or permission row is created; operation remains rejected; no dispatch/outbox event is appended."
+          ]
+        },
+        {
+          "step_id": "S10",
+          "trigger": "Restart and replay decision, interaction and approval receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover decision and approval history; replay accepted receipts without duplicating proposals or granting authority."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Decision remains non-authorizing; approval remains denied; no operation is dispatched after restart or replay."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-008-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Use a decision-record ID as an approval reference, or submit a proposal with a mismatched target/effect while claiming that the decision itself grants permission.",
+          "expected_disposition": "Reject or hold the operation at the gateway; require a separate current approval and policy evaluation for the exact target/effect.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Permission grants and approval state",
+            "Decision/approval audit history",
+            "Operation dispatch state, provider calls and outbox counts"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay decision.record and approval.request/decide receipts; do not create duplicate records or infer authorization from the decision.",
+        "After restart, the explicit denial remains effective and the gateway reevaluates current policy before any dispatch."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race approval denial/revocation with interaction proposal; the gateway must evaluate the latest approval state at dispatch time.",
+        "Race a policy revision with permission evaluation; a stale policy result cannot authorize the proposal."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Fail approval decision before commit; the prior request remains pending and the operation remains non-dispatchable.",
+        "Simulate uncertain approval denial commit; reconcile its receipt before any authorization decision is retried."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Change only the target while preserving the decision ID; the old decision/approval cannot authorize the new target.",
+        "Change only the policy revision; permission must be reevaluated rather than inherited from a prior decision."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
@@ -2234,7 +2313,7 @@
     },
     {
       "scenario_id": "CM-009",
-      "title": "CM-009 — canonical scenario acceptance probe",
+      "title": "CM-009 — provider success is not independent outcome evidence",
       "purpose": "Provider success without independent postcondition evidence remains unverified.",
       "source_scenario_ids": [
         "CM-009"
@@ -2248,9 +2327,9 @@
         "catalogue:OP-004"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: operationLifecycleEvent, operationAttemptReceipt, outcomeObserved, outcomeEvaluation.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed an owner-scoped objective and exact operation proposal with explicit postcondition criteria and evidence requirements.",
+        "Prepare a provider success receipt and keep independent postcondition observation unavailable until after the provider result is recorded.",
+        "Capture operation ID, provider correlation, objective revision and required independent observation source."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -2262,87 +2341,138 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize objective, operation proposal, postcondition criteria and independent observation input held back.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed the objective and operation inputs only; no provider result or outcome evidence exists."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "The objective and postcondition criteria are explicit; provider receipt and independent observation have distinct provenance."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Provider success without independent postcondition evidence remains unverified.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Propose the operation under the current plan, capability and authority context.",
+          "contract_action": "command:operation.propose",
           "expected_transitions": [
-            "Provider success without independent postcondition evidence remains unverified."
+            "Append the operation proposal with exact objective, target, effects, idempotency and authority references."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "operation.proposed.v1"
+          ],
           "durable_assertions": [
-            "Provider success without independent postcondition evidence remains unverified.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "Proposal alone is not treated as dispatch or success; the operation and objective IDs remain linked."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Observe provider dispatch, running state and a provider-reported success receipt.",
+          "contract_action": "fake:scenario.observe_runtime_transition",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Record operation dispatch/running/succeeded transitions and the provider receipt without inferring the objective postcondition."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "operation.dispatched.v1",
+            "operation.running.v1",
+            "operation.succeeded.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "Provider success is recorded as provider evidence only; the objective remains unverified and no outcome evaluation is inferred."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Read operation status before independent postcondition evidence is available.",
+          "contract_action": "query:operation.status",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Return provider operation status and receipt without synthesizing an outcome."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "Status may show provider success while the objective/postcondition remains unverified; query causes no outcome or learning mutation."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Observe independent postcondition evidence from the declared source and exact target context.",
+          "contract_action": "fake:scenario.observe_external_evidence",
+          "expected_transitions": [
+            "Append the independent outcome observation with provenance, timestamp, subject, postcondition and uncertainty."
+          ],
+          "expected_events": [
+            "outcome.observed.v1"
+          ],
+          "durable_assertions": [
+            "The observation is distinct from provider receipt and is bound to the exact objective/operation; incomplete or contradictory evidence remains explicit."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Evaluate the objective outcome using the independent observation and declared criteria.",
+          "contract_action": "command:outcome.evaluate",
+          "expected_transitions": [
+            "Append an outcome evaluation linked to the exact independent observation and operation receipt."
+          ],
+          "expected_events": [
+            "outcome.evaluated.v1"
+          ],
+          "durable_assertions": [
+            "Evaluation distinguishes provider receipt from independent postcondition evidence; unsupported causal attribution remains uncertain."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Attempt to mark the objective verified using only the provider success receipt and without the independent observation reference.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Reject or retain unverified status because required independent postcondition evidence is absent from the attempted evaluation input."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No verified outcome, learning update or success-derived capability change is committed from provider success alone."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Restart and replay operation/outcome receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover provider receipt and independent outcome/evaluation lineage without duplicating or conflating them."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Provider success remains distinct from independent outcome; outcome verification survives restart only when supported by the independent evidence."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-009-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Submit an outcome evaluation that cites only the provider success receipt and omits the independent postcondition observation.",
+          "expected_disposition": "Keep the objective unverified or reject the evaluation as EVIDENCE_INSUFFICIENT; do not promote provider acknowledgement to observed outcome.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Objective completion/verification state",
+            "Independent observation evidence and provenance",
+            "Learning, capability or success-derived authorization state"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay operation.propose and outcome.evaluate receipts; no duplicate operation or evaluation events are appended.",
+        "After restart, provider-reported success remains a separate fact from independently observed objective outcome."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race provider success receipt with independent outcome observation; retain both evidence streams and their timestamps/provenance.",
+        "Race outcome evaluation with objective revision change; stale criteria must not verify a newer objective revision."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Crash after provider success but before independent observation; objective remains unverified and recovery must not fabricate outcome evidence.",
+        "Crash after outcome observation but before evaluation; observation remains durable and can be evaluated idempotently later."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Use a provider that reports success while the independent postcondition contradicts it; the objective must not be marked successful.",
+        "Use an incomplete/ambiguous observation; retain uncertainty and do not infer a verified outcome."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
@@ -2360,7 +2490,7 @@
     },
     {
       "scenario_id": "CM-010",
-      "title": "CM-010 — canonical scenario acceptance probe",
+      "title": "CM-010 — reconcile uncertain external effects before retry",
       "purpose": "Unknown/dispatched side effect is reconciled before retry; no duplicate effect.",
       "source_scenario_ids": [
         "CM-010"
@@ -2374,9 +2504,9 @@
         "catalogue:OP-005"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: operationLifecycleEvent, operationAttemptReceipt, contractError.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed an owner-scoped operation request with stable operation ID, idempotency key, payload digest, target/effect and deadline.",
+        "Prepare a provider that can apply the effect and then lose the response, creating an uncertain external result.",
+        "Capture the original operation receipt, provider correlation and retry budget before any retry is attempted."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -2388,87 +2518,137 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize the operation request, stable idempotency identity and uncertain-provider behaviour.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed the operation request and provider fake only; no external effect has occurred."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "Operation ID, idempotency key, payload digest and provider correlation scope are fixed."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Unknown/dispatched side effect is reconciled before retry; no duplicate effect.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Propose the operation and commit its durable receipt before dispatch.",
+          "contract_action": "command:operation.propose",
           "expected_transitions": [
-            "Unknown/dispatched side effect is reconciled before retry; no duplicate effect."
+            "Append the operation proposal and immutable receipt under the owner-scoped idempotency key."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "operation.proposed.v1"
+          ],
           "durable_assertions": [
-            "Unknown/dispatched side effect is reconciled before retry; no duplicate effect.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The receipt binds the exact payload digest and target/effect; same-key replay is defined to return the stored receipt."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Observe dispatch followed by provider timeout after the external effect may have occurred.",
+          "contract_action": "fake:scenario.observe_runtime_transition",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Record dispatched/running/uncertain transitions and preserve the provider correlation for reconciliation."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "operation.dispatched.v1",
+            "operation.running.v1",
+            "operation.uncertain.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "The operation is classified uncertain, not failed or safe-to-retry; no new operation ID or idempotency key is generated."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Attempt same-key replay while the original external effect is still uncertain.",
+          "contract_action": "command:operation.propose",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Return the stored uncertain receipt; do not dispatch a second external effect or emit a second proposal event."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "Provider dispatch count remains one; original receipt, payload digest and correlation are unchanged."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Reconcile the original operation against provider and independent observation evidence.",
+          "contract_action": "command:operation.reconcile",
+          "expected_transitions": [
+            "Append reconciliation start and terminal reconciliation result for the original operation receipt."
+          ],
+          "expected_events": [
+            "operation.reconciling.v1",
+            "operation.reconciled.v1"
+          ],
+          "durable_assertions": [
+            "The terminal result is linked to provider/observation evidence; the system does not infer failure solely from a timeout."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Read operation status and reconciliation history by exact operation ID.",
+          "contract_action": "query:operation.status",
+          "expected_transitions": [
+            "Return the original operation receipt and terminal reconciliation state without mutation."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The operation is terminally classified or remains explicitly unresolved; no duplicate dispatch or receipt is created by the query."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Attempt a new-key retry while the original operation remains unresolved or after reconciliation has established that retry is unsafe.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Reject the retry or require a compensating/new linked operation only when the reconciled state and policy permit it."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No second provider effect is initiated; original operation and reconciliation evidence remain intact."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Restart and replay the original proposal and reconciliation receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover the original operation state and return stored receipts without repeating the external effect."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Provider dispatch count remains one; the operation is not blindly retried after restart; reconciliation history remains durable."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-010-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Generate a new idempotency key and retry an operation whose prior external effect is still uncertain or has already been reconciled as applied.",
+          "expected_disposition": "Block retry until reconciliation determines a safe disposition; if a new effect is needed, require a separately authorized linked operation with explicit compensation semantics.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Original operation receipt, provider correlation and payload digest",
+            "Provider dispatch count and external effect count",
+            "Reconciliation journal and recovery state"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay operation.propose with the same key/digest; return the stored receipt and never repeat provider dispatch.",
+        "After restart, uncertain operations must enter reconciliation before any retry/new operation can proceed."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race same-key replay with operation.reconcile; both must converge on the original receipt and one external effect.",
+        "Race new-key retry with reconciliation; do not permit a second dispatch until the original operation has a terminal safe-to-retry disposition."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Simulate provider effect applied but response lost; preserve uncertain status and reconcile via provider correlation/independent observation.",
+        "Crash during reconciliation; restart must resume the same reconciliation identity without duplicate external effects."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Provider reports no effect after timeout; only verified reconciliation may permit a linked retry.",
+        "Provider reports effect applied but local receipt is absent; reconcile before deciding whether compensation or manual intervention is required."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
