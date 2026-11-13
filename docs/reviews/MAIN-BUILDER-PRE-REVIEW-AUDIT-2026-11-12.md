@@ -1014,3 +1014,16 @@ Corrections:
 ### Parallel validation correction — command/event transition regex
 
 A subsequent CI attempt exposed an independent escaped-regex defect in the command transition parity validator: the event-version matcher treated regex metacharacters as literal backslashes and therefore found no emitted events for `experience.submit`. The matcher was corrected in commit `4c3007302a4c9e01a92a9cf517650f79029932e5`. Exact head passed [workflow 43431857829](https://github.com/methaneex-oss/AURIONS/actions/runs/43431857829), all nine steps. This correction is recorded as a branch validation fix; it does not change command dispatch status or establish runtime command/event behaviour.
+
+
+### BR-002 projection-source completeness hardening — annotated multi-source mappings
+
+A further review of all 310 projection lines found 11 mappings where multiple source columns were separated by parenthetical transform annotations (for example, several `created_at` fields with individual timestamp conversions). The first all-source parser removed everything after the first parenthesis and therefore still missed later sources on those lines.
+
+Corrected both `validate_schemas.py` and `validate_sqlite_ddl.py` to remove each parenthetical annotation while retaining the rest of the source expression, then enumerate every relational `table.column` token. Added an explicit single-owning-store invariant to the schema validator, consistent with the query consistency contract's prohibition on implicit cross-store snapshots.
+
+**Independent source scan:** 29 query entries and 310 projection mappings; zero relational sources reference undeclared query tables.
+
+**Exact code head:** `d6f5643d913fbdcb6b3202b7183ea9bc9d4e4dd0`. [Workflow 43432198432](https://github.com/methaneex-oss/AURIONS/actions/runs/43432198432) passed all nine steps, including the source-column checks against all three SQLite stores and seventeen ordered DDL files.
+
+**Evidence boundary:** The validator establishes that every documented direct source table/column is declared and exists in the owning-store DDL, and that query projections remain single-store. It does not execute SELECTs or prove join cardinality, owner-filter placement, redaction, cursor/snapshot behaviour, query plans, performance budgets or handler behaviour. BR-002 remains OPEN; all 29 queries remain design-only/non-dispatchable.
