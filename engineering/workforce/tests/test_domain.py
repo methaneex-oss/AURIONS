@@ -58,6 +58,41 @@ class DomainTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             TaskContract.from_dict(value)
 
+    def test_contract_rejects_unknown_fields(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
+            "base_commit_sha": "a" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"], "worker_id": "forged",
+        }
+        with self.assertRaisesRegex(ContractError, "unknown task contract fields"):
+            TaskContract.from_dict(value)
+
+    def test_contract_deadline_requires_explicit_timezone(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
+            "base_commit_sha": "a" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"], "deadline": "2026-11-14T12:00:00",
+        }
+        with self.assertRaisesRegex(ContractError, "timezone"):
+            TaskContract.from_dict(value)
+
+    def test_contract_accepts_timezone_aware_deadline(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
+            "base_commit_sha": "a" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"], "deadline": "2026-11-14T12:00:00Z",
+        }
+        self.assertEqual(TaskContract.from_dict(value).deadline, "2026-11-14T12:00:00Z")
+
     def test_contract_rejects_missing_authorization(self):
         value = {
             "work_package_id": "WF-01", "authorization_ref": "UNSET", "objective": "Build",
