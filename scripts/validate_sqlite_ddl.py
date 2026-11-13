@@ -49,6 +49,16 @@ def require_columns(connection: sqlite3.Connection, table: str, expected: set[st
         raise AssertionError(f"{table}: missing columns {sorted(missing)}")
 
 
+def expect_integrity_error(
+    connection: sqlite3.Connection, label: str, statement: str, values: tuple = ()
+) -> None:
+    try:
+        connection.execute(statement, values)
+    except sqlite3.IntegrityError:
+        return
+    raise AssertionError(f"{label}: invalid row was accepted")
+
+
 def test_memory() -> None:
     db = execute_chain("memory", [
         "aurion_memory.base.sql",
@@ -57,6 +67,7 @@ def test_memory() -> None:
         "aurion_memory.migration_v4.sql",
         "aurion_memory.migration_v5.sql",
         "aurion_memory.migration_v6.sql",
+        "aurion_memory.migration_v7.sql",
     ])
     require_columns(db, "objective_records", {
         "objective_id", "owner_ref", "version", "success_evidence_json"
@@ -72,6 +83,18 @@ def test_memory() -> None:
         "attempt_count", "next_attempt_at_ms", "created_at_ms", "published_at_ms",
         "last_error_ref",
     })
+    require_columns(db, "environment_observations", {
+        "observation_id", "owner_ref", "device_id", "environment_scope",
+        "observed_at_ms", "recorded_at_ms", "source_id", "collection_method",
+        "collector_version", "platform_context_json", "observed_facts_json",
+        "sensitivity", "limitations_json", "validity_json",
+    })
+    require_columns(db, "capability_descriptors", {"descriptor_schema_version"})
+    require_columns(db, "representations", {"method_version", "source_refs_json"})
+    require_columns(db, "contexts", {"provenance_refs_json", "uncertainty_json"})
+    require_columns(db, "memory_records", {"provenance_refs_json", "uncertainty_json"})
+    require_columns(db, "predictions", {"conditions_json", "confidence", "evidence_refs_json"})
+    require_columns(db, "plans", {"context_version_ref", "capability_epoch_digest"})
     for table in (
         "world_entities", "world_relationships", "situation_snapshots",
         "affordance_hypotheses", "interaction_proposals", "interaction_outcomes",
@@ -221,6 +244,110 @@ def test_memory() -> None:
         db.rollback()
     else:
         raise AssertionError("memory: cross-owner objective binding was accepted")
+    # Query projection source columns are additive; legacy rows remain NULL and are
+    # never assigned invented provenance, uncertainty or confidence.
+    db.execute(
+        """INSERT INTO environment_observations
+        (observation_id,owner_ref,device_id,environment_scope,observed_at_ms,
+         recorded_at_ms,source_id,collection_method,collector_version,
+         platform_context_json,observed_facts_json,sensitivity,limitations_json,
+         validity_json)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        ("obs-1","owner-1","00000000-0000-4000-8000-000000000001","device",
+         10,11,"source:1","platform_probe","probe-v1","{}","[]",1,"[]",None),
+    )
+    if db.execute(
+        "SELECT owner_ref,observed_facts_json FROM environment_observations WHERE observation_id='obs-1'"
+    ).fetchone() != ("owner-1","[]"):
+        raise AssertionError("memory: environment observation projection source did not round-trip")
+
+    expect_integrity_error(
+        db, "capability descriptor without schema version",
+        """INSERT INTO capability_descriptors
+        (capability_id,descriptor_version,provider_id,device_scope,discovery_epoch,
+         descriptor_json,descriptor_sha256,status,source_ref,first_discovered_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?)""",
+        ("cap-test",1,"provider","device","epoch","{}","a"*64,"discovered","source",1),
+    )
+    db.execute(
+        """INSERT INTO capability_descriptors
+        (capability_id,descriptor_version,provider_id,device_scope,discovery_epoch,
+         descriptor_json,descriptor_sha256,status,source_ref,first_discovered_at_ms,
+         descriptor_schema_version)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        ("cap-test",1,"provider","device","epoch","{}","a"*64,"discovered","source",1,"1.0"),
+    )
+
+    experience_id = bytes([14]) * 16
+    db.execute(
+        """INSERT INTO experiences
+        (experience_id,source_type,observed_at_ms,recorded_at_ms,content_ref,
+         sensitivity,provenance_ref,retention_state)
+        VALUES (?,?,?,?,?,?,?,?)""",
+        (experience_id,"test",1,1,"artifact:test",0,"source:test","active"),
+    )
+    expect_integrity_error(
+        db, "representation without method/source lineage",
+        """INSERT INTO representations
+        (representation_id,experience_id,representation_type,content_json,method,
+         uncertainty_json,created_at_ms)
+        VALUES (?,?,?,?,?,?,?)""",
+        (bytes([15])*16,experience_id,"test","{}","method:test","{}",2),
+    )
+    db.execute(
+        """INSERT INTO representations
+        (representation_id,experience_id,representation_type,content_json,method,
+         uncertainty_json,created_at_ms,method_version,source_refs_json)
+        VALUES (?,?,?,?,?,?,?,?,?)""",
+        (bytes([15])*16,experience_id,"test","{}","method:test","{}",2,"1.0",'["experience:test"]'),
+    )
+
+    expect_integrity_error(
+        db, "context without provenance/uncertainty",
+        """INSERT INTO contexts
+        (context_id,version,scope,valid_from_ms,attributes_json,provenance_ref,created_at_ms)
+        VALUES (?,?,?,?,?,?,?)""",
+        (bytes([16])*16,1,"owner",1,"{}","source:test",2),
+    )
+    db.execute(
+        """INSERT INTO contexts
+        (context_id,version,scope,valid_from_ms,attributes_json,provenance_ref,
+         created_at_ms,provenance_refs_json,uncertainty_json)
+        VALUES (?,?,?,?,?,?,?,?,?)""",
+        (bytes([16])*16,1,"owner",1,"{}","source:test",2,'["source:test"]',"{}"),
+    )
+
+    expect_integrity_error(
+        db, "memory record without provenance/uncertainty",
+        """INSERT INTO memory_records
+        (memory_id,memory_type,content_ref,summary,sensitivity,status,created_at_ms,updated_at_ms)
+        VALUES (?,?,?,?,?,?,?,?)""",
+        (bytes([17])*16,"semantic","artifact:test","test",0,"active",2,2),
+    )
+    db.execute(
+        """INSERT INTO memory_records
+        (memory_id,memory_type,content_ref,summary,sensitivity,status,created_at_ms,
+         updated_at_ms,provenance_refs_json,uncertainty_json)
+        VALUES (?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([17])*16,"semantic","artifact:test","test",0,"active",2,2,'["source:test"]',"{}"),
+    )
+
+    expect_integrity_error(
+        db, "prediction without conditions/evidence",
+        """INSERT INTO predictions
+        (prediction_id,subject_ref,expected_outcome_json,evaluation_criteria_json,
+         created_at_ms,status)
+        VALUES (?,?,?,?,?,?)""",
+        (bytes([18])*16,"subject:test","{}","{}",2,"open"),
+    )
+    db.execute(
+        """INSERT INTO predictions
+        (prediction_id,subject_ref,expected_outcome_json,evaluation_criteria_json,
+         horizon_end_ms,created_at_ms,status,conditions_json,confidence,evidence_refs_json)
+        VALUES (?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([18])*16,"subject:test","{}","{}",10,2,"open","{}",0.6,'["evidence:test"]'),
+    )
+
     check_database("memory smoke insert", db)
     db.close()
 
@@ -230,8 +357,10 @@ def test_events() -> None:
         "aurion_events.base.sql",
         "aurion_events.migration_v2.sql",
         "aurion_events.migration_v3.sql",
+        "aurion_events.migration_v4.sql",
     ])
-    require_columns(db, "task_runs", {"revision", "owner_id"})
+    require_columns(db, "task_runs", {"revision", "owner_id", "failure_ref"})
+    require_columns(db, "operation_details", {"policy_decision_ref"})
     required = (
         "task_run_id", "task_definition_ref", "state", "priority",
         "budget_json", "created_at_ms", "updated_at_ms",
@@ -284,12 +413,22 @@ def test_events() -> None:
 
 def test_governance() -> None:
     db = execute_chain("governance", [
-        "aurion_governance.base.sql", "aurion_governance.migration_v2.sql"
+        "aurion_governance.base.sql", "aurion_governance.migration_v2.sql",
+        "aurion_governance.migration_v3.sql", "aurion_governance.migration_v4.sql",
     ])
     require_columns(db, "outbox", {
         "outbox_id", "message_id", "destination", "envelope_json", "state",
         "attempt_count", "next_attempt_at_ms", "created_at_ms", "published_at_ms",
         "last_error_ref",
+    })
+    require_columns(db, "permissions", {
+        "owner_ref", "status", "approval_ref", "policy_version_ref"
+    })
+    require_columns(db, "governance_audit", {
+        "owner_ref", "evidence_refs_json", "correlation_id"
+    })
+    require_columns(db, "data_disclosures", {
+        "owner_ref", "evidence_refs_json", "correlation_id"
     })
     for table in ("policies", "permissions", "approval_requests",
                   "approval_decisions", "governance_audit", "data_disclosures"):
@@ -315,6 +454,67 @@ def test_governance() -> None:
         raise AssertionError("governance: policy survived rollback without its outbox")
     if db.execute("SELECT 1 FROM outbox WHERE message_id=?", (bytes([10]) * 16,)).fetchone():
         raise AssertionError("governance: outbox survived policy rollback")
+    # Owner-scoped permission/audit projections reject new records without their
+    # required owner and evidence/correlation lineage.
+    policy_id = bytes([30]) * 16
+    db.execute(
+        """INSERT INTO policies
+        (policy_id,policy_name,policy_version,policy_document_json,protected,active,created_at_ms)
+        VALUES (?,?,?,?,?,?,?)""",
+        (policy_id,"projection-test",1,"{}",0,1,1),
+    )
+    expect_integrity_error(
+        db, "permission without owner/status/policy version",
+        """INSERT INTO permissions
+        (permission_id,subject_id,capability_id,operation_scope_json,resource_scope_json,
+         data_scope_json,side_effect_scope_json,environment_scope_json,valid_from_ms,
+         grant_source,policy_id,created_at_ms,status,policy_version_ref)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([31])*16,"subject","capability","{}","{}","{}","{}","{}",1,
+         "owner_grant",policy_id,2,"active","policy:projection-test:1"),
+    )
+    db.execute(
+        """INSERT INTO permissions
+        (permission_id,subject_id,capability_id,operation_scope_json,resource_scope_json,
+         data_scope_json,side_effect_scope_json,environment_scope_json,valid_from_ms,
+         grant_source,policy_id,created_at_ms,owner_ref,status,approval_ref,policy_version_ref)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([31])*16,"subject","capability","{}","{}","{}","{}","{}",1,
+         "owner_grant",policy_id,2,"owner-1","active",None,"policy:projection-test:1"),
+    )
+    expect_integrity_error(
+        db, "governance audit without owner/evidence/correlation",
+        """INSERT INTO governance_audit
+        (audit_id,actor_id,action,details_digest,occurred_at_ms,record_digest)
+        VALUES (?,?,?,?,?,?)""",
+        (bytes([32])*16,"owner-1","permission.grant","d"*64,3,"e"*64),
+    )
+    db.execute(
+        """INSERT INTO governance_audit
+        (audit_id,actor_id,action,details_digest,occurred_at_ms,record_digest,
+         owner_ref,evidence_refs_json,correlation_id)
+        VALUES (?,?,?,?,?,?,?,?,?)""",
+        (bytes([32])*16,"owner-1","permission.grant","d"*64,3,"e"*64,
+         "owner-1",'["evidence:grant"]',"00000000-0000-4000-8000-000000000001"),
+    )
+    expect_integrity_error(
+        db, "data disclosure without owner/evidence/correlation",
+        """INSERT INTO data_disclosures
+        (disclosure_id,provider_id,purpose,data_categories_json,payload_digest,
+         policy_version_ref,disclosed_at_ms,outcome)
+        VALUES (?,?,?,?,?,?,?,?)""",
+        (bytes([33])*16,"provider","purpose","[]","f"*64,"policy:1",4,"sent"),
+    )
+    db.execute(
+        """INSERT INTO data_disclosures
+        (disclosure_id,provider_id,purpose,data_categories_json,payload_digest,
+         policy_version_ref,disclosed_at_ms,outcome,owner_ref,evidence_refs_json,correlation_id)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([33])*16,"provider","purpose","[]","f"*64,"policy:1",4,"sent",
+         "owner-1",'["evidence:disclosure"]',"00000000-0000-4000-8000-000000000002"),
+    )
+    db.commit()
+    check_database("governance projection smoke", db)
     db.close()
 
 
@@ -329,7 +529,7 @@ def main() -> int:
     print(
         f"PASS: all three SQLite stores and eleven ordered DDL files executed; "
         f"SQLite {sqlite3.sqlite_version}; FK/integrity checks passed; "
-        "memory v4/v5/v6, event v3 and governance v2 outbox/objective-binding smoke invariants passed."
+        "memory v4/v5/v6/v7, event v3/v4 and governance v2/v3/v4 outbox/objective/approval/query-projection smoke invariants passed."
     )
     print(
         "LIMIT: host smoke validation only; Android/Termux baseline, crash/restore, "
