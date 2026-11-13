@@ -85,3 +85,14 @@ WHEN (SELECT operation_type FROM operations WHERE operation_id=OLD.operation_id)
 BEGIN
   SELECT RAISE(ABORT,'recovery_journal.saga_identity_immutable');
 END;
+
+-- Recovery journal rows are append-only evidence for saga reconciliation.
+CREATE TRIGGER recovery_journal_saga_no_delete
+BEFORE DELETE ON recovery_journal
+WHEN (SELECT operation_type FROM operations WHERE operation_id=OLD.operation_id)
+  IN ('evolution.candidate.evaluate',
+      'evolution.candidate.activate',
+      'evolution.candidate.rollback')
+BEGIN
+  SELECT RAISE(ABORT,'recovery_journal.saga_history_immutable');
+END;
