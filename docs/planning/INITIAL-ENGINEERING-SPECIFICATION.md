@@ -801,7 +801,7 @@ Required v4 validation includes fresh install and upgrade paths, owner isolation
 
 ### 26.6 Migration protocol
 
-The canonical local-outbox migrations are `schemas/persistence/aurion_memory.migration_v5.sql` and `schemas/persistence/aurion_governance.migration_v2.sql`. They add the transactional outbox to the memory and governance stores; the event/recovery store retains its own outbox. Every authoritative store must commit its state mutation and its local publication intent in the same per-file transaction. The central event archive is populated asynchronously by the outbox relay. These migrations are proposed and host-smoke-tested only; target SQLite/Termux validation and relay crash/replay tests remain open.
+The canonical local-outbox migrations are `schemas/persistence/aurion_memory.migration_v5.sql` and `schemas/persistence/aurion_governance.migration_v2.sql`. Memory migration v6 adds owner-scoped, exact objective-revision bindings for every new derived goal revision; legacy unbound goals must not be assigned an objective by inference. They add the transactional outbox to the memory and governance stores; the event/recovery store retains its own outbox. Every authoritative store must commit its state mutation and its local publication intent in the same per-file transaction. The central event archive is populated asynchronously by the outbox relay. These migrations are proposed and host-smoke-tested only; target SQLite/Termux validation and relay crash/replay tests remain open.
 
 Each DB has its own monotonic migration version and checksum. There is no cross-file atomic migration.
 
