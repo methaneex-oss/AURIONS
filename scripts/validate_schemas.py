@@ -753,9 +753,9 @@ def main() -> int:
     negative_control_count = sum(len(item["negative_controls"]) for item in scenarios)
     if len(scenarios) != 39 or scenario_ids != expected_scenario_ids:
         fail("scenario contract fixture must contain INT-001…003, CM-001…021 and AD-001…015")
-    if step_count != 182 or negative_control_count != 45:
+    if step_count != 192 or negative_control_count != 45:
         fail(
-            f"scenario fixture expected 182 ordered steps and 45 negative controls; "
+            f"scenario fixture expected 192 ordered steps and 45 negative controls; "
             f"found {step_count} steps and {negative_control_count} controls"
         )
     command_types = {item["command_type"] for item in commands}
@@ -777,7 +777,7 @@ def main() -> int:
                         f"are not declared by command {action_name} emitted_event_bindings"
                     )
                 if (
-                    scenario["scenario_id"] in {"CM-001", "CM-002", "CM-003"}
+                    scenario["scenario_id"] in {"CM-001", "CM-002", "CM-003", "CM-004", "CM-005"}
                     and expected_events
                     and expected_events != emitted_events
                 ):
@@ -793,7 +793,7 @@ def main() -> int:
             elif action_kind == "event" and action_name not in events:
                 fail(f"{scenario['scenario_id']}: unknown event action {action_name}")
     scenario_by_id = {item["scenario_id"]: item for item in scenarios}
-    for scenario_id in ("CM-001", "CM-002", "CM-003"):
+    for scenario_id in ("CM-001", "CM-002", "CM-003", "CM-004", "CM-005"):
         scenario = scenario_by_id[scenario_id]
         if any(step["contract_action"] == "fake:scenario.exercise_contract_sequence" for step in scenario["steps"]):
             fail(f"{scenario_id}: concrete scenario cannot use the generic exercise_contract_sequence placeholder")
