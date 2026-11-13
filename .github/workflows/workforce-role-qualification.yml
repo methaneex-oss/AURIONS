@@ -1,12 +1,7 @@
-name: AURIONS workforce — independent role screening (Flint pilot)
+name: AURIONS workforce — independent role screening
 
 on:
-  push:
-    branches:
-      - feat/engineering-workforce-foundation
-    paths:
-      - "engineering/workforce/evaluation/role_qualification.py"
-      - ".github/workflows/workforce-role-qualification.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -23,8 +18,19 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        role:
-          - lead_builder
+        include:
+          - role: lead_builder
+            model: recursive/flint-v1.0:free
+          - role: specialist_builder
+            model: cohere/north-mini-code:free
+          - role: architecture_reviewer
+            model: nvidia/nemotron-3-ultra-550b-a55b:free
+          - role: code_reviewer
+            model: dots-studio/dots-3-note-preview:free
+          - role: negative_tester
+            model: nvidia/nemotron-3.5-lightning:free
+          - role: integration_verifier
+            model: baidu/ernie-5.5-flash-preview:free
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,7 +41,7 @@ jobs:
       - name: Run one-shot independent role screen
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENROUTER_MODEL: recursive/flint-v1.0:free
+          OPENROUTER_MODEL: ${{ matrix.model }}
           ROLE: ${{ matrix.role }}
           OUTPUT_FILE: ${{ matrix.role }}-screening.json
         run: python engineering/workforce/evaluation/role_qualification.py
