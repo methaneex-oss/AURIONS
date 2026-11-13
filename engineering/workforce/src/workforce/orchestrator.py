@@ -622,14 +622,57 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
 
     def run_role(role: str, extra_context: list[str] | None = None) -> None:
         spec = manifest["roles"][role]
-        # Create each role task immediately before dispatch. Later roles remain
-        # absent rather than sitting in QUEUED while earlier agents work.
-        if role not in created:
+        # Reconcile persistent task state before dispatch. A previous process may
+        # have completed the worker but died before writing its local journal.
+        worker_id, worker_token = workers[role]
+        expected_contract = _task_contract(manifest, role)
+        task_url = f"{control}/v1/tasks/{task_ids[role]}"
+        existing = _get(task_url, headers={"X-Orchestrator-Token": orchestrator}, allow_404=True)
+        report_path = report_dir / f"{manifest['run_id']}-{role}.json"
+        if existing is None:
             _post(f"{control}/v1/tasks", headers=headers, payload={
-                "task_id": task_ids[role], "role": role, "contract": _task_contract(manifest, role),
+                "task_id": task_ids[role], "role": role, "contract": expected_contract,
             })
             created.add(role)
-        worker_id, worker_token = workers[role]
+        else:
+            if not isinstance(existing, dict) or existing.get("role") != role or existing.get("contract_json") != expected_contract:
+                raise OrchestrationError(f"persisted task {task_ids[role]} does not match the authorized role contract")
+            state = existing.get("state")
+            if state == "CANDIDATE_READY":
+                if not report_path.is_file() or report_path.stat().st_size > MAX_REPORT_BYTES:
+                    raise OrchestrationError(f"{role} is complete in the control plane but its durable report artifact is missing")
+                report = json.loads(report_path.read_text(encoding="utf-8"))
+                report_sha = hashlib.sha256(report_path.read_bytes()).hexdigest()
+                evidence = _get(
+                    f"{control}/v1/tasks/{task_ids[role]}/evidence",
+                    headers={"X-Orchestrator-Token": orchestrator},
+                )
+                if not isinstance(evidence, list) or not any(
+                    item.get("stage") == "WORKER_OUTPUT"
+                    and item.get("actor") == worker_id
+                    and item.get("attempt_count") == existing.get("attempt_count")
+                    and str(item.get("sha256", "")).strip() == report_sha
+                    and item.get("evidence_ref") == report_path.relative_to(root).as_posix()
+                    for item in evidence if isinstance(item, dict)
+                ):
+                    raise OrchestrationError(f"{role} report does not match the append-only control-plane evidence")
+                if report.get("task_id") != task_ids[role] or report.get("status") != "CANDIDATE_READY":
+                    raise OrchestrationError(f"{role} durable report identity/status mismatch")
+                reports[role] = {
+                    "task_id": task_ids[role],
+                    "worker_id": worker_id,
+                    "report_ref": report_path.relative_to(root).as_posix(),
+                    "report_sha256": report_sha,
+                    "status": "CANDIDATE_READY",
+                }
+                completed.add(role)
+                save_journal()
+                return
+            if state not in {"QUEUED", "RETRY_WAIT"}:
+                raise OrchestrationError(
+                    f"{role} task is {state}; wait for the supervisor to recover an expired lease, then resume with the same run_id"
+                )
+            created.add(role)
         from workforce.model_registry import role_assignment
         profile = role_assignment(role)
         # Workers receive only their own role token and the one provider credential
@@ -649,7 +692,6 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         }
         if profile["account_env"]:
             env[profile["account_env"]] = os.environ.get(profile["account_env"], "")
-        report_path = report_dir / f"{manifest['run_id']}-{role}.json"
         remaining_seconds = remaining_orchestration_seconds()
         if remaining_seconds < 60:
             raise OrchestrationError("work-package wall-clock budget exhausted before next role")
@@ -708,6 +750,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             "status": "CANDIDATE_READY",
         }
         completed.add(role)
+        save_journal()
 
     try:
         # Builders work sequentially in disjoint path scopes. Reviewers only see
