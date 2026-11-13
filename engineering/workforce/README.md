@@ -9,7 +9,8 @@ This directory contains engineering-workforce infrastructure only. It is not par
 - Separate Director, orchestrator and role-scoped worker credentials.
 - Worker identity and role derived from credentials, never caller-supplied IDs.
 - Atomic role-matched task claims, lease generations and expiry fencing.
-- Idempotent checkpoint writes tied to the current live lease.
+- Idempotent checkpoint writes tied to the current live lease, with authorized restoration after recovery.
+- Append-only evidence digests and artifact references bound to each lifecycle gate; Director acceptance must reference the exact integrated evidence record.
 - A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces task-duration deadlines.
 - Separate API and supervisor containers with non-root, read-only filesystems.
 - Six distinct pinned model assignments and per-run local call/token ceilings.
@@ -35,7 +36,7 @@ Provider secrets remain separate:
 
 Run `docker compose -f engineering/workforce/compose.yaml up --build` from the repository root after setting the protected environment variables. The API binds to loopback port 8000. PostgreSQL data is persisted in the named volume. The supervisor runs independently and polls every five seconds.
 
-Apply new SQL files in `migrations/` to an existing database in lexical order. The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
+Apply new SQL files in `migrations/` to an existing database in lexical order (including `003_immutable_evidence.sql`). The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
 
 ## Verification
 
@@ -43,6 +44,6 @@ The workforce test workflow starts a disposable PostgreSQL 17 service, applies e
 
 ## Explicit status and limitations
 
-The control-plane security and recovery work is an implementation candidate until the PostgreSQL integration suite and independent review pass. Provider connectivity and role qualification are separate gates: configured model assignments do not prove that credentials work or that agents are competent. The runner's existing token ceilings are per process; a durable, cross-process global inference ledger and provider quota reconciliation remain a separate required gate. No persistent multi-agent run, GitHub write broker or AURIONS runtime implementation is authorized by this infrastructure work.
+The control-plane security, evidence and recovery work is an implementation candidate until the PostgreSQL integration suite and independent review pass. Evidence references record hashes and locations; an independent verifier must still retrieve each artifact and confirm its bytes match the recorded digest. Provider connectivity and role qualification are separate gates: configured model assignments do not prove that credentials work or that agents are competent. The runner's existing token ceilings are per process; a durable, cross-process global inference ledger and provider quota reconciliation remain a separate required gate. No persistent multi-agent run, GitHub write broker or AURIONS runtime implementation is authorized by this infrastructure work.
 
 The first-run workflow remains dormant. No merge to `main`, paid fallback, production activation or AURIONS runtime implementation is authorized.
