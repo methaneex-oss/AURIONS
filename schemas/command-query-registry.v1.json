@@ -2373,7 +2373,6 @@
       "aggregate": "candidate evaluations + governance decisions",
       "persistence_stores": [
         "aurion_memory.db",
-        "aurion_governance.db",
         "aurion_events.db"
       ],
       "expected_revision_contract": "Append immutable evaluation for exact candidate artifact digest and frozen baseline; candidate remains quarantined.",
@@ -2443,7 +2442,7 @@
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
       "acceptance_case_id": "CC-037",
-      "transaction_contract": "CROSS_STORE_SAGA: aurion_memory.db + aurion_governance.db + aurion_events.db participate through separate local transactions; each authoritative store commits its own state change with its local outbox. The event/recovery store operations and recovery_journal coordinate saga progress. No distributed ACID transaction is claimed. Recovery must reconcile every committed step and use explicit compensation where required."
+      "transaction_contract": "CROSS_STORE_SAGA: aurion_events.db records and recovers the saga; aurion_memory.db commits the immutable candidate evaluation and its local outbox in one transaction. Governance approval/policy tables are read dependencies for evaluation, not writes. The coordinator reconciles the memory commit and central event publication; no distributed ACID transaction is claimed."
     },
     {
       "command_type": "evolution.candidate.activate",
@@ -2457,11 +2456,11 @@
         "aurion_governance.db",
         "aurion_events.db"
       ],
-      "expected_revision_contract": "Require expected candidate and active-pointer revisions, passing evaluation, verified signature/provenance, rollback readiness and explicit current owner/governance grant; atomically advance active pointer and audit.",
+      "expected_revision_contract": "Require expected candidate and active-pointer revisions, passing evaluation, verified signature/provenance, rollback readiness and explicit current owner/governance grant. The durable saga coordinator records intent; the memory active-pointer mutation and governance audit are separate local commits. Report activation complete only after every required step is reconciled; no cross-store atomicity is implied.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact candidate activation audit + active artifact reference target under owner scope before revealing existence. Require governance authority over the exact approval/candidate and preserve owner/actor separation. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
       "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest: SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload; exclude command_id, issued_at and idempotency_key. Same key+digest replays stored response without repeating mutation/event/outbox/worker/dispatch; same key+different digest returns operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH without exposing or changing original receipt. Retain receipt/tombstone through supported replay horizon.",
       "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt/result is replayed, not rolled back. Local cancellation is permitted only before commit; correction after commit is a new linked transition.",
-      "side_effect_contract": "R5 protected transition. Never model-authorized; activation must be atomic/audited and reversible. Each owning database commits its aggregate mutation with its immutable event/outbox in one local transaction; cross-store work is a durable saga with stable IDs, idempotent consumers and reconciliation, never a distributed-transaction claim. No provider/worker I/O inside a SQLite write transaction.",
+      "side_effect_contract": "R5 protected transition. Never model-authorized. A durable saga coordinates the exact governance approval/audit and memory active-pointer transition; each store commits its own mutation and local outbox. An interrupted partial commit remains pending/uncertain until recovery reconciles or performs an explicit compensating operation. Do not claim atomic activation across databases.",
       "error_code_bindings": [
         "contract.schema.SCHEMA_MALFORMED",
         "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
@@ -2527,7 +2526,7 @@
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
       "acceptance_case_id": "CC-038",
-      "transaction_contract": "CROSS_STORE_SAGA: aurion_memory.db + aurion_governance.db + aurion_events.db participate through separate local transactions; each authoritative store commits its own state change with its local outbox. The event/recovery store operations and recovery_journal coordinate saga progress. No distributed ACID transaction is claimed. Recovery must reconcile every committed step and use explicit compensation where required."
+      "transaction_contract": "CROSS_STORE_SAGA: aurion_events.db operations/recovery_journal coordinates the saga; aurion_governance.db commits the exact approval-use/audit step with its local outbox; aurion_memory.db commits the candidate active-pointer transition with its local outbox. Each step is separately durable and idempotent. Completion is reported only after reconciliation; no distributed ACID transaction is claimed."
     },
     {
       "command_type": "evolution.candidate.rollback",
@@ -2541,11 +2540,11 @@
         "aurion_governance.db",
         "aurion_events.db"
       ],
-      "expected_revision_contract": "Require expected active-pointer revision, exact prior approved artifact digest and explicit rollback authority; atomically restore pointer and append audit without deleting failed candidate.",
+      "expected_revision_contract": "Require expected active-pointer revision, exact prior approved artifact digest and explicit rollback authority. The durable saga coordinator records intent; the memory pointer restoration and governance rollback audit are separate local commits. Report rollback complete only after every required step is reconciled; preserve failed candidate lineage.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact rollback audit + prior artifact reference target under owner scope before revealing existence. Require governance authority over the exact approval/candidate and preserve owner/actor separation. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
       "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest: SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload; exclude command_id, issued_at and idempotency_key. Same key+digest replays stored response without repeating mutation/event/outbox/worker/dispatch; same key+different digest returns operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH without exposing or changing original receipt. Retain receipt/tombstone through supported replay horizon.",
       "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt/result is replayed, not rolled back. Local cancellation is permitted only before commit; correction after commit is a new linked transition.",
-      "side_effect_contract": "R5 protected transition. No deletion of failed artifact/evidence; verify restored artifact hash. Each owning database commits its aggregate mutation with its immutable event/outbox in one local transaction; cross-store work is a durable saga with stable IDs, idempotent consumers and reconciliation, never a distributed-transaction claim. No provider/worker I/O inside a SQLite write transaction.",
+      "side_effect_contract": "R5 protected transition. No deletion of failed artifact/evidence; verify restored artifact hash. A durable saga coordinates the exact governance rollback authorization/audit and memory active-pointer restoration; each store commits its own mutation and local outbox. Interrupted partial commits remain pending/uncertain until recovery reconciles or performs an explicit compensating operation. Do not claim atomic rollback across databases.",
       "error_code_bindings": [
         "contract.schema.SCHEMA_MALFORMED",
         "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
@@ -2611,7 +2610,7 @@
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
       "acceptance_case_id": "CC-039",
-      "transaction_contract": "CROSS_STORE_SAGA: aurion_memory.db + aurion_governance.db + aurion_events.db participate through separate local transactions; each authoritative store commits its own state change with its local outbox. The event/recovery store operations and recovery_journal coordinate saga progress. No distributed ACID transaction is claimed. Recovery must reconcile every committed step and use explicit compensation where required."
+      "transaction_contract": "CROSS_STORE_SAGA: aurion_events.db operations/recovery_journal coordinates the saga; aurion_governance.db commits the exact rollback authorization/audit step with its local outbox; aurion_memory.db commits restoration of the prior active artifact pointer with its local outbox. Each step is separately durable and idempotent. Completion is reported only after reconciliation; no distributed ACID transaction is claimed."
     },
     {
       "command_type": "task.start",
