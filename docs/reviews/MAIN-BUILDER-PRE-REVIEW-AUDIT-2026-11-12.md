@@ -760,3 +760,25 @@ EBT-01 and the mandatory fresh-read gate were confirmed in both.
 **Repository state:** PR #2 remains open/draft/unmerged with 99 changed files. PR #1 remains a separate open/draft/unmerged nine-file scaffold. No merge, implementation authorization, reviewer handoff or tester handoff was performed.
 
 **Disposition:** The bounded builder specification/structural-validation increment is verified. The overall builder phase is **NOT READY for planning-exit approval or independent review** because full semantic review of cross-store saga/transaction ownership, canonical entity/DDL transitions, query field projections, product acceptance and owner decision traceability remains open. Runtime handlers, executable scenario behaviour, target Android/Termux measurements, C++ validator equivalence and production security enforcement are not implemented or authorized. These are not represented as complete.
+
+## Builder run — first-release acceptance reconciliation (2026-11-13)
+
+**Mandatory fresh governance gate:** Re-fetched and read the current authoritative sources before this run:
+- Project Directorship and Team Operating Standard — blob `951b9009cbedcf8907b365d611d89559d5a17385`; Part J EBT-01 and the mandatory fresh-read-before-every-run gate confirmed.
+- Builder Operating Protocol — blob `179b02aaef051173b96f54812f451ede1a2eae0d`; autonomous execution, self-review/testing/correction, evidence separation and fresh-read gate confirmed.
+
+**Current branch baseline at run start:** PR #2 was open, draft and unmerged at `a8127f4a7ebadb8498db08f0dbbf96f2c09a400a`; exact-head CI run [43324753767](https://github.com/methaneex-oss/AURIONS/actions/runs/43324753767) passed all five workflow steps. The PR contained 99 changed files at that baseline.
+
+**Builder work completed in this increment:**
+- Added `docs/planning/FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md`, with exactly one row for each PR-01…PR-18 condition.
+- Mapped each acceptance condition to the relevant contract/architecture families, accountable WP set, existing scenario/test IDs where applicable, required actual acceptance evidence and owner/external gates.
+- Explicitly reconciled PR-15…PR-18 with the distinction between shared cognitive-core implementation/contracts, offline independence, local execution authority and the still-unresolved cross-context cognitive-history topology.
+- Preserved the first Android action as owner-reserved; did not select an action or infer implementation authority.
+- Extended `scripts/validate_planning_traceability.py` to compare product PR IDs with crosswalk PR IDs, require exact PR-01…PR-18 coverage, require all five traceability dimensions, and reject missing or unknown WP references.
+- Added the new matrix to `docs/planning/README.md`.
+
+**Verification state:** Source-level review confirmed the product acceptance table contains PR-01…PR-18 and the new crosswalk has 18 corresponding rows. The new validator and documentation updates are later than baseline head `a8127f4...`; exact-head CI is pending. No pass is claimed for the new validator until that run completes.
+
+**Self-review / remaining BR-008 and BR-010 work:** This increment does not resolve cross-store saga ownership and transaction boundaries across all commands/events, canonical entity/DDL transition semantics, query result-field projections against owning schemas/SQL, full owner-decision traceability, PR #1 scaffold reconciliation, C++ validator equivalence or target runtime evidence. It also does not execute any PR acceptance scenario. These remain builder findings, not tasks delegated to a reviewer/tester.
+
+**Disposition:** Builder work remains IN PROGRESS and NOT READY for independent review or planning-exit approval. No owner-reserved decision, implementation authorization, merge, reviewer handoff or tester handoff was made.
