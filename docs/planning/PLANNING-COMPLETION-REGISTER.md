@@ -72,7 +72,7 @@ No layer is currently marked COMPLETE — VERIFIED. This is deliberate: the curr
 ## 3. Builder-owned work remaining
 
 ### B-00 — Reconcile the foundational open-world interaction model
-- The foundational architecture is now bound to objective/world/means/interaction schemas, 53 command records (51 mapped, two deferred), 29 query records, 89 event records, persistence ownership, the semantic architecture reconciliation report and the 39-scenario fixture corpus.
+- The foundational architecture is now bound to objective/world/means/interaction schemas, 54 command records (52 mapped, two deferred), 29 query records, 89 event records, persistence ownership, the semantic architecture reconciliation report and the 39-scenario fixture corpus.
 - The event producer matrix explicitly binds 51 command-produced events and records 38 events without command producers as unresolved. No producer or consumer semantics are invented for those entries.
 - Added the event producer/consumer semantics matrix and semantic architecture reconciliation report. These map current domain concepts to owners, durable state, command/query/event surfaces, work packages and evidence; they do not claim runtime handlers or consumer execution.
 - Added 39 machine-readable scenario specifications (INT-001…INT-003, CM-001…CM-021 and AD-001…AD-015), with 172 steps and 45 negative controls. They remain specifications, not executed runtime tests.
@@ -104,7 +104,7 @@ No layer is currently marked COMPLETE — VERIFIED. This is deliberate: the curr
 
 ### B-05 — Reconcile persistence, contracts and recovery
 
-- Command/query inventory: the registry contains 53 command records (51 mapped, two deferred) and 29 queries. The 51 mapped commands have semantic contract bindings and CC-001…CC-051 acceptance assertions. The 29 queries have per-query owner/scope, classification/redaction, consistency, ordering/cursor, freshness/cache and QCC-001…QCC-029 positive/negative/read-only assertions. All remain design-only/non-dispatchable; two device commands remain deferred.
+- Command/query inventory: the registry contains 54 command records (52 mapped, two deferred) and 29 queries. The 52 mapped commands have semantic contract bindings and CC-001…CC-052 acceptance assertions. The 29 queries have per-query owner/scope, classification/redaction, consistency, ordering/cursor, freshness/cache and QCC-001…QCC-029 positive/negative/read-only assertions. All remain design-only/non-dispatchable; two device commands remain deferred.
 - Remaining command/query gates: handler-level executable tests, measured endpoint resource budgets, field-level projection/redaction and target snapshot/cursor/concurrency evidence; owner acceptance of first-release subsets; explicit implementation authorization. No command or query is dispatchable.
 - Event inventory: 89 events have payload-schema and fixture bindings. 51 have exact command-producer bindings and 38 have no command producer binding. The bidirectional validator and event semantics matrix enforce/record this distinction. All 89 remain design-only/non-dispatchable. Runtime handlers and event-specific acceptance execution remain open; All 38 non-command event triggers are now specified across the two trigger matrices, with producer origin, exact trigger and owner-transition fields checked field-for-field against the registry in CI. Consumer and owner-transition specifications are present but still require independent semantic review and owner acceptance.
 - Error handling: the 35-code/13-category seed registry has category-owned handler contracts, 35 EHR assertions and schema-shaped payload fixtures. All entries remain seed; owning handlers and executable recovery/no-blind-retry tests are absent.
@@ -121,7 +121,7 @@ No layer is currently marked COMPLETE — VERIFIED. This is deliberate: the curr
 
 ### B-07 — Complete architecture-wide consistency and completeness audit
 - Added SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md, mapping foundational concepts to owners, durable state, command/query/event surfaces, work packages and acceptance evidence. Six command/event or command/query classification mismatches were resolved.
-- Current inventory: 53 commands (51 mapped, two deferred), 29 queries, 89 events, 35 error codes, 39 canonical scenario fixtures, 17 work packages and three SQLite stores.
+- Current inventory: 54 commands (52 mapped, two deferred), 29 queries, 89 events, 35 error codes, 39 canonical scenario fixtures, 17 work packages and three SQLite stores.
 - Remaining semantic review includes independent verification of all 89 proposed event consumer/owner-transition contracts, independent review and owner acceptance of the 38 non-command producer-trigger specifications, cross-store sagas and transaction ownership, canonical entity/index/constraint transitions, query field projections, security invariants, first-release product acceptance and exact owner-decision traceability. The report is a builder proposal, not independent review or owner acceptance.
 
 ### B-08 — Finalize planning baseline and review package
