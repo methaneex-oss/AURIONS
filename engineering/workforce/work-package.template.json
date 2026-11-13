@@ -16,6 +16,11 @@
   "test_plan": [
     "REPLACE_WITH_EXACT_TEST_REQUIREMENTS"
   ],
+  "test_paths": [
+    "engineering/workforce/src",
+    "engineering/workforce/tests"
+  ],
+  "test_commands": [],
   "review_plan": [
     "Architecture reviewer independently checks canonical architecture and scope",
     "Code reviewer independently checks correctness, security and maintainability",
