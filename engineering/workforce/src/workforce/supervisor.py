@@ -53,6 +53,9 @@ def recover_once(conn) -> dict[str, int]:
                SET state='FAILED', lease_worker=NULL, lease_token_hash=NULL,
                    lease_expires_at=NULL, retry_after=NULL, updated_at=now()
              WHERE (
+                   state='QUEUED' AND started_at IS NULL
+                   AND created_at + interval '10 minutes' <= now()
+               ) OR (
                    state IN ('QUEUED','RETRY_WAIT','CLAIMED','RUNNING','CHECKPOINTED')
                    AND wf_task_deadline(started_at, contract_json) <= now()
                ) OR (
