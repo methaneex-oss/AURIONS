@@ -140,7 +140,7 @@ def main() -> int:
         "aurion_events.db": [
             "aurion_events.base.sql", "aurion_events.migration_v2.sql",
             "aurion_events.migration_v3.sql", "aurion_events.migration_v4.sql",
-            "aurion_events.migration_v5.sql",
+            "aurion_events.migration_v5.sql", "aurion_events.migration_v6.sql",
         ],
         "aurion_governance.db": [
             "aurion_governance.base.sql", "aurion_governance.migration_v2.sql",
