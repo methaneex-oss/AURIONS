@@ -1,7 +1,7 @@
-"""Small PostgreSQL-backed control-plane API. No model or GitHub credentials are exposed here."""
+"""Authenticated PostgreSQL-backed workforce control plane."""
 from __future__ import annotations
 
-import hmac
+import hashlib
 import json
 import os
 import uuid
@@ -11,12 +11,17 @@ from typing import Any
 import psycopg
 from fastapi import FastAPI, Header, HTTPException
 from psycopg.rows import dict_row
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from .domain import ContractError, TaskContract, TaskState, TransitionError, validate_transition
+from .security import (
+    AuthenticationError, Principal, authenticate_worker,
+    require_director, require_orchestrator,
+)
 
-app = FastAPI(title="AURIONS Workforce Control Plane", version="0.1.0")
+app = FastAPI(title="AURIONS Workforce Control Plane", version="0.2.0")
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
+ACTIVE_STATES = ("CLAIMED", "RUNNING", "CHECKPOINTED")
 
 
 def connect():
@@ -25,36 +30,50 @@ def connect():
     return psycopg.connect(DATABASE_URL, row_factory=dict_row)
 
 
-class CreateTask(BaseModel):
-    task_id: str = Field(default_factory=lambda: f"wf-{uuid.uuid4().hex[:12]}")
+def _auth(call, token: str | None) -> Principal:
+    try:
+        return call(token)
+    except AuthenticationError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+
+class StrictModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class CreateTask(StrictModel):
+    task_id: str = Field(default_factory=lambda: f"wf-{uuid.uuid4().hex[:12]}", min_length=3, max_length=100)
     role: str
     contract: dict[str, Any]
 
 
-class ClaimTask(BaseModel):
-    worker_id: str
+class ClaimTask(StrictModel):
     lease_seconds: int = Field(default=90, ge=15, le=900)
 
 
-class Heartbeat(BaseModel):
-    worker_id: str
-    lease_token: str
+class Heartbeat(StrictModel):
+    lease_token: str = Field(min_length=32, max_length=128)
     lease_seconds: int = Field(default=90, ge=15, le=900)
 
 
-class Checkpoint(BaseModel):
-    worker_id: str
-    lease_token: str
-    checkpoint_name: str
+class Checkpoint(StrictModel):
+    lease_token: str = Field(min_length=32, max_length=128)
+    checkpoint_name: str = Field(min_length=1, max_length=120)
     payload: dict[str, Any] = Field(default_factory=dict)
-    context_sha256: str
+    context_sha256: str = Field(pattern=r"^[0-9a-fA-F]{64}$")
+    idempotency_key: str = Field(min_length=16, max_length=128)
 
 
-class Transition(BaseModel):
+class WorkerTransition(StrictModel):
+    lease_token: str = Field(min_length=32, max_length=128)
     target: TaskState
-    actor: str
-    reason: str
-    director_decision_ref: str | None = None
+    reason: str = Field(min_length=1, max_length=1000)
+
+
+class Transition(StrictModel):
+    target: TaskState
+    reason: str = Field(min_length=1, max_length=1000)
+    director_decision_ref: str | None = Field(default=None, max_length=300)
 
 
 @app.get("/health")
@@ -69,103 +88,276 @@ def health():
 
 
 @app.post("/v1/tasks", status_code=201)
-def create_task(body: CreateTask):
+def create_task(
+    body: CreateTask,
+    x_orchestrator_token: str | None = Header(default=None, alias="X-Orchestrator-Token"),
+    x_director_approval_token: str | None = Header(default=None, alias="X-Director-Approval-Token"),
+):
+    orchestrator = _auth(require_orchestrator, x_orchestrator_token)
+    _auth(require_director, x_director_approval_token)
     try:
         contract = TaskContract.from_dict(body.contract)
     except (ContractError, TypeError, AttributeError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    if body.role not in {"lead_builder", "specialist_builder", "architecture_reviewer", "code_reviewer", "negative_tester", "integration_verifier"}:
+    if body.role not in {
+        "lead_builder", "specialist_builder", "architecture_reviewer",
+        "code_reviewer", "negative_tester", "integration_verifier",
+    }:
         raise HTTPException(status_code=422, detail="unknown workforce role")
     with connect() as conn, conn.cursor() as cur:
-        cur.execute("""INSERT INTO wf_tasks(task_id, role, state, contract_json, base_commit_sha)
-                       VALUES (%s, %s, 'QUEUED', %s::jsonb, %s)
-                       RETURNING task_id, role, state, base_commit_sha, created_at""",
-                    (body.task_id, body.role, json.dumps(body.contract), contract.base_commit_sha))
+        cur.execute(
+            """INSERT INTO wf_tasks(task_id, role, state, contract_json, base_commit_sha)
+               VALUES (%s, %s, 'QUEUED', %s::jsonb, %s)
+               RETURNING task_id, role, state, base_commit_sha, created_at""",
+            (body.task_id, body.role, json.dumps(body.contract), contract.base_commit_sha),
+        )
         row = cur.fetchone()
-        cur.execute("INSERT INTO wf_audit_events(task_id, event_type, actor, payload_json) VALUES (%s,'TASK_CREATED','orchestrator',%s::jsonb)",
-                    (body.task_id, json.dumps({"authorization_ref": contract.authorization_ref, "work_package_id": contract.work_package_id})))
+        cur.execute(
+            """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
+               VALUES (%s,'TASK_CREATED',%s,%s::jsonb)""",
+            (body.task_id, orchestrator.actor_id,
+             json.dumps({"authorization_ref": contract.authorization_ref, "work_package_id": contract.work_package_id})),
+        )
         return row
 
 
 @app.get("/v1/tasks")
-def list_tasks():
+def list_tasks(x_orchestrator_token: str | None = Header(default=None, alias="X-Orchestrator-Token")):
+    _auth(require_orchestrator, x_orchestrator_token)
     with connect() as conn, conn.cursor() as cur:
-        cur.execute("SELECT task_id, role, state, base_commit_sha, created_at, updated_at FROM wf_tasks ORDER BY created_at DESC LIMIT 200")
+        cur.execute(
+            """SELECT task_id, role, state, base_commit_sha, attempt_count,
+                      max_attempts, lease_expires_at, retry_after, created_at, updated_at
+               FROM wf_tasks ORDER BY created_at DESC LIMIT 200"""
+        )
         return cur.fetchall()
 
 
 @app.post("/v1/tasks/{task_id}/claim")
-def claim_task(task_id: str, body: ClaimTask):
-    token = uuid.uuid4().hex
+def claim_task(
+    task_id: str,
+    body: ClaimTask,
+    x_worker_token: str | None = Header(default=None, alias="X-Worker-Token"),
+):
+    worker = _auth(authenticate_worker, x_worker_token)
+    token = uuid.uuid4().hex + uuid.uuid4().hex
     expires = datetime.now(timezone.utc) + timedelta(seconds=body.lease_seconds)
     with connect() as conn, conn.cursor() as cur:
-        cur.execute("""UPDATE wf_tasks SET state='CLAIMED', lease_worker=%s, lease_token_hash=encode(digest(%s,'sha256'),'hex'), lease_expires_at=%s, updated_at=now()
-                       WHERE task_id=%s AND state='QUEUED' RETURNING task_id, state, lease_expires_at""",
-                    (body.worker_id, token, expires, task_id))
+        cur.execute(
+            """UPDATE wf_tasks
+                  SET state='CLAIMED', lease_worker=%s,
+                      lease_token_hash=encode(digest(%s,'sha256'),'hex'),
+                      lease_generation=lease_generation+1,
+                      lease_expires_at=%s, attempt_count=attempt_count+1,
+                      retry_after=NULL, updated_at=now()
+                WHERE task_id=%s AND role=%s
+                  AND state IN ('QUEUED','RETRY_WAIT')
+                  AND (retry_after IS NULL OR retry_after <= now())
+                  AND attempt_count < max_attempts
+                  AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+             RETURNING task_id, role, state, lease_generation, attempt_count, lease_expires_at""",
+            (worker.actor_id, token, expires, task_id, worker.role),
+        )
         row = cur.fetchone()
         if not row:
-            raise HTTPException(status_code=409, detail="task is unavailable or not QUEUED")
-        cur.execute("INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json) VALUES (%s,'TASK_CLAIMED',%s,%s::jsonb)",
-                    (task_id, body.worker_id, json.dumps({"lease_expires_at": expires.isoformat()})))
-        return {**row, "lease_token": token}
+            raise HTTPException(status_code=409, detail="task unavailable, not yet retryable, expired, or assigned to another role")
+        cur.execute(
+            """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
+               VALUES (%s,'TASK_CLAIMED',%s,%s::jsonb)""",
+            (task_id, worker.actor_id,
+             json.dumps({"role": worker.role, "lease_generation": row["lease_generation"], "attempt": row["attempt_count"], "lease_expires_at": expires.isoformat()})),
+        )
+        return {**row, "worker_id": worker.actor_id, "lease_token": token}
 
 
 @app.post("/v1/tasks/{task_id}/heartbeat")
-def heartbeat(task_id: str, body: Heartbeat):
+def heartbeat(
+    task_id: str,
+    body: Heartbeat,
+    x_worker_token: str | None = Header(default=None, alias="X-Worker-Token"),
+):
+    worker = _auth(authenticate_worker, x_worker_token)
     expires = datetime.now(timezone.utc) + timedelta(seconds=body.lease_seconds)
     with connect() as conn, conn.cursor() as cur:
-        cur.execute("""UPDATE wf_tasks SET lease_expires_at=%s, updated_at=now()
-                       WHERE task_id=%s AND lease_worker=%s
-                         AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
-                         AND lease_expires_at > now() AND state IN ('CLAIMED','RUNNING','CHECKPOINTED')
-                       RETURNING task_id, lease_expires_at""",
-                    (expires, task_id, body.worker_id, body.lease_token))
+        cur.execute(
+            """UPDATE wf_tasks SET lease_expires_at=%s, updated_at=now()
+                 WHERE task_id=%s AND role=%s AND lease_worker=%s
+                   AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
+                   AND lease_expires_at > now()
+                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+                   AND state IN ('CLAIMED','RUNNING','CHECKPOINTED')
+             RETURNING task_id, lease_generation, lease_expires_at""",
+            (expires, task_id, worker.role, worker.actor_id, body.lease_token),
+        )
         row = cur.fetchone()
         if not row:
-            raise HTTPException(status_code=409, detail="lease invalid, expired, or task not active")
+            raise HTTPException(status_code=409, detail="lease invalid, expired, stale, or task deadline reached")
+        return row
+
+
+@app.post("/v1/tasks/{task_id}/start")
+def start_task(
+    task_id: str,
+    body: Heartbeat,
+    x_worker_token: str | None = Header(default=None, alias="X-Worker-Token"),
+):
+    worker = _auth(authenticate_worker, x_worker_token)
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute(
+            """UPDATE wf_tasks SET state='RUNNING', updated_at=now()
+                 WHERE task_id=%s AND role=%s AND lease_worker=%s
+                   AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
+                   AND lease_expires_at > now()
+                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+                   AND state IN ('CLAIMED','CHECKPOINTED')
+             RETURNING task_id,state,lease_generation""",
+            (task_id, worker.role, worker.actor_id, body.lease_token),
+        )
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=409, detail="valid current lease required to start or resume task")
+        cur.execute(
+            "INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json) VALUES (%s,'TASK_STARTED',%s,jsonb_build_object('lease_generation',%s))",
+            (task_id, worker.actor_id, row["lease_generation"]),
+        )
         return row
 
 
 @app.post("/v1/tasks/{task_id}/checkpoint", status_code=201)
-def checkpoint(task_id: str, body: Checkpoint):
+def checkpoint(
+    task_id: str,
+    body: Checkpoint,
+    x_worker_token: str | None = Header(default=None, alias="X-Worker-Token"),
+):
+    worker = _auth(authenticate_worker, x_worker_token)
     with connect() as conn, conn.cursor() as cur:
-        cur.execute("""SELECT 1 FROM wf_tasks WHERE task_id=%s AND lease_worker=%s
-                       AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
-                       AND lease_expires_at > now() AND state IN ('RUNNING','CHECKPOINTED') FOR UPDATE""",
-                    (task_id, body.worker_id, body.lease_token))
-        if not cur.fetchone():
-            raise HTTPException(status_code=409, detail="valid active lease required")
-        cur.execute("INSERT INTO wf_checkpoints(task_id, worker_id, checkpoint_name, payload_json, context_sha256) VALUES (%s,%s,%s,%s::jsonb,%s) RETURNING checkpoint_id, created_at",
-                    (task_id, body.worker_id, body.checkpoint_name, json.dumps(body.payload), body.context_sha256))
+        cur.execute(
+            """SELECT lease_generation FROM wf_tasks
+                 WHERE task_id=%s AND role=%s AND lease_worker=%s
+                   AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
+                   AND lease_expires_at > now()
+                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+                   AND state IN ('RUNNING','CHECKPOINTED') FOR UPDATE""",
+            (task_id, worker.role, worker.actor_id, body.lease_token),
+        )
+        lease = cur.fetchone()
+        if not lease:
+            raise HTTPException(status_code=409, detail="valid current lease required; stale workers cannot checkpoint")
+        cur.execute(
+            """INSERT INTO wf_checkpoints(task_id,worker_id,checkpoint_name,payload_json,context_sha256,idempotency_key)
+               VALUES (%s,%s,%s,%s::jsonb,%s,%s)
+               ON CONFLICT (task_id,idempotency_key) WHERE idempotency_key IS NOT NULL DO NOTHING
+               RETURNING checkpoint_id,created_at""",
+            (task_id, worker.actor_id, body.checkpoint_name, json.dumps(body.payload), body.context_sha256, body.idempotency_key),
+        )
         row = cur.fetchone()
-        cur.execute("UPDATE wf_tasks SET state='CHECKPOINTED', updated_at=now() WHERE task_id=%s AND state='RUNNING'", (task_id,))
-        cur.execute("INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json) VALUES (%s,'CHECKPOINT_WRITTEN',%s,%s::jsonb)",
-                    (task_id, body.worker_id, json.dumps({"checkpoint_id": row["checkpoint_id"], "name": body.checkpoint_name})))
-        return row
+        replay = row is None
+        if replay:
+            cur.execute(
+                "SELECT checkpoint_id,created_at FROM wf_checkpoints WHERE task_id=%s AND idempotency_key=%s",
+                (task_id, body.idempotency_key),
+            )
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=409, detail="idempotency conflict")
+        else:
+            cur.execute("UPDATE wf_tasks SET state='CHECKPOINTED',updated_at=now() WHERE task_id=%s", (task_id,))
+            cur.execute(
+                """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
+                   VALUES (%s,'CHECKPOINT_WRITTEN',%s,%s::jsonb)""",
+                (task_id, worker.actor_id,
+                 json.dumps({"checkpoint_id": row["checkpoint_id"], "name": body.checkpoint_name, "lease_generation": lease["lease_generation"]})),
+            )
+        return {**row, "idempotent_replay": replay}
+
+
+@app.post("/v1/tasks/{task_id}/worker-transition")
+def worker_transition(
+    task_id: str,
+    body: WorkerTransition,
+    x_worker_token: str | None = Header(default=None, alias="X-Worker-Token"),
+):
+    worker = _auth(authenticate_worker, x_worker_token)
+    if body.target not in {TaskState.BLOCKED, TaskState.FAILED, TaskState.CANCELLED}:
+        raise HTTPException(status_code=403, detail="workers may only stop their own task as BLOCKED, FAILED or CANCELLED")
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute(
+            """SELECT state,lease_generation FROM wf_tasks
+                 WHERE task_id=%s AND role=%s AND lease_worker=%s
+                   AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
+                   AND lease_expires_at > now() FOR UPDATE""",
+            (task_id, worker.role, worker.actor_id, body.lease_token),
+        )
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=409, detail="valid current lease required")
+        current = TaskState(row["state"])
+        try:
+            validate_transition(current, body.target)
+        except TransitionError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        cur.execute(
+            """UPDATE wf_tasks SET state=%s,lease_worker=NULL,lease_token_hash=NULL,
+                      lease_expires_at=NULL,updated_at=now()
+                 WHERE task_id=%s RETURNING task_id,state,updated_at""",
+            (body.target.value, task_id),
+        )
+        updated = cur.fetchone()
+        cur.execute(
+            """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
+               VALUES (%s,'WORKER_STOPPED_TASK',%s,%s::jsonb)""",
+            (task_id, worker.actor_id, json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason})),
+        )
+        return updated
 
 
 @app.post("/v1/tasks/{task_id}/transition")
-def transition(task_id: str, body: Transition, x_director_approval_token: str | None = Header(default=None, alias="X-Director-Approval-Token")):
+def transition(
+    task_id: str,
+    body: Transition,
+    x_orchestrator_token: str | None = Header(default=None, alias="X-Orchestrator-Token"),
+    x_director_approval_token: str | None = Header(default=None, alias="X-Director-Approval-Token"),
+):
+    if body.target == TaskState.ACCEPTED:
+        principal = _auth(require_director, x_director_approval_token)
+        if not body.director_decision_ref:
+            raise HTTPException(status_code=422, detail="Director decision reference is mandatory")
+    else:
+        principal = _auth(require_orchestrator, x_orchestrator_token)
+        if body.director_decision_ref:
+            raise HTTPException(status_code=422, detail="Director decision reference is only valid for acceptance")
     with connect() as conn, conn.cursor() as cur:
         cur.execute("SELECT state FROM wf_tasks WHERE task_id=%s FOR UPDATE", (task_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="task not found")
         current = TaskState(row["state"])
-        director_token = os.environ.get("DIRECTOR_APPROVAL_TOKEN", "")
-        director_ok = (body.target == TaskState.ACCEPTED and bool(director_token)
-                       and bool(x_director_approval_token)
-                       and hmac.compare_digest(director_token, x_director_approval_token)
-                       and bool(body.director_decision_ref))
         try:
-            validate_transition(current, body.target, director_decision=director_ok)
+            validate_transition(current, body.target, director_decision=(principal.role == "director"))
         except TransitionError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
-        if body.target == TaskState.ACCEPTED and not director_ok:
-            raise HTTPException(status_code=403, detail="valid Director approval credential and decision reference required")
-        cur.execute("UPDATE wf_tasks SET state=%s, updated_at=now() WHERE task_id=%s RETURNING task_id,state,updated_at",
-                    (body.target.value, task_id))
+        cur.execute(
+            """UPDATE wf_tasks SET state=%s,
+                      lease_worker=CASE WHEN %s IN ('CLAIMED','RUNNING','CHECKPOINTED') THEN lease_worker ELSE NULL END,
+                      lease_token_hash=CASE WHEN %s IN ('CLAIMED','RUNNING','CHECKPOINTED') THEN lease_token_hash ELSE NULL END,
+                      lease_expires_at=CASE WHEN %s IN ('CLAIMED','RUNNING','CHECKPOINTED') THEN lease_expires_at ELSE NULL END,
+                      updated_at=now()
+                 WHERE task_id=%s RETURNING task_id,state,updated_at""",
+            (body.target.value, body.target.value, body.target.value, body.target.value, task_id),
+        )
         updated = cur.fetchone()
-        cur.execute("INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json) VALUES (%s,'STATE_TRANSITION',%s,%s::jsonb)",
-                    (task_id, body.actor, json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason, "director_decision_ref": body.director_decision_ref})))
+        cur.execute(
+            """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
+               VALUES (%s,'STATE_TRANSITION',%s,%s::jsonb)""",
+            (task_id, principal.actor_id,
+             json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason, "director_decision_ref": body.director_decision_ref})),
+        )
         return updated
+
+
+@app.post("/v1/maintenance/recover")
+def recover_expired_tasks(x_orchestrator_token: str | None = Header(default=None, alias="X-Orchestrator-Token")):
+    _auth(require_orchestrator, x_orchestrator_token)
+    from .supervisor import recover_once
+    with connect() as conn:
+        return recover_once(conn)
