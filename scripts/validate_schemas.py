@@ -1018,6 +1018,12 @@ def main() -> int:
     if len({item["error_code"] for item in error_registry["entries"]}) != 35:
         fail("error registry contains duplicate error codes")
     case_by_code = {case["payload"]["error_code"]: case for case in error_cases}
+    case_by_id = {case["case_id"]: case for case in error_cases}
+    expected_error_case_ids = {
+        f"EHC-{index:03d}" for index in range(1, 36)
+    }
+    if len(case_by_id) != 35 or set(case_by_id) != expected_error_case_ids:
+        fail("error fixture case IDs must uniquely cover EHC-001…EHC-035")
     for item in error_registry["entries"]:
         if item.get("status") != "seed":
             fail(f"{item['error_code']}: seed status changed without runtime handler gate")
@@ -1056,8 +1062,20 @@ def main() -> int:
         if not handler_match or not fixture_match:
             fail(f"error-handler matrix line {line_number}: malformed handler/fixture reference")
         handler_id = f"EH-{handler_match.group(1)}"
+        handler_ref = (
+            "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#"
+            + handler_id.lower()
+        )
         if f"### {handler_id}" not in error_matrix_text:
             fail(f"{code}: referenced category handler heading {handler_id} is missing")
+        fixture_id = f"EHC-{fixture_match.group(1)}"
+        fixture_case = case_by_id.get(fixture_id)
+        if fixture_case is None:
+            fail(f"{code}: matrix references missing error fixture {fixture_id}")
+        if fixture_case["payload"]["error_code"] != code:
+            fail(f"{code}: matrix fixture {fixture_id} belongs to a different error code")
+        if fixture_case["handler_contract_ref"] != handler_ref:
+            fail(f"{code}: matrix fixture {fixture_id} points to a different category handler")
         if code in matrix_rows:
             fail(f"{code}: duplicate code-level handler mapping")
         matrix_rows[code] = {
