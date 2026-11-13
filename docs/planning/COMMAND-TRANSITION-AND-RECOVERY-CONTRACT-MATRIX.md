@@ -8,6 +8,8 @@
 
 ## 1. Shared command execution contract
 
+**Transaction boundary authority:** Each mapped command's `transaction_contract` in `schemas/command-query-registry.v1.json` is mandatory. Store ownership, local outbox placement, asynchronous central event-archive relay and cross-store saga sequencing are reconciled in [Store-local Outbox and Cross-Store Saga Ownership Matrix](STORE-LOCAL-OUTBOX-AND-CROSS-STORE-SAGA-MATRIX.md). A command's table references do not imply one transaction across databases.
+
 ### 1.1 Authentication and authorization
 
 The receiver derives `owner_id`, actor identity and device identity from the authenticated execution context. Payload values cannot substitute those identities or widen scope. The owning component loads the exact target aggregate under owner scope before exposing whether it exists. Missing, unbound or cross-owner records are denied without existence disclosure.
