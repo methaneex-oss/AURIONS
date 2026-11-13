@@ -19,9 +19,6 @@ from .security import (
 
 app = FastAPI(title="AURIONS Workforce Control Plane", version="0.2.0")
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
-ACTIVE_STATES = ("CLAIMED", "RUNNING", "CHECKPOINTED")
-
-
 def connect():
     if not DATABASE_URL:
         raise RuntimeError("DATABASE_URL is not configured")
@@ -308,7 +305,7 @@ def worker_transition(
         updated = cur.fetchone()
         cur.execute(
             """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
-               VALUES (%s,'WORKER_STOPPED_TASK',%s,%s::jsonb)""",
+               VALUES (%s,'WORKER_TASK_TRANSITION',%s,%s::jsonb)""",
             (task_id, worker.actor_id, json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason, "evidence_sha256": body.evidence_sha256})),
         )
         return updated
