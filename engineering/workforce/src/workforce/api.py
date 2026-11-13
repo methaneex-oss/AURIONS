@@ -170,7 +170,7 @@ def claim_task(
                   AND state IN ('QUEUED','RETRY_WAIT')
                   AND (retry_after IS NULL OR retry_after <= now())
                   AND attempt_count < max_attempts
-                  AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+                  AND wf_task_deadline(created_at, contract_json) > now()
              RETURNING task_id, role, state, lease_generation, attempt_count, lease_expires_at""",
             (worker.actor_id, token, body.lease_seconds, task_id, worker.role),
         )
@@ -199,7 +199,7 @@ def heartbeat(
                  WHERE task_id=%s AND role=%s AND lease_worker=%s
                    AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                    AND lease_expires_at > now()
-                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+                   AND wf_task_deadline(created_at, contract_json) > now()
                    AND state IN ('CLAIMED','RUNNING','CHECKPOINTED')
              RETURNING task_id, lease_generation, lease_expires_at""",
             (body.lease_seconds, task_id, worker.role, worker.actor_id, body.lease_token),
@@ -223,7 +223,7 @@ def start_task(
                  WHERE task_id=%s AND role=%s AND lease_worker=%s
                    AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                    AND lease_expires_at > now()
-                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+                   AND wf_task_deadline(created_at, contract_json) > now()
                    AND state IN ('CLAIMED','CHECKPOINTED','RUNNING')
              RETURNING task_id,state,lease_generation""",
             (body.lease_seconds, task_id, worker.role, worker.actor_id, body.lease_token),
@@ -251,7 +251,7 @@ def checkpoint(
                  WHERE task_id=%s AND role=%s AND lease_worker=%s
                    AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                    AND lease_expires_at > now()
-                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+                   AND wf_task_deadline(created_at, contract_json) > now()
                    AND state IN ('RUNNING','CHECKPOINTED') FOR UPDATE""",
             (task_id, worker.role, worker.actor_id, body.lease_token),
         )
@@ -303,7 +303,7 @@ def latest_checkpoint(
                  WHERE task_id=%s AND role=%s AND lease_worker=%s
                    AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                    AND lease_expires_at > now()
-                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+                   AND wf_task_deadline(created_at, contract_json) > now()
                    AND state IN ('CLAIMED','RUNNING','CHECKPOINTED')""",
             (task_id, worker.role, worker.actor_id, lease_token),
         )
@@ -340,7 +340,7 @@ def worker_transition(
                  WHERE task_id=%s AND role=%s AND lease_worker=%s
                    AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                    AND lease_expires_at > now()
-                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now() FOR UPDATE""",
+                   AND wf_task_deadline(created_at, contract_json) > now() FOR UPDATE""",
             (task_id, worker.role, worker.actor_id, body.lease_token),
         )
         row = cur.fetchone()
@@ -392,7 +392,7 @@ def transition(
         if body.director_decision_ref:
             raise HTTPException(status_code=422, detail="Director decision reference is only valid for acceptance")
     with connect() as conn, conn.cursor() as cur:
-        cur.execute("SELECT state,attempt_count, (created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()) AS before_deadline FROM wf_tasks WHERE task_id=%s FOR UPDATE", (task_id,))
+        cur.execute("SELECT state,attempt_count, (wf_task_deadline(created_at, contract_json) > now()) AS before_deadline FROM wf_tasks WHERE task_id=%s FOR UPDATE", (task_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="task not found")
