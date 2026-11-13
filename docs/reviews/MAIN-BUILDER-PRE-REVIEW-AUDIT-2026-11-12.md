@@ -1206,3 +1206,15 @@ The batch-1 note's 28/61 event-coverage estimate used substring matching on seri
 Current fixture state remains 39 scenarios, 192 steps and 45 negative controls. Five of 36 CM/AD rows are concrete; 31 remain generic, and CM-022…CM-029 remain absent. Exact PR HEAD `db78f6e74007258207bf56f7e4565f5a18f5b5ad` passed [workflow 43435834491](https://github.com/methaneex-oss/AURIONS/actions/runs/43435834491).
 
 BR-004 remains OPEN. Event coverage gaps and remaining generic/missing scenario fixtures are not accepted as complete.
+
+
+
+## BR-004 — concrete cognitive scenario expansion, batch 3 — 2026-11-13
+
+**Batch 3 completed:**
+- CM-006 now specifies safe-point task interruption, preservation of committed checkpoints, a dispatched operation, operation reconciliation, plan revision and safe resume.
+- CM-007 now specifies capability discovery and verification, exact descriptor-version binding, invalidation, stale-plan rejection before dispatch, rediscovery/reverification and successor-plan revision.
+- Added event-level scenario references for task transitions, operation lifecycle/reconciliation, capability discovery/verification/invalidation, plan changes and stale-capability rejection.
+- Extended exact command/query/event validation and the concrete-scenario gate to CM-006 and CM-007.
+
+**Updated fixture inventory:** 39 scenarios, 208 ordered steps and 45 negative controls. Seven of 36 CM/AD rows are now concrete; 29 remain generic. CM-022…CM-029 remain absent. BR-004 remains OPEN; scenarios are design specifications, not executed runtime acceptance.
