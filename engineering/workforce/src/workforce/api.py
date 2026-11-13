@@ -12,12 +12,14 @@ from psycopg.rows import dict_row
 from pydantic import BaseModel, ConfigDict, Field
 
 from .domain import ContractError, TaskContract, TaskState, TransitionError, validate_transition
+from .budget_api import router as budget_router
 from .security import (
     AuthenticationError, Principal, authenticate_worker,
     require_director, require_orchestrator,
 )
 
 app = FastAPI(title="AURIONS Workforce Control Plane", version="0.2.0")
+app.include_router(budget_router)
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 def connect():
     if not DATABASE_URL:
