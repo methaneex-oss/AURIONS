@@ -70,6 +70,21 @@ class DomainTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, "unknown task contract fields"):
             TaskContract.from_dict(value)
 
+    def test_contract_rejects_template_authorization_and_zero_sha(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "REPLACE_WITH_APPROVAL", "objective": "Build",
+            "base_commit_sha": "0" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"],
+        }
+        with self.assertRaisesRegex(ContractError, "authorization reference"):
+            TaskContract.from_dict(value)
+        value["authorization_ref"] = "director-approval-001"
+        with self.assertRaisesRegex(ContractError, "real full"):
+            TaskContract.from_dict(value)
+
     def test_contract_deadline_requires_explicit_timezone(self):
         value = {
             "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
