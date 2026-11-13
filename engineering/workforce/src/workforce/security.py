@@ -27,15 +27,43 @@ def _matches_configured_secret(env_name: str, supplied: str | None) -> bool:
     return bool(expected and supplied and len(expected) >= 32 and hmac.compare_digest(expected, supplied))
 
 
+def _cross_role_collision(env_name: str, supplied: str) -> bool:
+    for other_name in ("DIRECTOR_APPROVAL_TOKEN", "WORKFORCE_ORCHESTRATOR_TOKEN"):
+        if other_name == env_name:
+            continue
+        other = os.environ.get(other_name, "")
+        if other and hmac.compare_digest(other, supplied):
+            return True
+    raw = os.environ.get("WORKFORCE_WORKER_CREDENTIALS_JSON", "")
+    if not raw:
+        return False
+    try:
+        registry = json.loads(raw)
+    except (TypeError, json.JSONDecodeError):
+        return True
+    if not isinstance(registry, dict):
+        return True
+    for entry in registry.values():
+        if not isinstance(entry, dict) or not isinstance(entry.get("token"), str):
+            return True
+        if hmac.compare_digest(entry["token"], supplied):
+            return True
+    return False
+
+
 def require_orchestrator(token: str | None) -> Principal:
     if not _matches_configured_secret("WORKFORCE_ORCHESTRATOR_TOKEN", token):
         raise AuthenticationError("valid orchestrator credential required")
+    if _cross_role_collision("WORKFORCE_ORCHESTRATOR_TOKEN", token):
+        raise AuthenticationError("orchestrator credential must be unique to that authority")
     return Principal("orchestrator", "orchestrator")
 
 
 def require_director(token: str | None) -> Principal:
     if not _matches_configured_secret("DIRECTOR_APPROVAL_TOKEN", token):
         raise AuthenticationError("valid Director credential required")
+    if _cross_role_collision("DIRECTOR_APPROVAL_TOKEN", token):
+        raise AuthenticationError("Director credential must be unique to that authority")
     return Principal("director", "director")
 
 
@@ -68,4 +96,8 @@ def authenticate_worker(token: str | None) -> Principal:
             matched = Principal(worker_id, role)
     if matched is None:
         raise AuthenticationError("worker credential is invalid")
+    for privileged_name in ("DIRECTOR_APPROVAL_TOKEN", "WORKFORCE_ORCHESTRATOR_TOKEN"):
+        privileged = os.environ.get(privileged_name, "")
+        if privileged and hmac.compare_digest(privileged, token):
+            raise AuthenticationError("worker credential must not be shared with Director or orchestrator authority")
     return matched
