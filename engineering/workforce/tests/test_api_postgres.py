@@ -206,6 +206,7 @@ class ControlPlaneApiTests(unittest.TestCase):
                 "target": "CANDIDATE_READY",
                 "reason": "completed with evidence",
                 "evidence_sha256": "d" * 64,
+                "evidence_ref": "artifact://worker-output",
             },
         )
         self.assertEqual(completed.status_code, 200, completed.text)
@@ -242,7 +243,18 @@ class ControlPlaneApiTests(unittest.TestCase):
         self.assertEqual(self.create_task().status_code, 201)
         with psycopg.connect(DB) as conn:
             conn.execute("UPDATE wf_tasks SET state='AWAITING_DIRECTOR' WHERE task_id=%s", (self.task_id,))
-        payload = {"target": "ACCEPTED", "reason": "test acceptance", "director_decision_ref": "decision-test", "evidence_sha256": "c" * 64}
+            conn.execute(
+                """INSERT INTO wf_task_evidence(task_id,stage,sha256,evidence_ref,actor)
+                   VALUES (%s,'INTEGRATED',%s,%s,'integration_verifier')""",
+                (self.task_id, "c" * 64, "artifact://integrated-report"),
+            )
+        payload = {
+            "target": "ACCEPTED",
+            "reason": "test acceptance",
+            "director_decision_ref": "decision-test",
+            "evidence_sha256": "c" * 64,
+            "evidence_ref": "artifact://integrated-report",
+        }
         self.assertEqual(self.client.post(f"/v1/tasks/{self.task_id}/transition", json=payload).status_code, 401)
         self.assertEqual(
             self.client.post(
@@ -261,6 +273,13 @@ class ControlPlaneApiTests(unittest.TestCase):
             ).status_code,
             422,
         )
+        mismatched = {**payload, "evidence_sha256": "f" * 64}
+        mismatch_response = self.client.post(
+            f"/v1/tasks/{self.task_id}/transition",
+            headers={"X-Director-Approval-Token": DIRECTOR},
+            json=mismatched,
+        )
+        self.assertEqual(mismatch_response.status_code, 409)
         accepted = self.client.post(
             f"/v1/tasks/{self.task_id}/transition",
             headers={"X-Director-Approval-Token": DIRECTOR},
