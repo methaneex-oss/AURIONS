@@ -63,7 +63,7 @@ def validate_query_projection_inventory() -> None:
         section_start = projection.find(heading)
         if section_start < 0:
             raise AssertionError(f"{query_type}: missing field-level projection section")
-        next_section = projection.find("\\n### ", section_start + 1)
+        next_section = projection.find("\n### ", section_start + 1)
         section = projection[section_start:] if next_section < 0 else projection[section_start:next_section]
         documented: list[str] = []
         explicitly_unmapped: set[str] = set()
