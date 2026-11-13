@@ -30,5 +30,20 @@ AS $
     END;
 $$;
 
+CREATE OR REPLACE FUNCTION wf_task_absolute_deadline(task_contract jsonb)
+RETURNS timestamptz
+LANGUAGE sql
+IMMUTABLE
+STRICT
+AS $
+    SELECT CASE
+        WHEN COALESCE(task_contract->>'deadline', 'UNSET') = 'UNSET'
+            THEN 'infinity'::timestamptz
+        ELSE (task_contract->>'deadline')::timestamptz
+    END;
+$;
+
 COMMENT ON FUNCTION wf_task_deadline(timestamptz, jsonb) IS
     'Returns the absolute deadline while queued, then the earlier of the absolute deadline and max_duration_minutes from first claim.';
+COMMENT ON FUNCTION wf_task_absolute_deadline(jsonb) IS
+    'Returns the absolute contract deadline or infinity when no absolute deadline was configured.';
