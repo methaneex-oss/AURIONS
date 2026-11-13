@@ -2,15 +2,15 @@
 
 **Status: proposed planning artifacts. All three base schemas and eight additive migrations have executed in host-side CI smoke tests; they have not been applied to a user database or validated against the target Termux/Android SQLite build.**
 
-These files are the machine-readable DDL source for the three independent SQLite stores. Memory migration v5 adds the memory-store transactional outbox required by the cross-store protocol. Memory migration v6 adds an owner-scoped binding from every new derived goal revision to an exact objective revision. Governance migration v2 adds the corresponding governance-store outbox. Memory migration v4 proposes owner-scoped, versioned persistence for objective records (distinct from derived goals), owner/scope details for existing evidence records, open-world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The explanatory source specification in `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md` Section 26 links to these files; do not maintain a second inline SQL copy there.
+These files are the machine-readable DDL source for the three independent SQLite stores. Memory migration v5 adds the memory-store transactional outbox required by the cross-store protocol. Memory migration v6 adds an owner-scoped binding from every new derived goal revision to an exact objective revision. Memory migration v7 adds explicit environment-observation, descriptor-schema, representation-lineage, context-uncertainty, memory-provenance, prediction-evidence and plan-context projection sources. Events migration v4 adds task failure and operation policy-decision references. Governance migration v2 adds the corresponding governance-store outbox; governance migration v3 binds approval requests to owner/session and enforces one exact decision per request; governance migration v4 adds owner-scoped permission and audit/disclosure projection fields. Memory migration v4 proposes owner-scoped, versioned persistence for objective records (distinct from derived goals), owner/scope details for existing evidence records, open-world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The explanatory source specification in `docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md` Section 26 links to these files; do not maintain a second inline SQL copy there.
 
 ## Base schemas and migration order
 
 | Store | Initial schema | Additive migrations |
 |---|---|---|
-| `aurion_memory.db` | [aurion_memory.base.sql](./aurion_memory.base.sql) | [migration v2](./aurion_memory.migration_v2.sql), [migration v3](./aurion_memory.migration_v3.sql), then [migration v4](./aurion_memory.migration_v4.sql), then [migration v5](./aurion_memory.migration_v5.sql), then [migration v6](./aurion_memory.migration_v6.sql) |
-| `aurion_events.db` | [aurion_events.base.sql](./aurion_events.base.sql) | [migration v2](./aurion_events.migration_v2.sql), then [migration v3](./aurion_events.migration_v3.sql) |
-| `aurion_governance.db` | [aurion_governance.base.sql](./aurion_governance.base.sql) | [migration v2](./aurion_governance.migration_v2.sql) |
+| `aurion_memory.db` | [aurion_memory.base.sql](./aurion_memory.base.sql) | [migration v2](./aurion_memory.migration_v2.sql), [migration v3](./aurion_memory.migration_v3.sql), then [migration v4](./aurion_memory.migration_v4.sql), then [migration v5](./aurion_memory.migration_v5.sql), then [migration v6](./aurion_memory.migration_v6.sql), then [migration v7](./aurion_memory.migration_v7.sql) |
+| `aurion_events.db` | [aurion_events.base.sql](./aurion_events.base.sql) | [migration v2](./aurion_events.migration_v2.sql), then [migration v3](./aurion_events.migration_v3.sql), then [migration v4](./aurion_events.migration_v4.sql) |
+| `aurion_governance.db` | [aurion_governance.base.sql](./aurion_governance.base.sql) | [migration v2](./aurion_governance.migration_v2.sql), then [migration v3](./aurion_governance.migration_v3.sql), then [migration v4](./aurion_governance.migration_v4.sql) |
 
 Each database has its own migration ledger, transaction, backup and recovery. Do not combine these scripts into one cross-database transaction. Cross-store IDs are validated by application services; cross-file foreign keys are prohibited.
 
@@ -25,18 +25,18 @@ References:
 
 ## Host-side DDL execution evidence (2026-11-12)
 
-The workflow runs `scripts/validate_sqlite_ddl.py` after schema and governance validation. Exact-head run [43383148511](https://github.com/methaneex-oss/AURIONS/actions/runs/43383148511) on PR head `4fe74e09c5d3bbc4d9c03a35e707926bdf9c4b77` executed all eleven SQL files in the order above on host SQLite, including memory v5/v6 and governance v2. It checked foreign-key enforcement, foreign-key integrity and database integrity after each file; objective insert; event sequence allocation; task-owner trigger; memory/governance local-outbox rollback; same-owner interaction-outcome linkage; exact goal-to-objective revision binding; rejection of unbound goal revisions; and rejection of cross-owner objective bindings.
+The workflow runs `scripts/validate_sqlite_ddl.py` after schema and governance validation. Historical exact-head run [43383148511](https://github.com/methaneex-oss/AURIONS/actions/runs/43383148511) executed the then-current eleven SQL files. The current proposed chain contains fifteen files: three base schemas plus memory v2…v7, events v2…v4 and governance v2…v4. The new migrations add explicit query-projection sources and approval owner/session invariants; the updated runner now includes positive and negative smoke assertions for those additions. The current chain is not described as executed until the latest exact-head workflow passes. It checked foreign-key enforcement, foreign-key integrity and database integrity after each file; objective insert; event sequence allocation; task-owner trigger; memory/governance local-outbox rollback; same-owner interaction-outcome linkage; exact goal-to-objective revision binding; rejection of unbound goal revisions; and rejection of cross-owner objective bindings.
 
 This result establishes host-side DDL execution for that exact revision only. It does not establish target Termux/Android SQLite compatibility, crash/rollback/restore safety, concurrency behaviour, complete application-level invariants, cross-store recovery or runtime handler correctness. The automated check must remain enabled on future SQL and validator changes.
 
 ## Required validation before implementation approval
 
 1. Execute each base schema on a clean database using the pinned minimum SQLite build.
-2. Apply memory v2…v6, events v2…v3 and governance v2 in order, with independent migration ledgers and checksums. Events v3 leaves legacy task owners NULL pending authoritative owner backfill; verify this gate and the new-task owner trigger.
+2. Apply memory v2…v7, events v2…v4 and governance v2…v4 in order, with independent migration ledgers and checksums. Events v3 leaves legacy task owners NULL pending authoritative owner backfill; verify this gate and the new-task owner trigger.
 3. Run `PRAGMA foreign_key_check`, `PRAGMA integrity_check`, JSON-function probes and migration-specific invariants after each step.
 4. Test empty install, every supported upgrade, interrupted migration before/after commit, checksum mismatch, restore, disk-full, busy/locked, read-only/corrupt DB and process crash.
 5. Verify all indexes, uniqueness/idempotency constraints, owner-scope query plans and target-device timings.
-6. Confirm the 51 mapped command types (plus two deferred device commands) and 29 query mappings against table ownership, read/write semantics, store-local outbox boundaries and transaction scope.
+6. Confirm the 52 mapped command types (plus two deferred device commands) and all 29 query result-field mappings against table ownership, read/write semantics, store-local outbox boundaries and transaction scope.
 7. Reconcile world-interaction schema references with memory v4 columns and event/operation references; prove that device-specific capability descriptors are not required for non-device means.
 8. Record exact SQLite source/version/compile options and Termux/Android device/build identity.
 
