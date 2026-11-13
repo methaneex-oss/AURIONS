@@ -176,6 +176,7 @@ def claim_task(
                   AND (retry_after IS NULL OR retry_after <= now())
                   AND attempt_count < max_attempts
                   AND wf_task_deadline(started_at, contract_json) > now()
+                  AND (state <> 'QUEUED' OR started_at IS NOT NULL OR created_at + interval '10 minutes' > now())
              RETURNING task_id, role, state, lease_generation, attempt_count, lease_expires_at""",
             (worker.actor_id, token, body.lease_seconds, task_id, worker.role),
         )
