@@ -35,6 +35,11 @@ class RunnerBudgetTests(unittest.TestCase):
             request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
         )
 
+    def test_constructor_rejects_budget_above_hard_ceiling(self):
+        with patch.dict("os.environ", {"GROQ_API_KEY": "test-key-only"}, clear=True):
+            with self.assertRaises(ValueError):
+                Worker(self.root, "lead_builder", [], 101, 512, 12000)
+
     def test_prompt_budget_is_reserved_before_provider_call(self):
         worker = self.make_worker(64)
         with patch("workforce.agents.runner.httpx.post") as provider:
