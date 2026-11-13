@@ -108,6 +108,14 @@ class Worker:
         self.max_total_tokens = max_total_tokens
         self.max_duration_minutes = max_duration_minutes
         self.deadline_monotonic: float | None = None
+        self.control_plane_url = os.environ.get("WORKFORCE_CONTROL_PLANE_URL", "").rstrip("/")
+        self.task_id = os.environ.get("WORKFORCE_TASK_ID", "")
+        self.worker_token = os.environ.get("WORKFORCE_WORKER_TOKEN", "")
+        self.lease_token = os.environ.get("WORKFORCE_LEASE_TOKEN", "")
+        budget_config = (self.control_plane_url, self.task_id, self.worker_token, self.lease_token)
+        if any(budget_config) and not all(budget_config):
+            raise RuntimeError("durable budget integration requires control-plane URL, task ID, worker token and live lease token")
+        self.durable_budget_enabled = all(budget_config)
         self.total_tokens = 0
         self.calls = 0
         if role not in ROLE_INSTRUCTIONS:
@@ -209,6 +217,40 @@ class Worker:
             return json.dumps(outputs)
         return "DENIED: unknown tool."
 
+    def reserve_durable_budget(self, requested_tokens: int) -> dict[str, Any] | None:
+        if not self.durable_budget_enabled:
+            return None
+        url = f"{self.control_plane_url}/v1/tasks/{self.task_id}/budget/reserve"
+        response = httpx.post(
+            url,
+            headers={"X-Worker-Token": self.worker_token},
+            json={"lease_token": self.lease_token, "requested_tokens": requested_tokens},
+            timeout=max(1, min(20, self.remaining_seconds())),
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"durable per-agent inference budget refused request (HTTP {response.status_code})")
+        reservation = response.json()
+        if not isinstance(reservation.get("reservation_id"), str) or reservation.get("reserved_tokens") != requested_tokens:
+            raise RuntimeError("control plane returned an invalid inference-budget reservation")
+        return reservation
+
+    def settle_durable_budget(self, reservation: dict[str, Any] | None, actual_tokens: int) -> None:
+        if reservation is None:
+            return
+        url = f"{self.control_plane_url}/v1/tasks/{self.task_id}/budget/settle"
+        response = httpx.post(
+            url,
+            headers={"X-Worker-Token": self.worker_token},
+            json={
+                "lease_token": self.lease_token,
+                "reservation_id": reservation["reservation_id"],
+                "actual_tokens": actual_tokens,
+            },
+            timeout=max(1, min(20, self.remaining_seconds())),
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"durable inference-budget settlement failed (HTTP {response.status_code}); task must stop")
+
     def run(self, task: str, context_files: list[str]) -> dict[str, Any]:
         self.deadline_monotonic = time.monotonic() + self.max_duration_minutes * 60
         context, governance_records = self.load_mandatory_governance()
@@ -260,6 +302,7 @@ class Worker:
                     "prompt and protocol overhead exhaust the remaining token budget; "
                     "provider request was not sent"
                 )
+            reservation = self.reserve_durable_budget(prompt_reserve + output_limit)
             self.calls += 1
             payload = {
                 "model": self.model,
@@ -284,6 +327,7 @@ class Worker:
             reported_tokens = usage.get("total_tokens")
             if not isinstance(reported_tokens, int) or isinstance(reported_tokens, bool) or reported_tokens <= 0:
                 raise RuntimeError("provider returned missing or invalid total_tokens; fail-closed budget stop")
+            self.settle_durable_budget(reservation, reported_tokens)
             if self.total_tokens + reported_tokens > self.max_total_tokens:
                 raise RuntimeError("provider-reported usage exceeded the configured aggregate token budget; worker stopped")
             self.total_tokens += reported_tokens
@@ -321,6 +365,13 @@ def main() -> None:
     parser.add_argument("--max-total-tokens", type=int, default=24000)
     parser.add_argument("--max-duration-minutes", type=int, default=120)
     args = parser.parse_args()
+    required_budget_env = (
+        "WORKFORCE_CONTROL_PLANE_URL", "WORKFORCE_TASK_ID",
+        "WORKFORCE_WORKER_TOKEN", "WORKFORCE_LEASE_TOKEN",
+    )
+    missing_budget_env = [name for name in required_budget_env if not os.environ.get(name)]
+    if missing_budget_env:
+        parser.error("task execution requires durable global budget and live lease environment: " + ", ".join(missing_budget_env))
     worker = Worker(Path(args.workspace), args.role, args.permitted_path, args.max_calls, args.max_tokens, args.max_total_tokens, args.max_duration_minutes)
     result = worker.run(args.task, args.context_file)
     print(json.dumps(result, indent=2))
