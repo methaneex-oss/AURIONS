@@ -908,3 +908,17 @@ Corrections:
 **Exact final code revision:** `dfdf7b8fa85445a58fa2bd7526514bfbf58de688`. GitHub Actions [run 43429848541](https://github.com/methaneex-oss/AURIONS/actions/runs/43429848541) passed all nine workflow steps. The SQLite log explicitly confirms all three stores and seventeen ordered DDL files executed on SQLite 3.46.1, foreign-key/integrity checks passed, and memory v4-v7, event v3-v6 and governance v2-v4 smoke invariants passed.
 
 **Limit:** This is host SQLite structural verification only. It does not prove runtime saga coordination, cross-store crash recovery, concurrency, Android/Termux compatibility or provider behaviour. Saga commands remain design-only/non-dispatchable.
+
+
+## Final saga operation idempotency closure — 2026-11-13
+
+A further self-review found that the saga operation table's existing partial unique index allowed NULL idempotency keys, so a saga could be created without a durable deduplication identity. This would weaken replay protection before the first step existed.
+
+Correction:
+- Added `operations_saga_idempotency_required` to reject NULL and empty idempotency keys for all three cross-store evolution saga types at insertion.
+- Added negative host-SQLite tests for both missing and empty keys.
+- Added a negative test proving duplicate `(operation_type,idempotency_key)` saga identity is rejected by the existing unique index.
+
+**Exact code revision:** `5f533aabd171a40ae77c929fae1ba4aef8c17022`. [Workflow 43430178462](https://github.com/methaneex-oss/AURIONS/actions/runs/43430178462) passed all nine steps. The host log confirms all three stores and seventeen ordered DDL files executed on SQLite 3.46.1, with foreign-key/integrity checks and migration smoke invariants passing.
+
+**Bounded closure:** Saga-ledger schema integrity now covers required and unique operation idempotency, immutable operation identity/history, immutable and append-only step/recovery history, terminal timestamps, and valid same-operation/same-store compensation references. This is not a saga runtime implementation or crash/concurrency proof. BR-005 remains PARTIALLY CLOSED; BR-008 remains OPEN; all commands/events remain design-only/non-dispatchable.
