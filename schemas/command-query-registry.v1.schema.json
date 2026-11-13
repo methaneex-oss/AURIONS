@@ -439,7 +439,7 @@
       "additionalProperties": false,
       "properties": {
         "mapped_command_types": {
-          "const": 51
+          "const": 52
         },
         "deferred_command_types": {
           "const": 2
@@ -448,13 +448,13 @@
           "const": 29
         },
         "command_envelope_bindings": {
-          "const": 53
+          "const": 54
         },
         "query_envelope_bindings": {
           "const": 29
         },
         "proposed_ddl_mapped_commands": {
-          "const": 51
+          "const": 52
         },
         "proposed_ddl_mapped_queries": {
           "const": 29
