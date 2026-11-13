@@ -1149,3 +1149,20 @@ Correction:
 **Exact code head:** \`af83d6bdf11f4796591bdff83803ff99eb163885\`. [Workflow 43434637578](https://github.com/methaneex-oss/AURIONS/actions/runs/43434637578) passed all nine steps.
 
 **Evidence boundary:** This closes dependency traceability parity only. It does not prove package deliverables are implemented, acceptance evidence is achieved, owner gates are accepted or planning exit is approved. BR-010 remains OPEN.
+
+
+
+## BR-004 — concrete cognitive scenario expansion, batch 1 — 2026-11-13
+
+The scenario self-review found that CM-001…CM-021 and AD-001…AD-015 existed as fixture rows, but their steps still used the generic `fake:scenario.exercise_contract_sequence` placeholder with empty expected-event lists. The rows were structurally present, not concrete command/event acceptance sequences.
+
+**Batch 1 completed:**
+- CM-001 now exercises immutable experience submission, two independently versioned representations, exact source-lineage reads, stale/cross-owner negative control and restart/idempotency replay.
+- CM-002 now exercises context assembly, reasoning against an exact context revision, invalidation, stale-revision rejection, reassembly, reassessment and read-only verification.
+- CM-003 now exercises contradictory evidence submission, belief revision with supporting/contradicting lineage, revision inspection, stale expected-revision rejection and restart/idempotency replay.
+- Added exact expected event references to the event registry for the seven event types exercised by these scenarios.
+- Added validator checks that command actions exist, positive command-step expected events exactly match registry emissions, query actions exist and remain event-free, and CM-001…CM-003 no longer use the generic exercise placeholder.
+
+**Updated fixture inventory:** 39 scenarios, 182 ordered steps and 45 negative controls. Three of the 36 CM/AD template rows are now concrete; 33 CM/AD rows remain generic. CM-022…CM-029 remain absent from the fixture corpus. The event registry now has 28 event types with direct scenario references; 61 still lack direct scenario coverage and require explicit coverage or justified exemption. The three integrated scenarios plus this batch mention 29 event types; `outcome.observed.v1` remains mentioned without a matching registry scenario reference and must be reconciled separately.
+
+**Evidence boundary:** This is design-level scenario specification and registry consistency, not executed runtime acceptance. BR-004 remains OPEN; no implementation or execution authority is granted.
