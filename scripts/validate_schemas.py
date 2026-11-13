@@ -84,6 +84,23 @@ def main() -> int:
     if not command_matrix_path.is_file():
         fail("missing per-command transition and recovery contract matrix")
     command_matrix = command_matrix_path.read_text(encoding="utf-8")
+    transaction_matrix_path = ROOT / "docs/planning/STORE-LOCAL-OUTBOX-AND-CROSS-STORE-SAGA-MATRIX.md"
+    if not transaction_matrix_path.is_file():
+        fail("missing store-local outbox and cross-store saga ownership matrix")
+    transaction_matrix = transaction_matrix_path.read_text(encoding="utf-8")
+    transaction_rows = {
+        line.split("|", 2)[1].strip().strip(chr(96)): line
+        for line in transaction_matrix.splitlines()
+        if line.startswith("| ") and line.count("|") >= 5
+        and line.split("|", 2)[1].strip().startswith(chr(96))
+    }
+    expected_command_types = {item["command_type"] for item in commands}
+    if set(transaction_rows) != expected_command_types:
+        fail(
+            "transaction matrix command inventory mismatch: "
+            f"missing={sorted(expected_command_types - set(transaction_rows))}; "
+            f"unexpected={sorted(set(transaction_rows) - expected_command_types)}"
+        )
     error_registry = load(SCHEMAS / "error-registry.v1.json")
     known_error_codes = {entry["error_code"] for entry in error_registry["entries"]}
     event_registry = load(SCHEMAS / "event-registry.v1.json")
@@ -143,6 +160,14 @@ def main() -> int:
         }
         stores = item.get("persistence_stores", [])
         transaction_contract = item.get("transaction_contract", "")
+        matrix_row = transaction_rows[command_type]
+        expected_mode = (
+            "DEFERRED" if item["dispatch_status"] == "deferred_by_scope"
+            else "CROSS_STORE_SAGA" if len(stores) > 1
+            else "SINGLE_STORE_LOCAL_OUTBOX"
+        )
+        if f"| {expected_mode} |" not in matrix_row:
+            fail(f"{command_type}: transaction matrix mode differs from registry boundary")
         if len(stores) == 1 and not transaction_contract.startswith("SINGLE_STORE_LOCAL_OUTBOX:"):
             fail(f"{command_type}: single-store command lacks explicit local-outbox transaction contract")
         if len(stores) > 1:
