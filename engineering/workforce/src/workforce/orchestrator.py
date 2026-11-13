@@ -537,8 +537,6 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         raise OrchestrationError("control-plane URL, Director token and orchestrator token are required")
     workers = _worker_tokens()
     actual_base = _git(root, ["rev-parse", "HEAD"]).decode().strip()
-    if _git(root, ["status", "--porcelain", "--untracked-files=all"]).strip():
-        raise OrchestrationError("workspace must be clean before the authorized work package starts")
     if actual_base.lower() != manifest["base_commit_sha"].lower():
         raise OrchestrationError(f"workspace HEAD {actual_base} does not match authorized base SHA")
     from workforce.model_registry import role_assignment
@@ -555,17 +553,72 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         if not safe_path(root, test_path).exists():
             raise OrchestrationError(f"declared test input does not exist: {test_path}")
     report_dir.mkdir(parents=True, exist_ok=True)
+    state_path = report_dir / f"{manifest['run_id']}-orchestration-state.json"
+    manifest_sha256 = hashlib.sha256(
+        json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    builder_paths = (
+        manifest["roles"]["lead_builder"]["permitted_paths"]
+        + manifest["roles"]["specialist_builder"]["permitted_paths"]
+    )
+    existing_candidate_files = workspace_manifest(root, manifest["base_commit_sha"], builder_paths)
+    if state_path.is_symlink():
+        raise OrchestrationError("orchestration state journal must not be a symlink")
+    if state_path.is_file():
+        if state_path.stat().st_size > MAX_REPORT_BYTES:
+            raise OrchestrationError("orchestration state journal exceeds its size limit")
+        try:
+            saved_state = json.loads(state_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise OrchestrationError("orchestration state journal is unreadable or corrupt") from exc
+        if (not isinstance(saved_state, dict)
+                or saved_state.get("schema_version") != 1
+                or saved_state.get("run_id") != manifest["run_id"]
+                or saved_state.get("work_package_id") != manifest["work_package_id"]
+                or saved_state.get("base_commit_sha") != manifest["base_commit_sha"]
+                or saved_state.get("manifest_sha256") != manifest_sha256):
+            raise OrchestrationError("saved orchestration state does not match this exact authorized manifest")
+        started_at_epoch = saved_state.get("started_at_epoch")
+        if not isinstance(started_at_epoch, (int, float)) or isinstance(started_at_epoch, bool) or started_at_epoch <= 0 or started_at_epoch > time.time() + 60:
+            raise OrchestrationError("saved orchestration start time is invalid")
+        reports = saved_state.get("role_reports", {})
+        if not isinstance(reports, dict) or set(reports) - set(ROLES):
+            raise OrchestrationError("saved orchestration role report index is invalid")
+        for role, record in reports.items():
+            if not isinstance(record, dict) or record.get("task_id") != f"wf-{manifest['run_id']}-{role}":
+                raise OrchestrationError("saved orchestration report identity is invalid")
+    else:
+        if existing_candidate_files:
+            raise OrchestrationError("workspace contains candidate changes but no matching orchestration journal; refusing unsafe resume")
+        started_at_epoch = time.time()
+        reports: dict[str, dict[str, Any]] = {}
+    journal = {
+        "schema_version": 1,
+        "run_id": manifest["run_id"],
+        "work_package_id": manifest["work_package_id"],
+        "base_commit_sha": manifest["base_commit_sha"],
+        "manifest_sha256": manifest_sha256,
+        "started_at_epoch": started_at_epoch,
+        "role_reports": reports,
+        "status": "RUNNING",
+    }
+
+    def save_journal(status: str = "RUNNING") -> None:
+        journal["status"] = status
+        journal["role_reports"] = reports
+        temporary = state_path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(journal, indent=2), encoding="utf-8")
+        os.replace(temporary, state_path)
+
+    save_journal("RESUMING" if state_path.exists() else "RUNNING")
     headers = {"X-Orchestrator-Token": orchestrator, "X-Director-Approval-Token": director}
     task_ids = {role: f"wf-{manifest['run_id']}-{role}" for role in ROLES}
     created: set[str] = set()
     completed: set[str] = set()
-
-    reports: dict[str, dict[str, Any]] = {};
-    orchestration_started = time.monotonic()
     orchestration_budget_seconds = manifest["max_total_duration_minutes"] * 60
 
     def remaining_orchestration_seconds() -> float:
-        return orchestration_budget_seconds - (time.monotonic() - orchestration_started)
+        return orchestration_budget_seconds - (time.time() - started_at_epoch)
 
     def run_role(role: str, extra_context: list[str] | None = None) -> None:
         spec = manifest["roles"][role]
