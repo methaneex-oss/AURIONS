@@ -384,7 +384,7 @@ def main() -> int:
             source_expression = projection_line.split(" → ", 1)[1].split("(", 1)[0]
             source_tables = {
                 table for table, _column in re.findall(
-                    r"\\b([a-z][a-z0-9_]*)\\.([a-z][a-z0-9_]*)\\b",
+                    r"\b([a-z][a-z0-9_]*)\.([a-z][a-z0-9_]*)\b",
                     source_expression,
                 )
             }
