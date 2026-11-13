@@ -35,7 +35,7 @@ class StrictModel(BaseModel):
 
 class ReserveBody(StrictModel):
     lease_token: str = Field(min_length=32, max_length=128)
-    requested_tokens: int = Field(ge=1, le=32768)
+    requested_tokens: int = Field(ge=1, le=200000)
 
 
 class SettleBody(StrictModel):
