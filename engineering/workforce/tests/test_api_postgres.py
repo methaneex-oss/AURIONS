@@ -125,6 +125,40 @@ class ControlPlaneApiTests(unittest.TestCase):
         self.assertEqual(usage, (1, 1001, 0, 0))
         self.assertEqual(reservation_state, "OVERRUN")
 
+    def test_expired_lease_cannot_settle_old_budget_reservation(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        headers = {"X-Worker-Token": BUILDER}
+        claim = self.client.post(f"/v1/tasks/{self.task_id}/claim", headers=headers, json={})
+        self.assertEqual(claim.status_code, 200, claim.text)
+        lease = claim.json()["lease_token"]
+        reserved = self.client.post(
+            f"/v1/tasks/{self.task_id}/budget/reserve",
+            headers=headers,
+            json={"lease_token": lease, "requested_tokens": 1000},
+        )
+        self.assertEqual(reserved.status_code, 200, reserved.text)
+        with psycopg.connect(DB) as conn:
+            conn.execute(
+                "UPDATE wf_tasks SET lease_expires_at=now()-interval '1 second' WHERE task_id=%s",
+                (self.task_id,),
+            )
+        stale_settlement = self.client.post(
+            f"/v1/tasks/{self.task_id}/budget/settle",
+            headers=headers,
+            json={
+                "lease_token": lease,
+                "reservation_id": reserved.json()["reservation_id"],
+                "actual_tokens": 100,
+            },
+        )
+        self.assertEqual(stale_settlement.status_code, 409, stale_settlement.text)
+        with psycopg.connect(DB) as conn:
+            state = conn.execute(
+                "SELECT state FROM wf_budget_reservations WHERE reservation_id=%s",
+                (reserved.json()["reservation_id"],),
+            ).fetchone()[0]
+        self.assertEqual(state, "RESERVED")
+
     def test_orphaned_budget_reservation_is_charged_on_lease_recovery(self):
         self.assertEqual(self.create_task().status_code, 201)
         headers = {"X-Worker-Token": BUILDER}
