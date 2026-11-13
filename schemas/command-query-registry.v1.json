@@ -4902,12 +4902,12 @@
   ],
   "dispatch_invariant": "No entry is eligible for production dispatch until every applicable binding is completed, validated, covered by fixtures, and registered by the owning runtime. Null means unresolved, never an implicit default. Table bindings reference proposed DDL names only; they do not imply the DDL has been executed or that application-level invariants are implemented.",
   "counts": {
-    "mapped_command_types": 51,
+    "mapped_command_types": 52,
     "deferred_command_types": 2,
     "query_types": 29,
-    "command_envelope_bindings": 53,
+    "command_envelope_bindings": 54,
     "query_envelope_bindings": 29,
-    "proposed_ddl_mapped_commands": 51,
+    "proposed_ddl_mapped_commands": 52,
     "proposed_ddl_mapped_queries": 29
   }
 }
