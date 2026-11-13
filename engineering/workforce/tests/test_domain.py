@@ -12,12 +12,24 @@ class DomainTests(unittest.TestCase):
         with self.assertRaises(TransitionError):
             validate_transition(TaskState.QUEUED, TaskState.ACCEPTED, director_decision=True)
 
+    def test_retry_recovery_can_reclaim_after_backoff(self):
+        validate_transition(TaskState.RETRY_WAIT, TaskState.CLAIMED)
+
+    def test_checkpointed_lease_can_be_recovered(self):
+        validate_transition(TaskState.CHECKPOINTED, TaskState.RETRY_WAIT)
+
     def test_path_policy_blocks_traversal_and_prohibited_paths(self):
         permitted = ("engineering/workforce",)
         prohibited = ("docs/governance", "src/aurions")
         self.assertTrue(path_is_permitted("engineering/workforce/src/api.py", permitted, prohibited))
         self.assertFalse(path_is_permitted("docs/governance/policy.md", permitted, prohibited))
         self.assertFalse(path_is_permitted("engineering/workforce/../../main.py", permitted, prohibited))
+
+    def test_path_policy_blocks_windows_traversal_and_absolute_paths(self):
+        permitted = ("engineering/workforce",)
+        self.assertFalse(path_is_permitted(r"engineering\\workforce\\..\\..\\main.py", permitted, ()))
+        self.assertFalse(path_is_permitted(r"C:\\repo\\main.py", permitted, ()))
+        self.assertFalse(path_is_permitted("/etc/passwd", permitted, ()))
 
     def test_task_contract_accepts_complete_authorized_contract(self):
         value = {
