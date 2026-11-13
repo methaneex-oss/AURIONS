@@ -414,6 +414,68 @@ class ControlPlaneApiTests(unittest.TestCase):
         )
         self.assertEqual(rejected.status_code, 409)
 
+    def test_task_state_read_requires_orchestrator_and_supports_recovery(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        denied = self.client.get(f"/v1/tasks/{self.task_id}")
+        self.assertEqual(denied.status_code, 401)
+        response = self.client.get(
+            f"/v1/tasks/{self.task_id}",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR},
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["role"], "lead_builder")
+        self.assertEqual(response.json()["state"], "QUEUED")
+        self.assertNotIn("lease_token", response.json())
+
+    def test_lifecycle_transition_replay_is_idempotent_and_evidence_bound(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        headers = {"X-Worker-Token": BUILDER}
+        claimed = self.client.post(f"/v1/tasks/{self.task_id}/claim", headers=headers, json={}).json()
+        self.client.post(
+            f"/v1/tasks/{self.task_id}/start",
+            headers=headers,
+            json={"lease_token": claimed["lease_token"]},
+        )
+        published = self.client.post(
+            f"/v1/tasks/{self.task_id}/worker-transition",
+            headers=headers,
+            json={
+                "lease_token": claimed["lease_token"],
+                "target": "CANDIDATE_READY",
+                "reason": "candidate complete",
+                "evidence_sha256": "a" * 64,
+                "evidence_ref": "reports/candidate.json",
+            },
+        )
+        self.assertEqual(published.status_code, 200, published.text)
+        orchestrator_headers = {"X-Orchestrator-Token": ORCHESTRATOR}
+        payload = {
+            "target": "TESTING",
+            "reason": "candidate evidence recorded",
+            "evidence_sha256": "b" * 64,
+            "evidence_ref": "reports/candidate-manifest.json",
+        }
+        first = self.client.post(
+            f"/v1/tasks/{self.task_id}/transition",
+            headers=orchestrator_headers,
+            json=payload,
+        )
+        self.assertEqual(first.status_code, 200, first.text)
+        replay = self.client.post(
+            f"/v1/tasks/{self.task_id}/transition",
+            headers=orchestrator_headers,
+            json=payload,
+        )
+        self.assertEqual(replay.status_code, 200, replay.text)
+        self.assertTrue(replay.json()["idempotent_replay"])
+        altered = {**payload, "evidence_sha256": "c" * 64}
+        rejected = self.client.post(
+            f"/v1/tasks/{self.task_id}/transition",
+            headers=orchestrator_headers,
+            json=altered,
+        )
+        self.assertEqual(rejected.status_code, 409)
+
     def test_orchestrator_cannot_forge_worker_completion(self):
         self.assertEqual(self.create_task().status_code, 201)
         with psycopg.connect(DB) as conn:
