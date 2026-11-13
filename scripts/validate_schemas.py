@@ -1039,6 +1039,8 @@ def main() -> int:
     # table. This verifies mapping integrity, not that a runtime handler exists.
 
     matrix_path = ROOT / "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md"
+    error_matrix_text = matrix_path.read_text(encoding="utf-8")
+    handler_headings = set(re.findall(r"^### (EH-\\d{3})$", error_matrix_text, flags=re.MULTILINE))
     matrix_rows = {}
     for line_number, line in enumerate(
         matrix_path.read_text(encoding="utf-8").splitlines(), start=1
@@ -1053,6 +1055,9 @@ def main() -> int:
         fixture_match = re.search(r"EHC-(\d{3})", cells[4])
         if not handler_match or not fixture_match:
             fail(f"error-handler matrix line {line_number}: malformed handler/fixture reference")
+        handler_id = f"EH-{handler_match.group(1)}"
+        if f"### {handler_id}" not in error_matrix_text:
+            fail(f"{code}: referenced category handler heading {handler_id} is missing")
         if code in matrix_rows:
             fail(f"{code}: duplicate code-level handler mapping")
         matrix_rows[code] = {
@@ -1069,6 +1074,16 @@ def main() -> int:
         }
     if len(matrix_rows) != 35:
         fail(f"error-handler matrix expected 35 code mappings, found {len(matrix_rows)}")
+    referenced_handler_ids = {
+        row["handler_ref"].rsplit("#", 1)[1].upper().replace("EH-", "EH-")
+        for row in matrix_rows.values()
+    }
+    if referenced_handler_ids != handler_headings:
+        fail(
+            "error-handler category heading inventory mismatch: "
+            f"unreferenced={sorted(handler_headings - referenced_handler_ids)}; "
+            f"missing={sorted(referenced_handler_ids - handler_headings)}"
+        )
     registry_by_code = {item["error_code"]: item for item in error_registry["entries"]}
     if set(matrix_rows) != set(registry_by_code):
         fail(
