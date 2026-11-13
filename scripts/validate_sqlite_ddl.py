@@ -463,6 +463,56 @@ def test_governance() -> None:
         VALUES (?,?,?,?,?,?,?)""",
         (policy_id,"projection-test",1,"{}",0,1,1),
     )
+    # Approval requests must be owner/session bound; a decision must match the
+    # exact pending request, owner, digest and expiry, and may occur only once.
+    request_id = bytes([34]) * 16
+    request_fields = (
+        "request_id,operation_id,requester_id,operation_digest,operation_summary,"
+        "risk_class,data_categories_json,recipient_summary,policy_version_ref,"
+        "requested_at_ms,expires_at_ms,state"
+    )
+    request_values = (
+        request_id,bytes([35])*16,"owner-1","a"*64,"test approval","R1",
+        "[]","test recipient","policy:projection-test:1",10,20,"pending"
+    )
+    expect_integrity_error(
+        db, "approval request without owner/session",
+        f"INSERT INTO approval_requests ({request_fields}) VALUES ({','.join('?' for _ in request_values)})",
+        request_values,
+    )
+    db.execute(
+        f"INSERT INTO approval_requests ({request_fields},owner_ref,owner_session_ref) "
+        f"VALUES ({','.join('?' for _ in request_values)},?,?)",
+        (*request_values,"owner-1","session-1"),
+    )
+    expect_integrity_error(
+        db, "approval decision with mismatched digest",
+        """INSERT INTO approval_decisions
+        (decision_id,request_id,authenticated_owner_ref,decision,approved_digest,
+         decided_at_ms,authentication_context_ref)
+        VALUES (?,?,?,?,?,?,?)""",
+        (bytes([36])*16,request_id,"owner-1","approved","b"*64,15,"session-1"),
+    )
+    db.execute(
+        """INSERT INTO approval_decisions
+        (decision_id,request_id,authenticated_owner_ref,decision,approved_digest,
+         decided_at_ms,authentication_context_ref)
+        VALUES (?,?,?,?,?,?,?)""",
+        (bytes([36])*16,request_id,"owner-1","approved","a"*64,15,"session-1"),
+    )
+    request_state = db.execute(
+        "SELECT state FROM approval_requests WHERE request_id=?", (request_id,)
+    ).fetchone()[0]
+    if request_state != "approved":
+        raise AssertionError("governance: exact approval decision did not advance request state")
+    expect_integrity_error(
+        db, "second decision for one approval request",
+        """INSERT INTO approval_decisions
+        (decision_id,request_id,authenticated_owner_ref,decision,approved_digest,
+         decided_at_ms,authentication_context_ref)
+        VALUES (?,?,?,?,?,?,?)""",
+        (bytes([37])*16,request_id,"owner-1","denied","a"*64,16,"session-1"),
+    )
     expect_integrity_error(
         db, "permission without owner/status/policy version",
         """INSERT INTO permissions
