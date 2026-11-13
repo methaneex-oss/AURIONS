@@ -300,25 +300,10 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
     report_dir.mkdir(parents=True, exist_ok=True)
     headers = {"X-Orchestrator-Token": orchestrator, "X-Director-Approval-Token": director}
     task_ids = {role: f"wf-{manifest['run_id']}-{role}" for role in ROLES}
-    created: list[str] = []
+    created: set[str] = set()
     completed: set[str] = set()
-    for role in ROLES:
-        try:
-            _post(f"{control}/v1/tasks", headers=headers, payload={
-                "task_id": task_ids[role], "role": role, "contract": _task_contract(manifest, role),
-            })
-            created.append(role)
-        except Exception:
-            for pending in created:
-                try:
-                    _post(f"{control}/v1/tasks/{task_ids[pending]}/transition",
-                          headers={"X-Orchestrator-Token": orchestrator},
-                          payload={"target": "CANCELLED", "reason": "work-package task creation incomplete"})
-                except Exception:
-                    pass
-            raise
 
-    reports: dict[str, dict[str, Any]] = {}
+    reports: dict[str, dict[str, Any]] = {};
     orchestration_started = time.monotonic()
     orchestration_budget_seconds = manifest["max_total_duration_minutes"] * 60
 
@@ -327,6 +312,13 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
 
     def run_role(role: str, extra_context: list[str] | None = None) -> None:
         spec = manifest["roles"][role]
+        # Create each role task immediately before dispatch. Later roles remain
+        # absent rather than sitting in QUEUED while earlier agents work.
+        if role not in created:
+            _post(f"{control}/v1/tasks", headers=headers, payload={
+                "task_id": task_ids[role], "role": role, "contract": _task_contract(manifest, role),
+            })
+            created.add(role)
         worker_id, worker_token = workers[role]
         from workforce.model_registry import role_assignment
         profile = role_assignment(role)
@@ -541,7 +533,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             "status": "AWAITING_DIRECTOR_REVIEW",
         }
     except Exception:
-        for role in ROLES:
+        for role in created:
             if role in completed:
                 continue
             try:
