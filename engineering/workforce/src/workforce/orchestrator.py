@@ -226,13 +226,25 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
     def run_role(role: str, extra_context: list[str] | None = None) -> None:
         spec = manifest["roles"][role]
         worker_id, worker_token = workers[role]
-        env = os.environ.copy()
-        env.update({
+        from workforce.model_registry import role_assignment
+        profile = role_assignment(role)
+        # Workers receive only their own role token and the one provider credential
+        # required by their pinned model. Director/orchestrator/other-agent secrets
+        # never enter the model worker process.
+        env = {
+            "PATH": os.environ.get("PATH", ""),
+            "HOME": os.environ.get("HOME", str(root)),
+            "PYTHONPATH": str(root / "engineering/workforce/src"),
+            "PYTHONUNBUFFERED": "1",
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "CI": os.environ.get("CI", "0"),
             "WORKFORCE_CONTROL_PLANE_URL": control,
             "WORKFORCE_TASK_ID": task_ids[role],
             "WORKFORCE_WORKER_TOKEN": worker_token,
-        })
-        env.pop("WORKFORCE_LEASE_TOKEN", None)
+            profile["key_env"]: os.environ.get(profile["key_env"], ""),
+        }
+        if profile["account_env"]:
+            env[profile["account_env"]] = os.environ.get(profile["account_env"], "")
         report_path = report_dir / f"{manifest['run_id']}-{role}.json"
         command = [
             sys.executable, "-m", "workforce.agents.runner",
@@ -304,18 +316,12 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
 
         # Never point the test suite at the live control-plane database. Full
         # PostgreSQL tests run only when an explicit disposable test DB is supplied.
-        test_env = os.environ.copy()
-        test_env.pop("DATABASE_URL", None)
-        test_env.pop("DIRECTOR_APPROVAL_TOKEN", None)
-        test_env.pop("WORKFORCE_ORCHESTRATOR_TOKEN", None)
-        test_env.pop("WORKFORCE_WORKER_CREDENTIALS_JSON", None)
-        test_env.pop("WORKFORCE_CONTROL_PLANE_URL", None)
-        test_env.pop("WORKFORCE_TASK_ID", None)
-        test_env.pop("WORKFORCE_WORKER_TOKEN", None)
-        test_env.pop("WORKFORCE_LEASE_TOKEN", None)
-        test_env.pop("GROQ_API_KEY", None)
-        test_env.pop("CLOUDFLARE_API_TOKEN", None)
-        test_env.pop("CLOUDFLARE_ACCOUNT_ID", None)
+        test_env = {
+            "PATH": os.environ.get("PATH", ""),
+            "PYTHONPATH": str(root / "engineering/workforce/src"),
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "CI": "1",
+        }
         test_database = os.environ.get("WORKFORCE_TEST_DATABASE_URL", "")
         if test_database:
             required_test = (
