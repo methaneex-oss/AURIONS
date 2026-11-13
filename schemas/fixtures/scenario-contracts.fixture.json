@@ -3745,7 +3745,7 @@
     },
     {
       "scenario_id": "CM-017",
-      "title": "CM-017 — canonical scenario acceptance probe",
+      "title": "CM-017 — evolution candidates cannot self-approve or mutate protected governance",
       "purpose": "Candidate cannot self-approve or mutate protected governance; activation and rollback are separately governed and audited.",
       "source_scenario_ids": [
         "CM-017"
@@ -3759,9 +3759,9 @@
         "catalogue:LE-008"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: evolutionProposed, evolutionCandidateLifecycle, approvalDecision.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed the current active candidate/artifact, prior rollback target, protected governance artifact hashes and an isolated candidate author identity without owner approval authority.",
+        "Prepare an evolution candidate that changes an allowed behaviour mechanism and a separate malicious/invalid candidate request that targets protected governance state.",
+        "Prepare exact owner/governance approval scope for the allowed candidate only; no approval exists initially."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -3773,87 +3773,176 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize active candidate, rollback target, protected governance hashes and isolated candidate author.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed the active artifact and protected governance baseline only; no evolution proposal or approval is committed."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "Protected governance artifact hashes and current active pointer are fixed; candidate author has no owner/governance approval authority."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Candidate cannot self-approve or mutate protected governance; activation and rollback are separately governed and audited.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Propose an evolution candidate scoped to an allowed behaviour mechanism with explicit artifact and rollback references.",
+          "contract_action": "command:evolution.change.propose",
           "expected_transitions": [
-            "Candidate cannot self-approve or mutate protected governance; activation and rollback are separately governed and audited."
+            "Append an evolution proposal with candidate artifact, evaluation references, target mechanism, previous active artifact and rollback plan."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "evolution.proposed.v1"
+          ],
           "durable_assertions": [
-            "Candidate cannot self-approve or mutate protected governance; activation and rollback are separately governed and audited.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The proposal cannot modify protected governance artifacts; candidate and rollback artifacts are separately versioned and hash-identified."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Evaluate the candidate against declared acceptance, regression, security and rollback criteria.",
+          "contract_action": "command:evolution.candidate.evaluate",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append an evaluation for the exact proposal, candidate artifact and prior active baseline."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "evolution.candidate.evaluated.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "Evaluation does not activate the candidate; protected governance hashes and active pointer remain unchanged."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Attempt candidate activation using the candidate's own proposal/evaluation identity as if it were owner approval.",
+          "contract_action": "command:evolution.candidate.activate",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Reject activation because proposal/evaluation evidence is not an owner/governance approval for the exact candidate and artifact."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "No candidate.activated event or active-pointer change occurs; the candidate cannot approve itself."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Request owner/governance approval for the exact candidate ID, artifact hash, target mechanism, effects and rollback plan.",
+          "contract_action": "command:approval.request",
+          "expected_transitions": [
+            "Append an approval request with exact candidate/artifact/scope/expiry and rollback references."
+          ],
+          "expected_events": [
+            "approval.requested.v1"
+          ],
+          "durable_assertions": [
+            "Approval scope is narrow and cannot be reused for another candidate, artifact hash or protected governance target."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Record explicit owner/governance approval for the exact allowed candidate.",
+          "contract_action": "command:approval.decide",
+          "expected_transitions": [
+            "Append the approved decision with actor, scope, artifact hash, expiry and rollback readiness."
+          ],
+          "expected_events": [
+            "approval.decided.v1"
+          ],
+          "durable_assertions": [
+            "Approval is independently auditable; it does not itself activate the candidate or mutate protected governance."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Activate the evaluated candidate through the protected evolution activation saga.",
+          "contract_action": "command:evolution.candidate.activate",
+          "expected_transitions": [
+            "Advance the active artifact pointer only after exact approval-use and required cross-store activation steps reconcile."
+          ],
+          "expected_events": [
+            "candidate.activated.v1"
+          ],
+          "durable_assertions": [
+            "Activation references the exact approved artifact and previous active candidate; protected governance hashes remain unchanged and rollback remains available."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Rollback the activated candidate to the recorded prior active artifact using the governed rollback transition.",
+          "contract_action": "command:evolution.candidate.rollback",
+          "expected_transitions": [
+            "Append the rollback transition and restore the exact prior active artifact pointer."
+          ],
+          "expected_events": [
+            "candidate.rolled_back.v1"
+          ],
+          "durable_assertions": [
+            "Rollback is versioned/audited; the activated artifact remains historical and protected governance hashes are unchanged."
+          ]
+        },
+        {
+          "step_id": "S09",
+          "trigger": "Read the candidate proposal, evaluation, approval, activation and rollback audit history.",
+          "contract_action": "query:audit.lookup",
+          "expected_transitions": [
+            "Return the exact governance/evolution event chain without mutation."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The audit trail distinguishes proposal, evaluation, approval, activation and rollback; no read operation changes candidate or governance state."
+          ]
+        },
+        {
+          "step_id": "S10",
+          "trigger": "Attempt to propose a candidate that targets or mutates a protected governance artifact.",
+          "contract_action": "command:evolution.change.propose",
+          "expected_transitions": [
+            "Reject the protected target or quarantine it for explicit owner/governance review; do not mutate the protected artifact."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Protected governance artifact hashes remain identical; no protected policy, approval rule or project boundary is changed by candidate code."
+          ]
+        },
+        {
+          "step_id": "S11",
+          "trigger": "Restart and replay proposal, approval, activation and rollback receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover the prior active pointer after rollback and preserve the complete candidate/audit history."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Restart preserves rollback result, protected governance hashes and exact approval-use history; replay cannot reactivate the candidate or alter governance."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-017-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Attempt activation without owner approval or with approval for a different artifact, then attempt to include a protected governance file/policy in the candidate's mutation set.",
+          "expected_disposition": "Reject activation and protected-scope mutation; require exact owner/governance approval for an allowed target and preserve protected governance state.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Protected governance artifact hashes and project boundaries",
+            "Current active candidate pointer until approved activation",
+            "Approval-use, rollback and audit history"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay candidate proposal/evaluation and approval receipts; no duplicate activation or rollback occurs.",
+        "After restart, the prior active artifact is restored after rollback and protected governance hashes remain unchanged."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race approval revocation/expiry with candidate activation; activation must evaluate the current approval state at commit time.",
+        "Race two candidate activations against the same previous active pointer; only one successor may commit and rollback lineage remains valid."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Crash after approval-use but before active-pointer commit; retain pending/uncertain saga state and reconcile before reporting activation.",
+        "Crash after rollback pointer update but before event publication; recover the outbox/audit transition without duplicate rollback."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Use a candidate artifact hash that differs from the approved hash; activation must reject it.",
+        "Use a candidate targeting an unrelated protected policy; it must remain outside the allowed evolution scope."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
