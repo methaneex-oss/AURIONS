@@ -301,11 +301,18 @@ class OrchestratorTests(unittest.TestCase):
                                 root,
                                 root / "engineering/workforce/.workforce-artifacts",
                             )
+                            resumed = run_work_package(
+                                manifest,
+                                root,
+                                root / "engineering/workforce/.workforce-artifacts",
+                            )
 
             created = [call for call in api_calls if call[0].endswith("/v1/tasks")]
             transitions = [call for call in api_calls if call[0].endswith("/transition")]
             self.assertEqual(len(created), 6)
-            self.assertEqual(len(transitions), 4)
+            self.assertEqual(len(transitions), 8)
+            self.assertEqual(len(agent_runs), 6, "resume must not invoke any already-completed agent again")
+            self.assertEqual(resumed["status"], "AWAITING_DIRECTOR_REVIEW")
             created_scopes = {call[2]["role"]: call[2]["contract"]["permitted_paths"] for call in created}
             self.assertEqual(created_scopes["lead_builder"], ["engineering/workforce/src/workforce"])
             self.assertEqual(created_scopes["specialist_builder"], ["engineering/workforce/tests"])
