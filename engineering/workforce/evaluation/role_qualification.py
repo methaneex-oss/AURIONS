@@ -65,8 +65,12 @@ def main() -> int:
         timeout=90,
     )
     if response.status_code != 200:
-        # No automatic retry: failed free requests may still consume daily quota.
-        raise SystemExit(f"provider request failed: HTTP {response.status_code}; no retry attempted")
+        # Surface bounded provider diagnostics; never retry automatically.
+        detail = response.text[:1200].replace(key, "[REDACTED]")
+        raise SystemExit(
+            f"provider request failed: HTTP {response.status_code}; "
+            f"provider detail: {detail}; no retry attempted"
+        )
     data = response.json()
     message = data["choices"][0]["message"]
     content = message.get("content")
