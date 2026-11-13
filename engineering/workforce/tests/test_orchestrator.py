@@ -94,6 +94,12 @@ class OrchestratorTests(unittest.TestCase):
         with self.assertRaisesRegex(OrchestrationError, "full Git SHA"):
             validate_manifest(value)
 
+    def test_integration_verifier_is_read_only(self):
+        value = valid_manifest()
+        value["roles"]["integration_verifier"]["permitted_paths"] = ["engineering/workforce"]
+        with self.assertRaisesRegex(OrchestrationError, "integration_verifier is read-only"):
+            validate_manifest(value)
+
     def test_manifest_rejects_unfilled_placeholders(self):
         value = valid_manifest()
         value["authorization_ref"] = "REPLACE_WITH_DIRECTOR_APPROVAL"
