@@ -10,10 +10,10 @@
 The open-world architecture now has a machine-readable design contract surface for its foundational objective/world/means/interaction domains. The earlier gap where these concepts existed only as payload definitions and event names has been closed at the **specification and registry-binding level**.
 
 Current branch inventory:
-- 53 command entries: 51 mapped to typed request/response, owning aggregate/store, semantic transition, owner/actor authorization, idempotency, deadline/cancellation, side-effect/reconciliation, error and event bindings; two multi-device commands remain deferred.
+- 54 command entries: 52 mapped to typed request/response, owning aggregate/store, semantic transition, owner/actor authorization, idempotency, deadline/cancellation, side-effect/reconciliation, error and event bindings; two multi-device commands remain deferred.
 - 29 read-only query entries: typed input/response/result schemas, owner scope, classification/redaction, consistency, ordering/cursor, freshness/cache and acceptance assertions.
 - 89 event entries: each has a payload-schema and fixture reference; all remain design-only/non-dispatchable.
-- 51 mapped commands have unique CC-001…CC-051 positive/negative acceptance assertions.
+- 52 mapped commands have unique CC-001…CC-052 positive/negative acceptance assertions.
 - 29 queries have unique QCC-001…QCC-029 positive/negative assertions and explicit read-only invariants.
 - 89 reusable domain-payload schema definitions, 81 named positive domain fixtures and 29 negative controls are present in the current source corpus. Event, command and query schema/fixture reference checks are enforced in CI.
 
@@ -81,8 +81,8 @@ These are not builder choices:
 ## 6. Evidence and remaining BR-008 work
 
 Machine-enforced CI currently checks:
-- 53 unique command types, 29 unique query types and 89 event types.
-- All 51 mapped command entries have semantic fields, known error/event bindings and unique CC-001…CC-051 acceptance IDs; the two device commands are deferred.
+- 54 unique command types, 29 unique query types and 89 event types.
+- All 52 mapped command entries have semantic fields, known error/event bindings and unique CC-001…CC-052 acceptance IDs; the two device commands are deferred.
 - All 29 queries have owner scope, classification/redaction, consistency, ordering/cursor, limits/freshness and unique QCC-001…QCC-029 assertions; all remain read-only.
 - Every event payload-schema and fixture reference resolves and each referenced fixture validates against its declared payload schema.
 - Command and query request/response/result fixture references are validated against their declared schemas. The event producer/consumer matrix is checked bidirectionally against command producer bindings, payload schema definition names, intended consumer/owner-transition summaries and scenario coverage references.
