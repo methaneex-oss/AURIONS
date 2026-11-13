@@ -52,8 +52,13 @@ def recover_once(conn) -> dict[str, int]:
             UPDATE wf_tasks
                SET state='FAILED', lease_worker=NULL, lease_token_hash=NULL,
                    lease_expires_at=NULL, retry_after=NULL, updated_at=now()
-             WHERE state IN ('QUEUED','RETRY_WAIT','CLAIMED','RUNNING','CHECKPOINTED','CANDIDATE_READY','TESTING','REVIEWING','INTEGRATION','AWAITING_DIRECTOR','BLOCKED')
-               AND wf_task_deadline(started_at, contract_json) <= now()
+             WHERE (
+                   state IN ('QUEUED','RETRY_WAIT','CLAIMED','RUNNING','CHECKPOINTED')
+                   AND wf_task_deadline(started_at, contract_json) <= now()
+               ) OR (
+                   state IN ('CANDIDATE_READY','TESTING','REVIEWING','INTEGRATION','AWAITING_DIRECTOR','BLOCKED')
+                   AND wf_task_absolute_deadline(contract_json) <= now()
+               )
             RETURNING task_id
         """)
         overdue = cur.fetchall()
