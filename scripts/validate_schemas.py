@@ -745,7 +745,7 @@ def main() -> int:
     scenarios = scenario_contracts["scenarios"]
     expected_scenario_ids = {
         *(f"INT-{index:03d}" for index in range(1, 4)),
-        *(f"CM-{index:03d}" for index in range(1, 22)),
+        *(f"CM-{index:03d}" for index in range(1, 30)),
         *(f"AD-{index:03d}" for index in range(1, 16)),
     }
     scenario_ids = {item["scenario_id"] for item in scenarios}
@@ -1031,7 +1031,7 @@ def main() -> int:
     scenario_document = load(FIXTURES / "scenario-contracts.fixture.json")
     scenarios = scenario_document["scenarios"]
     if len(scenarios) != 47:
-        fail(f"scenario contract fixture expected 39 scenarios, found {len(scenarios)}")
+        fail(f"scenario contract fixture expected 47 scenarios, found {len(scenarios)}")
     known_commands = {item["command_type"] for item in commands}
     known_queries = {item["query_type"] for item in queries}
     known_scenario_ids = {
