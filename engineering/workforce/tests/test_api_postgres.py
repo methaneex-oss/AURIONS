@@ -391,6 +391,34 @@ class ControlPlaneApiTests(unittest.TestCase):
         self.assertEqual(manifest.status_code, 200, manifest.text)
         self.assertEqual(manifest.json()[0]["stage"], "CANDIDATE")
 
+    def test_absolute_contract_deadline_stops_queued_task(self):
+        task_contract = contract()
+        task_contract["work_package_id"] = self.task_id
+        task_contract["deadline"] = "2000-01-01T00:00:00Z"
+        created = self.client.post(
+            "/v1/tasks",
+            headers={
+                "X-Orchestrator-Token": ORCHESTRATOR,
+                "X-Director-Approval-Token": DIRECTOR,
+            },
+            json={"task_id": self.task_id, "role": "lead_builder", "contract": task_contract},
+        )
+        self.assertEqual(created.status_code, 201, created.text)
+        denied = self.client.post(
+            f"/v1/tasks/{self.task_id}/claim",
+            headers={"X-Worker-Token": BUILDER},
+            json={},
+        )
+        self.assertEqual(denied.status_code, 409)
+        recovered = self.client.post(
+            "/v1/maintenance/recover",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR},
+        )
+        self.assertEqual(recovered.status_code, 200, recovered.text)
+        with psycopg.connect(DB) as conn:
+            state = conn.execute("SELECT state FROM wf_tasks WHERE task_id=%s", (self.task_id,)).fetchone()[0]
+        self.assertEqual(state, "FAILED")
+
     def test_deadline_stops_review_stage_tasks(self):
         self.assertEqual(self.create_task().status_code, 201)
         with psycopg.connect(DB) as conn:
