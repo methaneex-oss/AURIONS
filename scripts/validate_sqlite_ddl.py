@@ -436,6 +436,13 @@ def test_events() -> None:
         VALUES (?,?,?,?,?,?)""",
         (operation_id,"evolution.candidate.activate","proposed","saga-idem-1",10,10),
     )
+    expect_integrity_error(
+        db, "duplicate saga operation idempotency key",
+        """INSERT INTO operations
+        (operation_id,operation_type,state,idempotency_key,created_at_ms,updated_at_ms)
+        VALUES (?,?,?,?,?,?)""",
+        (bytes([37])*16,"evolution.candidate.activate","proposed","saga-idem-1",10,10),
+    )
     step_columns = (
         "operation_step_id,operation_id,step_number,action_id,state,updated_at_ms,"
         "step_key,target_store,idempotency_key,request_digest,expected_revision,started_at_ms"
