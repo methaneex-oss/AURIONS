@@ -78,9 +78,14 @@ class TaskContract:
         missing = [key for key in required if key not in value or value[key] in (None, "", [])]
         if missing:
             raise ContractError(f"missing mandatory task contract fields: {', '.join(missing)}")
+        for key in ("work_package_id", "authorization_ref", "objective"):
+            if not isinstance(value[key], str) or not value[key].strip():
+                raise ContractError(f"{key} must be a non-empty string")
         if value["authorization_ref"].strip().lower() in {"none", "tbd", "unset"}:
             raise ContractError("an explicit authorization reference is required")
         sha = value["base_commit_sha"]
+        if not isinstance(sha, str):
+            raise ContractError("base_commit_sha must be a string")
         if len(sha) != 40 or any(c not in "0123456789abcdefABCDEF" for c in sha):
             raise ContractError("base_commit_sha must be a full 40-character Git commit SHA")
         budget_ceilings = {"max_model_calls": 100, "max_tokens": 200000, "max_duration_minutes": 360}
