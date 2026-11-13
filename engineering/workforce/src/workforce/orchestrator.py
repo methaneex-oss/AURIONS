@@ -68,6 +68,8 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
             raise OrchestrationError(f"{role}.permitted_paths must be a list of non-empty strings")
         if role in BUILDERS and not paths:
             raise OrchestrationError(f"{role} must have an explicit write allowlist")
+        if any(not path_is_permitted(path, (path,), ()) for path in paths):
+            raise OrchestrationError(f"{role} contains an unsafe or non-relative write path")
         if role in REVIEWERS and paths:
             raise OrchestrationError(f"{role} is read-only and must not receive write paths")
         if not isinstance(contexts, list) or not all(isinstance(x, str) and x.strip() for x in contexts):
@@ -111,6 +113,7 @@ def _worker_tokens() -> dict[str, tuple[str, str]]:
     if not isinstance(registry, dict):
         raise OrchestrationError("worker credential registry must be a JSON object")
     result: dict[str, tuple[str, str]] = {}
+    seen_tokens: set[str] = set()
     for worker_id, item in registry.items():
         if not isinstance(item, dict):
             raise OrchestrationError("worker credential entries must be objects")
@@ -119,6 +122,9 @@ def _worker_tokens() -> dict[str, tuple[str, str]]:
             raise OrchestrationError("worker credentials must have a strong token and a known role")
         if role in result:
             raise OrchestrationError(f"more than one worker credential is configured for {role}")
+        if token in seen_tokens:
+            raise OrchestrationError("worker credentials must use distinct tokens")
+        seen_tokens.add(token)
         result[role] = (worker_id, token)
     if set(result) != set(ROLES):
         raise OrchestrationError("exactly one worker credential is required for each of the six roles")
@@ -187,6 +193,8 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         raise OrchestrationError("control-plane URL, Director token and orchestrator token are required")
     workers = _worker_tokens()
     actual_base = _git(root, ["rev-parse", "HEAD"]).decode().strip()
+    if _git(root, ["status", "--porcelain", "--untracked-files=all"]).strip():
+        raise OrchestrationError("workspace must be clean before the authorized work package starts")
     if actual_base.lower() != manifest["base_commit_sha"].lower():
         raise OrchestrationError(f"workspace HEAD {actual_base} does not match authorized base SHA")
     report_dir.mkdir(parents=True, exist_ok=True)
@@ -294,6 +302,13 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         test_env.pop("DIRECTOR_APPROVAL_TOKEN", None)
         test_env.pop("WORKFORCE_ORCHESTRATOR_TOKEN", None)
         test_env.pop("WORKFORCE_WORKER_CREDENTIALS_JSON", None)
+        test_env.pop("WORKFORCE_CONTROL_PLANE_URL", None)
+        test_env.pop("WORKFORCE_TASK_ID", None)
+        test_env.pop("WORKFORCE_WORKER_TOKEN", None)
+        test_env.pop("WORKFORCE_LEASE_TOKEN", None)
+        test_env.pop("GROQ_API_KEY", None)
+        test_env.pop("CLOUDFLARE_API_TOKEN", None)
+        test_env.pop("CLOUDFLARE_ACCOUNT_ID", None)
         test_database = os.environ.get("WORKFORCE_TEST_DATABASE_URL", "")
         if test_database:
             required_test = (
@@ -343,6 +358,8 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
 
         review_records = [reports[r] for r in REVIEWERS]
         review_bundle = json.dumps(review_records, sort_keys=True, separators=(",", ":")).encode()
+        review_path = report_dir / f"{manifest['run_id']}-review-bundle.json"
+        review_path.write_bytes(review_bundle)
         review_sha = hashlib.sha256(review_bundle).hexdigest()
         integrated = {
             "run_id": manifest["run_id"],
@@ -363,7 +380,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         transitions = [
             ("TESTING", "candidate evidence recorded", candidate_sha, candidate_path.relative_to(root).as_posix()),
             ("REVIEWING", "test evidence recorded", test_sha, test_report.relative_to(root).as_posix()),
-            ("INTEGRATION", "independent review evidence bundled", review_sha, f"sha256:{review_sha}"),
+            ("INTEGRATION", "independent review evidence bundled", review_sha, review_path.relative_to(root).as_posix()),
             ("AWAITING_DIRECTOR", "integrated evidence packet prepared", integrated_sha, integrated_path.relative_to(root).as_posix()),
         ]
         for target, reason, digest, ref in transitions:
@@ -403,6 +420,13 @@ def main() -> None:
     manifest_path = Path(args.manifest).resolve()
     if not manifest_path.is_file():
         parser.error("manifest file does not exist")
+    if root == manifest_path or root in manifest_path.parents:
+        try:
+            manifest_rel = manifest_path.relative_to(root).as_posix()
+        except ValueError:
+            manifest_rel = ""
+        if not manifest_rel.startswith(".workforce-artifacts/"):
+            parser.error("keep the work-package manifest outside the repository or under .workforce-artifacts/")
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         result = run_work_package(manifest, root, root / args.report_dir)
