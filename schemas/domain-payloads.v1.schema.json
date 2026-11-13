@@ -1169,7 +1169,9 @@
         "state",
         "priority",
         "constraints",
-        "created_at"
+        "created_at",
+        "objective_id",
+        "objective_version"
       ],
       "properties": {
         "goal_id": {
@@ -1212,6 +1214,14 @@
         },
         "created_at": {
           "$ref": "#/$defs/timestamp"
+        },
+        "objective_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "objective_version": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
