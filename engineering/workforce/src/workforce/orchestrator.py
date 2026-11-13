@@ -21,7 +21,7 @@ from typing import Any
 
 import httpx
 
-from workforce.agents.runner import ROLE_INSTRUCTIONS
+from workforce.agents.runner import ROLE_INSTRUCTIONS, is_sensitive_path, safe_path
 from workforce.domain import path_is_permitted
 
 ROLES = tuple(ROLE_INSTRUCTIONS)
@@ -67,6 +67,35 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(max_total, int) or isinstance(max_total, bool) or not 1 <= max_total <= 330:
         raise OrchestrationError("max_total_duration_minutes must be between 1 and 330 to preserve workflow cleanup time")
     value["max_total_duration_minutes"] = max_total
+    test_paths = value.get("test_paths", ["engineering/workforce/src", "engineering/workforce/tests"])
+    if not isinstance(test_paths, list) or not test_paths or not all(
+        isinstance(path, str) and path_is_permitted(path, (path,), ()) for path in test_paths
+    ):
+        raise OrchestrationError("test_paths must be a non-empty list of safe repository-relative paths")
+    value["test_paths"] = test_paths
+    test_commands = value.get("test_commands", [])
+    if not isinstance(test_commands, list):
+        raise OrchestrationError("test_commands must be a list of argument arrays")
+    allowed_commands = {"python", "python3", "pytest", "cmake", "ctest", "ninja", "cargo", "go", "dotnet"}
+    for command in test_commands:
+        if not isinstance(command, list) or not command or not all(isinstance(arg, str) and arg for arg in command):
+            raise OrchestrationError("each test command must be a non-empty argument array")
+        executable = Path(command[0]).name
+        if executable not in allowed_commands:
+            raise OrchestrationError(f"test executable is not allowed: {executable}")
+        if executable in {"python", "python3"} and (len(command) < 3 or command[1] != "-m" or command[2] not in {"unittest", "pytest", "compileall"}):
+            raise OrchestrationError("Python test commands must use unittest, pytest or compileall modules")
+        if executable == "cmake" and (len(command) < 2 or command[1] not in {"-S", "--build"}):
+            raise OrchestrationError("CMake commands must configure with -S or build with --build")
+        if executable == "ctest" and (len(command) < 2 or command[1] != "--test-dir"):
+            raise OrchestrationError("CTest commands must specify --test-dir")
+        if executable == "ninja" and (len(command) < 2 or command[1] != "-C"):
+            raise OrchestrationError("Ninja commands must specify -C")
+        if executable in {"cargo", "go", "dotnet"} and (len(command) < 2 or command[1] != "test"):
+            raise OrchestrationError(f"{executable} commands must use the test subcommand")
+        if any(re.search(r"(?:password|passwd|secret|token|api[_-]?key)", arg, re.IGNORECASE) for arg in command[1:]):
+            raise OrchestrationError("test commands must not embed credentials or secret-like arguments")
+    value["test_commands"] = test_commands
     default_durations = {
         "lead_builder": 120, "specialist_builder": 60,
         "architecture_reviewer": 30, "code_reviewer": 30,
@@ -209,6 +238,43 @@ def workspace_manifest(root: Path, base_sha: str, permitted_builder_paths: list[
         else:
             records.append({"path": rel, "status": "deleted", "bytes": 0, "sha256": None})
     return records
+
+
+def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) -> None:
+    selected = list(dict.fromkeys(["engineering/workforce/src", "engineering/workforce/tests", *test_paths]))
+    excluded_dirs = {".git", ".venv", "node_modules", "__pycache__", ".pytest_cache", ".workforce-artifacts", ".aws", ".ssh", ".gnupg"}
+    for relative in selected:
+        original = root / relative
+        if original.is_symlink():
+            raise OrchestrationError(f"test input must not be a symlink: {relative}")
+        source = safe_path(root, relative)
+        if not source.exists():
+            raise OrchestrationError(f"declared test input does not exist: {relative}")
+        if source.is_file():
+            if is_sensitive_path(source):
+                raise OrchestrationError(f"test input is classified as sensitive: {relative}")
+            target = destination / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+            continue
+        for current, directories, files in os.walk(source, topdown=True, followlinks=False):
+            current_path = Path(current)
+            directories[:] = [
+                name for name in directories
+                if name not in excluded_dirs
+                and not (current_path / name).is_symlink()
+                and not is_sensitive_path(current_path / name)
+            ]
+            relative_dir = current_path.relative_to(root)
+            target_dir = destination / relative_dir
+            target_dir.mkdir(parents=True, exist_ok=True)
+            for name in files:
+                source_file = current_path / name
+                if source_file.is_symlink() or is_sensitive_path(source_file):
+                    continue
+                target_file = target_dir / name
+                target_file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source_file, target_file)
 
 
 def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path) -> dict[str, Any]:
@@ -394,12 +460,9 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         # workspace. Test code cannot mutate the candidate or access its credentials.
         with tempfile.TemporaryDirectory(prefix="workforce-package-tests-") as test_dir:
             test_root = Path(test_dir)
-            for relative in ("engineering/workforce/src", "engineering/workforce/tests"):
-                source = root / relative
-                destination = test_root / relative
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copytree(source, destination)
+            _copy_test_snapshot(root, test_root, manifest["test_paths"])
             test_env["PYTHONPATH"] = str(test_root / "engineering/workforce/src")
+            test_commands.extend(manifest["test_commands"])
             for command in test_commands:
                 test_remaining = remaining_orchestration_seconds()
                 if test_remaining < 10:
