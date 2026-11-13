@@ -757,3 +757,8 @@ The event validator now requires unique consumer components and verifies that ev
 ## BR-010 work-package dependency crosswalk — 13 November 2026
 
 Corrected the missing WP-06 prerequisite in the WP-07 traceability row and extended the planning validator to require exact equality between each roadmap dependency set and its traceability-matrix prerequisite set. Independent comparison: 17 packages, zero mismatches. Exact code head \`af83d6bdf11f4796591bdff83803ff99eb163885\` passed all nine steps in [run 43434637578](https://github.com/methaneex-oss/AURIONS). This is traceability integrity only; BR-010 remains open pending package deliverables, acceptance evidence and independent validation.
+
+
+## BR-004 scenario expansion and event binding reconciliation — 13 November 2026
+
+The integrated scenario corpus advanced from 172 to 182 ordered steps. Reconciled INT-003/S06 with both events emitted by \`operation.reconcile\` (\`operation.reconciling.v1\` and \`operation.reconciled.v1\`) and recomputed event \`acceptance_scenario_refs\` from the expanded scenario steps. Exact verified code head \`c5dbbb631e24302993e1f3c1c45bb54341f995ed\` passed all nine workflow steps in [run 43435237021](https://github.com/methaneex-oss/AURIONS). Current corpus remains specified, not executed; BR-004 remains OPEN.
