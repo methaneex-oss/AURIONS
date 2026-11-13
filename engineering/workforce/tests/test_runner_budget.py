@@ -110,12 +110,14 @@ class RunnerBudgetTests(unittest.TestCase):
         with patch.dict("os.environ", env, clear=True):
             worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
         def deny_reservation(url, **kwargs):
-            return httpx.Response(429, json={"detail": "budget exhausted"}, request=httpx.Request("POST", url))
+            status = 200 if url.endswith("/heartbeat") else 429
+            body = {"task_id": "task-001"} if status == 200 else {"detail": "budget exhausted"}
+            return httpx.Response(status, json=body, request=httpx.Request("POST", url))
         with patch("workforce.agents.runner.httpx.post", side_effect=deny_reservation) as provider:
             with self.assertRaisesRegex(RuntimeError, "budget refused request"):
                 worker.run("small task", [])
         self.assertEqual(worker.calls, 0)
-        self.assertEqual(provider.call_count, 1)
+        self.assertEqual(provider.call_count, 2)
 
     def test_provider_reported_usage_over_budget_fails_closed(self):
         worker = self.make_worker(12000)
