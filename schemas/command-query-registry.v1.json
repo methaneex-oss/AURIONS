@@ -2880,7 +2880,8 @@
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [],
-      "aggregate_binding_status": "deferred_by_scope"
+      "aggregate_binding_status": "deferred_by_scope",
+      "transaction_contract": "DEFERRED_BY_SCOPE: no active persistence or transaction boundary is defined."
     },
     {
       "command_type": "device.revoke",
@@ -2906,7 +2907,8 @@
       ],
       "envelope_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope",
       "table_bindings": [],
-      "aggregate_binding_status": "deferred_by_scope"
+      "aggregate_binding_status": "deferred_by_scope",
+      "transaction_contract": "DEFERRED_BY_SCOPE: no active persistence or transaction boundary is defined."
     },
     {
       "command_type": "objective.create",
