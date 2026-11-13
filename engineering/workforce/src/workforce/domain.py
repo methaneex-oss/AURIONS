@@ -74,7 +74,7 @@ class TaskContract:
             raise ContractError("task contract must be an object")
         required = (
             "work_package_id", "authorization_ref", "objective", "base_commit_sha",
-            "permitted_paths", "prohibited_paths", "canonical_sources",
+            "prohibited_paths", "canonical_sources",
             "acceptance_criteria", "test_plan", "review_plan",
             "max_model_calls", "max_tokens", "max_duration_minutes", "stop_conditions",
         )
@@ -111,11 +111,13 @@ class TaskContract:
         for key, ceiling in budget_ceilings.items():
             if not isinstance(value[key], int) or isinstance(value[key], bool) or value[key] <= 0 or value[key] > ceiling:
                 raise ContractError(f"{key} must be a positive integer no greater than {ceiling}")
-        for key in ("permitted_paths", "prohibited_paths", "canonical_sources", "acceptance_criteria", "test_plan", "review_plan", "stop_conditions"):
-            if not isinstance(value[key], list) or not all(isinstance(item, str) and item.strip() for item in value[key]):
+        if "permitted_paths" not in value or not isinstance(value["permitted_paths"], list) or not all(
+            isinstance(item, str) and item.strip() for item in value["permitted_paths"]
+        ):
+            raise ContractError("permitted_paths must be a list of non-empty strings (empty only for read-only roles)")
+        for key in ("prohibited_paths", "canonical_sources", "acceptance_criteria", "test_plan", "review_plan", "stop_conditions"):
+            if not isinstance(value[key], list) or not value[key] or not all(isinstance(item, str) and item.strip() for item in value[key]):
                 raise ContractError(f"{key} must be a non-empty-string list")
-        if not value["permitted_paths"]:
-            raise ContractError("at least one permitted path is required")
         return cls(**{k: tuple(v) if isinstance(v, list) else v for k, v in value.items() if k in cls.__dataclass_fields__})
 
 
