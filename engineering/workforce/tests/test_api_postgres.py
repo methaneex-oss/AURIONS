@@ -251,6 +251,12 @@ class ControlPlaneApiTests(unittest.TestCase):
                 (self.task_id,),
             ).fetchone()
         self.assertEqual(evidence, ("CANDIDATE", "a" * 64, "artifact://candidate-bundle"))
+        manifest = self.client.get(
+            f"/v1/tasks/{self.task_id}/evidence",
+            headers={"X-Orchestrator-Token": ORCHESTRATOR},
+        )
+        self.assertEqual(manifest.status_code, 200, manifest.text)
+        self.assertEqual(manifest.json()[0]["stage"], "CANDIDATE")
 
     def test_deadline_stops_review_stage_tasks(self):
         self.assertEqual(self.create_task().status_code, 201)
