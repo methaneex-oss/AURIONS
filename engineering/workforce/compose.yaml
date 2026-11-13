@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: workforce
+      POSTGRES_USER: workforce
+      POSTGRES_PASSWORD: ${WORKFORCE_DB_PASSWORD:?Set WORKFORCE_DB_PASSWORD in the deployment secret store}
+    volumes:
+      - workforce_pgdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workforce -d workforce"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://workforce:${WORKFORCE_DB_PASSWORD}@db:5432/workforce
+      DIRECTOR_APPROVAL_TOKEN: ${DIRECTOR_APPROVAL_TOKEN:?Set DIRECTOR_APPROVAL_TOKEN in the deployment secret store}
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    restart: unless-stopped
+volumes:
+  workforce_pgdata:
