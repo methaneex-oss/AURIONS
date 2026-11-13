@@ -462,6 +462,11 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             test_root = Path(test_dir)
             _copy_test_snapshot(root, test_root, manifest["test_paths"])
             test_env["PYTHONPATH"] = str(test_root / "engineering/workforce/src")
+            test_env["HOME"] = str(test_root)
+            test_env["TMPDIR"] = str(test_root)
+            test_env["CARGO_HOME"] = str(test_root / ".cargo")
+            test_env["GOCACHE"] = str(test_root / ".go-cache")
+            test_env["CMAKE_BUILD_PARALLEL_LEVEL"] = "2"
             test_commands.extend(manifest["test_commands"])
             for command in test_commands:
                 test_remaining = remaining_orchestration_seconds()
