@@ -1,12 +1,13 @@
 name: AURIONS workforce — first supervised long run
 
 on:
-  push:
-    branches:
-      - feat/engineering-workforce-foundation
-    paths:
-      - "engineering/workforce/**"
-      - ".github/workflows/workforce-first-long-run.yml"
+  workflow_dispatch:
+    inputs:
+      confirm_run:
+        description: "Explicitly confirm a Director-approved workforce run"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
