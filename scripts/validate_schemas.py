@@ -88,6 +88,37 @@ def main() -> int:
     known_error_codes = {entry["error_code"] for entry in error_registry["entries"]}
     event_registry = load(SCHEMAS / "event-registry.v1.json")
     known_event_types = set(event_registry["events"])
+    # Every authoritative write store must own its transactional outbox.
+    # The central event archive is populated asynchronously by relays; it cannot
+    # make a separate domain-store commit atomic.
+    store_ddl_files = {
+        "aurion_memory.db": [
+            "aurion_memory.base.sql", "aurion_memory.migration_v2.sql",
+            "aurion_memory.migration_v3.sql", "aurion_memory.migration_v4.sql",
+            "aurion_memory.migration_v5.sql",
+        ],
+        "aurion_events.db": [
+            "aurion_events.base.sql", "aurion_events.migration_v2.sql",
+            "aurion_events.migration_v3.sql",
+        ],
+        "aurion_governance.db": [
+            "aurion_governance.base.sql", "aurion_governance.migration_v2.sql",
+        ],
+    }
+    store_tables = {}
+    for store, filenames in store_ddl_files.items():
+        ddl_text = "\n".join(
+            (ROOT / "schemas/persistence" / filename).read_text(encoding="utf-8")
+            for filename in filenames
+        )
+        store_tables[store] = set(re.findall(
+            r"CREATE TABLE(?: IF NOT EXISTS)?\s+([A-Za-z_][A-Za-z0-9_]*)",
+            ddl_text,
+            flags=re.IGNORECASE,
+        ))
+        if "outbox" not in store_tables[store]:
+            fail(f"{store}: missing store-local transactional outbox table")
+
     command_acceptance_ids = set()
     mapped_command_types = set()
     for item in commands:
@@ -106,6 +137,17 @@ def main() -> int:
                 fail(f"{command_type}: deferred command must not have active contract bindings")
             continue
         mapped_command_types.add(command_type)
+        bindings_by_store = {
+            binding["store"]: set(binding["tables"])
+            for binding in item.get("table_bindings", [])
+        }
+        for store in item.get("persistence_stores", []):
+            if store not in store_tables:
+                fail(f"{command_type}: unknown persistence store {store}")
+            if "outbox" not in store_tables[store]:
+                fail(f"{command_type}: {store} has no local outbox DDL")
+            if "outbox" not in bindings_by_store.get(store, set()):
+                fail(f"{command_type}: {store} binding omits its local outbox")
         for field in (
             "expected_revision_contract",
             "authorization_contract",
