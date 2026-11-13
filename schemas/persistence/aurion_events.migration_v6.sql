@@ -97,6 +97,17 @@ BEGIN
   SELECT RAISE(ABORT,'recovery_journal.saga_history_immutable');
 END;
 
+
+CREATE TRIGGER operations_saga_idempotency_required
+BEFORE INSERT ON operations
+WHEN NEW.operation_type IN ('evolution.candidate.evaluate',
+                            'evolution.candidate.activate',
+                            'evolution.candidate.rollback')
+  AND (NEW.idempotency_key IS NULL OR length(NEW.idempotency_key)=0)
+BEGIN
+  SELECT RAISE(ABORT,'operations.saga_idempotency_required');
+END;
+
 -- Saga identity and deduplication keys are durable; they cannot be rewritten
 -- or erased even before the first step has been appended.
 CREATE TRIGGER operations_saga_identity_immutable
