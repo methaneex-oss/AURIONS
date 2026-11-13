@@ -1266,3 +1266,22 @@ BR-004 remains OPEN. Event coverage gaps and remaining generic/missing scenario 
 - Updated architecture and planning inventory references to 255 steps.
 
 The prior CI failure was an exact inventory mismatch (validator expected 248; fixture contained 255). The event-reference mismatches were separately identified and corrected. Awaiting CI verification. Runtime acceptance remains unproven.
+
+
+## BR-004 / BR-008 — open-world scenario closure and exact-head CI verification — 2026-11-13
+
+**Builder batch completed:**
+- Added individual concrete scenario specifications CM-022…CM-029 covering objective immutability under replanning; provisional entity/relationship revision; human-mediated means; no-evidenced-route behaviour; context-scoped affordance invalidation; independent interaction authorization; provider receipt versus independently observed outcome; and multi-context identity/state/authority separation.
+- Each new scenario includes a concrete positive command transition with all command-emitted event bindings, durable assertions, one negative control, restart/replay, concurrency, fault and held-out controls.
+- Reconciled the scenario fixture, schema validator, event-registry acceptance references, cognitive/capability matrix, owner-decision traceability matrix, initial engineering specification, planning completion register and semantic reconciliation report.
+- Corrected the non-command event trigger count: 37 events without command producers comprise 15 Action Gateway internal transitions and 22 other trusted-ingress/internal producer triggers. No public command was invented.
+- Final machine-checked inventory: **47 scenarios, 287 ordered steps, 53 negative controls**. All 89 event acceptance-reference sets match the fixture. All new CM-022…CM-029 command/event bindings match the command registry.
+
+**CI correction history:** The first run on the expanded fixture failed because the new scenario contract references used a non-canonical `command:` prefix in `contract_refs`. The failure was inspected from the job log and corrected by using the registry's canonical command names. No validator failure was suppressed.
+
+**Exact verified HEAD:** `a38494b4610a0fa9870908950a1a7336dcb4c2b2`  
+**GitHub Actions:** [run 43440727107](https://github.com/methaneex-oss/AURIONS/actions/runs/43440727107) — PASS. All job steps passed: schema/positive-negative fixture validation, mandatory governance validation, work-package traceability/dependency graph, SQLite DDL/migration smoke tests and Android probe shell syntax.
+
+**Evidence boundary:** CI verifies planning schemas, fixture/registry consistency, governance document integrity, structural work-package graph constraints, host SQLite DDL/migration smoke checks and Android probe syntax. It does not execute AURIONS runtime handlers, cognitive behaviour, cross-store saga recovery, target Android/Termux behaviour, C++/Python conformance or independent security tests. The 47 scenarios remain specified, not executed.
+
+**Disposition:** The CM-022…CM-029 specification-coverage gap is closed at the builder/CI level. BR-004 remains OPEN for runtime execution and behavioural evidence after implementation authorization. BR-008 remains OPEN for independent semantic review of event consumers/owner transitions, cross-store saga and transaction semantics, target/toolchain validation and exact-final-revision independent review. The broader builder pre-review remains NOT READY until the remaining builder-owned audit is completed. Owner-reserved topology, first permitted Android action, product acceptance and planning-exit decisions remain unresolved/pending; no implementation authorization or merge is implied.
