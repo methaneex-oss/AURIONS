@@ -317,8 +317,9 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "experiences",
+            "environment_observations",
             "evidence_items",
+            "experiences",
             "outbox"
           ]
         },
@@ -3462,8 +3463,7 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "experiences",
-            "evidence_items"
+            "environment_observations"
           ]
         }
       ],
@@ -3472,7 +3472,12 @@
       "acceptance_positive_assertion": "Returns only owner-scoped observations with source identity, observation time and explicit permission/provenance status.",
       "acceptance_negative_assertion": "Cross-owner filters, revoked permission or untrusted source yield no protected row or count; query performs no live observation.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
+      "projection_unresolved_fields": [],
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "observed_at",
+        "recorded_at",
+        "sensitivity",
         "observation_id",
         "owner_id",
         "device_id",
@@ -3484,12 +3489,6 @@
         "observed_facts",
         "limitations",
         "validity"
-      ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
-      "projection_resolved_fields": [
-        "observed_at",
-        "recorded_at",
-        "sensitivity"
       ]
     },
     {
@@ -3536,9 +3535,7 @@
       "acceptance_positive_assertion": "Ranks only owner-visible descriptors and reports exact descriptor/provider version and verification freshness.",
       "acceptance_negative_assertion": "Unverified, expired, invalidated or other-device descriptor is not represented as currently verified or authorized.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "descriptor_schema_version"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "capability_id",
@@ -3552,7 +3549,8 @@
         "last_verified_at",
         "expires_at",
         "status",
-        "descriptor_body"
+        "descriptor_body",
+        "descriptor_schema_version"
       ]
     },
     {
@@ -3599,9 +3597,7 @@
       "acceptance_positive_assertion": "Returns one exact descriptor revision with verification evidence and expiry.",
       "acceptance_negative_assertion": "Stale/missing descriptor does not fall back to a different revision or trigger a live probe.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "descriptor_schema_version"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "capability_id",
@@ -3615,7 +3611,8 @@
         "last_verified_at",
         "expires_at",
         "status",
-        "descriptor_body"
+        "descriptor_body",
+        "descriptor_schema_version"
       ]
     },
     {
@@ -3723,10 +3720,7 @@
       "acceptance_positive_assertion": "Returns exact representation revision with source experience/revision lineage.",
       "acceptance_negative_assertion": "Missing/expired source lineage is reported; query does not silently synthesize or repair representation.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "method_version",
-        "source_refs"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "representation_id",
@@ -3735,7 +3729,9 @@
         "method_id",
         "content",
         "uncertainty",
-        "created_at"
+        "created_at",
+        "method_version",
+        "source_refs"
       ]
     },
     {
@@ -3782,10 +3778,7 @@
       "acceptance_positive_assertion": "Returns immutable context snapshot with exact dependency revisions and unknown/missing inputs.",
       "acceptance_negative_assertion": "Stale or cross-owner context cannot be returned as current/complete; no implicit reassembly.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "provenance_refs",
-        "uncertainty"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "context_id",
@@ -3794,7 +3787,9 @@
         "valid_from",
         "valid_until",
         "attributes",
-        "created_at"
+        "created_at",
+        "provenance_refs",
+        "uncertainty"
       ]
     },
     {
@@ -3842,16 +3837,15 @@
       "acceptance_positive_assertion": "Returns ranked owner-scoped memories with provenance, uncertainty and retention filtering.",
       "acceptance_negative_assertion": "Deleted/tombstoned or cross-owner memory is excluded; retrieval scores do not become beliefs or mutate memory.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "candidate_refs"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "retrieval_id",
         "query_ref",
         "scope",
         "created_at",
-        "access_decision_ref"
+        "access_decision_ref",
+        "candidate_refs"
       ]
     },
     {
@@ -4019,11 +4013,7 @@
       "acceptance_positive_assertion": "Returns prediction separately from evaluation and observed outcome, with horizon and source revisions.",
       "acceptance_negative_assertion": "Prediction is never presented as outcome or causal evidence; missing evaluation remains unknown.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "conditions",
-        "confidence",
-        "evidence_refs"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "prediction_id",
@@ -4031,7 +4021,10 @@
         "expected_outcome",
         "evaluation_criteria",
         "horizon",
-        "created_at"
+        "created_at",
+        "conditions",
+        "confidence",
+        "evidence_refs"
       ]
     },
     {
@@ -4317,10 +4310,7 @@
       "acceptance_positive_assertion": "Returns plan, steps and dependencies with current validity and exact referenced revisions.",
       "acceptance_negative_assertion": "Stale means/policy/permission/objective dependency is disclosed; query does not repair, replan or authorize.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "context_version_ref",
-        "capability_epoch_digest"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "plan_id",
@@ -4329,7 +4319,9 @@
         "plan_version",
         "status",
         "created_at",
-        "step_refs"
+        "step_refs",
+        "context_version_ref",
+        "capability_epoch_digest"
       ]
     },
     {
@@ -4435,9 +4427,7 @@
       "acceptance_positive_assertion": "Returns authoritative task revision/checkpoint and distinguishes pending pause/cancel from terminal state.",
       "acceptance_negative_assertion": "Task state is not inferred from an operation/provider receipt; stale current state is not cached.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "failure_ref"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "task_run_id",
@@ -4448,7 +4438,8 @@
         "checkpoint_refs",
         "created_at",
         "updated_at",
-        "revision"
+        "revision",
+        "failure_ref"
       ]
     },
     {
@@ -4500,9 +4491,7 @@
       "acceptance_positive_assertion": "Returns operation attempts, provider receipts and reconciliation evidence as separate facts.",
       "acceptance_negative_assertion": "Provider receipt is not observed outcome; uncertain dispatch remains uncertain and query never redispatches.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "policy_decision_ref"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "operation_id",
@@ -4514,7 +4503,8 @@
         "error_ref",
         "uncertainty_reason",
         "attempt_state",
-        "attempt_number"
+        "attempt_number",
+        "policy_decision_ref"
       ]
     },
     {
@@ -4565,11 +4555,7 @@
       "acceptance_positive_assertion": "Returns effective owner policy, actor/device grants and OS permission as distinct current facts.",
       "acceptance_negative_assertion": "Stale/revoked grant is not reported effective; no permission or approval is created by query.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "owner_id",
-        "status",
-        "approval_ref"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "permission_id",
@@ -4579,7 +4565,10 @@
         "granted_by",
         "created_at",
         "expires_at",
-        "revoked_at"
+        "revoked_at",
+        "owner_id",
+        "status",
+        "approval_ref"
       ]
     },
     {
@@ -4627,11 +4616,7 @@
       "acceptance_positive_assertion": "Returns only purpose-authorized audit fields in a stable governance-store snapshot.",
       "acceptance_negative_assertion": "Cross-owner records, secrets, keys and approval nonces remain undisclosed; unauthorized audit purpose is denied.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "owner_id",
-        "evidence_refs",
-        "correlation_id"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "audit_id",
@@ -4642,7 +4627,10 @@
         "policy_version_ref",
         "operation_id",
         "approval_ref",
-        "occurred_at"
+        "occurred_at",
+        "owner_id",
+        "evidence_refs",
+        "correlation_id"
       ]
     },
     {
@@ -4689,9 +4677,7 @@
       "acceptance_positive_assertion": "Returns last evidenced descriptor state for one authenticated paired device with probe time/expiry.",
       "acceptance_negative_assertion": "No live probe, pairing, permission prompt or authorization inference occurs during read.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
-      "projection_unresolved_fields": [
-        "descriptor_schema_version"
-      ],
+      "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
       "projection_resolved_fields": [
         "capability_id",
@@ -4705,7 +4691,8 @@
         "last_verified_at",
         "expires_at",
         "status",
-        "descriptor_body"
+        "descriptor_body",
+        "descriptor_schema_version"
       ]
     },
     {
