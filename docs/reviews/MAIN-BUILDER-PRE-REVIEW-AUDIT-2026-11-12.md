@@ -1166,3 +1166,19 @@ The scenario self-review found that CM-001…CM-021 and AD-001…AD-015 existed 
 **Updated fixture inventory:** 39 scenarios, 182 ordered steps and 45 negative controls. Three of the 36 CM/AD template rows are now concrete; 33 CM/AD rows remain generic. CM-022…CM-029 remain absent from the fixture corpus. The event registry now has 28 event types with direct scenario references; 61 still lack direct scenario coverage and require explicit coverage or justified exemption. The three integrated scenarios plus this batch mention 29 event types; `outcome.observed.v1` remains mentioned without a matching registry scenario reference and must be reconciled separately.
 
 **Evidence boundary:** This is design-level scenario specification and registry consistency, not executed runtime acceptance. BR-004 remains OPEN; no implementation or execution authority is granted.
+
+
+## BR-004 integrated scenario expansion — event binding reconciliation (2026-11-13)
+
+The integrated scenario corpus was expanded in parallel from 172 to 182 ordered steps, adding concrete command/event assertions to CM-001…CM-003 and INT-003. The first CI run against that expansion found two semantic crosswalk gaps:
+- INT-003/S06 invoked \`operation.reconcile\` but listed only \`operation.reconciled.v1\`; the command registry also emits \`operation.reconciling.v1\`.
+- Event \`acceptance_scenario_refs\` still reflected the pre-expansion scenario set, leaving stale CM references and omitting the new INT-003 reconciliation-start coverage.
+
+Corrections:
+- Added \`operation.reconciling.v1\` to INT-003/S06 expected events.
+- Recomputed event acceptance-scenario references from every scenario step and reconciled all affected registry entries.
+- The current scenario validator expects 182 ordered steps and 45 negative controls; it passed the expanded corpus.
+
+**Exact verified code head:** \`c5dbbb631e24302993e1f3c1c45bb54341f995ed\`. [Workflow 43435237021](https://github.com/methaneex-oss/AURIONS/actions/runs/43435237021) passed all nine steps.
+
+**Evidence boundary:** Scenario/registry event-binding integrity only. The 182 steps remain specified, not executed. BR-004 remains OPEN pending runtime cognitive-cycle, persistence, restart/replay, concurrency, fault and held-out learning evidence.
