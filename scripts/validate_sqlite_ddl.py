@@ -358,9 +358,16 @@ def test_events() -> None:
         "aurion_events.migration_v2.sql",
         "aurion_events.migration_v3.sql",
         "aurion_events.migration_v4.sql",
+        "aurion_events.migration_v5.sql",
     ])
     require_columns(db, "task_runs", {"revision", "owner_id", "failure_ref"})
     require_columns(db, "operation_details", {"policy_decision_ref"})
+    require_columns(db, "operation_steps", {
+        "step_key", "target_store", "idempotency_key", "request_digest",
+        "expected_revision", "result_digest", "started_at_ms", "completed_at_ms",
+        "compensation_for_step_number",
+    })
+    require_columns(db, "recovery_journal", {"operation_step_id"})
     required = (
         "task_run_id", "task_definition_ref", "state", "priority",
         "budget_json", "created_at_ms", "updated_at_ms",
@@ -406,6 +413,90 @@ def test_events() -> None:
     sequence = db.execute("SELECT event_sequence FROM events").fetchone()[0]
     if sequence != 1:
         raise AssertionError(f"events: expected first store-assigned sequence 1, got {sequence}")
+
+    # Cross-store evolution sagas require ordered, immutable, idempotent steps.
+    operation_id = bytes([40]) * 16
+    db.execute(
+        """INSERT INTO operations
+        (operation_id,operation_type,state,idempotency_key,created_at_ms,updated_at_ms)
+        VALUES (?,?,?,?,?,?)""",
+        (operation_id,"evolution.candidate.activate","proposed","saga-idem-1",10,10),
+    )
+    step_columns = (
+        "operation_step_id,operation_id,step_number,action_id,state,updated_at_ms,"
+        "step_key,target_store,idempotency_key,request_digest,expected_revision,started_at_ms"
+    )
+    step_values = (
+        bytes([41])*16,operation_id,0,bytes([42])*16,"pending",11,
+        "governance.authorize","aurion_governance.db",
+        "saga-idem-1:governance.authorize","a"*64,3,11
+    )
+    step_placeholders = ",".join("?" for _ in step_values)
+    expect_integrity_error(
+        db, "saga step without stable identity/idempotency",
+        """INSERT INTO operation_steps
+        (operation_step_id,operation_id,step_number,action_id,state,updated_at_ms)
+        VALUES (?,?,?,?,?,?)""",
+        (bytes([43])*16,operation_id,1,bytes([44])*16,"pending",11),
+    )
+    db.execute(
+        f"INSERT INTO operation_steps ({step_columns}) VALUES ({step_placeholders})",
+        step_values,
+    )
+    expect_integrity_error(
+        db, "duplicate saga step key",
+        """INSERT INTO operation_steps
+        (operation_step_id,operation_id,step_number,action_id,state,updated_at_ms,
+         step_key,target_store,idempotency_key,request_digest)
+        VALUES (?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([45])*16,operation_id,1,bytes([46])*16,"pending",12,
+         "governance.authorize","aurion_governance.db",
+         "saga-idem-1:governance.authorize:retry","b"*64),
+    )
+    expect_integrity_error(
+        db, "duplicate target-store saga idempotency key",
+        """INSERT INTO operation_steps
+        (operation_step_id,operation_id,step_number,action_id,state,updated_at_ms,
+         step_key,target_store,idempotency_key,request_digest)
+        VALUES (?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([47])*16,operation_id,1,bytes([48])*16,"pending",12,
+         "memory.activate","aurion_memory.db",
+         "saga-idem-1:governance.authorize","b"*64),
+    )
+    expect_integrity_error(
+        db, "saga step identity mutation",
+        "UPDATE operation_steps SET step_key='rewritten' WHERE operation_step_id=?",
+        (bytes([41])*16,),
+    )
+    expect_integrity_error(
+        db, "saga terminal state without completion timestamp",
+        "UPDATE operation_steps SET state='succeeded' WHERE operation_step_id=?",
+        (bytes([41])*16,),
+    )
+    db.execute(
+        """UPDATE operation_steps
+        SET state='succeeded',completed_at_ms=12,result_ref='approval:receipt',
+            result_digest=?
+        WHERE operation_step_id=?""",
+        ("c"*64,bytes([41])*16),
+    )
+    expect_integrity_error(
+        db, "saga recovery journal without step binding",
+        """INSERT INTO recovery_journal
+        (journal_id,operation_id,phase,local_store,intended_transition,state,
+         created_at_ms,updated_at_ms)
+        VALUES (?,?,?,?,?,?,?,?)""",
+        (bytes([49])*16,operation_id,"governance","aurion_governance.db",
+         "approval_committed","applied",12,12),
+    )
+    db.execute(
+        """INSERT INTO recovery_journal
+        (journal_id,operation_id,phase,local_store,intended_transition,state,
+         created_at_ms,updated_at_ms,operation_step_id)
+        VALUES (?,?,?,?,?,?,?,?,?)""",
+        (bytes([49])*16,operation_id,"governance","aurion_governance.db",
+         "approval_committed","applied",12,12,bytes([41])*16),
+    )
     db.commit()
     check_database("events smoke insert", db)
     db.close()
@@ -577,9 +668,9 @@ def main() -> int:
     test_events()
     test_governance()
     print(
-        f"PASS: all three SQLite stores and fifteen ordered DDL files executed; "
+        f"PASS: all three SQLite stores and sixteen ordered DDL files executed; "
         f"SQLite {sqlite3.sqlite_version}; FK/integrity checks passed; "
-        "memory v4/v5/v6/v7, event v3/v4 and governance v2/v3/v4 outbox/objective/approval/query-projection smoke invariants passed."
+        "memory v4/v5/v6/v7, event v3/v4/v5 and governance v2/v3/v4 outbox/objective/approval/query-projection smoke invariants passed."
     )
     print(
         "LIMIT: host smoke validation only; Android/Termux baseline, crash/restore, "
