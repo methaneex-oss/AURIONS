@@ -747,3 +747,8 @@ Extended validation across all 35 error entries: fixture category, side-effect d
 ### BR-003 error fixture identity parity
 
 Added exact EHC-001…EHC-035 uniqueness/coverage and per-code matrix checks proving that each EHC row points to the fixture for the same error code and category handler. Exact code head \`d7adcb416193dcb1d37ce8cdc9fec71b848974e7\` passed all nine workflow steps in [run 43434073974](https://github.com/methaneex-oss/AURIONS). This is mapping integrity only; handlers and EHR assertions remain unexecuted.
+
+
+## BR-008 event consumer-summary integrity
+
+The event validator now requires unique consumer components and verifies that every structured consumer component appears in the event's consumer/transition summary. Independent scan: all 89 events satisfy the condition. Exact code head \`7732d8b1823c9ac69fa96d481a20bb1c935b3c1d\` passed all nine steps in [run 43434350081](https://github.com/methaneex-oss/AURIONS). This is contract consistency only; runtime consumer delivery and state transitions remain unverified.
