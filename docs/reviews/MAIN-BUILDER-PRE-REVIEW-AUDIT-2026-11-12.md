@@ -844,3 +844,32 @@ Thirteen queries have no fields missing by the direct/JSON/timestamp name scan, 
 **Remaining limits:** No goal/query runtime handler, legacy-goal reconciliation procedure, outbox relay, consumer, saga runner, target Android/Termux test or crash/power-loss test exists. This closes only the DDL/schema/contract linkage defects and host smoke assertions. BR-005 remains PARTIALLY CLOSED; BR-008 and BR-002 remain OPEN.
 
 **Disposition:** Overall builder work remains IN PROGRESS and NOT READY for independent review/planning exit. No implementation authorization, protected activation authority, merge or handoff was made.
+
+
+## Builder run — command inventory and approval producer reconciliation (2026-11-13)
+
+**Fresh governance gate:** The current Project Directorship and Team Operating Standard (blob `951b9009cbedcf8907b365d611d89559d5a17385`) and Builder Operating Protocol (blob `179b02aaef051173b96f54812f451ede1a2eae0d`) were freshly re-fetched and read before this builder run. EBT-01 and the mandatory per-run read gate were confirmed.
+
+**Starting revision:** PR #2 head `bc90d20f9684691f25fefec38da8adfbb7bf6262`; PR was open, draft and unmerged with 106 changed files.
+
+**Root causes found:**
+1. The command registry contained 54 unique command records (52 mapped, two deferred), but its declared counts and JSON Schema constants still described 53 total / 51 mapped / 53 envelope bindings / 51 DDL-mapped commands. The validator separately hardcoded 53, so the registry's own inventory metadata and the validator disagreed with the actual source.
+2. `approval.decide` was mapped and assigned `CC-052`, but it had no command-transition matrix row and no store-local transaction-matrix row. The inventory guard therefore had a latent failure behind the earlier count failure.
+3. `approval.decide` emitted `approval.decided.v1`, but that event still declared no command producer and remained in the non-command ingress matrix. The bidirectional command/event parity guard correctly rejected this mismatch.
+
+**Corrections implemented:**
+- Reconciled registry counts to 52 mapped commands, two deferred commands, 54 command-envelope bindings and 52 proposed-DDL-mapped commands; updated matching JSON Schema constants.
+- Replaced the validator's duplicated hardcoded total with checks against declared mapped/deferred counts, unique command IDs, envelope-binding count and DDL-mapped count.
+- Added the missing `approval.decide` state-transition row and `CC-052` positive/negative acceptance assertions; retained its design-only/non-dispatchable status.
+- Added `approval.decide` to the governance-store local-outbox transaction matrix.
+- Bound `approval.decided.v1` to `approval.decide`, changed its producer origin to the command transition, reconciled the event producer/consumer matrix, removed it from the non-command ingress matrix and updated the exact non-command inventory guard from 23 to 22. The event remains design-only/non-dispatchable.
+
+**Failure and correction evidence:**
+- [Run 43383924746](https://github.com/methaneex-oss/AURIONS/actions/runs/43383924746) failed because the validator expected 53 commands while the registry contained 54. Root cause: stale inventory constants.
+- [Run 43384323527](https://github.com/methaneex-oss/AURIONS/actions/runs/43384323527) reached the next guard and failed because `approval.decide` was absent from the transaction matrix. Root cause: incomplete command crosswalk.
+- [Run 43384455772](https://github.com/methaneex-oss/AURIONS/actions/runs/43384455772) failed because `approval.decided.v1` did not declare its actual command producer. Root cause: stale event-origin classification and ingress-matrix membership.
+- Corrected exact code-bearing revision `0efdd4bbec4a031a1067d533151a732a0290449d` passed all nine workflow steps in [run 43384669652](https://github.com/methaneex-oss/AURIONS/actions/runs/43384669652): schema/fixture and producer parity, governance integrity, work-package graph, all eleven ordered SQLite DDL files and migration smoke assertions, and Android probe shell syntax.
+
+**Evidence boundary:** This closes the command-count/approval-command/event-producer consistency defect at registry, schema, validator and matrix level. It does not implement the `approval.decide` handler, prove owner authentication at runtime, or make the command/event dispatchable. The 52 mapped commands and 89 events remain design-only/non-dispatchable pending authorized runtime implementation and execution evidence. No implementation authorization, owner-reserved decision, reviewer/tester handoff or merge is implied.
+
+**Current disposition:** BR-001 and BR-008 remain OPEN overall. Overall builder disposition remains NOT READY for independent review or planning-exit approval.
