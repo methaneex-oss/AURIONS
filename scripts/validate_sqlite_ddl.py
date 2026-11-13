@@ -7,6 +7,8 @@ or application-level transaction/outbox behaviour.
 """
 from __future__ import annotations
 
+import json
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -47,6 +49,69 @@ def require_columns(connection: sqlite3.Connection, table: str, expected: set[st
     missing = expected - actual
     if missing:
         raise AssertionError(f"{table}: missing columns {sorted(missing)}")
+
+def validate_query_projection_source_columns(
+    store_name: str, connection: sqlite3.Connection
+) -> None:
+    """Check documented table.column projection sources against owning-store DDL."""
+    registry_path = ROOT / "schemas" / "command-query-registry.v1.json"
+    projection_path = ROOT / "docs" / "planning" / "QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    projection = projection_path.read_text(encoding="utf-8")
+    actual_tables = {
+        row[0] for row in connection.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        )
+    }
+
+    for query in registry["queries"]:
+        query_type = query["query_type"]
+        table_owners: dict[str, set[str]] = {}
+        for binding in query.get("table_bindings", []):
+            for table in binding.get("tables", []):
+                table_owners.setdefault(table, set()).add(binding["store"])
+
+        heading = "### `" + query_type + "`"
+        section_start = projection.find(heading)
+        if section_start < 0:
+            raise AssertionError(f"{query_type}: missing field-level projection section")
+        next_section = projection.find("\n### ", section_start + 1)
+        section = projection[section_start:] if next_section < 0 else projection[section_start:next_section]
+        for line in section.splitlines():
+            field_match = re.match(r"^- `([^`]+)` → (.+)$", line)
+            if not field_match:
+                continue
+            field_name, source = field_match.groups()
+            if source.startswith("**UNMAPPED"):
+                continue
+            source_match = re.search(
+                r"\b([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\b",
+                source,
+            )
+            if not source_match:
+                continue
+            table, column = source_match.groups()
+            owners = table_owners.get(table, set())
+            if not owners:
+                raise AssertionError(
+                    f"{query_type}.{field_name}: source {table}.{column} "
+                    "is absent from declared query table bindings"
+                )
+            if store_name not in owners:
+                continue
+            if table not in actual_tables:
+                raise AssertionError(
+                    f"{query_type}.{field_name}: source table {table} "
+                    f"is absent from {store_name} DDL"
+                )
+            actual_columns = {
+                row[1] for row in connection.execute(f'PRAGMA table_info("{table}")')
+            }
+            if column not in actual_columns:
+                raise AssertionError(
+                    f"{query_type}.{field_name}: source column {table}.{column} "
+                    f"is absent from {store_name} DDL"
+                )
 
 
 def expect_integrity_error(
@@ -348,6 +413,7 @@ def test_memory() -> None:
         (bytes([18])*16,"subject:test","{}","{}",10,2,"open","{}",0.6,'["evidence:test"]'),
     )
 
+    validate_query_projection_source_columns("aurion_memory.db", db)
     check_database("memory smoke insert", db)
     db.close()
 
@@ -611,6 +677,7 @@ def test_events() -> None:
          "memory.evaluate","aurion_memory.db","saga-idem-1:memory.evaluate","2"*64,13,14),
     )
     db.commit()
+    validate_query_projection_source_columns("aurion_events.db", db)
     check_database("events smoke insert", db)
     db.close()
 
@@ -768,6 +835,7 @@ def test_governance() -> None:
          "owner-1",'["evidence:disclosure"]',"00000000-0000-4000-8000-000000000002"),
     )
     db.commit()
+    validate_query_projection_source_columns("aurion_governance.db", db)
     check_database("governance projection smoke", db)
     db.close()
 
