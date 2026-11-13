@@ -1023,8 +1023,17 @@ def main() -> int:
             fail(f"{item['error_code']}: seed status changed without runtime handler gate")
         if item["error_code"] not in case_by_code:
             fail(f"{item['error_code']}: no matching error fixture")
-        if case_by_code[item["error_code"]]["handler_contract_ref"] != item["handler_mapping_ref"]:
+        case = case_by_code[item["error_code"]]
+        if case["handler_contract_ref"] != item["handler_mapping_ref"]:
             fail(f"{item['error_code']}: handler mapping and fixture disagree")
+        if case["payload"]["category"] != item["category"]:
+            fail(f"{item['error_code']}: fixture category differs from error registry")
+        if case["expected_side_effect_default"] != item["default_side_effect_state"]:
+            fail(f"{item['error_code']}: fixture side-effect default differs from error registry")
+        if case["payload"]["side_effect_state"] != case["expected_side_effect_default"]:
+            fail(f"{item['error_code']}: fixture payload side-effect state differs from its declared default")
+        if case["expected_retry_posture"] != item["default_retry_posture"]:
+            fail(f"{item['error_code']}: fixture retry posture differs from error registry")
 
     # Reconcile the machine registry against the normative per-code mapping
     # table. This verifies mapping integrity, not that a runtime handler exists.
