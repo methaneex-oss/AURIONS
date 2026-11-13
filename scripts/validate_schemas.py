@@ -141,7 +141,23 @@ def main() -> int:
             binding["store"]: set(binding["tables"])
             for binding in item.get("table_bindings", [])
         }
-        for store in item.get("persistence_stores", []):
+        stores = item.get("persistence_stores", [])
+        transaction_contract = item.get("transaction_contract", "")
+        if len(stores) == 1 and not transaction_contract.startswith("SINGLE_STORE_LOCAL_OUTBOX:"):
+            fail(f"{command_type}: single-store command lacks explicit local-outbox transaction contract")
+        if len(stores) > 1:
+            if not transaction_contract.startswith("CROSS_STORE_SAGA:"):
+                fail(f"{command_type}: multi-store command lacks explicit saga transaction contract")
+            coordinator = next(
+                (binding for binding in item.get("table_bindings", [])
+                 if binding["store"] == "aurion_events.db"),
+                None,
+            )
+            if "aurion_events.db" not in stores or coordinator is None:
+                fail(f"{command_type}: cross-store saga must bind the event/recovery coordinator")
+            if not {"operations", "recovery_journal", "outbox"}.issubset(set(coordinator["tables"])):
+                fail(f"{command_type}: saga coordinator must bind operations, recovery_journal and outbox")
+        for store in stores:
             if store not in store_tables:
                 fail(f"{command_type}: unknown persistence store {store}")
             if "outbox" not in store_tables[store]:
@@ -154,6 +170,7 @@ def main() -> int:
             "idempotency_contract",
             "deadline_cancellation_contract",
             "side_effect_contract",
+            "transaction_contract",
         ):
             if not isinstance(item.get(field), str) or not item[field].strip():
                 fail(f"{command_type}: missing populated {field}")
