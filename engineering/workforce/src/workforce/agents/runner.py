@@ -152,11 +152,14 @@ class Worker:
         return context, records
 
     def remaining_seconds(self) -> float:
-        if self.deadline_monotonic is None:
+        deadline = getattr(self, "deadline_monotonic", None)
+        if deadline is None:
             return 120.0
-        return max(0.0, self.deadline_monotonic - time.monotonic())
+        return max(0.0, deadline - time.monotonic())
 
     def invoke_tool(self, name: str, args: dict[str, Any]) -> str:
+        if getattr(self, "deadline_monotonic", None) is not None and self.remaining_seconds() <= 0:
+            raise TimeoutError("task duration budget exhausted before tool execution")
         if name == "list_files":
             directory = safe_path(self.workspace, args["directory"])
             if not directory.exists() or not directory.is_dir():
