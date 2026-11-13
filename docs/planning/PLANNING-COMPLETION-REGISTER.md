@@ -752,3 +752,8 @@ Added exact EHC-001…EHC-035 uniqueness/coverage and per-code matrix checks pro
 ## BR-008 event consumer-summary integrity
 
 The event validator now requires unique consumer components and verifies that every structured consumer component appears in the event's consumer/transition summary. Independent scan: all 89 events satisfy the condition. Exact code head \`7732d8b1823c9ac69fa96d481a20bb1c935b3c1d\` passed all nine steps in [run 43434350081](https://github.com/methaneex-oss/AURIONS). This is contract consistency only; runtime consumer delivery and state transitions remain unverified.
+
+
+## BR-010 work-package dependency crosswalk — 13 November 2026
+
+Corrected the missing WP-06 prerequisite in the WP-07 traceability row and extended the planning validator to require exact equality between each roadmap dependency set and its traceability-matrix prerequisite set. Independent comparison: 17 packages, zero mismatches. Exact code head \`af83d6bdf11f4796591bdff83803ff99eb163885\` passed all nine steps in [run 43434637578](https://github.com/methaneex-oss/AURIONS). This is traceability integrity only; BR-010 remains open pending package deliverables, acceptance evidence and independent validation.
