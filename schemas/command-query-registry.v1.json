@@ -3485,7 +3485,12 @@
         "limitations",
         "validity"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "observed_at",
+        "recorded_at",
+        "sensitivity"
+      ]
     },
     {
       "query_type": "capability.search",
@@ -3534,7 +3539,21 @@
       "projection_unresolved_fields": [
         "descriptor_schema_version"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "capability_id",
+        "descriptor_version",
+        "provider_id",
+        "device_scope",
+        "discovery_epoch",
+        "descriptor_sha256",
+        "source_ref",
+        "first_discovered_at",
+        "last_verified_at",
+        "expires_at",
+        "status",
+        "descriptor_body"
+      ]
     },
     {
       "query_type": "capability.inspect",
@@ -3583,7 +3602,21 @@
       "projection_unresolved_fields": [
         "descriptor_schema_version"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "capability_id",
+        "descriptor_version",
+        "provider_id",
+        "device_scope",
+        "discovery_epoch",
+        "descriptor_sha256",
+        "source_ref",
+        "first_discovered_at",
+        "last_verified_at",
+        "expires_at",
+        "status",
+        "descriptor_body"
+      ]
     },
     {
       "query_type": "capability.knowledge.inspect",
@@ -3632,7 +3665,19 @@
       "acceptance_negative_assertion": "Knowledge claims cannot be elevated to universal capability or permission; missing evidence remains visible.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "knowledge_revision_id",
+        "capability_id",
+        "descriptor_version",
+        "revision_number",
+        "context_scope",
+        "claims",
+        "confidence",
+        "status",
+        "evidence_refs",
+        "created_at"
+      ]
     },
     {
       "query_type": "representation.inspect",
@@ -3682,7 +3727,16 @@
         "method_version",
         "source_refs"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "representation_id",
+        "experience_id",
+        "representation_type",
+        "method_id",
+        "content",
+        "uncertainty",
+        "created_at"
+      ]
     },
     {
       "query_type": "context.get",
@@ -3732,7 +3786,16 @@
         "provenance_refs",
         "uncertainty"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "context_id",
+        "version",
+        "scope",
+        "valid_from",
+        "valid_until",
+        "attributes",
+        "created_at"
+      ]
     },
     {
       "query_type": "memory.search",
@@ -3782,7 +3845,14 @@
       "projection_unresolved_fields": [
         "candidate_refs"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "retrieval_id",
+        "query_ref",
+        "scope",
+        "created_at",
+        "access_decision_ref"
+      ]
     },
     {
       "query_type": "knowledge.search",
@@ -3833,7 +3903,15 @@
       "acceptance_negative_assertion": "Inference is not presented as observed fact; contradictory or withdrawn knowledge is not silently promoted.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "knowledge_id",
+        "proposition",
+        "domain",
+        "status",
+        "created_at",
+        "updated_at"
+      ]
     },
     {
       "query_type": "belief.inspect",
@@ -3883,7 +3961,18 @@
       "acceptance_negative_assertion": "Contradictory evidence remains visible; query cannot revise or promote belief.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "belief_id",
+        "knowledge_id",
+        "revision_id",
+        "revision_number",
+        "epistemic_status",
+        "confidence",
+        "revision_reason",
+        "evidence_refs",
+        "created_at"
+      ]
     },
     {
       "query_type": "prediction.inspect",
@@ -3935,7 +4024,15 @@
         "confidence",
         "evidence_refs"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "prediction_id",
+        "subject_ref",
+        "expected_outcome",
+        "evaluation_criteria",
+        "horizon",
+        "created_at"
+      ]
     },
     {
       "query_type": "appraisal.inspect",
@@ -3982,7 +4079,18 @@
       "acceptance_negative_assertion": "Stale dependencies are surfaced; no appraisal recalculation or fixed stimulus-to-emotion mapping occurs during read.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "appraisal_id",
+        "context_id",
+        "context_version",
+        "assessment",
+        "uncertainty",
+        "evidence_refs",
+        "sensitivity",
+        "created_at",
+        "valid_until"
+      ]
     },
     {
       "query_type": "attention.inspect",
@@ -4029,7 +4137,19 @@
       "acceptance_negative_assertion": "No reprioritization, allocation mutation or stale cached current allocation is permitted.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "allocation_id",
+        "context_id",
+        "context_version",
+        "candidate_refs",
+        "selected_refs",
+        "deferred_refs",
+        "resource_budget",
+        "rationale_ref",
+        "created_at",
+        "valid_until"
+      ]
     },
     {
       "query_type": "reasoning.inspect",
@@ -4076,7 +4196,18 @@
       "acceptance_negative_assertion": "Hypothesis is not promoted to fact; protected artifact/provider diagnostics are redacted.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "reasoning_id",
+        "context_id",
+        "context_version",
+        "hypothesis_ref",
+        "evidence_refs",
+        "conclusion_summary_ref",
+        "uncertainty",
+        "sensitivity",
+        "created_at"
+      ]
     },
     {
       "query_type": "goal.get",
@@ -4125,7 +4256,19 @@
       "acceptance_negative_assertion": "Unbound legacy goals, missing objective revisions and cross-owner objective references are not returned or accepted; stale objective revision is not silently substituted.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "goal_id",
+        "revision",
+        "description",
+        "state",
+        "priority",
+        "constraints",
+        "reason_ref",
+        "created_at",
+        "objective_id",
+        "objective_version"
+      ]
     },
     {
       "query_type": "plan.get",
@@ -4178,7 +4321,16 @@
         "context_version_ref",
         "capability_epoch_digest"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "plan_id",
+        "goal_id",
+        "goal_revision",
+        "plan_version",
+        "status",
+        "created_at",
+        "step_refs"
+      ]
     },
     {
       "query_type": "decision.inspect",
@@ -4225,7 +4377,17 @@
       "acceptance_negative_assertion": "Reading a decision cannot grant approval, dispatch permission or alter the selected option.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "decision_id",
+        "goal_id",
+        "plan_id",
+        "decision_type",
+        "selected_option_ref",
+        "rationale_ref",
+        "uncertainty",
+        "created_at"
+      ]
     },
     {
       "query_type": "task.status",
@@ -4276,7 +4438,18 @@
       "projection_unresolved_fields": [
         "failure_ref"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "task_run_id",
+        "task_definition_ref",
+        "state",
+        "priority",
+        "budget",
+        "checkpoint_refs",
+        "created_at",
+        "updated_at",
+        "revision"
+      ]
     },
     {
       "query_type": "operation.status",
@@ -4330,7 +4503,19 @@
       "projection_unresolved_fields": [
         "policy_decision_ref"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "operation_id",
+        "attempt_id",
+        "state",
+        "occurred_at",
+        "provider_receipt_ref",
+        "verification_evidence_ref",
+        "error_ref",
+        "uncertainty_reason",
+        "attempt_state",
+        "attempt_number"
+      ]
     },
     {
       "query_type": "permission.inspect",
@@ -4385,7 +4570,17 @@
         "status",
         "approval_ref"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "permission_id",
+        "capability_ref",
+        "target_scope",
+        "policy_version_ref",
+        "granted_by",
+        "created_at",
+        "expires_at",
+        "revoked_at"
+      ]
     },
     {
       "query_type": "audit.lookup",
@@ -4437,7 +4632,18 @@
         "evidence_refs",
         "correlation_id"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "audit_id",
+        "actor_identity",
+        "action_type",
+        "target_ref",
+        "decision",
+        "policy_version_ref",
+        "operation_id",
+        "approval_ref",
+        "occurred_at"
+      ]
     },
     {
       "query_type": "device.capabilities",
@@ -4486,7 +4692,21 @@
       "projection_unresolved_fields": [
         "descriptor_schema_version"
       ],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "capability_id",
+        "descriptor_version",
+        "provider_id",
+        "device_scope",
+        "discovery_epoch",
+        "descriptor_sha256",
+        "source_ref",
+        "first_discovered_at",
+        "last_verified_at",
+        "expires_at",
+        "status",
+        "descriptor_body"
+      ]
     },
     {
       "query_type": "objective.inspect",
@@ -4533,7 +4753,20 @@
       "acceptance_negative_assertion": "Cross-owner or stale objective ID returns no existence disclosure; query never mutates objective or derived goals.",
       "read_only_invariant": "No domain row, event, outbox, receipt, cursor state, task state, operation state or memory/belief state is mutated by the query; diagnostic telemetry is not exposed as a domain write.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "objective_id",
+        "statement",
+        "request_source_ref",
+        "created_at",
+        "status",
+        "success_evidence",
+        "constraints",
+        "assumptions",
+        "uncertainty",
+        "owner_ref",
+        "version"
+      ]
     },
     {
       "query_type": "world.entity.search",
@@ -4580,7 +4813,20 @@
       "acceptance_negative_assertion": "Cross-owner filters, expired identity or missing evidence do not leak records/counts or promote provisional identity.",
       "read_only_invariant": "No domain row, event, outbox, receipt, cursor state, task state, operation state or memory/belief state is mutated by the query; diagnostic telemetry is not exposed as a domain write.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "entity_id",
+        "identity_status",
+        "description",
+        "first_observed_at",
+        "last_observed_at",
+        "evidence_refs",
+        "scope",
+        "attributes",
+        "sensitivity",
+        "owner_ref",
+        "version"
+      ]
     },
     {
       "query_type": "world.entity.inspect",
@@ -4627,7 +4873,20 @@
       "acceptance_negative_assertion": "Unknown/cross-owner entity is indistinguishable; no live observation or identity merge occurs.",
       "read_only_invariant": "No domain row, event, outbox, receipt, cursor state, task state, operation state or memory/belief state is mutated by the query; diagnostic telemetry is not exposed as a domain write.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "entity_id",
+        "identity_status",
+        "description",
+        "first_observed_at",
+        "last_observed_at",
+        "evidence_refs",
+        "scope",
+        "attributes",
+        "sensitivity",
+        "owner_ref",
+        "version"
+      ]
     },
     {
       "query_type": "world.relationship.search",
@@ -4674,7 +4933,21 @@
       "acceptance_negative_assertion": "Contradictory/expired relationships remain qualified; cross-owner subject/object filters reveal no records.",
       "read_only_invariant": "No domain row, event, outbox, receipt, cursor state, task state, operation state or memory/belief state is mutated by the query; diagnostic telemetry is not exposed as a domain write.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "relationship_id",
+        "subject_ref",
+        "predicate",
+        "object_ref",
+        "epistemic_status",
+        "confidence",
+        "evidence_refs",
+        "valid_from",
+        "valid_until",
+        "context_ref",
+        "owner_ref",
+        "version"
+      ]
     },
     {
       "query_type": "situation.inspect",
@@ -4721,7 +4994,21 @@
       "acceptance_negative_assertion": "Stale/cross-owner snapshot is not reported as complete/current; query does not trigger sensing or reassembly.",
       "read_only_invariant": "No domain row, event, outbox, receipt, cursor state, task state, operation state or memory/belief state is mutated by the query; diagnostic telemetry is not exposed as a domain write.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "situation_id",
+        "version",
+        "objective_refs",
+        "entity_refs",
+        "observed_at",
+        "recorded_at",
+        "state_claims",
+        "unknowns",
+        "conflicts",
+        "evidence_refs",
+        "context_ref",
+        "owner_ref"
+      ]
     },
     {
       "query_type": "means.affordance.search",
@@ -4768,7 +5055,26 @@
       "acceptance_negative_assertion": "Hypothesis is never represented as guaranteed capability, permission or executable API; stale context is surfaced.",
       "read_only_invariant": "No domain row, event, outbox, receipt, cursor state, task state, operation state or memory/belief state is mutated by the query; diagnostic telemetry is not exposed as a domain write.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "hypothesis_id",
+        "objective_ref",
+        "actor_refs",
+        "resource_refs",
+        "interaction_description",
+        "preconditions",
+        "expected_effects",
+        "authority_requirements",
+        "evidence_refs",
+        "confidence",
+        "status",
+        "scope",
+        "limitations",
+        "composition_refs",
+        "owner_ref",
+        "version",
+        "created_at"
+      ]
     },
     {
       "query_type": "interaction.inspect",
@@ -4815,7 +5121,24 @@
       "acceptance_negative_assertion": "Proposal is never shown as authorized/dispatched without independent evidence; protected target/recipient data is redacted.",
       "read_only_invariant": "No domain row, event, outbox, receipt, cursor state, task state, operation state or memory/belief state is mutated by the query; diagnostic telemetry is not exposed as a domain write.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "interaction_id",
+        "objective_ref",
+        "actor_ref",
+        "target_refs",
+        "means_hypothesis_refs",
+        "proposed_effects",
+        "authority_context_ref",
+        "risk_assessment",
+        "precondition_evidence_refs",
+        "proposed_at",
+        "deadline",
+        "status",
+        "authorization_ref",
+        "execution_binding_ref",
+        "owner_ref"
+      ]
     },
     {
       "query_type": "interaction.outcome.inspect",
@@ -4862,7 +5185,20 @@
       "acceptance_negative_assertion": "Provider receipt alone is not outcome; uncertain attribution remains explicit and cross-owner effects are hidden.",
       "read_only_invariant": "No domain row, event, outbox, receipt, cursor state, task state, operation state or memory/belief state is mutated by the query; diagnostic telemetry is not exposed as a domain write.",
       "projection_unresolved_fields": [],
-      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
+      "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md.",
+      "projection_resolved_fields": [
+        "outcome_id",
+        "interaction_ref",
+        "observed_at",
+        "recorded_at",
+        "result_status",
+        "observed_effects",
+        "evidence_refs",
+        "unresolved_effects",
+        "attribution",
+        "side_effects",
+        "owner_ref"
+      ]
     }
   ],
   "dispatch_invariant": "No entry is eligible for production dispatch until every applicable binding is completed, validated, covered by fixtures, and registered by the owning runtime. Null means unresolved, never an implicit default. Table bindings reference proposed DDL names only; they do not imply the DDL has been executed or that application-level invariants are implemented.",
