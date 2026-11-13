@@ -231,7 +231,18 @@ class Worker:
         while self.calls < self.max_calls and self.total_tokens < self.max_total_tokens:
             self.calls += 1
             remaining = self.max_total_tokens - self.total_tokens
-            payload = {"model": self.model, "messages": messages, "tools": TOOLS, "tool_choice": "auto", "max_tokens": min(self.max_tokens, remaining), "temperature": 0.2}
+            output_limit = min(self.max_tokens, remaining)
+            payload = {
+                "model": self.model,
+                "messages": messages,
+                "tools": TOOLS,
+                "tool_choice": "auto",
+                "temperature": 0.2,
+            }
+            if self.provider == "groq":
+                payload["max_completion_tokens"] = output_limit
+            else:
+                payload["max_tokens"] = output_limit
 
             response = httpx.post(self.api_url, headers=headers, json=payload, timeout=120)
             if response.status_code == 429 or response.status_code >= 500:
