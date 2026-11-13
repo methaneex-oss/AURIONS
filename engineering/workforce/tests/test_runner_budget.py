@@ -218,6 +218,40 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertEqual(payload["evidence_sha256"], hashlib.sha256(report.read_bytes()).hexdigest())
         self.assertEqual(payload["evidence_ref"], "reports/lead.json")
 
+    def test_cli_retries_candidate_publication_after_ambiguous_response(self):
+        env = {
+            "WORKFORCE_CONTROL_PLANE_URL": "https://control.example",
+            "WORKFORCE_TASK_ID": "task-ambiguous",
+            "WORKFORCE_WORKER_TOKEN": "w" * 40,
+        }
+        calls = []
+        class FakeWorker:
+            def __init__(self, *args, **kwargs):
+                pass
+            def run(self, task, context_files):
+                return {"role": "lead_builder", "final": "candidate"}
+
+        def fake_post(url, **kwargs):
+            calls.append(url)
+            request = httpx.Request("POST", url)
+            if url.endswith("/claim"):
+                return httpx.Response(200, json={"lease_token": "l" * 64}, request=request)
+            if url.endswith("/start"):
+                return httpx.Response(200, json={"task_id": "task-ambiguous", "state": "RUNNING"}, request=request)
+            if url.endswith("/worker-transition") and calls.count(url) == 1:
+                return httpx.Response(503, json={"detail": "response unavailable"}, request=request)
+            if url.endswith("/worker-transition"):
+                return httpx.Response(200, json={"state": "CANDIDATE_READY", "idempotent_replay": True}, request=request)
+            raise AssertionError(url)
+
+        with patch.dict("os.environ", env, clear=True):
+            with patch.object(sys, "argv", ["runner", "--role", "lead_builder", "--task", "test", "--workspace", str(self.root)]):
+                with patch.object(runner_module, "Worker", FakeWorker):
+                    with patch.object(runner_module.httpx, "post", side_effect=fake_post):
+                        runner_module.main()
+        self.assertEqual(len(calls), 4)
+        self.assertEqual(sum(url.endswith("/worker-transition") for url in calls), 2)
+
     def test_cli_uses_existing_lease_without_claiming_again(self):
         env = {
             "WORKFORCE_CONTROL_PLANE_URL": "https://control.example",
