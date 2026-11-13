@@ -547,6 +547,33 @@ def test_events() -> None:
          "governance.compensate","aurion_governance.db",
          "saga-idem-1:governance.compensate","e"*64,99),
     )
+    expect_integrity_error(
+        db, "compensation step cannot cross target stores",
+        """INSERT INTO operation_steps
+        (operation_step_id,operation_id,step_number,action_id,state,updated_at_ms,
+         step_key,target_store,idempotency_key,request_digest,compensation_for_step_number)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([55])*16,operation_id,2,bytes([56])*16,"pending",13,
+         "memory.compensate","aurion_memory.db",
+         "saga-idem-1:memory.compensate","f"*64,0),
+    )
+    db.execute(
+        """INSERT INTO operation_steps
+        (operation_step_id,operation_id,step_number,action_id,state,updated_at_ms,
+         step_key,target_store,idempotency_key,request_digest,compensation_for_step_number)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([57])*16,operation_id,1,bytes([58])*16,"pending",13,
+         "governance.compensate","aurion_governance.db",
+         "saga-idem-1:governance.compensate","1"*64,0),
+    )
+    db.execute(
+        """INSERT INTO operation_steps
+        (operation_step_id,operation_id,step_number,action_id,state,updated_at_ms,
+         step_key,target_store,idempotency_key,request_digest,started_at_ms,completed_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([59])*16,operation_id,2,bytes([60])*16,"succeeded",14,
+         "memory.evaluate","aurion_memory.db","saga-idem-1:memory.evaluate","2"*64,13,14),
+    )
     db.commit()
     check_database("events smoke insert", db)
     db.close()
