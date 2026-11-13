@@ -40,6 +40,20 @@ Run `docker compose -f engineering/workforce/compose.yaml up --build` from the r
 
 Apply new SQL files in `migrations/` to an existing database in lexical order (including `003_immutable_evidence.sql` and `004_agent_budget_ledger.sql`). The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
 
+## Six-role orchestration
+
+The CLI coordinates all six roles in one pinned workspace, sequentially: lead builder, specialist builder, candidate snapshot/tests, three independent read-only reviews, then integration verification. Builder write scopes must be disjoint. Reviewers receive the frozen candidate manifest and test evidence. The integration verifier receives all review reports. The orchestrator never commits, pushes, merges or accepts the work.
+
+1. Start the API and supervisor with the Compose deployment above.
+2. Create a Director-approved JSON work-package manifest from `work-package.template.json`. Replace every placeholder, set the exact base commit SHA, provide all six role task instructions, and define disjoint builder path allowlists.
+3. Configure `WORKFORCE_CONTROL_PLANE_URL`, `DIRECTOR_APPROVAL_TOKEN`, `WORKFORCE_ORCHESTRATOR_TOKEN`, `WORKFORCE_WORKER_CREDENTIALS_JSON`, and the provider credentials in the orchestrator's protected environment.
+4. Run `PYTHONPATH=engineering/workforce/src python -m workforce.orchestrator --manifest /secure/path/work-package.json --workspace .`.
+5. Inspect the candidate files and `engineering/workforce/.workforce-artifacts/`. The final task stops at `AWAITING_DIRECTOR`; it is not accepted automatically.
+
+The worker process receives only its own role token and its pinned provider credential. Repository tests run from an isolated copy with credentials removed. The orchestrator's test suite also runs from a separate snapshot. A disposable PostgreSQL test database is used only when `WORKFORCE_TEST_DATABASE_URL` and the three `WORKFORCE_TEST_*` credentials are explicitly supplied; it must never point at the live control-plane database.
+
+The orchestrator is a bounded sequential dispatcher, not a distributed queue or parallel scheduler. The control plane persists tasks, leases, checkpoints, evidence and per-work-package/per-role budgets. A new run ID creates new task records but consumes the same work-package budget. If an orchestration process is interrupted, the supervisor recovers expired worker leases; a new orchestration attempt requires a clean workspace and a new run ID. Preserve the previous evidence folder before resetting or creating a fresh workspace.
+
 ## Verification
 
 The workforce test workflow starts a disposable PostgreSQL 17 service, applies every migration, compiles the source and runs the full unittest suite. No provider calls are made by this CI workflow.
