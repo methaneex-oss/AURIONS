@@ -1,0 +1,65 @@
+name: Workforce deterministic and PostgreSQL integration tests
+
+on:
+  pull_request:
+    paths:
+      - "engineering/workforce/**"
+      - ".github/workflows/workforce-control-plane-tests.yml"
+  push:
+    branches:
+      - "feat/workforce-control-plane-hardening"
+    paths:
+      - "engineering/workforce/**"
+      - ".github/workflows/workforce-control-plane-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  workforce-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: workforce
+          POSTGRES_USER: workforce
+          POSTGRES_PASSWORD: workforce-test-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U workforce -d workforce"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://workforce:workforce-test-password@localhost:5432/workforce
+      DIRECTOR_APPROVAL_TOKEN: test-director-token
+      WORKFORCE_ORCHESTRATOR_TOKEN: test-orchestrator-token
+      WORKFORCE_WORKER_CREDENTIALS_JSON: '{"builder-01":{"token":"test-builder-token","role":"lead_builder"},"reviewer-01":{"token":"test-reviewer-token","role":"code_reviewer"}}'
+      PYTHONPATH: engineering/workforce/src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: engineering/workforce/requirements.txt
+      - name: Install workforce dependencies
+        run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Apply database migrations
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import psycopg
+          with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+              for path in sorted(Path("engineering/workforce/migrations").glob("*.sql")):
+                  conn.execute(path.read_text(encoding="utf-8"))
+          PY
+      - name: Compile workforce
+        run: python -m compileall -q engineering/workforce/src engineering/workforce/tests
+      - name: Run all workforce tests
+        run: python -m unittest discover -s engineering/workforce/tests -v
