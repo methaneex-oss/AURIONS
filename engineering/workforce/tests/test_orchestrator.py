@@ -212,6 +212,11 @@ class OrchestratorTests(unittest.TestCase):
                     return {"task_id": payload["task_id"], "state": "QUEUED"}
                 return {"state": payload.get("target", "ok")}
 
+            def fake_get(url, *, headers, allow_404=False):
+                if url.endswith("/evidence"):
+                    return []
+                return None
+
             real_run = subprocess.run
             def fake_run(command, **kwargs):
                 if command and command[0] == "git":
@@ -246,12 +251,13 @@ class OrchestratorTests(unittest.TestCase):
                 "WORKFORCE_TEST_DOCKER_IMAGE": "aurions-workforce-test-runner:unit",
             }, clear=True):
                 with patch("workforce.orchestrator._post", side_effect=fake_post):
-                    with patch("workforce.orchestrator.subprocess.run", side_effect=fake_run):
-                        result = run_work_package(
-                            manifest,
-                            root,
-                            root / "engineering/workforce/.workforce-artifacts",
-                        )
+                    with patch("workforce.orchestrator._get", side_effect=fake_get):
+                        with patch("workforce.orchestrator.subprocess.run", side_effect=fake_run):
+                            result = run_work_package(
+                                manifest,
+                                root,
+                                root / "engineering/workforce/.workforce-artifacts",
+                            )
 
             created = [call for call in api_calls if call[0].endswith("/v1/tasks")]
             transitions = [call for call in api_calls if call[0].endswith("/transition")]
@@ -266,6 +272,9 @@ class OrchestratorTests(unittest.TestCase):
             self.assertTrue((root / result["director_packet"]).is_file())
             self.assertTrue((root / result["candidate_manifest"]).is_file())
             self.assertEqual(set(result["role_reports"]), set(ROLES))
+            journal = root / "engineering/workforce/.workforce-artifacts/test-run-001-orchestration-state.json"
+            self.assertTrue(journal.is_file())
+            self.assertEqual(json.loads(journal.read_text(encoding="utf-8"))["status"], "AWAITING_DIRECTOR_REVIEW")
 
     def test_candidate_test_container_is_read_only_host_isolated_and_credential_filtered(self):
         from workforce.orchestrator import _docker_run
