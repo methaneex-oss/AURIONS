@@ -1265,7 +1265,7 @@
     },
     {
       "scenario_id": "CM-004",
-      "title": "CM-004 — canonical scenario acceptance probe",
+      "title": "CM-004 — prediction is immutable before and after outcome",
       "purpose": "Prediction and criteria are committed before outcome; evaluation cannot mutate the original prediction.",
       "source_scenario_ids": [
         "CM-004"
@@ -1277,9 +1277,9 @@
         "catalogue:CG-006"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: predictionCreated, predictionEvaluation.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Prepare an owner-scoped prediction request with exact subject, expected outcome, criteria, horizon, confidence and source-evidence revisions; no prediction is committed yet.",
+        "Prepare a distinct postcondition observation payload from an independent source; keep it unavailable until after prediction.create commits.",
+        "Capture the prediction request digest and source-evidence revisions so later evaluation cannot rewrite the original forecast."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -1291,87 +1291,137 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize the prediction request and hold the independent outcome observation outside the prediction subsystem.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed the request and independent observation input only; no prediction or outcome evaluation exists."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "The prediction and observation inputs have distinct identities/provenance; the observation is not visible to prediction creation."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Prediction and criteria are committed before outcome; evaluation cannot mutate the original prediction.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Commit the prediction and its criteria before the outcome observation is admitted.",
+          "contract_action": "command:prediction.create",
           "expected_transitions": [
-            "Prediction and criteria are committed before outcome; evaluation cannot mutate the original prediction."
+            "Append immutable prediction P-001 with expected outcome, criteria, horizon, confidence and exact source lineage."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "prediction.created.v1"
+          ],
           "durable_assertions": [
-            "Prediction and criteria are committed before outcome; evaluation cannot mutate the original prediction.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "P-001 is durably stored before any outcome evidence is submitted; its source revisions and prediction digest are fixed."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Submit independent postcondition evidence after P-001 has been committed.",
+          "contract_action": "command:experience.submit",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append immutable outcome observation and evidence links; do not mutate P-001."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "experience.observed.v1",
+            "evidence.recorded.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "The observation has independent provenance and observed time; P-001 creation time precedes the observation and its original digest is unchanged."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Evaluate the observed outcome against the stored prediction criteria.",
+          "contract_action": "command:outcome.evaluate",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Append an outcome evaluation linked to P-001 and the exact observed evidence; preserve attribution uncertainty."
+          ],
+          "expected_events": [
+            "outcome.evaluated.v1"
+          ],
+          "durable_assertions": [
+            "The evaluator records the exact prediction/evidence references; it does not rewrite expected outcome, horizon, confidence or criteria."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Evaluate P-001's prediction accuracy using the committed outcome evaluation.",
+          "contract_action": "command:prediction.evaluate",
+          "expected_transitions": [
+            "Append prediction evaluation as a separate immutable result linked to P-001."
+          ],
+          "expected_events": [
+            "prediction.evaluated.v1"
+          ],
+          "durable_assertions": [
+            "The prediction remains byte-for-byte/digest-identical to its pre-outcome revision; only a separate evaluation record is appended."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Read P-001 and its evaluation history by exact owner-scoped ID.",
+          "contract_action": "query:prediction.inspect",
+          "expected_transitions": [
+            "Return the original prediction and linked evaluation without mutating either record."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The original expected outcome and criteria are unchanged; evaluation references the correct observation; query leaves durable state unchanged."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Attempt to replace P-001's expected outcome or criteria after the independent observation is recorded.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Reject the attempted rewrite; a correction, if ever permitted, must be a separately linked new prediction and cannot overwrite P-001."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "P-001 digest, prediction.created event and prior evaluation remain unchanged; no replacement or hidden mutation occurs."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Restart and replay accepted prediction, observation and evaluation receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover P-001 and its immutable evaluation lineage; replay receipts without duplicate records or events."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Prediction and evaluation history survive restart; replay creates no duplicate prediction, evidence or evaluation events."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-004-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "After observing the outcome, submit a request that attempts to change P-001's expected outcome, criteria, horizon or confidence under the original prediction identity.",
+          "expected_disposition": "Reject as immutable-revision conflict or require a separately linked new prediction; never rewrite P-001.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Original prediction P-001 and its digest",
+            "Independent outcome evidence and evaluation lineage",
+            "Prediction/event/outbox counts and original receipts"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay prediction.create and outcome/prediction evaluation receipts with the same keys/digests; return original receipts without duplicate events.",
+        "After restart, the original prediction remains unchanged and the evaluation remains a separate linked record."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race outcome submission against prediction.create; the prediction must commit before the scenario permits observation to be admitted.",
+        "Race two evaluations against the same prediction/evidence revisions; preserve one idempotent evaluation identity and immutable prediction content."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Fail prediction.create before commit; no prediction or prediction.created event may survive.",
+        "Simulate uncertain outcome-evaluation commit; reconcile the receipt before retry and prohibit duplicate evaluation records."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Use an unseen but schema-compatible outcome category; evaluation may report unknown/unsupported but cannot rewrite prediction criteria.",
+        "Use an observation with incomplete provenance as a negative control; do not promote it to verified outcome evidence."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
@@ -1389,7 +1439,7 @@
     },
     {
       "scenario_id": "CM-005",
-      "title": "CM-005 — canonical scenario acceptance probe",
+      "title": "CM-005 — appraisal and attention respond to context and resources",
       "purpose": "Allocation responds to changed evidence and resource state; no fixed stimulus mapping.",
       "source_scenario_ids": [
         "CM-005"
@@ -1400,9 +1450,9 @@
         "catalogue:CG-007"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: appraisalUpdated, attentionAllocated.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed an owner-scoped active goal, current context/evidence revisions and a bounded attention/resource budget.",
+        "Prepare the same stimulus description for two evaluations while varying only the evidence/context and available resource state between them.",
+        "Capture the initial appraisal/attention state and ensure no fixed stimulus-to-emotion/action mapping is supplied as an input."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -1414,87 +1464,163 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize the active goal, context evidence, resource budget and paired evaluation inputs.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed only the declared context/goal/resource inputs; no appraisal or attention allocation is committed."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "The paired inputs share the same stimulus label but have distinct context/resource evidence; no fixed stimulus mapping is present."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Allocation responds to changed evidence and resource state; no fixed stimulus mapping.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Evaluate appraisal from the first context's evidence, uncertainty and current goal relevance.",
+          "contract_action": "command:appraisal.evaluate",
           "expected_transitions": [
-            "Allocation responds to changed evidence and resource state; no fixed stimulus mapping."
+            "Append appraisal revision A using current evidence and context; preserve uncertainty and provenance."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "appraisal.updated.v1"
+          ],
           "durable_assertions": [
-            "Allocation responds to changed evidence and resource state; no fixed stimulus mapping.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The appraisal references exact evidence/context revisions and does not assign a fixed emotion/action based only on stimulus identity."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Allocate attention using appraisal A, current goals and available resource budget.",
+          "contract_action": "command:attention.allocate",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append current attention allocation A under the declared resource constraints."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "attention.allocated.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "Allocation references appraisal/context/resource revisions; budget limits and starvation constraints are respected."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Submit new contextual evidence and a changed resource-state observation while retaining the same stimulus description.",
+          "contract_action": "command:experience.submit",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Append the new evidence without overwriting prior observations or changing the goal."
+          ],
+          "expected_events": [
+            "experience.observed.v1",
+            "evidence.recorded.v1"
+          ],
+          "durable_assertions": [
+            "New evidence has distinct provenance/time; prior evidence and goal remain immutable; the changed context/resource state is explicit."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Re-evaluate appraisal using the updated context evidence and resource state.",
+          "contract_action": "command:appraisal.evaluate",
+          "expected_transitions": [
+            "Append a successor appraisal revision linked to the new evidence/context; preserve prior appraisal A."
+          ],
+          "expected_events": [
+            "appraisal.updated.v1"
+          ],
+          "durable_assertions": [
+            "The new appraisal references updated evidence and context; prior appraisal history remains retrievable and no fixed stimulus mapping is used."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Reallocate attention using the successor appraisal and the changed resource budget.",
+          "contract_action": "command:attention.allocate",
+          "expected_transitions": [
+            "Append a successor attention allocation that reflects current goals, evidence and resource availability."
+          ],
+          "expected_events": [
+            "attention.allocated.v1"
+          ],
+          "durable_assertions": [
+            "The allocation changes only where the new evidence/resource constraints justify it; resource bounds and fairness/anti-starvation rules remain enforced."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Read appraisal history and evidence lineage.",
+          "contract_action": "query:appraisal.inspect",
+          "expected_transitions": [
+            "Return both appraisal revisions and their exact evidence/context references without mutation."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The query exposes the revision history and leaves appraisal, attention and event/outbox state unchanged."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Read attention allocation history and current resource constraints.",
+          "contract_action": "query:attention.inspect",
+          "expected_transitions": [
+            "Return the current allocation and relevant revision/resource lineage without mutation."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The query returns the current allocation and preserves prior allocations as history; it does not recompute or mutate attention."
+          ]
+        },
+        {
+          "step_id": "S09",
+          "trigger": "Remove the updated context/resource evidence and attempt to force the second allocation from the stimulus label alone.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Retain unknown/insufficient state or request more evidence; do not synthesize a fixed appraisal or attention allocation."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No unsupported appraisal/attention transition is committed; prior allocations and goal state remain unchanged."
+          ]
+        },
+        {
+          "step_id": "S10",
+          "trigger": "Restart and replay the accepted appraisal/attention/evidence receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover durable appraisal history and reconstruct current attention from current goals, context and resources."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Historical allocation is not treated as current authority; current attention is recomputed from current state without duplicate durable events."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-005-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Provide only the repeated stimulus label while omitting the changed context evidence and resource state, then request appraisal/attention allocation.",
+          "expected_disposition": "Return unknown/insufficient evidence or defer allocation; do not apply a fixed stimulus-to-appraisal/action mapping.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Prior appraisal revisions and attention allocations",
+            "Owner goal and context evidence",
+            "Durable event/outbox counts and receipts"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay appraisal.evaluate and attention.allocate receipts; no duplicate revisions or events are appended.",
+        "After restart, treat old allocation as history and derive current allocation from current goals, context, evidence and resource availability."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race context invalidation against attention.allocate; stale context must not produce a current allocation.",
+        "Race resource exhaustion against attention.allocate; allocation must respect the latest resource revision and preserve fairness constraints."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Fail appraisal commit before write; no appraisal.updated event or partial revision survives.",
+        "Simulate uncertain attention allocation commit; reconcile receipt before retry to prevent duplicate allocation revisions."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Keep stimulus constant while changing evidence/context and resource constraints; appraisal/attention must respond to those state changes rather than stimulus identity.",
+        "Change stimulus while holding evidence/context/resources constant; do not infer a fixed one-to-one stimulus-to-emotion/action rule."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
