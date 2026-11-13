@@ -140,6 +140,7 @@ def main() -> int:
         "aurion_events.db": [
             "aurion_events.base.sql", "aurion_events.migration_v2.sql",
             "aurion_events.migration_v3.sql", "aurion_events.migration_v4.sql",
+            "aurion_events.migration_v5.sql",
         ],
         "aurion_governance.db": [
             "aurion_governance.base.sql", "aurion_governance.migration_v2.sql",
@@ -229,8 +230,8 @@ def main() -> int:
             )
             if "aurion_events.db" not in stores or coordinator is None:
                 fail(f"{command_type}: cross-store saga must bind the event/recovery coordinator")
-            if not {"operations", "recovery_journal", "outbox"}.issubset(set(coordinator["tables"])):
-                fail(f"{command_type}: saga coordinator must bind operations, recovery_journal and outbox")
+            if not {"operations", "operation_steps", "recovery_journal", "outbox"}.issubset(set(coordinator["tables"])):
+                fail(f"{command_type}: saga coordinator must bind operations, operation_steps, recovery_journal and outbox")
         for store in stores:
             if store not in store_tables:
                 fail(f"{command_type}: unknown persistence store {store}")
