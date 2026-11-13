@@ -1038,3 +1038,20 @@ Moved the exactly-one-row assertion to the common command path so it applies to 
 **Exact code head:** `3c140b1e77cc3c1f337656287a482258420c6c7f`. [Workflow 43432388726](https://github.com/methaneex-oss/AURIONS/actions/runs/43432388726) passed all nine steps. Direct matrix scan confirms one row each for `device.pair` and `device.revoke`.
 
 **Evidence boundary:** This closes duplicate/missing transition-row structural integrity only. It does not implement command handlers or execute the 52 mapped command acceptance cases. All commands remain design-only/non-dispatchable.
+
+
+## BR-001 command transaction-matrix parity — stores and outbox bindings (2026-11-13)
+
+The validator reconciled each command's transaction mode with the transaction matrix and checked registry store bindings against DDL, but it did not compare the transaction matrix's authoritative-store and local-outbox cells with the command registry. A matrix row could therefore name a different store/outbox while preserving the same transaction mode.
+
+Added per-command parity checks for all 54 rows:
+- Exact five-column transaction row shape.
+- \`DEFERRED\`, \`SINGLE_STORE_LOCAL_OUTBOX\` or \`CROSS_STORE_SAGA\` mode derived from dispatch status and registry store count.
+- Exact authoritative-store set against \`persistence_stores\`.
+- Exact local-outbox set against one \`store:outbox\` entry for every authoritative store; deferred commands require none.
+
+**Independent parity scan:** 54 command records; zero store/mode/outbox mismatches.
+
+**Exact code head:** \`3267cc744225d33ae90b4c97732262049bf368be\`. [Workflow 43432722355](https://github.com/methaneex-oss/AURIONS/actions/runs/43432722355) passed all nine steps.
+
+**Evidence boundary:** This closes registry-to-transaction-matrix structural parity only. It does not prove runtime transactions, outbox relay, saga execution, command handlers or acceptance-case behaviour. All mapped commands remain design-only/non-dispatchable.
