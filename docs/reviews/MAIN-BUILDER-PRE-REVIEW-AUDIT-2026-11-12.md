@@ -1112,3 +1112,14 @@ Added checks for every error code:
 **Exact code head:** \`a45ad914aee564d0815ff61cadbd8db74688f27b\`. [Workflow 43433876661](https://github.com/methaneex-oss/AURIONS/actions/runs/43433876661) passed all nine steps.
 
 **Evidence boundary:** This closes registry/fixture/category-contract reference integrity only. All 35 entries remain \`seed\`; no handler is implemented or production-registered, and no EHR durable-state/replay/fault assertion has been executed. BR-003 remains OPEN.
+
+
+### BR-003 error fixture identity and matrix cross-reference integrity
+
+A further audit found that registry-to-fixture validation keyed cases by error code and checked the handler contract, while the normative matrix separately referenced fixtures by EHC ID. It did not prove that the matrix's EHC identifier selected the fixture for the same error code and handler.
+
+Added exact EHC-001…EHC-035 uniqueness/coverage and per-row checks that the referenced fixture ID exists, carries the same error code and points to the same category handler as the matrix row.
+
+**Exact code head:** \`d7adcb416193dcb1d37ce8cdc9fec71b848974e7\`. [Workflow 43434073974](https://github.com/methaneex-oss/AURIONS/actions/runs/43434073974) passed all nine steps.
+
+**Boundary:** Cross-artifact identity integrity only. The handler catalogue and EHR assertions remain specifications; no runtime recovery execution is claimed.
