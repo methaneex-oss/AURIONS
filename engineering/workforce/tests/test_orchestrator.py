@@ -91,6 +91,12 @@ class OrchestratorTests(unittest.TestCase):
         with self.assertRaisesRegex(OrchestrationError, "placeholder"):
             validate_manifest(value)
 
+    def test_manifest_reserves_time_for_evidence_finalization(self):
+        value = valid_manifest()
+        value["max_total_duration_minutes"] = 180
+        with self.assertRaisesRegex(OrchestrationError, "five minutes"):
+            validate_manifest(value)
+
     def test_manifest_caps_total_runtime_below_hosted_job_timeout(self):
         value = valid_manifest()
         value["max_total_duration_minutes"] = 331
@@ -100,7 +106,7 @@ class OrchestratorTests(unittest.TestCase):
     def test_manifest_rejects_role_durations_above_total_runtime(self):
         value = valid_manifest()
         value["max_total_duration_minutes"] = 100
-        with self.assertRaisesRegex(OrchestrationError, "sum of role duration"):
+        with self.assertRaisesRegex(OrchestrationError, "five minutes"):
             validate_manifest(value)
 
     def test_builder_write_scopes_must_be_disjoint(self):
