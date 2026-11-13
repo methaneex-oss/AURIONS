@@ -7,6 +7,8 @@
 
 ## 1. Findings
 
+The semantic pass distinguishes a genuinely absent persisted field from a field that is derived from an existing event payload, relational join, stored timestamp, or authenticated read context. A read-only query may construct an ephemeral retrieval envelope; it must not write a retrieval receipt merely to satisfy the result schema. Every mapping below is a proposed source/transform, not executed SQL or a verified owner-scope/redaction implementation.
+
 The query registry declares 29 result-item projections. A scan of the current DDL identified candidate source columns by exact field name, JSON-column suffix (`_json`) and timestamp suffix (`_ms`). It found fields with no direct/JSON/timestamp-named source in the query's bound tables.
 
 This scan is deliberately conservative:
@@ -87,7 +89,7 @@ This scan is deliberately conservative:
 - `last_verified_at` → capability_descriptors.last_verified_at_ms (timestamp conversion)
 - `expires_at` → capability_descriptors.expires_at_ms (timestamp conversion)
 - `status` → capability_descriptors.status
-- `descriptor_body` → **UNMAPPED in the bound DDL columns**
+- `descriptor_body` → capability_descriptors.descriptor_json (JSON decode; validate with the stored descriptor schema version)
 
 ### `capability.inspect`
 
@@ -107,7 +109,7 @@ This scan is deliberately conservative:
 - `last_verified_at` → capability_descriptors.last_verified_at_ms (timestamp conversion)
 - `expires_at` → capability_descriptors.expires_at_ms (timestamp conversion)
 - `status` → capability_descriptors.status
-- `descriptor_body` → **UNMAPPED in the bound DDL columns**
+- `descriptor_body` → capability_descriptors.descriptor_json (JSON decode; validate with the stored descriptor schema version)
 
 ### `capability.knowledge.inspect`
 
@@ -135,7 +137,7 @@ This scan is deliberately conservative:
 - `representation_id` → representations.representation_id
 - `experience_id` → representations.experience_id
 - `representation_type` → representations.representation_type
-- `method_id` → **UNMAPPED in the bound DDL columns**
+- `method_id` → representations.method (legacy column projected as method_id; method-version and multi-source lineage remain unresolved)
 - `method_version` → **UNMAPPED in the bound DDL columns**
 - `content` → representations.content_json (JSON decode)
 - `uncertainty` → representations.uncertainty_json (JSON decode)
@@ -164,12 +166,12 @@ This scan is deliberately conservative:
 - Bound tables: `memory_records`, `memory_links`
 - Unmapped by direct/JSON/timestamp column-name scan: `retrieval_id`, `query_ref`, `scope`, `candidate_refs`, `access_decision_ref`
 
-- `retrieval_id` → **UNMAPPED in the bound DDL columns**
-- `query_ref` → **UNMAPPED in the bound DDL columns**
-- `scope` → **UNMAPPED in the bound DDL columns**
+- `retrieval_id` → generated per query execution; ephemeral and not persisted by this read-only query
+- `query_ref` → query-envelope/request reference supplied by the authenticated query execution
+- `scope` → authenticated execution scope after policy evaluation; never copied from caller filters
 - `candidate_refs` → **UNMAPPED in the bound DDL columns**
 - `created_at` → memory_records.created_at_ms (timestamp conversion); memory_links.created_at_ms (timestamp conversion)
-- `access_decision_ref` → **UNMAPPED in the bound DDL columns**
+- `access_decision_ref` → authorization decision reference from the trusted query context when present; otherwise null, with no cross-store snapshot implied
 
 ### `knowledge.search`
 
@@ -197,7 +199,7 @@ This scan is deliberately conservative:
 - `epistemic_status` → belief_revisions.epistemic_status
 - `confidence` → belief_revisions.confidence
 - `revision_reason` → belief_revisions.revision_reason
-- `evidence_refs` → **UNMAPPED in the bound DDL columns**
+- `evidence_refs` → belief_revision_evidence.evidence_id joined by revision_id; serialize as evidence references
 - `created_at` → beliefs.created_at_ms (timestamp conversion); belief_revisions.created_at_ms (timestamp conversion)
 
 ### `prediction.inspect`
@@ -211,7 +213,7 @@ This scan is deliberately conservative:
 - `expected_outcome` → predictions.expected_outcome_json (JSON decode)
 - `evaluation_criteria` → predictions.evaluation_criteria_json (JSON decode)
 - `conditions` → **UNMAPPED in the bound DDL columns**
-- `horizon` → **UNMAPPED in the bound DDL columns**
+- `horizon` → predictions.horizon_end_ms projected as the horizon deadline; no additional horizon fields are inferred
 - `confidence` → **UNMAPPED in the bound DDL columns**
 - `evidence_refs` → **UNMAPPED in the bound DDL columns**
 - `created_at` → predictions.created_at_ms (timestamp conversion)
@@ -238,16 +240,16 @@ This scan is deliberately conservative:
 - Bound tables: `events`
 - Unmapped by direct/JSON/timestamp column-name scan: `allocation_id`, `context_id`, `context_version`, `candidate_refs`, `selected_refs`, `deferred_refs`, `resource_budget`, `rationale_ref`, `created_at`, `valid_until`
 
-- `allocation_id` → **UNMAPPED in the bound DDL columns**
-- `context_id` → **UNMAPPED in the bound DDL columns**
-- `context_version` → **UNMAPPED in the bound DDL columns**
-- `candidate_refs` → **UNMAPPED in the bound DDL columns**
-- `selected_refs` → **UNMAPPED in the bound DDL columns**
-- `deferred_refs` → **UNMAPPED in the bound DDL columns**
-- `resource_budget` → **UNMAPPED in the bound DDL columns**
-- `rationale_ref` → **UNMAPPED in the bound DDL columns**
-- `created_at` → **UNMAPPED in the bound DDL columns**
-- `valid_until` → **UNMAPPED in the bound DDL columns**
+- `allocation_id` → events.payload_json $.allocation_id (attention.allocated.v1 body)
+- `context_id` → events.payload_json $.context_id
+- `context_version` → events.payload_json $.context_version
+- `candidate_refs` → events.payload_json $.candidate_refs
+- `selected_refs` → events.payload_json $.selected_refs
+- `deferred_refs` → events.payload_json $.deferred_refs
+- `resource_budget` → events.payload_json $.resource_budget
+- `rationale_ref` → events.payload_json $.rationale_ref
+- `created_at` → events.occurred_at_ms
+- `valid_until` → events.payload_json $.valid_until
 
 ### `reasoning.inspect`
 
@@ -294,7 +296,7 @@ This scan is deliberately conservative:
 - `plan_version` → plans.plan_version
 - `status` → plans.status; plan_steps.status
 - `created_at` → plans.created_at_ms (timestamp conversion); plan_steps.created_at_ms (timestamp conversion); plan_step_contracts.created_at_ms (timestamp conversion)
-- `step_refs` → **UNMAPPED in the bound DDL columns**
+- `step_refs` → plan_steps.step_id joined by plan_id and ordered by sequence
 - `context_version_ref` → **UNMAPPED in the bound DDL columns**
 - `capability_epoch_digest` → **UNMAPPED in the bound DDL columns**
 
@@ -324,11 +326,11 @@ This scan is deliberately conservative:
 - `state` → task_runs.state
 - `priority` → task_runs.priority
 - `budget` → task_runs.budget_json (JSON decode)
-- `checkpoint_refs` → **UNMAPPED in the bound DDL columns**
+- `checkpoint_refs` → task_checkpoints.checkpoint_ref joined by task_run_id and ordered by sequence
 - `created_at` → task_runs.created_at_ms (timestamp conversion); task_checkpoints.created_at_ms (timestamp conversion); task_checkpoint_details.created_at_ms (timestamp conversion)
 - `updated_at` → task_runs.updated_at_ms (timestamp conversion)
 - `failure_ref` → **UNMAPPED in the bound DDL columns**
-- `revision` → **UNMAPPED in the bound DDL columns**
+- `revision` → task_runs.revision (added by aurion_events migration v2)
 
 ### `operation.status`
 
@@ -339,13 +341,13 @@ This scan is deliberately conservative:
 - `operation_id` → operations.operation_id; operation_steps.operation_id; recovery_journal.operation_id; operation_details.operation_id; operation_attempts.operation_id
 - `attempt_id` → operation_attempts.attempt_id
 - `state` → operations.state; operation_steps.state; recovery_journal.state; operation_attempts.state
-- `occurred_at` → **UNMAPPED in the bound DDL columns**
+- `occurred_at` → events.occurred_at_ms for the matching operation lifecycle event (events added to this query's table bindings)
 - `provider_receipt_ref` → operation_attempts.provider_receipt_ref
 - `verification_evidence_ref` → operation_attempts.verification_evidence_ref
 - `error_ref` → operation_attempts.error_ref
 - `uncertainty_reason` → operation_attempts.uncertainty_reason
 - `policy_decision_ref` → **UNMAPPED in the bound DDL columns**
-- `attempt_state` → **UNMAPPED in the bound DDL columns**
+- `attempt_state` → operation_attempts.state for the selected attempt
 - `attempt_number` → operation_attempts.attempt_number
 
 ### `permission.inspect`
@@ -356,11 +358,11 @@ This scan is deliberately conservative:
 
 - `permission_id` → permissions.permission_id
 - `owner_id` → **UNMAPPED in the bound DDL columns**
-- `capability_ref` → **UNMAPPED in the bound DDL columns**
-- `target_scope` → **UNMAPPED in the bound DDL columns**
+- `capability_ref` → permissions.capability_id
+- `target_scope` → composed object from permissions.operation_scope_json, resource_scope_json, data_scope_json, side_effect_scope_json and environment_scope_json
 - `status` → **UNMAPPED in the bound DDL columns**
 - `policy_version_ref` → approval_requests.policy_version_ref
-- `granted_by` → **UNMAPPED in the bound DDL columns**
+- `granted_by` → permissions.grant_source
 - `approval_ref` → **UNMAPPED in the bound DDL columns**
 - `created_at` → permissions.created_at_ms (timestamp conversion); policies.created_at_ms (timestamp conversion); provider_permissions.created_at_ms (timestamp conversion)
 - `expires_at` → permissions.expires_at_ms (timestamp conversion); provider_permissions.expires_at_ms (timestamp conversion); approval_requests.expires_at_ms (timestamp conversion)
@@ -374,13 +376,13 @@ This scan is deliberately conservative:
 
 - `audit_id` → governance_audit.audit_id
 - `owner_id` → **UNMAPPED in the bound DDL columns**
-- `actor_identity` → **UNMAPPED in the bound DDL columns**
-- `action_type` → **UNMAPPED in the bound DDL columns**
+- `actor_identity` → governance_audit.actor_id
+- `action_type` → governance_audit.action
 - `target_ref` → governance_audit.target_ref
 - `decision` → governance_audit.decision
 - `policy_version_ref` → governance_audit.policy_version_ref; data_disclosures.policy_version_ref
 - `operation_id` → governance_audit.operation_id
-- `approval_ref` → **UNMAPPED in the bound DDL columns**
+- `approval_ref` → governance_audit.request_id joined to approval_requests.request_id when present
 - `evidence_refs` → **UNMAPPED in the bound DDL columns**
 - `occurred_at` → governance_audit.occurred_at_ms (timestamp conversion)
 - `correlation_id` → **UNMAPPED in the bound DDL columns**
@@ -403,7 +405,7 @@ This scan is deliberately conservative:
 - `last_verified_at` → capability_descriptors.last_verified_at_ms (timestamp conversion)
 - `expires_at` → capability_descriptors.expires_at_ms (timestamp conversion)
 - `status` → capability_descriptors.status
-- `descriptor_body` → **UNMAPPED in the bound DDL columns**
+- `descriptor_body` → capability_descriptors.descriptor_json (JSON decode; validate with the stored descriptor schema version)
 
 ### `objective.inspect`
 
@@ -537,10 +539,10 @@ This scan is deliberately conservative:
 - `risk_assessment` → interaction_proposals.risk_assessment_json (JSON decode)
 - `precondition_evidence_refs` → interaction_proposals.precondition_evidence_refs_json (JSON decode)
 - `proposed_at` → interaction_proposals.proposed_at_ms (timestamp conversion)
-- `deadline` → **UNMAPPED in the bound DDL columns**
+- `deadline` → interaction_proposals.deadline_at_ms
 - `status` → interaction_proposals.status
 - `authorization_ref` → interaction_proposals.authorization_ref
-- `execution_binding_ref` → **UNMAPPED in the bound DDL columns**
+- `execution_binding_ref` → interaction_proposals.execution_operation_ref
 - `owner_ref` → interaction_proposals.owner_ref
 
 ### `interaction.outcome.inspect`
