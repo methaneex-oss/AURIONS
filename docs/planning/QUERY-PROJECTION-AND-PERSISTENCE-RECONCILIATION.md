@@ -29,7 +29,7 @@ This scan is deliberately conservative:
 | `appraisal.inspect` | `appraisalUpdated` | 9 | None by direct/JSON/timestamp name scan |
 | `attention.inspect` | `attentionAllocated` | 10 | `allocation_id`, `context_id`, `context_version`, `candidate_refs`, `selected_refs`, `deferred_refs`, `resource_budget`, `rationale_ref`, `created_at`, `valid_until` |
 | `reasoning.inspect` | `reasoningHypothesisProposed` | 9 | None by direct/JSON/timestamp name scan |
-| `goal.get` | `goalRevision` | 8 | None by direct/JSON/timestamp name scan |
+| `goal.get` | `goalRevision` | 10 | None by direct/JSON/timestamp name scan |
 | `plan.get` | `planRevision` | 9 | `step_refs`, `context_version_ref`, `capability_epoch_digest` |
 | `decision.inspect` | `decisionRecorded` | 8 | None by direct/JSON/timestamp name scan |
 | `task.status` | `taskRunStatus` | 10 | `checkpoint_refs`, `failure_ref`, `revision` |
@@ -58,8 +58,8 @@ This scan is deliberately conservative:
 - `owner_id` → **UNMAPPED in the bound DDL columns**
 - `device_id` → **UNMAPPED in the bound DDL columns**
 - `environment_scope` → **UNMAPPED in the bound DDL columns**
-- `observed_at` → experiences.observed_at_ms (convert timestamp); evidence_items.observed_at_ms (convert timestamp)
-- `recorded_at` → experiences.recorded_at_ms (convert timestamp); evidence_items.recorded_at_ms (convert timestamp)
+- `observed_at` → experiences.observed_at_ms (timestamp conversion); evidence_items.observed_at_ms (timestamp conversion)
+- `recorded_at` → experiences.recorded_at_ms (timestamp conversion); evidence_items.recorded_at_ms (timestamp conversion)
 - `source_id` → **UNMAPPED in the bound DDL columns**
 - `collection_method` → **UNMAPPED in the bound DDL columns**
 - `collector_version` → **UNMAPPED in the bound DDL columns**
@@ -83,9 +83,9 @@ This scan is deliberately conservative:
 - `descriptor_schema_version` → **UNMAPPED in the bound DDL columns**
 - `descriptor_sha256` → capability_descriptors.descriptor_sha256
 - `source_ref` → capability_descriptors.source_ref
-- `first_discovered_at` → capability_descriptors.first_discovered_at_ms (convert timestamp)
-- `last_verified_at` → capability_descriptors.last_verified_at_ms (convert timestamp)
-- `expires_at` → capability_descriptors.expires_at_ms (convert timestamp)
+- `first_discovered_at` → capability_descriptors.first_discovered_at_ms (timestamp conversion)
+- `last_verified_at` → capability_descriptors.last_verified_at_ms (timestamp conversion)
+- `expires_at` → capability_descriptors.expires_at_ms (timestamp conversion)
 - `status` → capability_descriptors.status
 - `descriptor_body` → **UNMAPPED in the bound DDL columns**
 
@@ -103,9 +103,9 @@ This scan is deliberately conservative:
 - `descriptor_schema_version` → **UNMAPPED in the bound DDL columns**
 - `descriptor_sha256` → capability_descriptors.descriptor_sha256
 - `source_ref` → capability_descriptors.source_ref
-- `first_discovered_at` → capability_descriptors.first_discovered_at_ms (convert timestamp)
-- `last_verified_at` → capability_descriptors.last_verified_at_ms (convert timestamp)
-- `expires_at` → capability_descriptors.expires_at_ms (convert timestamp)
+- `first_discovered_at` → capability_descriptors.first_discovered_at_ms (timestamp conversion)
+- `last_verified_at` → capability_descriptors.last_verified_at_ms (timestamp conversion)
+- `expires_at` → capability_descriptors.expires_at_ms (timestamp conversion)
 - `status` → capability_descriptors.status
 - `descriptor_body` → **UNMAPPED in the bound DDL columns**
 
@@ -119,12 +119,12 @@ This scan is deliberately conservative:
 - `capability_id` → capability_knowledge_revisions.capability_id
 - `descriptor_version` → capability_knowledge_revisions.descriptor_version
 - `revision_number` → capability_knowledge_revisions.revision_number
-- `context_scope` → capability_knowledge_revisions.context_scope_json (decode JSON)
-- `claims` → capability_knowledge_revisions.claims_json (decode JSON)
-- `confidence` → capability_knowledge_revisions.confidence_json (decode JSON)
+- `context_scope` → capability_knowledge_revisions.context_scope_json (JSON decode)
+- `claims` → capability_knowledge_revisions.claims_json (JSON decode)
+- `confidence` → capability_knowledge_revisions.confidence_json (JSON decode)
 - `status` → capability_knowledge_revisions.status
-- `evidence_refs` → capability_relationships.evidence_refs_json (decode JSON)
-- `created_at` → capability_knowledge_revisions.created_at_ms (convert timestamp); capability_relationships.created_at_ms (convert timestamp)
+- `evidence_refs` → capability_relationships.evidence_refs_json (JSON decode)
+- `created_at` → capability_knowledge_revisions.created_at_ms (timestamp conversion); capability_relationships.created_at_ms (timestamp conversion)
 
 ### `representation.inspect`
 
@@ -137,10 +137,10 @@ This scan is deliberately conservative:
 - `representation_type` → representations.representation_type
 - `method_id` → **UNMAPPED in the bound DDL columns**
 - `method_version` → **UNMAPPED in the bound DDL columns**
-- `content` → representations.content_json (decode JSON)
-- `uncertainty` → representations.uncertainty_json (decode JSON)
+- `content` → representations.content_json (JSON decode)
+- `uncertainty` → representations.uncertainty_json (JSON decode)
 - `source_refs` → **UNMAPPED in the bound DDL columns**
-- `created_at` → representations.created_at_ms (convert timestamp)
+- `created_at` → representations.created_at_ms (timestamp conversion)
 
 ### `context.get`
 
@@ -151,12 +151,12 @@ This scan is deliberately conservative:
 - `context_id` → contexts.context_id
 - `version` → contexts.version
 - `scope` → contexts.scope
-- `valid_from` → contexts.valid_from_ms (convert timestamp)
-- `valid_until` → contexts.valid_until_ms (convert timestamp)
-- `attributes` → contexts.attributes_json (decode JSON)
+- `valid_from` → contexts.valid_from_ms (timestamp conversion)
+- `valid_until` → contexts.valid_until_ms (timestamp conversion)
+- `attributes` → contexts.attributes_json (JSON decode)
 - `provenance_refs` → **UNMAPPED in the bound DDL columns**
 - `uncertainty` → **UNMAPPED in the bound DDL columns**
-- `created_at` → contexts.created_at_ms (convert timestamp)
+- `created_at` → contexts.created_at_ms (timestamp conversion)
 
 ### `memory.search`
 
@@ -168,7 +168,7 @@ This scan is deliberately conservative:
 - `query_ref` → **UNMAPPED in the bound DDL columns**
 - `scope` → **UNMAPPED in the bound DDL columns**
 - `candidate_refs` → **UNMAPPED in the bound DDL columns**
-- `created_at` → memory_records.created_at_ms (convert timestamp); memory_links.created_at_ms (convert timestamp)
+- `created_at` → memory_records.created_at_ms (timestamp conversion); memory_links.created_at_ms (timestamp conversion)
 - `access_decision_ref` → **UNMAPPED in the bound DDL columns**
 
 ### `knowledge.search`
@@ -181,8 +181,8 @@ This scan is deliberately conservative:
 - `proposition` → knowledge_items.proposition
 - `domain` → knowledge_items.domain
 - `status` → knowledge_items.status
-- `created_at` → knowledge_items.created_at_ms (convert timestamp); beliefs.created_at_ms (convert timestamp); belief_revisions.created_at_ms (convert timestamp)
-- `updated_at` → knowledge_items.updated_at_ms (convert timestamp); beliefs.updated_at_ms (convert timestamp)
+- `created_at` → knowledge_items.created_at_ms (timestamp conversion); beliefs.created_at_ms (timestamp conversion); belief_revisions.created_at_ms (timestamp conversion)
+- `updated_at` → knowledge_items.updated_at_ms (timestamp conversion); beliefs.updated_at_ms (timestamp conversion)
 
 ### `belief.inspect`
 
@@ -198,7 +198,7 @@ This scan is deliberately conservative:
 - `confidence` → belief_revisions.confidence
 - `revision_reason` → belief_revisions.revision_reason
 - `evidence_refs` → **UNMAPPED in the bound DDL columns**
-- `created_at` → beliefs.created_at_ms (convert timestamp); belief_revisions.created_at_ms (convert timestamp)
+- `created_at` → beliefs.created_at_ms (timestamp conversion); belief_revisions.created_at_ms (timestamp conversion)
 
 ### `prediction.inspect`
 
@@ -208,13 +208,13 @@ This scan is deliberately conservative:
 
 - `prediction_id` → predictions.prediction_id; prediction_evaluations.prediction_id
 - `subject_ref` → predictions.subject_ref
-- `expected_outcome` → predictions.expected_outcome_json (decode JSON)
-- `evaluation_criteria` → predictions.evaluation_criteria_json (decode JSON)
+- `expected_outcome` → predictions.expected_outcome_json (JSON decode)
+- `evaluation_criteria` → predictions.evaluation_criteria_json (JSON decode)
 - `conditions` → **UNMAPPED in the bound DDL columns**
 - `horizon` → **UNMAPPED in the bound DDL columns**
 - `confidence` → **UNMAPPED in the bound DDL columns**
 - `evidence_refs` → **UNMAPPED in the bound DDL columns**
-- `created_at` → predictions.created_at_ms (convert timestamp)
+- `created_at` → predictions.created_at_ms (timestamp conversion)
 
 ### `appraisal.inspect`
 
@@ -225,12 +225,12 @@ This scan is deliberately conservative:
 - `appraisal_id` → appraisal_records.appraisal_id
 - `context_id` → appraisal_records.context_id
 - `context_version` → appraisal_records.context_version
-- `assessment` → appraisal_records.assessment_json (decode JSON)
-- `uncertainty` → appraisal_records.uncertainty_json (decode JSON)
-- `evidence_refs` → appraisal_records.evidence_refs_json (decode JSON)
+- `assessment` → appraisal_records.assessment_json (JSON decode)
+- `uncertainty` → appraisal_records.uncertainty_json (JSON decode)
+- `evidence_refs` → appraisal_records.evidence_refs_json (JSON decode)
 - `sensitivity` → appraisal_records.sensitivity
-- `created_at` → appraisal_records.created_at_ms (convert timestamp)
-- `valid_until` → appraisal_records.valid_until_ms (convert timestamp)
+- `created_at` → appraisal_records.created_at_ms (timestamp conversion)
+- `valid_until` → appraisal_records.valid_until_ms (timestamp conversion)
 
 ### `attention.inspect`
 
@@ -259,26 +259,28 @@ This scan is deliberately conservative:
 - `context_id` → reasoning_assessments.context_id
 - `context_version` → reasoning_assessments.context_version
 - `hypothesis_ref` → reasoning_assessments.hypothesis_ref
-- `evidence_refs` → reasoning_assessments.evidence_refs_json (decode JSON)
+- `evidence_refs` → reasoning_assessments.evidence_refs_json (JSON decode)
 - `conclusion_summary_ref` → reasoning_assessments.conclusion_summary_ref
-- `uncertainty` → reasoning_assessments.uncertainty_json (decode JSON)
+- `uncertainty` → reasoning_assessments.uncertainty_json (JSON decode)
 - `sensitivity` → reasoning_assessments.sensitivity
-- `created_at` → reasoning_assessments.created_at_ms (convert timestamp)
+- `created_at` → reasoning_assessments.created_at_ms (timestamp conversion)
 
 ### `goal.get`
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/goalRevision`
-- Bound tables: `goals`, `goal_revisions`
+- Bound tables: `goals`, `goal_revisions`, `goal_revision_objective_bindings`
 - Unmapped by direct/JSON/timestamp column-name scan: none
 
-- `goal_id` → goals.goal_id; goal_revisions.goal_id
+- `goal_id` → goals.goal_id; goal_revisions.goal_id; goal_revision_objective_bindings.goal_id
 - `revision` → goal_revisions.revision
 - `description` → goal_revisions.description
 - `state` → goal_revisions.state
 - `priority` → goal_revisions.priority
-- `constraints` → goal_revisions.constraints_json (decode JSON)
+- `constraints` → goal_revisions.constraints_json (JSON decode)
 - `reason_ref` → goal_revisions.reason_ref
-- `created_at` → goals.created_at_ms (convert timestamp); goal_revisions.created_at_ms (convert timestamp)
+- `created_at` → goals.created_at_ms (timestamp conversion); goal_revisions.created_at_ms (timestamp conversion); goal_revision_objective_bindings.created_at_ms (timestamp conversion)
+- `objective_id` → goal_revision_objective_bindings.objective_id
+- `objective_version` → goal_revision_objective_bindings.objective_version
 
 ### `plan.get`
 
@@ -291,7 +293,7 @@ This scan is deliberately conservative:
 - `goal_revision` → plans.goal_revision
 - `plan_version` → plans.plan_version
 - `status` → plans.status; plan_steps.status
-- `created_at` → plans.created_at_ms (convert timestamp); plan_steps.created_at_ms (convert timestamp); plan_step_contracts.created_at_ms (convert timestamp)
+- `created_at` → plans.created_at_ms (timestamp conversion); plan_steps.created_at_ms (timestamp conversion); plan_step_contracts.created_at_ms (timestamp conversion)
 - `step_refs` → **UNMAPPED in the bound DDL columns**
 - `context_version_ref` → **UNMAPPED in the bound DDL columns**
 - `capability_epoch_digest` → **UNMAPPED in the bound DDL columns**
@@ -308,8 +310,8 @@ This scan is deliberately conservative:
 - `decision_type` → decision_records.decision_type
 - `selected_option_ref` → decision_records.selected_option_ref
 - `rationale_ref` → decision_records.rationale_ref
-- `uncertainty` → decision_records.uncertainty_json (decode JSON)
-- `created_at` → decision_records.created_at_ms (convert timestamp)
+- `uncertainty` → decision_records.uncertainty_json (JSON decode)
+- `created_at` → decision_records.created_at_ms (timestamp conversion)
 
 ### `task.status`
 
@@ -321,10 +323,10 @@ This scan is deliberately conservative:
 - `task_definition_ref` → task_runs.task_definition_ref
 - `state` → task_runs.state
 - `priority` → task_runs.priority
-- `budget` → task_runs.budget_json (decode JSON)
+- `budget` → task_runs.budget_json (JSON decode)
 - `checkpoint_refs` → **UNMAPPED in the bound DDL columns**
-- `created_at` → task_runs.created_at_ms (convert timestamp); task_checkpoints.created_at_ms (convert timestamp); task_checkpoint_details.created_at_ms (convert timestamp)
-- `updated_at` → task_runs.updated_at_ms (convert timestamp)
+- `created_at` → task_runs.created_at_ms (timestamp conversion); task_checkpoints.created_at_ms (timestamp conversion); task_checkpoint_details.created_at_ms (timestamp conversion)
+- `updated_at` → task_runs.updated_at_ms (timestamp conversion)
 - `failure_ref` → **UNMAPPED in the bound DDL columns**
 - `revision` → **UNMAPPED in the bound DDL columns**
 
@@ -360,9 +362,9 @@ This scan is deliberately conservative:
 - `policy_version_ref` → approval_requests.policy_version_ref
 - `granted_by` → **UNMAPPED in the bound DDL columns**
 - `approval_ref` → **UNMAPPED in the bound DDL columns**
-- `created_at` → permissions.created_at_ms (convert timestamp); policies.created_at_ms (convert timestamp); provider_permissions.created_at_ms (convert timestamp)
-- `expires_at` → permissions.expires_at_ms (convert timestamp); provider_permissions.expires_at_ms (convert timestamp); approval_requests.expires_at_ms (convert timestamp)
-- `revoked_at` → permissions.revoked_at_ms (convert timestamp); provider_permissions.revoked_at_ms (convert timestamp)
+- `created_at` → permissions.created_at_ms (timestamp conversion); policies.created_at_ms (timestamp conversion); provider_permissions.created_at_ms (timestamp conversion)
+- `expires_at` → permissions.expires_at_ms (timestamp conversion); provider_permissions.expires_at_ms (timestamp conversion); approval_requests.expires_at_ms (timestamp conversion)
+- `revoked_at` → permissions.revoked_at_ms (timestamp conversion); provider_permissions.revoked_at_ms (timestamp conversion)
 
 ### `audit.lookup`
 
@@ -380,7 +382,7 @@ This scan is deliberately conservative:
 - `operation_id` → governance_audit.operation_id
 - `approval_ref` → **UNMAPPED in the bound DDL columns**
 - `evidence_refs` → **UNMAPPED in the bound DDL columns**
-- `occurred_at` → governance_audit.occurred_at_ms (convert timestamp)
+- `occurred_at` → governance_audit.occurred_at_ms (timestamp conversion)
 - `correlation_id` → **UNMAPPED in the bound DDL columns**
 
 ### `device.capabilities`
@@ -397,9 +399,9 @@ This scan is deliberately conservative:
 - `descriptor_schema_version` → **UNMAPPED in the bound DDL columns**
 - `descriptor_sha256` → capability_descriptors.descriptor_sha256
 - `source_ref` → capability_descriptors.source_ref
-- `first_discovered_at` → capability_descriptors.first_discovered_at_ms (convert timestamp)
-- `last_verified_at` → capability_descriptors.last_verified_at_ms (convert timestamp)
-- `expires_at` → capability_descriptors.expires_at_ms (convert timestamp)
+- `first_discovered_at` → capability_descriptors.first_discovered_at_ms (timestamp conversion)
+- `last_verified_at` → capability_descriptors.last_verified_at_ms (timestamp conversion)
+- `expires_at` → capability_descriptors.expires_at_ms (timestamp conversion)
 - `status` → capability_descriptors.status
 - `descriptor_body` → **UNMAPPED in the bound DDL columns**
 
@@ -412,12 +414,12 @@ This scan is deliberately conservative:
 - `objective_id` → objective_records.objective_id
 - `statement` → objective_records.statement
 - `request_source_ref` → objective_records.request_source_ref
-- `created_at` → objective_records.created_at_ms (convert timestamp)
+- `created_at` → objective_records.created_at_ms (timestamp conversion)
 - `status` → objective_records.status
-- `success_evidence` → objective_records.success_evidence_json (decode JSON)
-- `constraints` → objective_records.constraints_json (decode JSON)
-- `assumptions` → objective_records.assumptions_json (decode JSON)
-- `uncertainty` → objective_records.uncertainty_json (decode JSON)
+- `success_evidence` → objective_records.success_evidence_json (JSON decode)
+- `constraints` → objective_records.constraints_json (JSON decode)
+- `assumptions` → objective_records.assumptions_json (JSON decode)
+- `uncertainty` → objective_records.uncertainty_json (JSON decode)
 - `owner_ref` → objective_records.owner_ref
 - `version` → objective_records.version
 
@@ -430,11 +432,11 @@ This scan is deliberately conservative:
 - `entity_id` → world_entities.entity_id
 - `identity_status` → world_entities.identity_status
 - `description` → world_entities.description
-- `first_observed_at` → world_entities.first_observed_at_ms (convert timestamp)
-- `last_observed_at` → world_entities.last_observed_at_ms (convert timestamp)
-- `evidence_refs` → world_entities.evidence_refs_json (decode JSON)
-- `scope` → world_entities.scope_json (decode JSON)
-- `attributes` → world_entities.attributes_json (decode JSON)
+- `first_observed_at` → world_entities.first_observed_at_ms (timestamp conversion)
+- `last_observed_at` → world_entities.last_observed_at_ms (timestamp conversion)
+- `evidence_refs` → world_entities.evidence_refs_json (JSON decode)
+- `scope` → world_entities.scope_json (JSON decode)
+- `attributes` → world_entities.attributes_json (JSON decode)
 - `sensitivity` → world_entities.sensitivity
 - `owner_ref` → world_entities.owner_ref
 - `version` → world_entities.version
@@ -448,11 +450,11 @@ This scan is deliberately conservative:
 - `entity_id` → world_entities.entity_id
 - `identity_status` → world_entities.identity_status
 - `description` → world_entities.description
-- `first_observed_at` → world_entities.first_observed_at_ms (convert timestamp)
-- `last_observed_at` → world_entities.last_observed_at_ms (convert timestamp)
-- `evidence_refs` → world_entities.evidence_refs_json (decode JSON)
-- `scope` → world_entities.scope_json (decode JSON)
-- `attributes` → world_entities.attributes_json (decode JSON)
+- `first_observed_at` → world_entities.first_observed_at_ms (timestamp conversion)
+- `last_observed_at` → world_entities.last_observed_at_ms (timestamp conversion)
+- `evidence_refs` → world_entities.evidence_refs_json (JSON decode)
+- `scope` → world_entities.scope_json (JSON decode)
+- `attributes` → world_entities.attributes_json (JSON decode)
 - `sensitivity` → world_entities.sensitivity
 - `owner_ref` → world_entities.owner_ref
 - `version` → world_entities.version
@@ -469,9 +471,9 @@ This scan is deliberately conservative:
 - `object_ref` → world_relationships.object_ref
 - `epistemic_status` → world_relationships.epistemic_status
 - `confidence` → world_relationships.confidence
-- `evidence_refs` → world_relationships.evidence_refs_json (decode JSON)
-- `valid_from` → world_relationships.valid_from_ms (convert timestamp)
-- `valid_until` → world_relationships.valid_until_ms (convert timestamp)
+- `evidence_refs` → world_relationships.evidence_refs_json (JSON decode)
+- `valid_from` → world_relationships.valid_from_ms (timestamp conversion)
+- `valid_until` → world_relationships.valid_until_ms (timestamp conversion)
 - `context_ref` → world_relationships.context_ref
 - `owner_ref` → world_relationships.owner_ref
 - `version` → world_relationships.version
@@ -484,14 +486,14 @@ This scan is deliberately conservative:
 
 - `situation_id` → situation_snapshots.situation_id
 - `version` → situation_snapshots.version
-- `objective_refs` → situation_snapshots.objective_refs_json (decode JSON)
-- `entity_refs` → situation_snapshots.entity_refs_json (decode JSON)
-- `observed_at` → situation_snapshots.observed_at_ms (convert timestamp)
-- `recorded_at` → situation_snapshots.recorded_at_ms (convert timestamp)
-- `state_claims` → situation_snapshots.state_claims_json (decode JSON)
-- `unknowns` → situation_snapshots.unknowns_json (decode JSON)
-- `conflicts` → situation_snapshots.conflicts_json (decode JSON)
-- `evidence_refs` → situation_snapshots.evidence_refs_json (decode JSON)
+- `objective_refs` → situation_snapshots.objective_refs_json (JSON decode)
+- `entity_refs` → situation_snapshots.entity_refs_json (JSON decode)
+- `observed_at` → situation_snapshots.observed_at_ms (timestamp conversion)
+- `recorded_at` → situation_snapshots.recorded_at_ms (timestamp conversion)
+- `state_claims` → situation_snapshots.state_claims_json (JSON decode)
+- `unknowns` → situation_snapshots.unknowns_json (JSON decode)
+- `conflicts` → situation_snapshots.conflicts_json (JSON decode)
+- `evidence_refs` → situation_snapshots.evidence_refs_json (JSON decode)
 - `context_ref` → situation_snapshots.context_ref
 - `owner_ref` → situation_snapshots.owner_ref
 
@@ -503,21 +505,21 @@ This scan is deliberately conservative:
 
 - `hypothesis_id` → affordance_hypotheses.hypothesis_id
 - `objective_ref` → affordance_hypotheses.objective_ref
-- `actor_refs` → affordance_hypotheses.actor_refs_json (decode JSON)
-- `resource_refs` → affordance_hypotheses.resource_refs_json (decode JSON)
+- `actor_refs` → affordance_hypotheses.actor_refs_json (JSON decode)
+- `resource_refs` → affordance_hypotheses.resource_refs_json (JSON decode)
 - `interaction_description` → affordance_hypotheses.interaction_description
-- `preconditions` → affordance_hypotheses.preconditions_json (decode JSON)
-- `expected_effects` → affordance_hypotheses.expected_effects_json (decode JSON)
-- `authority_requirements` → affordance_hypotheses.authority_requirements_json (decode JSON)
-- `evidence_refs` → affordance_hypotheses.evidence_refs_json (decode JSON)
+- `preconditions` → affordance_hypotheses.preconditions_json (JSON decode)
+- `expected_effects` → affordance_hypotheses.expected_effects_json (JSON decode)
+- `authority_requirements` → affordance_hypotheses.authority_requirements_json (JSON decode)
+- `evidence_refs` → affordance_hypotheses.evidence_refs_json (JSON decode)
 - `confidence` → affordance_hypotheses.confidence
 - `status` → affordance_hypotheses.status
-- `scope` → affordance_hypotheses.scope_json (decode JSON)
-- `limitations` → affordance_hypotheses.limitations_json (decode JSON)
-- `composition_refs` → affordance_hypotheses.composition_refs_json (decode JSON)
+- `scope` → affordance_hypotheses.scope_json (JSON decode)
+- `limitations` → affordance_hypotheses.limitations_json (JSON decode)
+- `composition_refs` → affordance_hypotheses.composition_refs_json (JSON decode)
 - `owner_ref` → affordance_hypotheses.owner_ref
 - `version` → affordance_hypotheses.version
-- `created_at` → affordance_hypotheses.created_at_ms (convert timestamp)
+- `created_at` → affordance_hypotheses.created_at_ms (timestamp conversion)
 
 ### `interaction.inspect`
 
@@ -528,13 +530,13 @@ This scan is deliberately conservative:
 - `interaction_id` → interaction_proposals.interaction_id
 - `objective_ref` → interaction_proposals.objective_ref
 - `actor_ref` → interaction_proposals.actor_ref
-- `target_refs` → interaction_proposals.target_refs_json (decode JSON)
-- `means_hypothesis_refs` → interaction_proposals.means_hypothesis_refs_json (decode JSON)
-- `proposed_effects` → interaction_proposals.proposed_effects_json (decode JSON)
+- `target_refs` → interaction_proposals.target_refs_json (JSON decode)
+- `means_hypothesis_refs` → interaction_proposals.means_hypothesis_refs_json (JSON decode)
+- `proposed_effects` → interaction_proposals.proposed_effects_json (JSON decode)
 - `authority_context_ref` → interaction_proposals.authority_context_ref
-- `risk_assessment` → interaction_proposals.risk_assessment_json (decode JSON)
-- `precondition_evidence_refs` → interaction_proposals.precondition_evidence_refs_json (decode JSON)
-- `proposed_at` → interaction_proposals.proposed_at_ms (convert timestamp)
+- `risk_assessment` → interaction_proposals.risk_assessment_json (JSON decode)
+- `precondition_evidence_refs` → interaction_proposals.precondition_evidence_refs_json (JSON decode)
+- `proposed_at` → interaction_proposals.proposed_at_ms (timestamp conversion)
 - `deadline` → **UNMAPPED in the bound DDL columns**
 - `status` → interaction_proposals.status
 - `authorization_ref` → interaction_proposals.authorization_ref
@@ -549,14 +551,14 @@ This scan is deliberately conservative:
 
 - `outcome_id` → interaction_outcomes.outcome_id
 - `interaction_ref` → interaction_outcomes.interaction_ref
-- `observed_at` → interaction_outcomes.observed_at_ms (convert timestamp)
-- `recorded_at` → interaction_outcomes.recorded_at_ms (convert timestamp)
+- `observed_at` → interaction_outcomes.observed_at_ms (timestamp conversion)
+- `recorded_at` → interaction_outcomes.recorded_at_ms (timestamp conversion)
 - `result_status` → interaction_outcomes.result_status
-- `observed_effects` → interaction_outcomes.observed_effects_json (decode JSON)
-- `evidence_refs` → interaction_outcomes.evidence_refs_json (decode JSON)
-- `unresolved_effects` → interaction_outcomes.unresolved_effects_json (decode JSON)
-- `attribution` → interaction_outcomes.attribution_json (decode JSON)
-- `side_effects` → interaction_outcomes.side_effects_json (decode JSON)
+- `observed_effects` → interaction_outcomes.observed_effects_json (JSON decode)
+- `evidence_refs` → interaction_outcomes.evidence_refs_json (JSON decode)
+- `unresolved_effects` → interaction_outcomes.unresolved_effects_json (JSON decode)
+- `attribution` → interaction_outcomes.attribution_json (JSON decode)
+- `side_effects` → interaction_outcomes.side_effects_json (JSON decode)
 - `owner_ref` → interaction_outcomes.owner_ref
 
 ## 3. High-priority semantic gaps
@@ -571,6 +573,7 @@ This scan is deliberately conservative:
 8. **`interaction.inspect`:** `deadline` and `execution_binding_ref` lack direct/JSON/timestamp candidate columns in the bound interaction table; the DDL uses `deadline_at_ms` and `execution_operation_ref`, which require explicit alias and timestamp conversion rules.
 9. **`context.get`:** `provenance_refs` is plural while DDL stores `provenance_ref`; `uncertainty` has no direct candidate. The cardinality and uncertainty source must be specified.
 10. **`operation.status` and `task.status`:** these are projections across operation/task state, attempts, checkpoints and recovery. The exact event/current-state source, timestamps, failure references, policy decision lineage and checkpoint aggregation need explicit field-by-field definitions.
+11. **`goal.get` objective lineage:** memory migration v6 now adds an owner-scoped, composite-FK binding from each new goal revision to an exact objective revision. The query table binding and result schema include `objective_id`/`objective_version`. Legacy unbound goal revisions remain excluded from valid derived-goal results pending explicit reconciliation. This corrects the missing durable lineage, but the actual SELECT and owner-scoped query remain unexecuted.
 
 ## 4. Required closure work
 
