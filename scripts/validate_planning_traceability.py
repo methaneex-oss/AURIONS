@@ -227,6 +227,13 @@ def validate() -> tuple[int, int]:
             if not column:
                 fail(f"{wp_id}: missing {label}")
 
+        matrix_dependencies = set(parse_wp_ids(cells[2]))
+        if matrix_dependencies != graph[wp_id]:
+            fail(
+                f"{wp_id}: roadmap dependencies differ from traceability-matrix inputs; "
+                f"roadmap={sorted(graph[wp_id])}; matrix={sorted(matrix_dependencies)}"
+            )
+
     # Unit-level controls for the parser and graph-cycle detector.
     if set(parse_wp_ids("WP-00…WP-03, WP-06")) != {
         "WP-00", "WP-01", "WP-02", "WP-03", "WP-06"
