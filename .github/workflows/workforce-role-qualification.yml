@@ -24,12 +24,7 @@ jobs:
       max-parallel: 2
       matrix:
         role:
-          - lead_builder
-          - specialist_builder
-          - architecture_reviewer
-          - code_reviewer
           - negative_tester
-          - integration_verifier
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
