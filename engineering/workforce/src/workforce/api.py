@@ -270,6 +270,37 @@ def checkpoint(
         return {"checkpoint_id": row["checkpoint_id"], "created_at": row["created_at"], "idempotent_replay": replay}
 
 
+@app.get("/v1/tasks/{task_id}/checkpoints/latest")
+def latest_checkpoint(
+    task_id: str,
+    lease_token: str,
+    x_worker_token: str | None = Header(default=None, alias="X-Worker-Token"),
+):
+    worker = _auth(authenticate_worker, x_worker_token)
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute(
+            """SELECT 1 FROM wf_tasks
+                 WHERE task_id=%s AND role=%s AND lease_worker=%s
+                   AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
+                   AND lease_expires_at > now()
+                   AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
+                   AND state IN ('CLAIMED','RUNNING','CHECKPOINTED')""",
+            (task_id, worker.role, worker.actor_id, lease_token),
+        )
+        if not cur.fetchone():
+            raise HTTPException(status_code=409, detail="valid current lease required to restore checkpoints")
+        cur.execute(
+            """SELECT checkpoint_id,worker_id,checkpoint_name,payload_json,context_sha256,created_at
+                 FROM wf_checkpoints WHERE task_id=%s
+                ORDER BY created_at DESC, checkpoint_id DESC LIMIT 1""",
+            (task_id,),
+        )
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="no checkpoint exists for this task")
+        return row
+
+
 @app.post("/v1/tasks/{task_id}/worker-transition")
 def worker_transition(
     task_id: str,
