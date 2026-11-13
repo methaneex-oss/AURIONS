@@ -1,0 +1,66 @@
+version: 1
+selection_date: "2026-11-13"
+policy:
+  free_only: true
+  paid_fallback: false
+  automatic_provider_fallback: false
+  one_role_per_agent: true
+  qualification_status: pending_live_role_evaluation
+agents:
+  - id: agent-01
+    role: lead_builder
+    responsibility: "One authorized work package end-to-end"
+    provider: zai
+    model: glm-4.7-flash
+    api_url: https://api.z.ai/api/paas/v4/chat/completions
+    api_key_env: ZAI_API_KEY
+    cost_class: free
+    execution_order: 1
+  - id: agent-02
+    role: specialist_builder
+    responsibility: "One non-overlapping component or test package"
+    provider: groq
+    model: qwen/qwen3.8-27b
+    api_url: https://api.groq.com/openai/v1/chat/completions
+    api_key_env: GROQ_API_KEY
+    cost_class: free
+    execution_order: 2
+  - id: agent-03
+    role: architecture_reviewer
+    responsibility: "Read-only architecture and principle-alignment review"
+    provider: nvidia_nim
+    model: nvidia/nemotron-3.5-super-vl-120b-a12b
+    api_url: https://integrate.api.nvidia.com/v1/chat/completions
+    api_key_env: NVIDIA_API_KEY
+    cost_class: free_endpoint
+    execution_order: 3
+  - id: agent-04
+    role: code_reviewer
+    responsibility: "Read-only correctness, security, concurrency and regression review"
+    provider: google_ai_studio
+    model: gemini-3.8-flash
+    api_url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
+    api_key_env: GEMINI_API_KEY
+    cost_class: free
+    execution_order: 3
+    data_policy_note: "Google may use free-tier content to improve products; never send secrets or sensitive non-public content."
+  - id: agent-05
+    role: negative_tester
+    responsibility: "Read-only adversarial testing against exact candidate SHA"
+    provider: cloudflare_workers_ai
+    model: "@cf/qwen/qwen3-30b-a3b-fp8"
+    api_url: "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions"
+    api_key_env: CLOUDFLARE_API_TOKEN
+    cost_class: free_daily_allowance
+    execution_order: 3
+    quota_note: "10,000 Neurons/day; actual token allowance varies by model."
+  - id: agent-06
+    role: integration_verifier
+    responsibility: "Read-only exact-SHA evidence reconciliation and Director packet"
+    provider: groq
+    model: openai/gpt-oss-120b
+    api_url: https://api.groq.com/openai/v1/chat/completions
+    api_key_env: GROQ_API_KEY
+    cost_class: free
+    execution_order: 4
+    serialization_group: groq
