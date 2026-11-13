@@ -193,7 +193,7 @@ def _task_brief(manifest: dict[str, Any], role: str) -> str:
     spec = manifest["roles"][role]
     permitted = spec["permitted_paths"] or ["READ-ONLY: no write paths"]
     sections = [
-        f"Work package: {manifest['work_package_id']} (run {manifest['run_id']})",
+        f"Work package: {manifest['work_package_id']} (run {manifest.get('run_id', 'UNASSIGNED')})",
         f"Objective: {manifest['objective']}",
         f"Role: {role}",
         f"Role-specific assignment: {spec['task']}",
