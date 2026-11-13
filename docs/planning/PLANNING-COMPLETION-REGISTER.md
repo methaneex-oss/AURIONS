@@ -523,3 +523,13 @@ Current verified inventory: 10 schema documents; 8 registry/fixture pairs; 89 re
 PR #2 remains open/draft/unmerged with 99 changed files; PR #1 remains a separate open/draft/unmerged nine-file scaffold. No implementation authorization, merge or reviewer/tester handoff was made.
 
 The builder specification/structural-validation increment is verified, but the overall builder phase remains NOT READY for planning exit or independent review. The next builder-owned task is a final semantic reconciliation of cross-store saga/transaction ownership, canonical entity/DDL transitions, query field projections, product acceptance and owner decision traceability, followed by a separate exact-revision builder review. Runtime and target-platform work remains unauthorized or externally gated.
+
+## BR-008 / BR-010 builder increment — first-release acceptance traceability (2026-11-13)
+
+The builder added `docs/planning/FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md`, mapping every product acceptance condition PR-01…PR-18 to its contract/architecture trace, accountable work packages, required scenario/test evidence, acceptance evidence and owner/external gates. The matrix explicitly distinguishes shared cognitive-core implementation/contracts from unresolved cloud/mobile cognitive-history continuity, preserves the owner-reserved first Android action, and prevents host CI or schema presence from being represented as product acceptance.
+
+Extended `scripts/validate_planning_traceability.py` to parse the canonical product acceptance table and the new crosswalk, require exact one-to-one coverage of PR-01…PR-18, require all traceability columns, and reject missing/unknown WP references. Added the matrix to the canonical planning index.
+
+**Prior exact-head baseline:** PR #2 head `a8127f4a7ebadb8498db08f0dbbf96f2c09a400a` passed workflow [43324753767](https://github.com/methaneex-oss/AURIONS/actions/runs/43324753767). The new crosswalk and validator changes are later commits; exact-head CI for the updated revision is pending and must pass before this increment is marked validated.
+
+**Evidence boundary:** This closes a builder-owned product-acceptance traceability artifact and its structural inventory guard only. It does not execute PR-01…PR-18, close the cross-store saga/transaction review, prove query projection semantics, establish target-platform readiness, approve the product definition, settle topology/action decisions, authorize implementation, or authorize independent-review/tester handoff. Overall builder disposition remains NOT READY.
