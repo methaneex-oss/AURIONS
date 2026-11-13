@@ -176,12 +176,37 @@ def main() -> int:
                 fail(f"{command_type}: deferred command must not have active contract bindings")
             continue
         mapped_command_types.add(command_type)
+        bindings = item.get("table_bindings", [])
+        binding_stores = [binding["store"] for binding in bindings]
+        if len(binding_stores) != len(set(binding_stores)):
+            fail(f"{command_type}: duplicate table-binding store")
         bindings_by_store = {
             binding["store"]: set(binding["tables"])
-            for binding in item.get("table_bindings", [])
+            for binding in bindings
         }
         stores = item.get("persistence_stores", [])
         transaction_contract = item.get("transaction_contract", "")
+        for binding in bindings:
+            store = binding["store"]
+            role = binding.get("binding_role")
+            if store not in store_tables:
+                fail(f"{command_type}: table binding names unknown store {store}")
+            missing_tables = set(binding["tables"]) - store_tables[store]
+            if missing_tables:
+                fail(f"{command_type}: {store} binding names absent DDL tables {sorted(missing_tables)}")
+            if store in stores:
+                if role != "authoritative_write":
+                    fail(f"{command_type}: persistence store {store} must have authoritative_write binding role")
+            elif role == "async_archive":
+                if store != "aurion_events.db" or not {"events", "outbox"}.issubset(set(binding["tables"])):
+                    fail(f"{command_type}: async_archive must bind events/outbox in aurion_events.db")
+            elif role == "read_dependency":
+                if "outbox" in binding["tables"]:
+                    fail(f"{command_type}: read_dependency {store} must not bind its write outbox")
+            else:
+                fail(f"{command_type}: extra store {store} must be read_dependency or async_archive")
+        if set(stores) - set(binding_stores):
+            fail(f"{command_type}: authoritative persistence store lacks table binding")
         matrix_row = transaction_rows[command_type]
         expected_mode = (
             "DEFERRED" if item["dispatch_status"] == "deferred_by_scope"
@@ -279,6 +304,21 @@ def main() -> int:
             fail(f"{query_type}: unsafe dispatch status")
         if item.get("read_only") is not True:
             fail(f"{query_type}: query must remain read-only")
+        query_bindings = item.get("table_bindings", [])
+        query_binding_stores = [binding["store"] for binding in query_bindings]
+        if len(query_binding_stores) != len(set(query_binding_stores)):
+            fail(f"{query_type}: duplicate query table-binding store")
+        if set(query_binding_stores) != set(item.get("persistence_stores", [])):
+            fail(f"{query_type}: read-projection table stores differ from declared persistence stores")
+        for binding in query_bindings:
+            if binding.get("binding_role") != "read_projection":
+                fail(f"{query_type}: query table binding must be read_projection")
+            store = binding["store"]
+            if store not in store_tables:
+                fail(f"{query_type}: unknown query projection store {store}")
+            missing_tables = set(binding["tables"]) - store_tables[store]
+            if missing_tables:
+                fail(f"{query_type}: {store} projection names absent DDL tables {sorted(missing_tables)}")
         unresolved_projection_fields = item.get("projection_unresolved_fields", [])
         if len(unresolved_projection_fields) != len(set(unresolved_projection_fields)):
             fail(f"{query_type}: duplicate unresolved projection fields")
