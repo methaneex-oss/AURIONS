@@ -25,10 +25,14 @@ class ModelRegistryTests(unittest.TestCase):
     def test_roles_have_one_provider_profile_and_secret(self):
         for role in ROLE_MODEL_ASSIGNMENTS:
             profile = role_assignment(role)
-            self.assertIn(profile["provider"], {"groq", "openrouter"})
+            self.assertIn(profile["provider"], {"groq", "cloudflare"})
             self.assertTrue(profile["api_url"].startswith("https://"))
             self.assertTrue(profile["key_env"].endswith("_API_KEY"))
-            self.assertEqual(profile["cost_class"], "free")
+            self.assertIn(profile["cost_class"], {"free", "free_daily_allowance"})
+            if profile["provider"] == "cloudflare":
+                self.assertEqual(profile["account_env"], "CLOUDFLARE_ACCOUNT_ID")
+            else:
+                self.assertEqual(profile["account_env"], "")
 
     def test_unknown_role_is_rejected(self):
         with self.assertRaises(ValueError):
