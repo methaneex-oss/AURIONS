@@ -372,6 +372,29 @@ def main() -> int:
             marker = f"- {chr(96)}{field_name}{chr(96)} → "
             if marker not in projection_section or marker + "**UNMAPPED" in projection_section:
                 fail(f"{query_type}: resolved projection field {field_name} lacks a proposed source/derivation")
+        # Every relational source named by a field mapping must be part of
+        # this query's declared read projection. Parenthetical text is a
+        # derivation/annotation (for example an event type), not a table join.
+        bound_query_tables = {
+            table for binding in query_bindings for table in binding["tables"]
+        }
+        for projection_line in projection_section.splitlines():
+            if not projection_line.startswith("- `") or " → " not in projection_line:
+                continue
+            source_expression = projection_line.split(" → ", 1)[1].split("(", 1)[0]
+            source_tables = {
+                table for table, _column in re.findall(
+                    r"\\b([a-z][a-z0-9_]*)\\.([a-z][a-z0-9_]*)\\b",
+                    source_expression,
+                )
+            }
+            undeclared_sources = source_tables - bound_query_tables
+            if undeclared_sources:
+                field_name = projection_line.split("`", 2)[1]
+                fail(
+                    f"{query_type}: projection field {field_name} references "
+                    f"undeclared read tables {sorted(undeclared_sources)}"
+                )
         for field in query_contract_fields:
             if not isinstance(item.get(field), str) or not item[field].strip():
                 fail(f"{query_type}: missing populated {field}")
