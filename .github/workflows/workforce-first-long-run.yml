@@ -17,8 +17,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # DORMANT: the Director has not supplied the first task contract yet.
+  # Re-enable only after replacing the hardcoded WF-01 task with the exact authorized task.
   lead-builder:
-    if: inputs.confirm_run == true
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
