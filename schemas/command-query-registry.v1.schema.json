@@ -171,11 +171,20 @@
                     "type": "string",
                     "minLength": 1
                   }
+                },
+                "binding_role": {
+                  "enum": [
+                    "authoritative_write",
+                    "read_dependency",
+                    "async_archive"
+                  ],
+                  "description": "authoritative_write is in persistence_stores and commits its local outbox atomically; read_dependency is read-only and has no outbox write; async_archive is the event archive populated asynchronously from the authoritative store's outbox."
                 }
               },
               "required": [
                 "store",
-                "tables"
+                "tables",
+                "binding_role"
               ]
             },
             "description": "Tables referenced by the command, including read dependencies and central event-archive records. This is not an atomic transaction declaration; use persistence_stores and transaction_contract for write boundaries."
@@ -357,11 +366,18 @@
                     "type": "string",
                     "minLength": 1
                   }
+                },
+                "binding_role": {
+                  "enum": [
+                    "read_projection"
+                  ],
+                  "description": "read_projection identifies a read-only query source; it never implies write ownership."
                 }
               },
               "required": [
                 "store",
-                "tables"
+                "tables",
+                "binding_role"
               ]
             }
           },
