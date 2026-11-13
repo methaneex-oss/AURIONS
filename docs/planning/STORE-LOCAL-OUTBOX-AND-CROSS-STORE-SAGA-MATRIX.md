@@ -71,6 +71,7 @@ A relay failure leaves the source outbox pending. It does not roll back a commit
 | `operation.cancel` | aurion_events.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_events.db:outbox | central event archive referenced; relay is asynchronous |
 | `operation.reconcile` | aurion_events.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_events.db:outbox | central event archive referenced; relay is asynchronous |
 | `approval.request` | aurion_governance.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_governance.db:outbox | event-store-owned event/operation state |
+| `approval.decide` | aurion_governance.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_governance.db:outbox | event-store-owned event/operation state |
 | `approval.revoke` | aurion_governance.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_governance.db:outbox | event-store-owned event/operation state |
 | `outcome.evaluate` | aurion_memory.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_memory.db:outbox | central event archive referenced; relay is asynchronous |
 | `learning.update.propose` | aurion_memory.db | SINGLE_STORE_LOCAL_OUTBOX | aurion_memory.db:outbox | central event archive referenced; relay is asynchronous |
