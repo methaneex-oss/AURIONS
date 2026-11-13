@@ -131,7 +131,8 @@ CREATE TABLE interaction_proposals (
   authorization_ref TEXT,
   execution_operation_ref TEXT,
   proposed_at_ms INTEGER NOT NULL,
-  deadline_at_ms INTEGER
+  deadline_at_ms INTEGER,
+  UNIQUE(interaction_id,owner_ref)
 ) STRICT;
 CREATE INDEX idx_interaction_proposals_owner_status
   ON interaction_proposals(owner_ref,status,proposed_at_ms DESC);
@@ -147,7 +148,9 @@ CREATE TABLE interaction_outcomes (
   attribution_json TEXT NOT NULL CHECK(json_valid(attribution_json)),
   side_effects_json TEXT NOT NULL CHECK(json_valid(side_effects_json)),
   observed_at_ms INTEGER NOT NULL,
-  recorded_at_ms INTEGER NOT NULL
+  recorded_at_ms INTEGER NOT NULL,
+  FOREIGN KEY(interaction_ref,owner_ref)
+    REFERENCES interaction_proposals(interaction_id,owner_ref)
 ) STRICT;
 CREATE INDEX idx_interaction_outcomes_owner_time
   ON interaction_outcomes(owner_ref,recorded_at_ms DESC);
