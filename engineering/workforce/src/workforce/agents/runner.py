@@ -217,6 +217,19 @@ class Worker:
             return json.dumps(outputs)
         return "DENIED: unknown tool."
 
+    def renew_durable_lease(self) -> None:
+        if not self.durable_budget_enabled:
+            return
+        url = f"{self.control_plane_url}/v1/tasks/{self.task_id}/heartbeat"
+        response = httpx.post(
+            url,
+            headers={"X-Worker-Token": self.worker_token},
+            json={"lease_token": self.lease_token, "lease_seconds": 900},
+            timeout=max(1, min(20, self.remaining_seconds())),
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"workforce lease renewal failed (HTTP {response.status_code}); worker stopped")
+
     def reserve_durable_budget(self, requested_tokens: int) -> dict[str, Any] | None:
         if not self.durable_budget_enabled:
             return None
@@ -302,6 +315,7 @@ class Worker:
                     "prompt and protocol overhead exhaust the remaining token budget; "
                     "provider request was not sent"
                 )
+            self.renew_durable_lease()
             reservation = self.reserve_durable_budget(prompt_reserve + output_limit)
             self.calls += 1
             payload = {
@@ -344,6 +358,7 @@ class Worker:
                     "final": choice.get("content", ""),
                 }
             for call in tool_calls:
+                self.renew_durable_lease()
                 try:
                     args = json.loads(call["function"].get("arguments") or "{}")
                     result = self.invoke_tool(call["function"]["name"], args)
