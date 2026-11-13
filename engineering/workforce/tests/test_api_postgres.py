@@ -14,8 +14,9 @@ from workforce.api import app
 DB = os.environ.get("DATABASE_URL", "")
 DIRECTOR = os.environ.get("DIRECTOR_APPROVAL_TOKEN", "")
 ORCHESTRATOR = os.environ.get("WORKFORCE_ORCHESTRATOR_TOKEN", "")
-BUILDER = "b" * 40
-REVIEWER = "r" * 40
+REGISTRY = json.loads(os.environ.get("WORKFORCE_WORKER_CREDENTIALS_JSON", "{}"))
+BUILDER = REGISTRY.get("builder-01", {}).get("token", "")
+REVIEWER = REGISTRY.get("reviewer-01", {}).get("token", "")
 
 
 def contract():
