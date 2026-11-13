@@ -922,3 +922,18 @@ Correction:
 **Exact code revision:** `5f533aabd171a40ae77c929fae1ba4aef8c17022`. [Workflow 43430178462](https://github.com/methaneex-oss/AURIONS/actions/runs/43430178462) passed all nine steps. The host log confirms all three stores and seventeen ordered DDL files executed on SQLite 3.46.1, with foreign-key/integrity checks and migration smoke invariants passing.
 
 **Bounded closure:** Saga-ledger schema integrity now covers required and unique operation idempotency, immutable operation identity/history, immutable and append-only step/recovery history, terminal timestamps, and valid same-operation/same-store compensation references. This is not a saga runtime implementation or crash/concurrency proof. BR-005 remains PARTIALLY CLOSED; BR-008 remains OPEN; all commands/events remain design-only/non-dispatchable.
+
+
+## BR-001 / BR-008 self-review correction — stale command inventory summaries (2026-11-13)
+
+A cross-artifact self-review found that the live command registry had advanced to 54 entries (52 mapped, two deferred), but the semantic reconciliation report, command-transition summary and planning completion summaries still contained the prior 53/51 counts. The existing registry validator checked the registry's internal counts but did not detect stale narrative summaries.
+
+Corrections:
+- Reconciled the current semantic report to 54 command entries, 52 mapped, two deferred and CC-001…CC-052.
+- Reconciled the command-transition matrix to 52 unique mapped-command acceptance cases.
+- Updated the current planning completion inventory summaries to 54/52.
+- Extended `validate_schemas.py` to derive the command totals from the registry and require exact current inventory lines in the semantic reconciliation report, preventing this specific narrative/registry drift from recurring.
+
+**Exact code/document revision:** `607332a5478b7bb4e10d366162157834333e90a8`. GitHub Actions [run 43430525763](https://github.com/methaneex-oss/AURIONS/actions/runs/43430525763) passed all nine workflow steps, including the new inventory-parity guard, governance, work-package traceability, all seventeen ordered DDL files and Android probe syntax.
+
+**Evidence boundary:** This closes a documentation/registry-count consistency defect only. It does not implement command handlers or execute the 52 CC acceptance cases. All mapped commands remain design-only/non-dispatchable.
