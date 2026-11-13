@@ -345,6 +345,43 @@ class ControlPlaneApiTests(unittest.TestCase):
         self.assertEqual(completed.status_code, 200, completed.text)
         self.assertEqual(completed.json()["state"], "CANDIDATE_READY")
 
+    def test_candidate_publication_is_idempotent_after_response_loss(self):
+        self.assertEqual(self.create_task().status_code, 201)
+        headers = {"X-Worker-Token": BUILDER}
+        claimed = self.client.post(f"/v1/tasks/{self.task_id}/claim", headers=headers, json={}).json()
+        self.client.post(
+            f"/v1/tasks/{self.task_id}/start",
+            headers=headers,
+            json={"lease_token": claimed["lease_token"]},
+        )
+        payload = {
+            "lease_token": claimed["lease_token"],
+            "target": "CANDIDATE_READY",
+            "reason": "completed",
+            "evidence_sha256": "d" * 64,
+            "evidence_ref": "artifact://candidate-report",
+        }
+        first = self.client.post(
+            f"/v1/tasks/{self.task_id}/worker-transition",
+            headers=headers,
+            json=payload,
+        )
+        self.assertEqual(first.status_code, 200, first.text)
+        replay = self.client.post(
+            f"/v1/tasks/{self.task_id}/worker-transition",
+            headers=headers,
+            json=payload,
+        )
+        self.assertEqual(replay.status_code, 200, replay.text)
+        self.assertTrue(replay.json()["idempotent_replay"])
+        altered = {**payload, "evidence_sha256": "e" * 64}
+        rejected = self.client.post(
+            f"/v1/tasks/{self.task_id}/worker-transition",
+            headers=headers,
+            json=altered,
+        )
+        self.assertEqual(rejected.status_code, 409)
+
     def test_orchestrator_cannot_forge_worker_completion(self):
         self.assertEqual(self.create_task().status_code, 201)
         with psycopg.connect(DB) as conn:
