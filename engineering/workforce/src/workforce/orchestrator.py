@@ -64,8 +64,8 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(value[key], list) or not value[key] or not all(isinstance(x, str) and x.strip() for x in value[key]):
             raise OrchestrationError(f"{key} must be a non-empty list of strings")
     max_total = value.get("max_total_duration_minutes", 330)
-    if not isinstance(max_total, int) or isinstance(max_total, bool) or not 1 <= max_total <= 360:
-        raise OrchestrationError("max_total_duration_minutes must be between 1 and 360")
+    if not isinstance(max_total, int) or isinstance(max_total, bool) or not 1 <= max_total <= 330:
+        raise OrchestrationError("max_total_duration_minutes must be between 1 and 330 to preserve workflow cleanup time")
     value["max_total_duration_minutes"] = max_total
     default_durations = {
         "lead_builder": 120, "specialist_builder": 60,
