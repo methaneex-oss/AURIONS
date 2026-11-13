@@ -118,8 +118,8 @@ def validate_acceptance_crosswalk() -> tuple[int, int]:
             )
     known_wps = {f"WP-{number:02d}" for number in range(17)}
     for acceptance_id, cells in matrix_rows.items():
-        if len(cells) != 7:
-            fail(f"{acceptance_id}: acceptance traceability row must have seven cells, found {len(cells)}")
+        if len(cells) != 6:
+            fail(f"{acceptance_id}: acceptance traceability row must have six cells, found {len(cells)}")
         for label, cell in zip(
             cells[1:],
             ("contract/architecture trace", "accountable work packages",
