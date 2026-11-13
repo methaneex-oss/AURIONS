@@ -189,6 +189,28 @@ def _worker_tokens() -> dict[str, tuple[str, str]]:
     return result
 
 
+def _task_brief(manifest: dict[str, Any], role: str) -> str:
+    spec = manifest["roles"][role]
+    permitted = spec["permitted_paths"] or ["READ-ONLY: no write paths"]
+    sections = [
+        f"Work package: {manifest['work_package_id']} (run {manifest['run_id']})",
+        f"Objective: {manifest['objective']}",
+        f"Role: {role}",
+        f"Role-specific assignment: {spec['task']}",
+        f"Exact baseline commit: {manifest['base_commit_sha']}",
+        "Acceptance criteria:\n" + "\n".join(f"- {item}" for item in manifest["acceptance_criteria"]),
+        "Test plan:\n" + "\n".join(f"- {item}" for item in manifest["test_plan"]),
+        "Review plan:\n" + "\n".join(f"- {item}" for item in manifest["review_plan"]),
+        "Canonical sources:\n" + "\n".join(f"- {item}" for item in manifest["canonical_sources"]),
+        "Stop conditions:\n" + "\n".join(f"- {item}" for item in manifest["stop_conditions"]),
+        "Permitted write paths:\n" + "\n".join(f"- {item}" for item in permitted),
+        f"Execution limits: {spec.get('max_model_calls', 8)} model calls; {spec.get('max_tokens', 16000)} total tokens; {spec.get('max_duration_minutes', 30)} minutes.",
+        "Do not broaden scope, alter protected governance, claim unrun tests passed, or treat review comments as authorization to modify files.",
+        "Return a precise completion report with changed files, test evidence, unresolved risks and any blocked acceptance criteria.",
+    ]
+    return "\n\n".join(sections)
+
+
 def _task_contract(manifest: dict[str, Any], role: str) -> dict[str, Any]:
     spec = manifest["roles"][role]
     return {
