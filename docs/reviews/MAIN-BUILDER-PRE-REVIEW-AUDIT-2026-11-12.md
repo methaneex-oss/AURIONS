@@ -873,3 +873,23 @@ Thirteen queries have no fields missing by the direct/JSON/timestamp name scan, 
 **Evidence boundary:** This closes the command-count/approval-command/event-producer consistency defect at registry, schema, validator and matrix level. It does not implement the `approval.decide` handler, prove owner authentication at runtime, or make the command/event dispatchable. The 52 mapped commands and 89 events remain design-only/non-dispatchable pending authorized runtime implementation and execution evidence. No implementation authorization, owner-reserved decision, reviewer/tester handoff or merge is implied.
 
 **Current disposition:** BR-001 and BR-008 remain OPEN overall. Overall builder disposition remains NOT READY for independent review or planning-exit approval.
+
+
+## BR-005 / BR-008 builder increment — cross-store saga ledger integrity (2026-11-13)
+
+**Fresh governance gate:** Re-fetched and read the current team operating standard (blob `951b9009cbedcf8907b365d611d89559d5a17385`) and builder protocol (blob `179b02aaef051173b96f54812f451ede1a2eae0d`) before this run. EBT-01 and mandatory fresh-read-before-every-run were applied.
+
+**Starting revision:** PR #2 head `fcfe0cde0f67ca40b50c8f52cb589447353ff656`.
+
+**Root cause:** The existing event-store saga ledger had immutable step keys, target-store/idempotency uniqueness and a recovery-journal step binding, but it did not fully preserve saga identity or prove compensation/terminal-step integrity. A saga operation could potentially be reclassified as an ordinary operation; terminal steps could be inserted without execution timestamps; compensation references could point to a nonexistent, later or cross-store step; and recovery journal identity fields could be reassigned after insertion.
+
+**Corrections implemented:**
+- Added additive `aurion_events.migration_v6.sql` triggers to prevent saga operation-type downgrade, require both start/completion timestamps for terminal saga steps on insert and update, require compensation to reference an earlier step in the same operation and same target store, and make recovery-journal operation/step/store/phase/transition identity immutable.
+- Added migration v6 to both the schema inventory validator and the ordered SQLite DDL execution chain.
+- Added negative tests for operation-type downgrade, missing terminal timestamps, nonexistent compensation references, cross-store compensation, recovery-journal store reassignment and recovery-step unlinking.
+- Added positive controls proving a same-store compensation reference and a correctly timestamped terminal step are accepted.
+- Corrected the terminal-transition negative test to isolate the missing-start-time invariant instead of accidentally testing only the missing-completion-time invariant.
+
+**Verification:** Exact PR head `d134a24d35de1c576d3009372cdebbba2f421fd9` passed all nine steps in [workflow 43429463257](https://github.com/methaneex-oss/AURIONS/actions/runs/43429463257), including schema/fixture validation, mandatory governance integrity, work-package traceability, execution of all ordered SQLite DDL migrations with the new positive/negative saga probes, and Android probe shell syntax.
+
+**Evidence boundary:** This closes a bounded host-SQLite schema-integrity subtask only. It does not implement the saga coordinator/runner, local outbox relay, inbox deduplication, cross-store recovery worker, or prove crash/power-loss/target-device behaviour. The migration remains proposed DDL. BR-005 remains PARTIALLY CLOSED; BR-008 remains OPEN. No command/event is made dispatchable and no runtime implementation authority is inferred.
