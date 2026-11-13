@@ -35,6 +35,7 @@ class StrictModel(BaseModel):
 
 class ReserveBody(StrictModel):
     lease_token: str = Field(min_length=32, max_length=128)
+    requested_tokens: int = Field(ge=1, le=32768)
 
 
 class SettleBody(StrictModel):
@@ -76,7 +77,7 @@ def reserve(
             raise HTTPException(status_code=409, detail="durable agent budget account is missing")
         calls_left = budget["max_model_calls"] - budget["used_model_calls"] - budget["reserved_calls"]
         tokens_left = budget["max_tokens"] - budget["used_tokens"] - budget["reserved_tokens"]
-        if calls_left <= 0 or tokens_left <= 0:
+        if calls_left <= 0 or tokens_left < body.requested_tokens:
             raise HTTPException(status_code=429, detail="per-agent work-package inference budget exhausted")
         cur.execute(
             """INSERT INTO wf_budget_reservations(
@@ -84,16 +85,16 @@ def reserve(
                    lease_generation,lease_token_hash,reserved_tokens,state)
                VALUES (%s,%s,%s,%s,%s,%s,encode(digest(%s,'sha256'),'hex'),%s,'RESERVED')""",
             (reservation_id, task_id, task["work_package_id"], worker.role, worker.actor_id,
-             task["lease_generation"], body.lease_token, tokens_left),
+             task["lease_generation"], body.lease_token, body.requested_tokens),
         )
         cur.execute(
             """UPDATE wf_agent_budgets
                   SET reserved_calls=reserved_calls+1,
                       reserved_tokens=reserved_tokens+%s,updated_at=now()
                 WHERE work_package_id=%s AND role=%s""",
-            (tokens_left, task["work_package_id"], worker.role),
+            (body.requested_tokens, task["work_package_id"], worker.role),
         )
-        return {"reservation_id": str(reservation_id), "reserved_tokens": tokens_left}
+        return {"reservation_id": str(reservation_id), "reserved_tokens": body.requested_tokens, "remaining_calls_after_reservation": calls_left - 1, "remaining_tokens_after_reservation": tokens_left - body.requested_tokens}
 
 
 @router.post("/{task_id}/budget/settle")
