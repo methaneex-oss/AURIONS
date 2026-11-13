@@ -468,6 +468,25 @@ class ControlPlaneApiTests(unittest.TestCase):
         )
         self.assertEqual(replay.status_code, 200, replay.text)
         self.assertTrue(replay.json()["idempotent_replay"])
+        advanced = self.client.post(
+            f"/v1/tasks/{self.task_id}/transition",
+            headers=orchestrator_headers,
+            json={
+                "target": "REVIEWING",
+                "reason": "test evidence recorded",
+                "evidence_sha256": "d" * 64,
+                "evidence_ref": "reports/test-results.json",
+            },
+        )
+        self.assertEqual(advanced.status_code, 200, advanced.text)
+        replay_after_advance = self.client.post(
+            f"/v1/tasks/{self.task_id}/transition",
+            headers=orchestrator_headers,
+            json=payload,
+        )
+        self.assertEqual(replay_after_advance.status_code, 200, replay_after_advance.text)
+        self.assertTrue(replay_after_advance.json()["idempotent_replay"])
+        self.assertEqual(replay_after_advance.json()["state"], "REVIEWING")
         altered = {**payload, "evidence_sha256": "c" * 64}
         rejected = self.client.post(
             f"/v1/tasks/{self.task_id}/transition",
