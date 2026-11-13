@@ -249,12 +249,16 @@ def checkpoint(
         replay = row is None
         if replay:
             cur.execute(
-                "SELECT checkpoint_id,created_at FROM wf_checkpoints WHERE task_id=%s AND idempotency_key=%s",
+                "SELECT checkpoint_id,created_at,worker_id,checkpoint_name,context_sha256,payload_json FROM wf_checkpoints WHERE task_id=%s AND idempotency_key=%s",
                 (task_id, body.idempotency_key),
             )
             row = cur.fetchone()
             if not row:
                 raise HTTPException(status_code=409, detail="idempotency conflict")
+            if (row["worker_id"] != worker.actor_id or row["checkpoint_name"] != body.checkpoint_name
+                    or row["context_sha256"].strip() != body.context_sha256
+                    or row["payload_json"] != body.payload):
+                raise HTTPException(status_code=409, detail="idempotency key was already used for different checkpoint content")
         else:
             cur.execute("UPDATE wf_tasks SET state='CHECKPOINTED',updated_at=now() WHERE task_id=%s", (task_id,))
             cur.execute(
@@ -263,7 +267,7 @@ def checkpoint(
                 (task_id, worker.actor_id,
                  json.dumps({"checkpoint_id": row["checkpoint_id"], "name": body.checkpoint_name, "lease_generation": lease["lease_generation"]})),
             )
-        return {**row, "idempotent_replay": replay}
+        return {"checkpoint_id": row["checkpoint_id"], "created_at": row["created_at"], "idempotent_replay": replay}
 
 
 @app.post("/v1/tasks/{task_id}/worker-transition")
