@@ -26,7 +26,7 @@ class TaskState(StrEnum):
 
 TRANSITIONS: dict[TaskState, frozenset[TaskState]] = {
     TaskState.QUEUED: frozenset({TaskState.CLAIMED, TaskState.BLOCKED, TaskState.CANCELLED}),
-    TaskState.CLAIMED: frozenset({TaskState.RUNNING, TaskState.RETRY_WAIT, TaskState.FAILED, TaskState.CANCELLED}),
+    TaskState.CLAIMED: frozenset({TaskState.RUNNING, TaskState.BLOCKED, TaskState.RETRY_WAIT, TaskState.FAILED, TaskState.CANCELLED}),
     TaskState.RUNNING: frozenset({TaskState.CHECKPOINTED, TaskState.CANDIDATE_READY, TaskState.BLOCKED, TaskState.RETRY_WAIT, TaskState.FAILED, TaskState.CANCELLED}),
     TaskState.CHECKPOINTED: frozenset({TaskState.RUNNING, TaskState.CANDIDATE_READY, TaskState.BLOCKED, TaskState.RETRY_WAIT, TaskState.FAILED, TaskState.CANCELLED}),
     TaskState.CANDIDATE_READY: frozenset({TaskState.TESTING, TaskState.REJECTED, TaskState.BLOCKED}),
