@@ -76,8 +76,29 @@ def main() -> int:
     command_registry = load(SCHEMAS / "command-query-registry.v1.json")
     commands = command_registry["commands"]
     queries = command_registry["queries"]
-    if len(commands) != 53 or len({item["command_type"] for item in commands}) != 53:
-        fail("command registry must contain 53 unique command types")
+    command_counts = command_registry.get("counts", {})
+    mapped_commands = [
+        item for item in commands
+        if item.get("dispatch_status") == "design_only_not_dispatchable"
+    ]
+    deferred_commands = [
+        item for item in commands
+        if item.get("dispatch_status") == "deferred_by_scope"
+    ]
+    expected_total = (
+        command_counts.get("mapped_command_types", -1)
+        + command_counts.get("deferred_command_types", -1)
+    )
+    if len(commands) != expected_total or len({item["command_type"] for item in commands}) != len(commands):
+        fail("command registry inventory differs from its declared mapped/deferred counts or contains duplicate types")
+    if len(mapped_commands) != command_counts.get("mapped_command_types"):
+        fail("mapped command count differs from registry inventory metadata")
+    if len(deferred_commands) != command_counts.get("deferred_command_types"):
+        fail("deferred command count differs from registry inventory metadata")
+    if command_counts.get("command_envelope_bindings") != len(commands):
+        fail("command envelope binding count differs from registry inventory")
+    if command_counts.get("proposed_ddl_mapped_commands") != len(mapped_commands):
+        fail("proposed DDL mapped-command count differs from mapped command inventory")
     if len(queries) != 29 or len({item["query_type"] for item in queries}) != 29:
         fail("query registry must contain 29 unique query types")
     command_matrix_path = ROOT / "docs/planning/COMMAND-TRANSITION-AND-RECOVERY-CONTRACT-MATRIX.md"
