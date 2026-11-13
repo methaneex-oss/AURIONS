@@ -54,6 +54,12 @@ class OrchestratorTests(unittest.TestCase):
         with self.assertRaisesRegex(OrchestrationError, "placeholder"):
             validate_manifest(value)
 
+    def test_manifest_caps_total_runtime_below_hosted_job_timeout(self):
+        value = valid_manifest()
+        value["max_total_duration_minutes"] = 331
+        with self.assertRaisesRegex(OrchestrationError, "cleanup time"):
+            validate_manifest(value)
+
     def test_manifest_rejects_role_durations_above_total_runtime(self):
         value = valid_manifest()
         value["max_total_duration_minutes"] = 100
