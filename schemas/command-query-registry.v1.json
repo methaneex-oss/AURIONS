@@ -59,7 +59,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "experiences",
-            "evidence_items"
+            "evidence_items",
+            "outbox"
           ]
         },
         {
@@ -119,7 +120,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "representations"
+            "representations",
+            "outbox"
           ]
         },
         {
@@ -179,7 +181,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "contexts"
+            "contexts",
+            "outbox"
           ]
         },
         {
@@ -240,7 +243,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "contexts"
+            "contexts",
+            "outbox"
           ]
         },
         {
@@ -312,7 +316,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "experiences",
-            "evidence_items"
+            "evidence_items",
+            "outbox"
           ]
         },
         {
@@ -382,7 +387,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "capability_descriptors",
-            "capability_discovery_evidence"
+            "capability_discovery_evidence",
+            "outbox"
           ]
         },
         {
@@ -454,7 +460,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "capability_descriptors",
-            "capability_discovery_evidence"
+            "capability_discovery_evidence",
+            "outbox"
           ]
         },
         {
@@ -525,7 +532,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "capability_descriptors"
+            "capability_descriptors",
+            "outbox"
           ]
         },
         {
@@ -587,7 +595,8 @@
           "tables": [
             "capability_knowledge_revisions",
             "capability_knowledge_evidence",
-            "capability_relationships"
+            "capability_relationships",
+            "outbox"
           ]
         },
         {
@@ -649,7 +658,8 @@
           "tables": [
             "capability_knowledge_revisions",
             "capability_knowledge_evidence",
-            "capability_relationships"
+            "capability_relationships",
+            "outbox"
           ]
         },
         {
@@ -710,7 +720,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "memory_records",
-            "memory_links"
+            "memory_links",
+            "outbox"
           ]
         },
         {
@@ -777,7 +788,8 @@
             "beliefs",
             "belief_revisions",
             "evidence_items",
-            "belief_revision_evidence"
+            "belief_revision_evidence",
+            "outbox"
           ]
         },
         {
@@ -844,7 +856,8 @@
             "beliefs",
             "belief_revisions",
             "evidence_items",
-            "belief_revision_evidence"
+            "belief_revision_evidence",
+            "outbox"
           ]
         },
         {
@@ -904,7 +917,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "predictions"
+            "predictions",
+            "outbox"
           ]
         },
         {
@@ -967,7 +981,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "prediction_evaluations"
+            "prediction_evaluations",
+            "outbox"
           ]
         },
         {
@@ -1027,7 +1042,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "appraisal_records"
+            "appraisal_records",
+            "outbox"
           ]
         },
         {
@@ -1145,7 +1161,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "reasoning_assessments"
+            "reasoning_assessments",
+            "outbox"
           ]
         },
         {
@@ -1206,7 +1223,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "goals",
-            "goal_revisions"
+            "goal_revisions",
+            "outbox"
           ]
         },
         {
@@ -1267,7 +1285,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "goals",
-            "goal_revisions"
+            "goal_revisions",
+            "outbox"
           ]
         },
         {
@@ -1329,7 +1348,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "goals",
-            "goal_revisions"
+            "goal_revisions",
+            "outbox"
           ]
         },
         {
@@ -1392,7 +1412,8 @@
             "plans",
             "plan_steps",
             "plan_step_dependencies",
-            "plan_step_contracts"
+            "plan_step_contracts",
+            "outbox"
           ]
         },
         {
@@ -1455,7 +1476,8 @@
             "plans",
             "plan_steps",
             "plan_step_dependencies",
-            "plan_step_contracts"
+            "plan_step_contracts",
+            "outbox"
           ]
         },
         {
@@ -1571,7 +1593,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "decision_records"
+            "decision_records",
+            "outbox"
           ]
         },
         {
@@ -1837,7 +1860,8 @@
           "tables": [
             "approval_requests",
             "approval_decisions",
-            "governance_audit"
+            "governance_audit",
+            "outbox"
           ]
         }
       ],
@@ -1896,7 +1920,8 @@
             "approval_requests",
             "approval_decisions",
             "permissions",
-            "governance_audit"
+            "governance_audit",
+            "outbox"
           ]
         }
       ],
@@ -1954,7 +1979,8 @@
           "store": "aurion_memory.db",
           "tables": [
             "outcome_evaluations",
-            "prediction_evaluations"
+            "prediction_evaluations",
+            "outbox"
           ]
         },
         {
@@ -2020,7 +2046,8 @@
             "learning_updates",
             "learning_update_details",
             "artifacts",
-            "artifact_lineage"
+            "artifact_lineage",
+            "outbox"
           ]
         },
         {
@@ -2088,7 +2115,8 @@
             "learning_updates",
             "learning_update_details",
             "artifacts",
-            "artifact_lineage"
+            "artifact_lineage",
+            "outbox"
           ]
         },
         {
@@ -2156,7 +2184,8 @@
             "learning_updates",
             "learning_update_details",
             "artifacts",
-            "artifact_lineage"
+            "artifact_lineage",
+            "outbox"
           ]
         },
         {
@@ -2219,7 +2248,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "self_model_revisions"
+            "self_model_revisions",
+            "outbox"
           ]
         },
         {
@@ -2284,7 +2314,8 @@
           "tables": [
             "evolution_proposals",
             "artifacts",
-            "artifact_lineage"
+            "artifact_lineage",
+            "outbox"
           ]
         },
         {
@@ -2359,7 +2390,8 @@
           "tables": [
             "evolution_proposals",
             "artifacts",
-            "artifact_lineage"
+            "artifact_lineage",
+            "outbox"
           ]
         },
         {
@@ -2367,7 +2399,8 @@
           "tables": [
             "approval_requests",
             "approval_decisions",
-            "governance_audit"
+            "governance_audit",
+            "outbox"
           ]
         },
         {
@@ -2437,7 +2470,8 @@
           "tables": [
             "evolution_proposals",
             "artifacts",
-            "artifact_lineage"
+            "artifact_lineage",
+            "outbox"
           ]
         },
         {
@@ -2445,7 +2479,8 @@
           "tables": [
             "approval_requests",
             "approval_decisions",
-            "governance_audit"
+            "governance_audit",
+            "outbox"
           ]
         },
         {
@@ -2515,7 +2550,8 @@
           "tables": [
             "evolution_proposals",
             "artifacts",
-            "artifact_lineage"
+            "artifact_lineage",
+            "outbox"
           ]
         },
         {
@@ -2523,7 +2559,8 @@
           "tables": [
             "approval_requests",
             "approval_decisions",
-            "governance_audit"
+            "governance_audit",
+            "outbox"
           ]
         },
         {
@@ -2877,7 +2914,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "objective_records"
+            "objective_records",
+            "outbox"
           ]
         }
       ],
@@ -2932,7 +2970,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "objective_records"
+            "objective_records",
+            "outbox"
           ]
         }
       ],
@@ -2987,7 +3026,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "world_entities"
+            "world_entities",
+            "outbox"
           ]
         }
       ],
@@ -3042,7 +3082,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "world_relationships"
+            "world_relationships",
+            "outbox"
           ]
         }
       ],
@@ -3097,7 +3138,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "situation_snapshots"
+            "situation_snapshots",
+            "outbox"
           ]
         }
       ],
@@ -3152,7 +3194,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "affordance_hypotheses"
+            "affordance_hypotheses",
+            "outbox"
           ]
         }
       ],
@@ -3207,7 +3250,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "interaction_proposals"
+            "interaction_proposals",
+            "outbox"
           ]
         }
       ],
@@ -3262,7 +3306,8 @@
         {
           "store": "aurion_memory.db",
           "tables": [
-            "interaction_outcomes"
+            "interaction_outcomes",
+            "outbox"
           ]
         }
       ],
