@@ -9,7 +9,7 @@
 
 The semantic pass distinguishes a genuinely absent persisted field from a field that is derived from an existing event payload, relational join, stored timestamp, or authenticated read context. A read-only query may construct an ephemeral retrieval envelope; it must not write a retrieval receipt merely to satisfy the result schema. Every mapping below is a proposed source/transform, not executed SQL or a verified owner-scope/redaction implementation.
 
-The query registry declares 29 result-item projections. A scan of the current DDL identified candidate source columns by exact field name, JSON-column suffix (`_json`) and timestamp suffix (`_ms`). It found fields with no direct/JSON/timestamp-named source in the query's bound tables.
+The query registry declares 29 result-item projections. A scan of the current DDL identified candidate source columns by exact field name, JSON-column suffix (`_json`) and timestamp suffix (`_ms`). The initial name scan was followed by explicit source/derivation decisions and three additive migrations: memory v7, events v4 and governance v4 (governance v3 separately adds approval owner/session binding).
 
 This reconciliation is deliberately conservative:
 - A field with a proposed source/derivation below is not considered runtime-verified; exact SELECT expressions, joins, JSON pointers, aliases, nullability and owner filters still require implementation tests.
@@ -18,70 +18,70 @@ This reconciliation is deliberately conservative:
 
 | Query | Result schema | Fields | Unmapped projection fields |
 |---|---|---:|---|
-| `environment.inspect` | `environmentObserved` | 14 | `observation_id`, `owner_id`, `device_id`, `environment_scope`, `source_id`, `collection_method`, `collector_version`, `platform_context`, `observed_facts`, `limitations`, `validity` |
-| `capability.search` | `capabilityDescriptorRecord` | 13 | `descriptor_schema_version` |
-| `capability.inspect` | `capabilityDescriptorRecord` | 13 | `descriptor_schema_version` |
-| `capability.knowledge.inspect` | `capabilityKnowledgeRevision` | 10 | None — proposed source/derivation recorded below |
-| `representation.inspect` | `representationCreated` | 9 | `method_version`, `source_refs` |
-| `context.get` | `contextSnapshot` | 9 | `provenance_refs`, `uncertainty` |
-| `memory.search` | `memoryRetrieval` | 6 | `candidate_refs` |
-| `knowledge.search` | `knowledgeItem` | 6 | None — proposed source/derivation recorded below |
-| `belief.inspect` | `beliefRevision` | 9 | None — proposed source/derivation recorded below |
-| `prediction.inspect` | `predictionCreated` | 9 | `conditions`, `confidence`, `evidence_refs` |
-| `appraisal.inspect` | `appraisalUpdated` | 9 | None — proposed source/derivation recorded below |
-| `attention.inspect` | `attentionAllocated` | 10 | None — proposed source/derivation recorded below |
-| `reasoning.inspect` | `reasoningHypothesisProposed` | 9 | None — proposed source/derivation recorded below |
-| `goal.get` | `goalRevision` | 10 | None — proposed source/derivation recorded below |
-| `plan.get` | `planRevision` | 9 | `context_version_ref`, `capability_epoch_digest` |
-| `decision.inspect` | `decisionRecorded` | 8 | None — proposed source/derivation recorded below |
-| `task.status` | `taskRunStatus` | 10 | `failure_ref` |
-| `operation.status` | `operationLifecycleEvent` | 11 | `policy_decision_ref` |
-| `permission.inspect` | `permissionRecord` | 11 | `owner_id`, `status`, `approval_ref` |
-| `audit.lookup` | `auditRecord` | 12 | `owner_id`, `evidence_refs`, `correlation_id` |
-| `device.capabilities` | `capabilityDescriptorRecord` | 13 | `descriptor_schema_version` |
-| `objective.inspect` | `objective` | 11 | None — proposed source/derivation recorded below |
-| `world.entity.search` | `entity` | 11 | None — proposed source/derivation recorded below |
-| `world.entity.inspect` | `entity` | 11 | None — proposed source/derivation recorded below |
-| `world.relationship.search` | `relationship` | 12 | None — proposed source/derivation recorded below |
-| `situation.inspect` | `situation` | 12 | None — proposed source/derivation recorded below |
-| `means.affordance.search` | `affordanceHypothesis` | 17 | None — proposed source/derivation recorded below |
-| `interaction.inspect` | `interactionProposal` | 15 | None — proposed source/derivation recorded below |
-| `interaction.outcome.inspect` | `interactionOutcome` | 11 | None — proposed source/derivation recorded below |
+| `environment.inspect` | `environmentObserved` | 14 | None — all result fields have proposed sources/derivations |
+| `capability.search` | `capabilityDescriptorRecord` | 13 | None — all result fields have proposed sources/derivations |
+| `capability.inspect` | `capabilityDescriptorRecord` | 13 | None — all result fields have proposed sources/derivations |
+| `capability.knowledge.inspect` | `capabilityKnowledgeRevision` | 10 | None — all result fields have proposed sources/derivations |
+| `representation.inspect` | `representationCreated` | 9 | None — all result fields have proposed sources/derivations |
+| `context.get` | `contextSnapshot` | 9 | None — all result fields have proposed sources/derivations |
+| `memory.search` | `memoryRetrieval` | 6 | None — all result fields have proposed sources/derivations |
+| `knowledge.search` | `knowledgeItem` | 6 | None — all result fields have proposed sources/derivations |
+| `belief.inspect` | `beliefRevision` | 9 | None — all result fields have proposed sources/derivations |
+| `prediction.inspect` | `predictionCreated` | 9 | None — all result fields have proposed sources/derivations |
+| `appraisal.inspect` | `appraisalUpdated` | 9 | None — all result fields have proposed sources/derivations |
+| `attention.inspect` | `attentionAllocated` | 10 | None — all result fields have proposed sources/derivations |
+| `reasoning.inspect` | `reasoningHypothesisProposed` | 9 | None — all result fields have proposed sources/derivations |
+| `goal.get` | `goalRevision` | 10 | None — all result fields have proposed sources/derivations |
+| `plan.get` | `planRevision` | 9 | None — all result fields have proposed sources/derivations |
+| `decision.inspect` | `decisionRecorded` | 8 | None — all result fields have proposed sources/derivations |
+| `task.status` | `taskRunStatus` | 10 | None — all result fields have proposed sources/derivations |
+| `operation.status` | `operationLifecycleEvent` | 11 | None — all result fields have proposed sources/derivations |
+| `permission.inspect` | `permissionRecord` | 11 | None — all result fields have proposed sources/derivations |
+| `audit.lookup` | `auditRecord` | 12 | None — all result fields have proposed sources/derivations |
+| `device.capabilities` | `capabilityDescriptorRecord` | 13 | None — all result fields have proposed sources/derivations |
+| `objective.inspect` | `objective` | 11 | None — all result fields have proposed sources/derivations |
+| `world.entity.search` | `entity` | 11 | None — all result fields have proposed sources/derivations |
+| `world.entity.inspect` | `entity` | 11 | None — all result fields have proposed sources/derivations |
+| `world.relationship.search` | `relationship` | 12 | None — all result fields have proposed sources/derivations |
+| `situation.inspect` | `situation` | 12 | None — all result fields have proposed sources/derivations |
+| `means.affordance.search` | `affordanceHypothesis` | 17 | None — all result fields have proposed sources/derivations |
+| `interaction.inspect` | `interactionProposal` | 15 | None — all result fields have proposed sources/derivations |
+| `interaction.outcome.inspect` | `interactionOutcome` | 11 | None — all result fields have proposed sources/derivations |
 ## 2. Field-level candidate inventory
 
 ### `environment.inspect`
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/environmentObserved`
-- Bound tables: `experiences`, `evidence_items`
-- Remaining unresolved source/derivation fields: `observation_id`, `owner_id`, `device_id`, `environment_scope`, `source_id`, `collection_method`, `collector_version`, `platform_context`, `observed_facts`, `limitations`, `validity`
+- Bound tables: `environment_observations`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
-- `observation_id` → **UNMAPPED in the bound DDL columns**
-- `owner_id` → **UNMAPPED in the bound DDL columns**
-- `device_id` → **UNMAPPED in the bound DDL columns**
-- `environment_scope` → **UNMAPPED in the bound DDL columns**
-- `observed_at` → experiences.observed_at_ms (timestamp conversion); evidence_items.observed_at_ms (timestamp conversion)
-- `recorded_at` → experiences.recorded_at_ms (timestamp conversion); evidence_items.recorded_at_ms (timestamp conversion)
-- `source_id` → **UNMAPPED in the bound DDL columns**
-- `collection_method` → **UNMAPPED in the bound DDL columns**
-- `collector_version` → **UNMAPPED in the bound DDL columns**
-- `platform_context` → **UNMAPPED in the bound DDL columns**
-- `observed_facts` → **UNMAPPED in the bound DDL columns**
-- `sensitivity` → experiences.sensitivity
-- `limitations` → **UNMAPPED in the bound DDL columns**
-- `validity` → **UNMAPPED in the bound DDL columns**
+- `observation_id` → environment_observations.observation_id
+- `owner_id` → environment_observations.owner_ref (alias to owner_id)
+- `device_id` → environment_observations.device_id
+- `environment_scope` → environment_observations.environment_scope
+- `observed_at` → environment_observations.observed_at_ms (timestamp conversion)
+- `recorded_at` → environment_observations.recorded_at_ms (timestamp conversion)
+- `source_id` → environment_observations.source_id
+- `collection_method` → environment_observations.collection_method
+- `collector_version` → environment_observations.collector_version
+- `platform_context` → environment_observations.platform_context_json (JSON decode)
+- `observed_facts` → environment_observations.observed_facts_json (JSON decode)
+- `sensitivity` → environment_observations.sensitivity
+- `limitations` → environment_observations.limitations_json (JSON decode)
+- `validity` → environment_observations.validity_json (JSON decode; nullable)
 
 ### `capability.search`
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord`
 - Bound tables: `capability_descriptors`
-- Remaining unresolved source/derivation fields: `descriptor_schema_version`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `capability_id` → capability_descriptors.capability_id
 - `descriptor_version` → capability_descriptors.descriptor_version
 - `provider_id` → capability_descriptors.provider_id
 - `device_scope` → capability_descriptors.device_scope
 - `discovery_epoch` → capability_descriptors.discovery_epoch
-- `descriptor_schema_version` → **UNMAPPED in the bound DDL columns**
+- `descriptor_schema_version` → capability_descriptors.descriptor_schema_version (legacy NULL rows excluded)
 - `descriptor_sha256` → capability_descriptors.descriptor_sha256
 - `source_ref` → capability_descriptors.source_ref
 - `first_discovered_at` → capability_descriptors.first_discovered_at_ms (timestamp conversion)
@@ -94,14 +94,14 @@ This reconciliation is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord`
 - Bound tables: `capability_descriptors`
-- Remaining unresolved source/derivation fields: `descriptor_schema_version`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `capability_id` → capability_descriptors.capability_id
 - `descriptor_version` → capability_descriptors.descriptor_version
 - `provider_id` → capability_descriptors.provider_id
 - `device_scope` → capability_descriptors.device_scope
 - `discovery_epoch` → capability_descriptors.discovery_epoch
-- `descriptor_schema_version` → **UNMAPPED in the bound DDL columns**
+- `descriptor_schema_version` → capability_descriptors.descriptor_schema_version (legacy NULL rows excluded)
 - `descriptor_sha256` → capability_descriptors.descriptor_sha256
 - `source_ref` → capability_descriptors.source_ref
 - `first_discovered_at` → capability_descriptors.first_discovered_at_ms (timestamp conversion)
@@ -131,23 +131,23 @@ This reconciliation is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/representationCreated`
 - Bound tables: `representations`
-- Remaining unresolved source/derivation fields: `method_version`, `source_refs`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `representation_id` → representations.representation_id
 - `experience_id` → representations.experience_id
 - `representation_type` → representations.representation_type
 - `method_id` → representations.method (legacy column projected as method_id; method-version and multi-source lineage remain unresolved)
-- `method_version` → **UNMAPPED in the bound DDL columns**
+- `method_version` → representations.method_version (legacy NULL rows excluded)
 - `content` → representations.content_json (JSON decode)
 - `uncertainty` → representations.uncertainty_json (JSON decode)
-- `source_refs` → **UNMAPPED in the bound DDL columns**
+- `source_refs` → representations.source_refs_json (JSON decode; legacy NULL rows excluded)
 - `created_at` → representations.created_at_ms (timestamp conversion)
 
 ### `context.get`
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/contextSnapshot`
 - Bound tables: `contexts`
-- Remaining unresolved source/derivation fields: `provenance_refs`, `uncertainty`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `context_id` → contexts.context_id
 - `version` → contexts.version
@@ -155,20 +155,20 @@ This reconciliation is deliberately conservative:
 - `valid_from` → contexts.valid_from_ms (timestamp conversion)
 - `valid_until` → contexts.valid_until_ms (timestamp conversion)
 - `attributes` → contexts.attributes_json (JSON decode)
-- `provenance_refs` → **UNMAPPED in the bound DDL columns**
-- `uncertainty` → **UNMAPPED in the bound DDL columns**
+- `provenance_refs` → contexts.provenance_refs_json (JSON decode; legacy NULL rows excluded)
+- `uncertainty` → contexts.uncertainty_json (JSON decode; legacy NULL rows excluded)
 - `created_at` → contexts.created_at_ms (timestamp conversion)
 
 ### `memory.search`
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/memoryRetrieval`
 - Bound tables: `memory_records`, `memory_links`
-- Remaining unresolved source/derivation fields: `candidate_refs`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `retrieval_id` → generated per query execution; ephemeral and not persisted by this read-only query
 - `query_ref` → query-envelope/request reference supplied by the authenticated query execution
 - `scope` → authenticated execution scope after policy evaluation; never copied from caller filters
-- `candidate_refs` → **UNMAPPED in the bound DDL columns**
+- `candidate_refs` → memory_records.memory_id + provenance_refs_json + uncertainty_json; relevance is computed by the retrieval ranking function; legacy rows lacking provenance/uncertainty are excluded
 - `created_at` → memory_records.created_at_ms (timestamp conversion); memory_links.created_at_ms (timestamp conversion)
 - `access_decision_ref` → authorization decision reference from the trusted query context when present; otherwise null, with no cross-store snapshot implied
 
@@ -205,16 +205,16 @@ This reconciliation is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/predictionCreated`
 - Bound tables: `predictions`, `prediction_evaluations`
-- Remaining unresolved source/derivation fields: `conditions`, `confidence`, `evidence_refs`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `prediction_id` → predictions.prediction_id; prediction_evaluations.prediction_id
 - `subject_ref` → predictions.subject_ref
 - `expected_outcome` → predictions.expected_outcome_json (JSON decode)
 - `evaluation_criteria` → predictions.evaluation_criteria_json (JSON decode)
-- `conditions` → **UNMAPPED in the bound DDL columns**
+- `conditions` → predictions.conditions_json (JSON decode; legacy NULL rows excluded)
 - `horizon` → predictions.horizon_end_ms projected as the horizon deadline; no additional horizon fields are inferred
-- `confidence` → **UNMAPPED in the bound DDL columns**
-- `evidence_refs` → **UNMAPPED in the bound DDL columns**
+- `confidence` → predictions.confidence (nullable)
+- `evidence_refs` → predictions.evidence_refs_json (JSON decode; legacy NULL rows excluded)
 - `created_at` → predictions.created_at_ms (timestamp conversion)
 
 ### `appraisal.inspect`
@@ -287,7 +287,7 @@ This reconciliation is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/planRevision`
 - Bound tables: `plans`, `plan_steps`, `plan_step_dependencies`, `plan_step_contracts`
-- Remaining unresolved source/derivation fields: `context_version_ref`, `capability_epoch_digest`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `plan_id` → plans.plan_id; plan_steps.plan_id
 - `goal_id` → plans.goal_id
@@ -296,8 +296,8 @@ This reconciliation is deliberately conservative:
 - `status` → plans.status; plan_steps.status
 - `created_at` → plans.created_at_ms (timestamp conversion); plan_steps.created_at_ms (timestamp conversion); plan_step_contracts.created_at_ms (timestamp conversion)
 - `step_refs` → plan_steps.step_id joined by plan_id and ordered by sequence
-- `context_version_ref` → **UNMAPPED in the bound DDL columns**
-- `capability_epoch_digest` → **UNMAPPED in the bound DDL columns**
+- `context_version_ref` → plans.context_version_ref (nullable)
+- `capability_epoch_digest` → plans.capability_epoch_digest (nullable)
 
 ### `decision.inspect`
 
@@ -318,7 +318,7 @@ This reconciliation is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/taskRunStatus`
 - Bound tables: `task_runs`, `task_checkpoints`, `task_checkpoint_details`
-- Remaining unresolved source/derivation fields: `failure_ref`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `task_run_id` → task_runs.task_run_id; task_checkpoints.task_run_id
 - `task_definition_ref` → task_runs.task_definition_ref
@@ -328,14 +328,14 @@ This reconciliation is deliberately conservative:
 - `checkpoint_refs` → task_checkpoints.checkpoint_ref joined by task_run_id and ordered by sequence
 - `created_at` → task_runs.created_at_ms (timestamp conversion); task_checkpoints.created_at_ms (timestamp conversion); task_checkpoint_details.created_at_ms (timestamp conversion)
 - `updated_at` → task_runs.updated_at_ms (timestamp conversion)
-- `failure_ref` → **UNMAPPED in the bound DDL columns**
+- `failure_ref` → task_runs.failure_ref (nullable; explicit failure reference only)
 - `revision` → task_runs.revision (added by aurion_events migration v2)
 
 ### `operation.status`
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/operationLifecycleEvent`
 - Bound tables: `operations`, `operation_steps`, `recovery_journal`, `operation_details`, `operation_attempts`, `events`
-- Remaining unresolved source/derivation fields: `policy_decision_ref`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `operation_id` → operations.operation_id; operation_steps.operation_id; recovery_journal.operation_id; operation_details.operation_id; operation_attempts.operation_id
 - `attempt_id` → operation_attempts.attempt_id
@@ -345,7 +345,7 @@ This reconciliation is deliberately conservative:
 - `verification_evidence_ref` → operation_attempts.verification_evidence_ref
 - `error_ref` → operation_attempts.error_ref
 - `uncertainty_reason` → operation_attempts.uncertainty_reason
-- `policy_decision_ref` → **UNMAPPED in the bound DDL columns**
+- `policy_decision_ref` → operation_details.policy_decision_ref (nullable; explicit policy decision reference only)
 - `attempt_state` → operation_attempts.state for the selected attempt
 - `attempt_number` → operation_attempts.attempt_number
 
@@ -353,16 +353,16 @@ This reconciliation is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/permissionRecord`
 - Bound tables: `permissions`, `policies`, `provider_permissions`, `approval_requests`, `approval_decisions`
-- Remaining unresolved source/derivation fields: `owner_id`, `status`, `approval_ref`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `permission_id` → permissions.permission_id
-- `owner_id` → **UNMAPPED in the bound DDL columns**
+- `owner_id` → permissions.owner_ref (alias to owner_id; legacy NULL rows excluded)
 - `capability_ref` → permissions.capability_id
 - `target_scope` → composed object from permissions.operation_scope_json, resource_scope_json, data_scope_json, side_effect_scope_json and environment_scope_json
-- `status` → **UNMAPPED in the bound DDL columns**
-- `policy_version_ref` → approval_requests.policy_version_ref
+- `status` → permissions.status (persisted active/revoked/expired/denied state; legacy NULL rows excluded)
+- `policy_version_ref` → permissions.policy_version_ref (new canonical reference; legacy NULL rows excluded)
 - `granted_by` → permissions.grant_source
-- `approval_ref` → **UNMAPPED in the bound DDL columns**
+- `approval_ref` → permissions.approval_ref (nullable)
 - `created_at` → permissions.created_at_ms (timestamp conversion); policies.created_at_ms (timestamp conversion); provider_permissions.created_at_ms (timestamp conversion)
 - `expires_at` → permissions.expires_at_ms (timestamp conversion); provider_permissions.expires_at_ms (timestamp conversion); approval_requests.expires_at_ms (timestamp conversion)
 - `revoked_at` → permissions.revoked_at_ms (timestamp conversion); provider_permissions.revoked_at_ms (timestamp conversion)
@@ -371,10 +371,10 @@ This reconciliation is deliberately conservative:
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/auditRecord`
 - Bound tables: `governance_audit`, `data_disclosures`
-- Remaining unresolved source/derivation fields: `owner_id`, `evidence_refs`, `correlation_id`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `audit_id` → governance_audit.audit_id
-- `owner_id` → **UNMAPPED in the bound DDL columns**
+- `owner_id` → governance_audit.owner_ref (alias to owner_id; legacy NULL rows excluded)
 - `actor_identity` → governance_audit.actor_id
 - `action_type` → governance_audit.action
 - `target_ref` → governance_audit.target_ref
@@ -382,22 +382,22 @@ This reconciliation is deliberately conservative:
 - `policy_version_ref` → governance_audit.policy_version_ref; data_disclosures.policy_version_ref
 - `operation_id` → governance_audit.operation_id
 - `approval_ref` → governance_audit.request_id joined to approval_requests.request_id when present
-- `evidence_refs` → **UNMAPPED in the bound DDL columns**
+- `evidence_refs` → governance_audit.evidence_refs_json (JSON decode; legacy NULL rows excluded)
 - `occurred_at` → governance_audit.occurred_at_ms (timestamp conversion)
-- `correlation_id` → **UNMAPPED in the bound DDL columns**
+- `correlation_id` → governance_audit.correlation_id (legacy NULL rows excluded)
 
 ### `device.capabilities`
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/capabilityDescriptorRecord`
 - Bound tables: `capability_descriptors`
-- Remaining unresolved source/derivation fields: `descriptor_schema_version`
+- Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `capability_id` → capability_descriptors.capability_id
 - `descriptor_version` → capability_descriptors.descriptor_version
 - `provider_id` → capability_descriptors.provider_id
 - `device_scope` → capability_descriptors.device_scope
 - `discovery_epoch` → capability_descriptors.discovery_epoch
-- `descriptor_schema_version` → **UNMAPPED in the bound DDL columns**
+- `descriptor_schema_version` → capability_descriptors.descriptor_schema_version (legacy NULL rows excluded)
 - `descriptor_sha256` → capability_descriptors.descriptor_sha256
 - `source_ref` → capability_descriptors.source_ref
 - `first_discovered_at` → capability_descriptors.first_discovered_at_ms (timestamp conversion)
@@ -562,19 +562,17 @@ This reconciliation is deliberately conservative:
 - `side_effects` → interaction_outcomes.side_effects_json (JSON decode)
 - `owner_ref` → interaction_outcomes.owner_ref
 
-## 3. High-priority semantic gaps
+## 3. Remaining verification gaps
 
-1. **`environment.inspect`:** its result schema exposes observation identity, owner/device/scope, collector method/version, platform context, observed facts, limitations and validity. The bound `experiences`/`evidence_items` DDL does not provide direct/JSON/timestamp-named columns for most of those fields. The authoritative source payload and owner/device linkage must be specified; otherwise the query contract cannot be implemented faithfully.
-2. **`memory.search`:** the result schema is a retrieval receipt (`retrieval_id`, `query_ref`, `candidate_refs`, `access_decision_ref`), while the query is bound to `memory_records`/`memory_links`. No retrieval-receipt table or explicit ephemeral-result contract is mapped. Clarify whether this query returns candidates, a persisted retrieval record, or a receipt from a separate retrieval operation.
-3. **`attention.inspect`:** all result fields appear to be an event-derived allocation projection, but the query binds only `events`. The required event type filter, payload pointer mapping, sequence/ordering semantics and retention/freshness behaviour are not specified by the DDL column scan.
-4. **`permission.inspect`:** result fields such as owner, capability reference, target scope, status, grantor and approval reference do not map directly to the current `permissions` table columns. The projection needs explicit aliases, derivation rules and joins across policy/approval/provider permission records; status must not be guessed.
-5. **`audit.lookup`:** the result includes owner, actor identity, action type, approval reference, evidence references and correlation ID. The current governance audit row stores `actor_id`, `action`, `request_id` and a `details_digest`, but does not persist all those output values as direct columns. A digest cannot be expanded into evidence references. Either define a canonical details payload/source join or change the output schema.
-6. **`representation.inspect`:** `method_id`, `method_version` and `source_refs` have no direct column candidate in `representations`; the current DDL stores `method` and experience linkage. Their decomposition/lineage rules need specification.
-7. **`prediction.inspect`:** `conditions`, `horizon`, `confidence` and `evidence_refs` have no direct/JSON/timestamp candidate in the bound prediction tables. `horizon_end_ms` exists but does not alone define the full horizon contract.
-8. **`interaction.inspect`:** `deadline` and `execution_binding_ref` lack direct/JSON/timestamp candidate columns in the bound interaction table; the DDL uses `deadline_at_ms` and `execution_operation_ref`, which require explicit alias and timestamp conversion rules.
-9. **`context.get`:** `provenance_refs` is plural while DDL stores `provenance_ref`; `uncertainty` has no direct candidate. The cardinality and uncertainty source must be specified.
-10. **`operation.status` and `task.status`:** these are projections across operation/task state, attempts, checkpoints and recovery. The exact event/current-state source, timestamps, failure references, policy decision lineage and checkpoint aggregation need explicit field-by-field definitions.
-11. **`goal.get` objective lineage:** memory migration v6 now adds an owner-scoped, composite-FK binding from each new goal revision to an exact objective revision. The query table binding and result schema include `objective_id`/`objective_version`. Legacy unbound goal revisions remain excluded from valid derived-goal results pending explicit reconciliation. This corrects the missing durable lineage, but the actual SELECT and owner-scoped query remain unexecuted.
+The source-to-result inventory now has no unclassified fields, but the following are not yet executed or runtime-verified:
+
+1. **Legacy rows:** memory v7 and governance v4 deliberately leave newly added columns NULL on legacy records. Queries whose result schemas require those values must exclude such rows until an authoritative backfill/reconciliation exists. No owner, source, confidence, evidence or policy state is inferred.
+2. **memory.search:** candidate provenance and uncertainty are persisted; relevance remains a query-time ranking result. The ranker, deterministic tie-break, evidence filtering and resource budget have not been executed.
+3. **attention.inspect:** event payload JSON is the source. The actual event-type predicate, sequence watermark, retention boundary and snapshot query remain unimplemented.
+4. **permission.inspect / audit.lookup:** owner/status/evidence/correlation sources are now represented in governance v4. The SQL joins, cross-owner negative controls, denial semantics and field-level redaction remain unimplemented.
+5. **All 29 queries:** no executable SELECT suite currently proves exact aliases, JSON decoding, timestamp conversion, joins, owner predicates, snapshot consistency, stable cursors, pagination, maximum rows/bytes/time or query-plan/index use.
+6. **Target resource budgets:** numerical endpoint budgets remain blocked on measured target-runtime evidence; no invented limits are substituted.
+
 
 ## 4. Required closure work
 
