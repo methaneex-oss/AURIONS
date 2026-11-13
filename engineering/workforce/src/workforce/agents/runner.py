@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -98,13 +99,15 @@ def safe_path(root: Path, relative: str) -> Path:
 
 
 class Worker:
-    def __init__(self, workspace: Path, role: str, permitted_paths: list[str], max_calls: int, max_tokens: int, max_total_tokens: int):
+    def __init__(self, workspace: Path, role: str, permitted_paths: list[str], max_calls: int, max_tokens: int, max_total_tokens: int, max_duration_minutes: int = 120):
         self.workspace = workspace.resolve()
         self.role = role
         self.permitted_paths = tuple(permitted_paths)
         self.max_calls = max_calls
         self.max_tokens = max_tokens
         self.max_total_tokens = max_total_tokens
+        self.max_duration_minutes = max_duration_minutes
+        self.deadline_monotonic: float | None = None
         self.total_tokens = 0
         self.calls = 0
         if role not in ROLE_INSTRUCTIONS:
@@ -131,8 +134,8 @@ class Worker:
             )
         if profile["cost_class"] not in {"free", "free_daily_allowance"}:
             raise RuntimeError("free-only policy: selected role model is not registered as free")
-        if max_calls <= 0 or max_tokens <= 0 or max_total_tokens <= 0:
-            raise ValueError("model-call and token budgets must be positive")
+        if max_calls <= 0 or max_tokens <= 0 or max_total_tokens <= 0 or max_duration_minutes <= 0:
+            raise ValueError("model-call, token and duration budgets must be positive")
 
     def load_mandatory_governance(self) -> tuple[list[str], list[dict[str, str]]]:
         context: list[str] = []
@@ -147,6 +150,11 @@ class Worker:
             records.append({"path": rel, "sha256": digest, "bytes": str(len(raw))})
             context.append(f"\n--- MANDATORY GOVERNANCE: {rel} | sha256={digest} ---\n{body}")
         return context, records
+
+    def remaining_seconds(self) -> float:
+        if self.deadline_monotonic is None:
+            return 120.0
+        return max(0.0, self.deadline_monotonic - time.monotonic())
 
     def invoke_tool(self, name: str, args: dict[str, Any]) -> str:
         if name == "list_files":
@@ -188,7 +196,10 @@ class Worker:
             outputs = []
             env = {**os.environ, "PYTHONPATH": str(self.workspace / "engineering/workforce/src")}
             for command in commands:
-                result = subprocess.run(command, cwd=self.workspace, env=env, capture_output=True, text=True, timeout=120)
+                remaining = self.remaining_seconds()
+                if remaining <= 0:
+                    raise TimeoutError("task duration budget exhausted before test execution")
+                result = subprocess.run(command, cwd=self.workspace, env=env, capture_output=True, text=True, timeout=max(1, min(120, remaining)))
                 outputs.append({"command": command, "returncode": result.returncode, "stdout": result.stdout[-12000:], "stderr": result.stderr[-12000:]})
                 if result.returncode:
                     break
@@ -196,6 +207,7 @@ class Worker:
         return "DENIED: unknown tool."
 
     def run(self, task: str, context_files: list[str]) -> dict[str, Any]:
+        self.deadline_monotonic = time.monotonic() + self.max_duration_minutes * 60
         context, governance_records = self.load_mandatory_governance()
         seen = set(MANDATORY_GOVERNANCE_FILES)
         for rel in context_files:
@@ -229,6 +241,9 @@ class Worker:
         if self.provider == "cloudflare":
             headers["Content-Type"] = "application/json"
         while self.calls < self.max_calls and self.total_tokens < self.max_total_tokens:
+            remaining_seconds = self.remaining_seconds()
+            if remaining_seconds <= 0:
+                raise RuntimeError(f"task duration budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
             remaining = self.max_total_tokens - self.total_tokens
             # UTF-8 request bytes conservatively upper-bound tokenizer input tokens;
             # reserve framing overhead before allowing any paid/free provider request.
@@ -255,7 +270,7 @@ class Worker:
             else:
                 payload["max_tokens"] = output_limit
 
-            response = httpx.post(self.api_url, headers=headers, json=payload, timeout=120)
+            response = httpx.post(self.api_url, headers=headers, json=payload, timeout=max(1, min(120, remaining_seconds)))
             if response.status_code == 429 or response.status_code >= 500:
                 raise RuntimeError(f"provider unavailable or rate limited (HTTP {response.status_code}); stopped without paid fallback")
             response.raise_for_status()
@@ -269,6 +284,8 @@ class Worker:
             if self.total_tokens + reported_tokens > self.max_total_tokens:
                 raise RuntimeError("provider-reported usage exceeded the configured aggregate token budget; worker stopped")
             self.total_tokens += reported_tokens
+            if self.remaining_seconds() <= 0:
+                raise RuntimeError(f"task duration budget exhausted after provider response; usage recorded as {self.total_tokens} tokens")
             choice = data["choices"][0]["message"]
             messages.append(choice)
             tool_calls = choice.get("tool_calls") or []
@@ -299,8 +316,9 @@ def main() -> None:
     parser.add_argument("--max-calls", type=int, default=12)
     parser.add_argument("--max-tokens", type=int, default=4096)
     parser.add_argument("--max-total-tokens", type=int, default=24000)
+    parser.add_argument("--max-duration-minutes", type=int, default=120)
     args = parser.parse_args()
-    worker = Worker(Path(args.workspace), args.role, args.permitted_path, args.max_calls, args.max_tokens, args.max_total_tokens)
+    worker = Worker(Path(args.workspace), args.role, args.permitted_path, args.max_calls, args.max_tokens, args.max_total_tokens, args.max_duration_minutes)
     result = worker.run(args.task, args.context_file)
     print(json.dumps(result, indent=2))
 
