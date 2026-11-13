@@ -1,57 +1,56 @@
-# Planning documentation
+# AURIONS — Planning Documentation
 
-This directory contains the canonical planning mirror, detailed technical contracts and the evidence-based planning completion register.
+This directory contains the canonical planning mirror, technical contracts, owner-decision traceability and evidence-based planning status. The current phase is architecture/technical planning. Runtime implementation is not authorized.
 
-## Canonical source and planning baseline
+## Governance and source of truth
 
-- [Mandatory Project Directorship and Team Operating Standard](../governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md) — mandatory director/builder/reviewer/tester responsibilities, sequential handoff gates, scope control and evidence-based acceptance.
-- [Mandatory Builder Operating Protocol](../governance/BUILDER-OPERATING-PROTOCOL.md) — detailed builder execution, self-review, test and correction obligations.
+- [Project Directorship and Team Operating Standard](../governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md) — authority, milestone gates, builder/reviewer/tester responsibilities and acceptance.
+- [Builder Operating Protocol](../governance/BUILDER-OPERATING-PROTOCOL.md) — required builder execution, self-review, correction and evidence practices.
+- [Initial Engineering Specification](INITIAL-ENGINEERING-SPECIFICATION.md) — canonical planning mirror and owner-decision register.
+- [Owner Decision Traceability Matrix](OWNER-DECISION-TRACEABILITY-MATRIX.md) — maps owner decisions to architecture, contracts, tests, work packages and remaining gates.
+- [Planning Exit Owner Decision Packet](PLANNING-EXIT-OWNER-DECISION-PACKET.md) — consolidates product-definition approval, cloud/mobile continuity, first Android action, command/query subset and planning-exit gates. It records no decisions on the owner's behalf.
+- [Planning Completion Register](PLANNING-COMPLETION-REGISTER.md) — layer-by-layer status, builder-owned work, external/owner gates and strict completion criteria.
 
-- [Initial engineering specification](INITIAL-ENGINEERING-SPECIFICATION.md)
-- [Owner decision traceability matrix](OWNER-DECISION-TRACEABILITY-MATRIX.md) — maps each owner decision to architecture, contracts, tests, roadmap and remaining evidence.
-- [Machine-readable contract schemas](../../schemas/README.md)
-- [Integrated scenario contract fixtures](../../schemas/fixtures/scenario-contracts.fixture.json) — 39 multi-step design scenarios (INT, CM and AD) with 172 steps, 45 negative controls and restart/replay/concurrency/fault/held-out controls; CI validates structure and registry references, not runtime behaviour.
-- [Non-command event ingress and internal producer trigger matrix](EVENT-INGRESS-AND-INTERNAL-PRODUCER-TRIGGER-MATRIX.md) — exact trusted-ingress/internal triggers for all 23 events without command producers outside the Action Gateway lifecycle.
-- [Operation lifecycle transition matrix](OPERATION-LIFECYCLE-TRANSITION-MATRIX.md) — exact predecessor/trigger/effect boundaries for 15 Action Gateway internal lifecycle events; 23 other non-command event producer triggers remain unresolved.
-- [Event producer and consumer semantics matrix](EVENT-PRODUCER-AND-CONSUMER-SEMANTICS-MATRIX.md) — bidirectional command-to-event producer bindings and specified owner transitions/intended consumers for all 89 event entries; explicitly records 38 events without command producers, whose exact internal triggers remain unresolved. Runtime handlers and executed event-specific acceptance remain open.
-- [Query semantics and security contract matrix](QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md)
-- [Query projection and persistence reconciliation](QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md) — field-level scan of all 29 result schemas against bound SQLite tables; unresolved source fields are explicitly listed and remain non-dispatchable. — per-query owner/actor scope, classification/redaction, consistency, ordering/cursor, resource-budget rules, freshness/cache semantics and QCC-001…QCC-029 acceptance assertions; numerical budgets and executed handler tests remain open.
-- [Command/query registry baseline](../../schemas/command-query-registry.v1.json) — 51 mapped command types, two deferred device commands and 29 query types; per-entry semantic bindings and CC/QCC acceptance assertions are machine-validated, but all commands/events remain non-dispatchable pending owner scope acceptance, handlers and execution evidence. — proposed JSON Schema source for the common envelope, extensible capability descriptor and 89 reusable domain-schema definitions; the Python-host Draft 2020-12 corpus validation is CI-enforced (10 schema documents, 8 registry/fixture pairs, 81 positive domain payloads and 29 negative controls). C++ validator equivalence and C++/Python conformance remain open.
-- [Implementation-ready planning contracts](IMPLEMENTATION-READY-PLANNING-CONTRACTS.md) — component ownership, versioned contracts, worker boundary, authorization, operation recovery, persistence, synchronization/deletion, test catalogue, threat model, validation procedures and implementation work packages.
-- [Error handler contract matrix](ERROR-HANDLER-CONTRACT-MATRIX.md) — maps the 35-code seed registry to 13 category-owned recovery contracts, 35 code-specific recovery assertions and schema-shaped payload fixtures; assertions are specified, not executed runtime handlers.
-- [Planning completion register](PLANNING-COMPLETION-REGISTER.md) — authoritative layer-by-layer status, builder-owned remaining work, external gates and strict completion criteria. This register replaces informal terms such as “substantially complete.”
-- [Canonical implementation roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md)
-- [Semantic architecture reconciliation report](SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md)
-- [Work-package traceability and exit matrix](WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md)\n- [First-release acceptance traceability matrix](FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md)
-- [Store-local outbox and cross-store saga ownership matrix](STORE-LOCAL-OUTBOX-AND-CROSS-STORE-SAGA-MATRIX.md) — defines per-store transactional outboxes, event-archive relay semantics, explicit command transaction classes and the three cross-store evolution sagas. — maps every PR-01…PR-18 condition to contract families, accountable work packages, required scenarios/evidence and owner/external gates; CI enforces exact acceptance-ID and WP-reference coverage. — per-package logical owners, inputs, outputs/contracts, acceptance evidence, failure/recovery tests and external/owner gates.
-- [Cloud/offline-mobile topology decision](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md) — explicit analysis of shared implementation, shared state and synchronization; the first-release continuity choice remains unresolved.
-- [Notion project control center](https://app.notion.com/p/41505b96eab381778361fc0d0ccf6344?pvs=204) — original planning source and decision history.
+## Product, architecture and roadmap
 
-CI also runs `scripts/validate_planning_traceability.py` to enforce the 17-package roadmap/matrix inventory, dependency references, acyclic graph and first-release WP-15 boundary; this is structural validation only. The [machine-readable contract schemas](../../schemas/README.md) include a common message envelope, extensible capability descriptor and 89 reusable domain-schema definitions. The current Python-host Draft 2020-12 schema/fixture corpus passes CI, including 81 positive domain payloads and 29 negative controls. C++ validator equivalence, C++/Python conformance and runtime integration remain open; schemas remain design contracts, not dispatch authorization. The [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) maps each cognitive mechanism and Android capability responsibility to state ownership, persistence, contract families, work packages and verification; it also records unresolved schema reconciliation findings. The [Cloud and Offline-Mobile Runtime Topology Decision](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md) records the unresolved trade-off between concurrent cloud/mobile runtimes, shared cognitive state and deferred synchronization; it presents a builder recommendation for selective synchronization, but the owner has not selected a topology. The architecture and first-release product definition are maintained under `docs/architecture/` and `docs/product/`. The [Cognitive Mechanism and Interaction Architecture](../architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md) specifies mechanism ownership, state domains, interactions, learning pathways, concurrency, anti-hardcoding invariants and verification scenarios. The [Android environment and capability architecture](../architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md) defines the mechanism-based approach to Android environment discovery, capability knowledge, governed execution and experience-driven improvement. Review records are under `docs/reviews/`, including the [independent architecture re-review](../reviews/INDEPENDENT-ARCHITECTURE-REVIEW-RE-REVIEW.md). The recorded independent review applies to its stated historical revision; it is not a review of every subsequent correction or the current final baseline.
+- [First Usable Release Definition](../product/FIRST-USABLE-RELEASE-DEFINITION.md) — proposed PR-01…PR-18 acceptance baseline.
+- [Cloud and Offline-Mobile Runtime Topology Decision](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md) — compares independent histories, selective synchronization and cloud-compute options; continuity remains an owner decision.
+- [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md) — WP-00…WP-16 sequence and dependency boundaries.
+- [Work-Package Traceability and Exit Matrix](WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md) — owners, inputs/outputs, acceptance, recovery evidence and external gates.
+- [First-Release Acceptance Traceability Matrix](FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md) — traces PR-01…PR-18 to contracts, work packages, scenarios and evidence.
+- [Semantic Architecture Reconciliation Report](SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md) — maps concepts, state ownership, command/query/event surfaces, work packages and evidence.
 
-## Status discipline
+## Technical contract matrices
 
-A documented proposal is not an owner decision, a validated result or an implementation. Every item must be marked as specified, validated or implemented with evidence. The planning supplement closes design omissions only; it does not claim that SQL has been executed, target-device measurements have been performed, dependencies have been audited, security has been penetration-tested, or implementation exists.
+- [Implementation-Ready Planning Contracts](IMPLEMENTATION-READY-PLANNING-CONTRACTS.md) — component boundaries, message contracts, worker isolation, authorization, recovery, persistence, sync/deletion and test requirements.
+- [Command/Query Registry](../../schemas/command-query-registry.v1.json) — 54 command records (52 mapped, two deferred) and 29 query records; all remain design-only/non-dispatchable.
+- [Query Semantics and Security Contract Matrix](QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md) — per-query scope, classification/redaction, consistency, ordering/cursor, freshness/cache and resource-budget rules.
+- [Query Projection and Persistence Reconciliation](QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md) — proposed source/derivation mapping for all 310 query result fields; SQL handlers and behavioural projection tests remain open.
+- [Event Registry](../../schemas/event-registry.v1.json) — 89 design-only event contracts.
+- [Event Producer and Consumer Semantics Matrix](EVENT-PRODUCER-AND-CONSUMER-SEMANTICS-MATRIX.md) — producer origins, owner transitions, consumer contracts, ordering/idempotency and failure/recovery for all 89 events.
+- [Event Ingress and Internal Producer Trigger Matrix](EVENT-INGRESS-AND-INTERNAL-PRODUCER-TRIGGER-MATRIX.md) — exact internal/trusted-ingress triggers for 37 events without command producers: 15 Action Gateway lifecycle events and 22 other non-command events.
+- [Operation Lifecycle Transition Matrix](OPERATION-LIFECYCLE-TRANSITION-MATRIX.md) — Action Gateway lifecycle predecessor, trigger and effect constraints.
+- [Store-Local Outbox and Cross-Store Saga Matrix](STORE-LOCAL-OUTBOX-AND-CROSS-STORE-SAGA-MATRIX.md) — per-store transactional outboxes and the three explicitly specified cross-store evolution sagas.
+- [Error Handler Contract Matrix](ERROR-HANDLER-CONTRACT-MATRIX.md) — 35-code seed registry, 13 category-owned handler contracts and code-specific recovery assertions.
 
-## Current phase
+## Schemas, fixtures and validation
 
-**Architecture planning and technical design; implementation planning is in progress.** No implementation is authorized. Consult the planning completion register for the exact status of each layer and remaining builder-owned task.
+- [Schema and fixture index](../../schemas/README.md) — schema source and validation inventory.
+- [Integrated Scenario Contract Fixture](../../schemas/fixtures/scenario-contracts.fixture.json) — **47 design specifications**: INT-001…003, CM-001…029 and AD-001…015; **287 ordered steps and 53 negative controls**. These are not executed runtime tests and confer no execution authority.
+- [Scenario Contract JSON Schema](../../schemas/scenario-contracts.v1.schema.json) — validates scenario shape and non-executable status.
+- [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) — maps cognitive/world/interaction/platform responsibilities to state ownership, persistence, contracts, work packages and scenario evidence.
+- [Android/Termux Target Validation Protocol](../platform/ANDROID-TERMUX-TARGET-VALIDATION-PROTOCOL.md) — read-only target collector and required empirical validation.
+- CI validator: `scripts/validate_schemas.py`.
+- Work-package graph validator: `scripts/validate_planning_traceability.py`.
 
-## Remaining evidence and approval gates
+## Review records
 
-Before implementation, the project still requires:
-- Host SQLite execution of the three base schemas and five additive migrations is now automated and passed. Still validate the actual target Termux/Android SQLite library and run crash/interruption, rollback/restart, restore, disk-full, locked/corrupt-store, outbox/inbox and cross-store recovery tests.
-- Complete the real dependency/license/SBOM audit after technology versions are selected.
-- Reconcile WP-00 PR #1, achieve clean reproducible host/Termux builds and green CI.
-- Measure target-device performance, memory, thermals, battery, storage and background lifecycle.
-- Prototype JNI/shared-library versus IPC and validate platform choices.
-- Review actual security implementation, key lifecycle, IPC, update chain and data flows.
-- Implement and execute the contract, governance, operation, cognitive-cycle, learning, sync and recovery tests.
-- The CLI first-interface and concurrent cloud/offline-mobile direction are recorded owner decisions. The exact first permitted local action remains a separate unresolved first-release decision; it must not be inferred from illustrative Android examples.
-- Complete builder-owned design corrections, obtain independent re-review of the exact final revision, resolve required findings and obtain explicit owner approval before implementation.
+- [Main Builder Pre-Review Audit](../reviews/MAIN-BUILDER-PRE-REVIEW-AUDIT-2026-11-12.md) — append-only builder findings, corrections and exact-head evidence. It is not an independent review.
+- [Independent Architecture Re-Review](../reviews/INDEPENDENT-ARCHITECTURE-REVIEW-RE-REVIEW.md) — applies only to the exact revision identified in that review; it does not cover later changes.
+- [Governance Standard Validation Results](../reviews/GOVERNANCE-STANDARD-VALIDATION-RESULTS-2026-11-12.md) — CI structural validation of mandatory governance documents.
 
-No implementation or merge is authorized merely by these documents.
+## Evidence and authority boundary
 
-## Editorial note
+The current planning fixture/schema CI has passed on scenario-expansion code HEAD `a38494b4610a0fa9870908950a1a7336dcb4c2b2` (workflow run [43440727107](https://github.com/methaneex-oss/AURIONS/actions/runs/43440727107)). It validates schemas/fixtures, governance document structure, work-package graph structure, host SQLite DDL/migration smoke tests and Android probe shell syntax. It does not prove production handlers, executed cognitive behaviour, cross-store saga recovery, target Android/Termux behaviour, C++/Python conformance, production security or independent review.
 
-The imported source preserves historical wording and decision provenance. Its repeated section numbering and historical status notes are not silently rewritten. Use the current status and change log when reconciling older statements.
+The builder recommendation is not an owner decision. The first Android action, cloud/mobile history topology, first-release product definition and first-release command/query subset remain subject to owner resolution. Target-device, toolchain, dependency and security evidence must be passed or explicitly staged with restrictions. Planning exit and implementation require separate explicit owner approval. PR #2 remains draft/open/unmerged.
