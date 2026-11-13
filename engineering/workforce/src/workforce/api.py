@@ -64,6 +64,7 @@ class WorkerTransition(StrictModel):
     target: TaskState
     reason: str = Field(min_length=1, max_length=1000)
     evidence_sha256: str | None = Field(default=None, pattern=r"^[0-9a-fA-F]{64}$")
+    evidence_ref: str | None = Field(default=None, min_length=1, max_length=512)
 
 
 class Transition(StrictModel):
@@ -310,8 +311,8 @@ def worker_transition(
     worker = _auth(authenticate_worker, x_worker_token)
     if body.target not in {TaskState.CANDIDATE_READY, TaskState.BLOCKED, TaskState.FAILED, TaskState.CANCELLED}:
         raise HTTPException(status_code=403, detail="worker target is not permitted")
-    if body.target == TaskState.CANDIDATE_READY and not body.evidence_sha256:
-        raise HTTPException(status_code=422, detail="completed worker output requires an immutable evidence SHA-256")
+    if body.target == TaskState.CANDIDATE_READY and (not body.evidence_sha256 or not body.evidence_ref):
+        raise HTTPException(status_code=422, detail="completed worker output requires an evidence SHA-256 and artifact reference")
     with connect() as conn, conn.cursor() as cur:
         cur.execute(
             """SELECT state,lease_generation FROM wf_tasks
@@ -331,6 +332,12 @@ def worker_transition(
             validate_transition(current, body.target)
         except TransitionError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
+        if body.target == TaskState.CANDIDATE_READY:
+            cur.execute(
+                """INSERT INTO wf_task_evidence(task_id,stage,sha256,evidence_ref,actor)
+                   VALUES (%s,'WORKER_OUTPUT',%s,%s,%s)""",
+                (task_id, body.evidence_sha256.lower(), body.evidence_ref, worker.actor_id),
+            )
         cur.execute(
             """UPDATE wf_tasks SET state=%s,lease_worker=NULL,lease_token_hash=NULL,
                       lease_expires_at=NULL,updated_at=now()
@@ -341,7 +348,7 @@ def worker_transition(
         cur.execute(
             """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
                VALUES (%s,'WORKER_TASK_TRANSITION',%s,%s::jsonb)""",
-            (task_id, worker.actor_id, json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason, "evidence_sha256": body.evidence_sha256})),
+            (task_id, worker.actor_id, json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason, "evidence_sha256": body.evidence_sha256, "evidence_ref": body.evidence_ref})),
         )
         return updated
 
@@ -357,8 +364,8 @@ def transition(
         principal = _auth(require_director, x_director_approval_token)
         if not body.director_decision_ref:
             raise HTTPException(status_code=422, detail="Director decision reference is mandatory")
-        if not body.evidence_sha256:
-            raise HTTPException(status_code=422, detail="Director acceptance requires the integrated evidence SHA-256")
+        if not body.evidence_sha256 or not body.evidence_ref:
+            raise HTTPException(status_code=422, detail="Director acceptance requires the integrated evidence SHA-256 and artifact reference")
     else:
         principal = _auth(require_orchestrator, x_orchestrator_token)
         if body.director_decision_ref:
@@ -387,16 +394,34 @@ def transition(
             }
             if body.target not in allowed.get(current, set()):
                 raise HTTPException(status_code=403, detail="orchestrator transition is outside its lifecycle authority")
-            evidence_required = {
-                (TaskState.CANDIDATE_READY, TaskState.TESTING),
-                (TaskState.TESTING, TaskState.REVIEWING),
-                (TaskState.REVIEWING, TaskState.INTEGRATION),
-                (TaskState.INTEGRATION, TaskState.AWAITING_DIRECTOR),
+            evidence_stages = {
+                (TaskState.CANDIDATE_READY, TaskState.TESTING): "CANDIDATE",
+                (TaskState.TESTING, TaskState.REVIEWING): "TEST",
+                (TaskState.REVIEWING, TaskState.INTEGRATION): "REVIEW_BUNDLE",
+                (TaskState.INTEGRATION, TaskState.AWAITING_DIRECTOR): "INTEGRATED",
             }
-            if (current, body.target) in evidence_required and not body.evidence_sha256:
-                raise HTTPException(status_code=422, detail="lifecycle advancement requires immutable evidence SHA-256")
+            evidence_stage = evidence_stages.get((current, body.target))
+            if evidence_stage and (not body.evidence_sha256 or not body.evidence_ref):
+                raise HTTPException(status_code=422, detail="lifecycle advancement requires an evidence digest and artifact reference")
+            if not evidence_stage and (body.evidence_sha256 or body.evidence_ref):
+                raise HTTPException(status_code=422, detail="evidence may only be attached to a defined lifecycle gate")
         elif body.evidence_sha256 and principal.role == "director" and body.target != TaskState.ACCEPTED:
             raise HTTPException(status_code=422, detail="Director evidence is only accepted with final acceptance")
+        if principal.role == "director":
+            cur.execute(
+                "SELECT sha256,evidence_ref FROM wf_task_evidence WHERE task_id=%s AND stage='INTEGRATED'",
+                (task_id,),
+            )
+            integrated = cur.fetchone()
+            if (not integrated or integrated["sha256"].strip().lower() != body.evidence_sha256.lower()
+                    or integrated["evidence_ref"] != body.evidence_ref):
+                raise HTTPException(status_code=409, detail="Director acceptance must reference the exact recorded integrated evidence")
+        elif evidence_stage:
+            cur.execute(
+                """INSERT INTO wf_task_evidence(task_id,stage,sha256,evidence_ref,actor)
+                   VALUES (%s,%s,%s,%s,%s)""",
+                (task_id, evidence_stage, body.evidence_sha256.lower(), body.evidence_ref, principal.actor_id),
+            )
         try:
             validate_transition(current, body.target, director_decision=(principal.role == "director"))
         except TransitionError as exc:
@@ -415,7 +440,7 @@ def transition(
             """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
                VALUES (%s,'STATE_TRANSITION',%s,%s::jsonb)""",
             (task_id, principal.actor_id,
-             json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason, "director_decision_ref": body.director_decision_ref, "evidence_sha256": body.evidence_sha256})),
+             json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason, "director_decision_ref": body.director_decision_ref, "evidence_sha256": body.evidence_sha256, "evidence_ref": body.evidence_ref})),
         )
         return updated
 
