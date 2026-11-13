@@ -1399,6 +1399,7 @@
       "acceptance_scenario_refs": [
         "CM-008",
         "CM-012",
+        "CM-017",
         "INT-003"
       ],
       "specification_status": "specified_not_runtime_validated"
@@ -1438,6 +1439,7 @@
       "acceptance_scenario_refs": [
         "CM-008",
         "CM-012",
+        "CM-017",
         "INT-003"
       ],
       "specification_status": "specified_not_runtime_validated"
@@ -2357,7 +2359,8 @@
       "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
       "failure_recovery_contract": "Commit aggregate mutation with its event/outbox in one owning-store transaction. Deliver at least once; consumers must be idempotent. On crash replay from durable checkpoint; on missing predecessor hold and reconcile the gap; quarantine poison/unknown-version events without dropping them. Cross-store consumers use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
       "acceptance_scenario_refs": [
-        "CM-012"
+        "CM-012",
+        "CM-017"
       ],
       "specification_status": "specified_not_runtime_validated"
     },
@@ -2394,7 +2397,8 @@
       "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
       "failure_recovery_contract": "Commit aggregate mutation with its event/outbox in one owning-store transaction. Deliver at least once; consumers must be idempotent. On crash replay from durable checkpoint; on missing predecessor hold and reconcile the gap; quarantine poison/unknown-version events without dropping them. Cross-store consumers use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
       "acceptance_scenario_refs": [
-        "CM-012"
+        "CM-012",
+        "CM-017"
       ],
       "specification_status": "specified_not_runtime_validated"
     },
@@ -2431,7 +2435,8 @@
       "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
       "failure_recovery_contract": "Commit aggregate mutation with its event/outbox in one owning-store transaction. Deliver at least once; consumers must be idempotent. On crash replay from durable checkpoint; on missing predecessor hold and reconcile the gap; quarantine poison/unknown-version events without dropping them. Cross-store consumers use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
       "acceptance_scenario_refs": [
-        "CM-012"
+        "CM-012",
+        "CM-017"
       ],
       "specification_status": "specified_not_runtime_validated"
     },
@@ -2467,7 +2472,9 @@
       "consumer_transition_summary": "Evolution activation manager: Restore exact prior approved artifact pointer and preserve failed candidate and rollback audit lineage. Intended consumers: Evolution activation manager; Audit subsystem.",
       "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
       "failure_recovery_contract": "Commit aggregate mutation with its event/outbox in one owning-store transaction. Deliver at least once; consumers must be idempotent. On crash replay from durable checkpoint; on missing predecessor hold and reconcile the gap; quarantine poison/unknown-version events without dropping them. Cross-store consumers use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
-      "acceptance_scenario_refs": [],
+      "acceptance_scenario_refs": [
+        "CM-017"
+      ],
       "specification_status": "specified_not_runtime_validated"
     },
     "sync.change.exported.v1": {
