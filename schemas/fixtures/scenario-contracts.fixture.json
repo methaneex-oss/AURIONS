@@ -6536,6 +6536,7 @@
             "Persist context-local task state and exact owner/device/store attribution; cross-context references remain explicit and no remote context inherits local authority."
           ],
           "expected_events": [
+            "task.control.requested.v1",
             "task.run.transitioned.v1"
           ],
           "durable_assertions": [
