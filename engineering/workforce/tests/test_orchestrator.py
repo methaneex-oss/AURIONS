@@ -29,6 +29,7 @@ def valid_manifest():
         }
     return {
         "work_package_id": "WF-ORCHESTRATOR-TEST",
+        "run_id": "wf-orchestrator-test",
         "authorization_ref": "director-approved-test-001",
         "objective": "Test the six-role orchestrator contract",
         "base_commit_sha": "a" * 40,
@@ -158,7 +159,7 @@ class OrchestratorTests(unittest.TestCase):
     def test_task_contract_gives_read_only_roles_no_write_scope(self):
         value = validate_manifest(valid_manifest())
         contract = _task_contract(value, "code_reviewer")
-        self.assertEqual(contract["permitted_paths"], ["engineering/workforce"])
+        self.assertEqual(contract["permitted_paths"], [])
         self.assertEqual(contract["max_tokens"], 4000)
 
     def test_worker_registry_requires_one_strong_token_per_role(self):
