@@ -49,7 +49,8 @@ def main() -> int:
             {"role": "system", "content": system + "\nRole: " + role + "\nAssessment criteria: " + ROLE_CRITERIA[role]},
             {"role": "user", "content": CASES[role]},
         ],
-        "max_tokens": 700,
+        "max_tokens": 1400,
+        "reasoning": {"effort": "low"},
         "temperature": 0,
     }
     response = httpx.post(
@@ -68,19 +69,24 @@ def main() -> int:
         raise SystemExit(f"provider request failed: HTTP {response.status_code}; no retry attempted")
     data = response.json()
     message = data["choices"][0]["message"]
+    content = message.get("content")
+    finish_reason = data["choices"][0].get("finish_reason")
     result = {
         "role": role,
         "model": data.get("model", model),
         "screening_only": True,
         "calls": 1,
         "usage": data.get("usage", {}),
-        "response": message.get("content", ""),
+        "response": content,
+        "finish_reason": finish_reason,
         "tool_use_tested": False,
         "qualification_status": "PENDING_INDEPENDENT_HUMAN_SCORING",
     }
     output = Path(os.environ.get("OUTPUT_FILE", f"{role}-screening.json"))
     output.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))
+    if not isinstance(content, str) or not content.strip():
+        raise SystemExit(f"screening produced no visible answer; finish_reason={finish_reason}; usage={data.get('usage', {})}")
     return 0
 
 
