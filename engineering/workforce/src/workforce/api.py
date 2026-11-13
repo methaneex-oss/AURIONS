@@ -105,6 +105,11 @@ def create_task(
         "code_reviewer", "negative_tester", "integration_verifier",
     }:
         raise HTTPException(status_code=422, detail="unknown workforce role")
+    builder_roles = {"lead_builder", "specialist_builder"}
+    if body.role in builder_roles and not contract.permitted_paths:
+        raise HTTPException(status_code=422, detail="builder tasks require at least one permitted write path")
+    if body.role not in builder_roles and contract.permitted_paths:
+        raise HTTPException(status_code=422, detail="review and integration roles must have an empty write scope")
     with connect() as conn, conn.cursor() as cur:
         cur.execute(
             """INSERT INTO wf_tasks(task_id, role, state, contract_json, base_commit_sha)
