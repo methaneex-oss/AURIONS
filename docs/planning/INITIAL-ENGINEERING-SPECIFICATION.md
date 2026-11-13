@@ -801,6 +801,8 @@ Required v4 validation includes fresh install and upgrade paths, owner isolation
 
 ### 26.6 Migration protocol
 
+The canonical local-outbox migrations are `schemas/persistence/aurion_memory.migration_v5.sql` and `schemas/persistence/aurion_governance.migration_v2.sql`. They add the transactional outbox to the memory and governance stores; the event/recovery store retains its own outbox. Every authoritative store must commit its state mutation and its local publication intent in the same per-file transaction. The central event archive is populated asynchronously by the outbox relay. These migrations are proposed and host-smoke-tested only; target SQLite/Termux validation and relay crash/replay tests remain open.
+
 Each DB has its own monotonic migration version and checksum. There is no cross-file atomic migration.
 
 1. Acquire exclusive per-file migration lock.
@@ -1237,7 +1239,7 @@ In particular:
 Do not attempt distributed ACID transactions across the three SQLite files. Use a durable operation coordinator and a transactional outbox in the same database as the state mutation that must publish an event.
 
 - The authoritative store for a domain owns its state change and its outbox row in one SQLite transaction.
-- Each store has a local outbox table. The event/recovery database is the central event archive and dispatch ledger, not the only place where an event can be made durable.
+- Each store has a local outbox table. The memory-store outbox is introduced by migration v5 and the governance-store outbox by migration v2; the event/recovery database retains its own outbox for event-store-owned state and downstream dispatch. The event/recovery database is the central event archive and dispatch ledger, not the only place where an event can be made durable.
 - A relay copies outbox envelopes into the central event archive using stable message IDs and payload digests. Repeated delivery is expected and deduplicated by consumer ID plus message ID.
 - A consumer applies its local state mutation and records its receipt in the same local transaction whenever both are in the same store. If state and receipt live in different stores, use a durable operation step and reconciliation; never claim atomicity.
 - Cross-store workflows are sagas: each step records intent, performs one local transaction or external effect, records the result, and advances. Compensation is a new explicit operation, not deletion of history.
