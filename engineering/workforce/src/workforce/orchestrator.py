@@ -301,6 +301,178 @@ def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) ->
                 shutil.copy2(source_file, target_file)
 
 
+def _docker_run(
+    command: list[str],
+    *,
+    test_root: Path,
+    environment: dict[str, str],
+    image: str,
+    network: str,
+    timeout: int,
+) -> subprocess.CompletedProcess:
+    """Run candidate-controlled tests in a network-restricted, credential-isolated container."""
+    container_name = f"aurions-wf-test-{uuid.uuid4().hex[:12]}"
+    allowed_env = {
+        "PYTHONPATH", "PYTHONDONTWRITEBYTECODE", "CI", "HOME", "TMPDIR",
+        "CMAKE_BUILD_PARALLEL_LEVEL", "DATABASE_URL", "DIRECTOR_APPROVAL_TOKEN",
+        "WORKFORCE_ORCHESTRATOR_TOKEN", "WORKFORCE_WORKER_CREDENTIALS_JSON",
+    }
+    if set(environment) - allowed_env:
+        raise OrchestrationError("test environment contains an unapproved variable")
+    uid = os.getuid() if hasattr(os, "getuid") else 10001
+    gid = os.getgid() if hasattr(os, "getgid") else 10001
+    executable = Path(command[0]).name
+    argv = ["python3", *command[1:]] if executable.startswith("python") else command
+    docker_command = [
+        "docker", "run", "--rm", "--name", container_name,
+        "--network", network, "--read-only",
+        "--tmpfs", "/tmp:rw,nosuid,nodev,size=1g",
+        "--cap-drop=ALL", "--security-opt=no-new-privileges:true",
+        "--pids-limit=128", "--memory=4g", "--cpus=2",
+        "--user", f"{uid}:{gid}",
+        "--mount", f"type=bind,src={test_root.resolve()},dst=/workspace,rw",
+        "--workdir", "/workspace",
+    ]
+    for key, value in sorted(environment.items()):
+        docker_command.extend(["--env", f"{key}={value}"])
+    docker_command.extend([image, *argv])
+    try:
+        return subprocess.run(
+            docker_command, capture_output=True, text=True,
+            timeout=timeout, check=False,
+        )
+    except subprocess.TimeoutExpired:
+        subprocess.run(
+            ["docker", "rm", "--force", container_name],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+        raise
+
+
+def _run_candidate_tests(
+    *,
+    test_root: Path,
+    test_commands: list[list[str]],
+    test_image: str,
+    remaining_seconds,
+) -> list[dict[str, Any]]:
+    """Create a private PostgreSQL database and execute tests without host/provider access."""
+    import secrets
+
+    network = f"aurions-wf-net-{uuid.uuid4().hex[:10]}"
+    database_container = f"aurions-wf-db-{uuid.uuid4().hex[:10]}"
+    password = secrets.token_urlsafe(32)
+    test_environment = {
+        "PYTHONPATH": "/workspace/engineering/workforce/src",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "CI": "1",
+        "HOME": "/tmp",
+        "TMPDIR": "/tmp",
+        "CMAKE_BUILD_PARALLEL_LEVEL": "2",
+        "DATABASE_URL": f"postgresql://workforce:{password}@{database_container}:5432/workforce_test",
+        "DIRECTOR_APPROVAL_TOKEN": secrets.token_urlsafe(32),
+        "WORKFORCE_ORCHESTRATOR_TOKEN": secrets.token_urlsafe(32),
+        "WORKFORCE_WORKER_CREDENTIALS_JSON": json.dumps({
+            "builder-01": {"token": secrets.token_urlsafe(32), "role": "lead_builder"},
+            "reviewer-01": {"token": secrets.token_urlsafe(32), "role": "code_reviewer"},
+        }),
+    }
+    results: list[dict[str, Any]] = []
+
+    def docker(args: list[str], timeout: int = 30) -> subprocess.CompletedProcess:
+        try:
+            result = subprocess.run(
+                ["docker", *args], capture_output=True, text=True,
+                timeout=timeout, check=False,
+            )
+        except FileNotFoundError as exc:
+            raise OrchestrationError("Docker is required for isolated candidate testing") from exc
+        if result.returncode:
+            raise OrchestrationError("isolated test infrastructure failed: " + result.stderr[-1200:])
+        return result
+
+    try:
+        docker(["network", "create", "--internal", network])
+        docker([
+            "run", "--detach", "--name", database_container, "--network", network,
+            "--env", "POSTGRES_USER=workforce",
+            "--env", f"POSTGRES_PASSWORD={password}",
+            "--env", "POSTGRES_DB=workforce_test",
+            "postgres:17-alpine",
+        ])
+        ready = False
+        deadline = time.monotonic() + min(60, max(5, remaining_seconds() - 5))
+        while time.monotonic() < deadline:
+            check = subprocess.run(
+                ["docker", "exec", database_container, "pg_isready", "-U", "workforce", "-d", "workforce_test"],
+                capture_output=True, text=True, timeout=5, check=False,
+            )
+            if check.returncode == 0:
+                ready = True
+                break
+            time.sleep(0.5)
+        if not ready:
+            raise OrchestrationError("isolated PostgreSQL test database did not become ready")
+
+        migration_code = """import os
+from pathlib import Path
+import psycopg
+paths = sorted(Path("engineering/workforce/migrations").glob("*.sql"))
+if not paths:
+    raise SystemExit("no workforce migrations found")
+with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+    for path in paths:
+        conn.execute(path.read_text(encoding="utf-8"), prepare=False)
+"""
+        migration_remaining = remaining_seconds()
+        if migration_remaining < 10:
+            raise OrchestrationError("work-package budget exhausted before test database migration")
+        migrated = _docker_run(
+            ["python3", "-c", migration_code],
+            test_root=test_root, environment=test_environment, image=test_image,
+            network=network, timeout=max(1, min(60, int(migration_remaining - 5))),
+        )
+        if migrated.returncode:
+            raise OrchestrationError("isolated test database migration failed: " + migrated.stderr[-1200:])
+
+        for command in test_commands:
+            remaining = remaining_seconds()
+            if remaining < 10:
+                raise OrchestrationError("work-package wall-clock budget exhausted before test execution")
+            try:
+                run = _docker_run(
+                    command, test_root=test_root, environment=test_environment,
+                    image=test_image, network=network,
+                    timeout=max(1, min(300, int(remaining - 5))),
+                )
+                result_record = {
+                    "command": command,
+                    "returncode": run.returncode,
+                    "stdout": run.stdout[-12000:],
+                    "stderr": run.stderr[-12000:],
+                }
+            except subprocess.TimeoutExpired as exc:
+                result_record = {
+                    "command": command,
+                    "returncode": 124,
+                    "stdout": str(exc.stdout or "")[-12000:],
+                    "stderr": "test command exceeded its bounded container timeout",
+                }
+            results.append(result_record)
+            if result_record["returncode"]:
+                raise OrchestrationError("candidate test suite failed; no reviewer or integration task will proceed")
+        return results
+    finally:
+        subprocess.run(
+            ["docker", "rm", "--force", database_container],
+            capture_output=True, text=True, timeout=15, check=False,
+        )
+        subprocess.run(
+            ["docker", "network", "rm", network],
+            capture_output=True, text=True, timeout=15, check=False,
+        )
+
+
 def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path) -> dict[str, Any]:
     manifest = validate_manifest(manifest)
     root = workspace.resolve()
@@ -456,35 +628,12 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         candidate_path.write_bytes(candidate_bytes)
         candidate_sha = hashlib.sha256(candidate_bytes).hexdigest()
 
-        # Never point the test suite at the live control-plane database. Full
-        # PostgreSQL tests run only when an explicit disposable test DB is supplied.
-        test_env = {
-            "PATH": os.environ.get("PATH", ""),
-            "PYTHONPATH": str(root / "engineering/workforce/src"),
-            "PYTHONDONTWRITEBYTECODE": "1",
-            "CI": "1",
-        }
-        test_database = os.environ.get("WORKFORCE_TEST_DATABASE_URL", "")
-        if test_database:
-            required_test = (
-                "WORKFORCE_TEST_DIRECTOR_TOKEN",
-                "WORKFORCE_TEST_ORCHESTRATOR_TOKEN",
-                "WORKFORCE_TEST_WORKER_CREDENTIALS_JSON",
-            )
-            missing = [key for key in required_test if not os.environ.get(key)]
-            if missing:
-                raise OrchestrationError("disposable integration DB requires: " + ", ".join(missing))
-            test_env.update({
-                "DATABASE_URL": test_database,
-                "DIRECTOR_APPROVAL_TOKEN": os.environ["WORKFORCE_TEST_DIRECTOR_TOKEN"],
-                "WORKFORCE_ORCHESTRATOR_TOKEN": os.environ["WORKFORCE_TEST_ORCHESTRATOR_TOKEN"],
-                "WORKFORCE_WORKER_CREDENTIALS_JSON": os.environ["WORKFORCE_TEST_WORKER_CREDENTIALS_JSON"],
-            })
         test_commands = [
-            [sys.executable, "-m", "compileall", "-q", "engineering/workforce/src", "engineering/workforce/tests"],
-            [sys.executable, "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
+            ["python3", "-m", "compileall", "-q", "engineering/workforce/src", "engineering/workforce/tests"],
+            ["python3", "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
+            *manifest["test_commands"],
         ]
-        test_results = []
+        test_results: list[dict[str, Any]] = []
         test_report = report_dir / f"{manifest['run_id']}-test-results.json"
 
         def persist_test_results(status: str) -> None:
@@ -494,46 +643,24 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             )
 
         persist_test_results("RUNNING")
-        # Run the suite against a read-only-intent snapshot, not the live candidate
-        # workspace. Test code cannot mutate the candidate or access its credentials.
         with tempfile.TemporaryDirectory(prefix="workforce-package-tests-") as test_dir:
             test_root = Path(test_dir)
             _copy_test_snapshot(root, test_root, manifest["test_paths"])
-            test_env["PYTHONPATH"] = str(test_root / "engineering/workforce/src")
-            test_env["HOME"] = str(test_root)
-            test_env["TMPDIR"] = str(test_root)
-            test_env["CARGO_HOME"] = str(test_root / ".cargo")
-            test_env["GOCACHE"] = str(test_root / ".go-cache")
-            test_env["CMAKE_BUILD_PARALLEL_LEVEL"] = "2"
-            test_commands.extend(manifest["test_commands"])
-            for command in test_commands:
-                test_remaining = remaining_orchestration_seconds()
-                if test_remaining < 10:
-                    persist_test_results("FAILED_BUDGET_EXHAUSTED")
-                    raise OrchestrationError("work-package wall-clock budget exhausted before test execution")
-                try:
-                    run = subprocess.run(
-                        command, cwd=test_root, env=test_env, capture_output=True, text=True,
-                        timeout=max(1, min(300, test_remaining - 5)), check=False,
-                    )
-                    result_record = {
-                        "command": command,
-                        "returncode": run.returncode,
-                        "stdout": run.stdout[-12000:],
-                        "stderr": run.stderr[-12000:],
-                    }
-                except subprocess.TimeoutExpired as exc:
-                    result_record = {
-                        "command": command,
-                        "returncode": 124,
-                        "stdout": str(exc.stdout or "")[-12000:],
-                        "stderr": "test command exceeded its bounded timeout",
-                    }
-                test_results.append(result_record)
-                persist_test_results("FAILED" if result_record["returncode"] else "RUNNING")
-                if result_record["returncode"]:
-                    raise OrchestrationError("candidate test suite failed; no reviewer or integration task will proceed")
+            test_image = os.environ.get("WORKFORCE_TEST_DOCKER_IMAGE", "")
+            if not test_image or not re.fullmatch(r"[A-Za-z0-9._:/@-]{1,200}", test_image):
+                raise OrchestrationError("WORKFORCE_TEST_DOCKER_IMAGE must identify the prebuilt trusted test image")
+            try:
+                test_results.extend(_run_candidate_tests(
+                    test_root=test_root,
+                    test_commands=test_commands,
+                    test_image=test_image,
+                    remaining_seconds=remaining_orchestration_seconds,
+                ))
+            except OrchestrationError:
+                persist_test_results("FAILED")
+                raise
         persist_test_results("PASSED")
+
         test_bytes = test_report.read_bytes()
         test_sha = hashlib.sha256(test_bytes).hexdigest()
 
