@@ -737,3 +737,8 @@ Added validator parity checks for all 54 command rows: exact row shape, transact
 ## BR-004 scenario traceability integrity — 13 November 2026
 
 Assigned stable AU-001…AU-012 IDs to the twelve existing baseline policy tests and extended scenario validation to require catalogue references and CM/AD source-scenario references to resolve against canonical documents. Added uniqueness/sequential-order checks for step IDs and uniqueness checks for negative-control IDs. Current corpus: 39 scenarios, 172 ordered steps, 45 negative controls; all 24 catalogue references and all source scenario references resolve. Exact code head \`d7e20808d42e8ab4aa9c5163454c640f6b130c0c\` passed all nine workflow steps in [run 43433557247](https://github.com/methaneex-oss/AURIONS). Scenarios remain specified, not executed; BR-004 remains OPEN.
+
+
+## BR-003 error/recovery contract parity — 13 November 2026
+
+Extended validation across all 35 error entries: fixture category, side-effect default, payload side-effect state and retry posture must match the registry; each code-level handler mapping must resolve to a real category heading; referenced handler headings must exactly match the matrix inventory. Current scan: 35/35 fixture defaults align, 35 code rows resolve, 35 EHR assertions remain mapped. Exact code head \`a45ad914aee564d0815ff61cadbd8db74688f27b\` passed all nine steps in [run 43433876661](https://github.com/methaneex-oss/AURIONS). All entries remain seed and EHR tests remain specified, not executed; BR-003 remains OPEN.
