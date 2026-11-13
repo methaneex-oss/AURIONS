@@ -14,6 +14,7 @@ import subprocess
 import sys
 import tempfile
 import shutil
+import time
 import uuid
 from pathlib import Path
 from typing import Any
@@ -62,6 +63,15 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
     for key in ("canonical_sources", "acceptance_criteria", "test_plan", "review_plan", "stop_conditions"):
         if not isinstance(value[key], list) or not value[key] or not all(isinstance(x, str) and x.strip() for x in value[key]):
             raise OrchestrationError(f"{key} must be a non-empty list of strings")
+    max_total = value.get("max_total_duration_minutes", 330)
+    if not isinstance(max_total, int) or isinstance(max_total, bool) or not 1 <= max_total <= 360:
+        raise OrchestrationError("max_total_duration_minutes must be between 1 and 360")
+    value["max_total_duration_minutes"] = max_total
+    default_durations = {
+        "lead_builder": 120, "specialist_builder": 60,
+        "architecture_reviewer": 30, "code_reviewer": 30,
+        "negative_tester": 30, "integration_verifier": 45,
+    }
     for role in ROLES:
         spec = value["roles"][role]
         if not isinstance(spec, dict) or not isinstance(spec.get("task"), str) or not spec["task"].strip():
@@ -84,11 +94,14 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
             ("max_model_calls", 8, 100),
             ("max_tokens", 16000, 200000),
             ("max_completion_tokens", 3072, 32768),
-            ("max_duration_minutes", 120, 360),
+            ("max_duration_minutes", default_durations[role], 360),
         ):
             number = spec.get(field, default)
             if not isinstance(number, int) or isinstance(number, bool) or number < 1 or number > ceiling:
                 raise OrchestrationError(f"{role}.{field} must be between 1 and {ceiling}")
+    total_role_minutes = sum(value["roles"][role].get("max_duration_minutes", default_durations[role]) for role in ROLES)
+    if total_role_minutes > max_total:
+        raise OrchestrationError("sum of role duration ceilings exceeds max_total_duration_minutes")
     left = value["roles"]["lead_builder"]["permitted_paths"]
     right = value["roles"]["specialist_builder"]["permitted_paths"]
     for a in left:
@@ -158,7 +171,11 @@ def _task_contract(manifest: dict[str, Any], role: str) -> dict[str, Any]:
         "review_plan": manifest["review_plan"],
         "max_model_calls": spec.get("max_model_calls", 8),
         "max_tokens": spec.get("max_tokens", 16000),
-        "max_duration_minutes": spec.get("max_duration_minutes", 120),
+        "max_duration_minutes": spec.get("max_duration_minutes", {
+            "lead_builder": 120, "specialist_builder": 60,
+            "architecture_reviewer": 30, "code_reviewer": 30,
+            "negative_tester": 30, "integration_verifier": 45,
+        }[role]),
         "deadline": manifest.get("deadline", "UNSET"),
         "stop_conditions": manifest["stop_conditions"],
     }
@@ -234,6 +251,11 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             raise
 
     reports: dict[str, dict[str, Any]] = {}
+    orchestration_started = time.monotonic()
+    orchestration_budget_seconds = manifest["max_total_duration_minutes"] * 60
+
+    def remaining_orchestration_seconds() -> float:
+        return orchestration_budget_seconds - (time.monotonic() - orchestration_started)
 
     def run_role(role: str, extra_context: list[str] | None = None) -> None:
         spec = manifest["roles"][role]
@@ -258,13 +280,24 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         if profile["account_env"]:
             env[profile["account_env"]] = os.environ.get(profile["account_env"], "")
         report_path = report_dir / f"{manifest['run_id']}-{role}.json"
+        remaining_seconds = remaining_orchestration_seconds()
+        if remaining_seconds < 60:
+            raise OrchestrationError("work-package wall-clock budget exhausted before next role")
+        role_minutes = min(
+            spec.get("max_duration_minutes", {
+                "lead_builder": 120, "specialist_builder": 60,
+                "architecture_reviewer": 30, "code_reviewer": 30,
+                "negative_tester": 30, "integration_verifier": 45,
+            }[role]),
+            max(1, int((remaining_seconds - 15) // 60)),
+        )
         command = [
             sys.executable, "-m", "workforce.agents.runner",
             "--role", role, "--task", spec["task"], "--workspace", str(root),
             "--max-calls", str(spec.get("max_model_calls", 8)),
             "--max-tokens", str(spec.get("max_completion_tokens", 3072)),
             "--max-total-tokens", str(spec.get("max_tokens", 16000)),
-            "--max-duration-minutes", str(spec.get("max_duration_minutes", 120)),
+            "--max-duration-minutes", str(role_minutes),
             "--report-path", report_path.relative_to(root).as_posix(),
         ]
         for path in spec["permitted_paths"]:
@@ -278,7 +311,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         try:
             result = subprocess.run(
                 command, cwd=root, env=env, capture_output=True, text=True,
-                timeout=spec.get("max_duration_minutes", 120) * 60 + 60, check=False,
+                timeout=min(role_minutes * 60 + 15, max(1, remaining_seconds - 5)), check=False,
             )
         except subprocess.TimeoutExpired as exc:
             try:
@@ -366,7 +399,13 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
                 shutil.copytree(source, destination)
             test_env["PYTHONPATH"] = str(test_root / "engineering/workforce/src")
             for command in test_commands:
-                run = subprocess.run(command, cwd=test_root, env=test_env, capture_output=True, text=True, timeout=300, check=False)
+                test_remaining = remaining_orchestration_seconds()
+                if test_remaining < 10:
+                    raise OrchestrationError("work-package wall-clock budget exhausted before test execution")
+                run = subprocess.run(
+                    command, cwd=test_root, env=test_env, capture_output=True, text=True,
+                    timeout=max(1, min(300, test_remaining - 5)), check=False,
+                )
                 test_results.append({
                     "command": command[1:],
                     "returncode": run.returncode,
