@@ -693,3 +693,8 @@ The documentation-updated head first failed the SQLite DDL step because `validat
 ### BR-002 follow-on — all relational projection sources checked against DDL
 
 Extended the host SQLite projection validator to check every `table.column` source on each resolved query-field mapping, rather than only the first source token. Each source must be declared by the query, owned by the tested store and present in the actual table columns. Exact code head `49f24f3874e4d632779dfc4e5b1ed4fc27fc6bd1` passed all nine workflow steps in [run 43431572932](https://github.com/methaneex-oss/AURIONS/actions/runs/43431572932). This is static candidate-source/DDL validation, not executable SQL or query behaviour verification; all 29 queries remain design-only/non-dispatchable.
+
+
+### BR-002 security reconciliation — owner-constrained approval reference
+
+The `audit.lookup` approval-reference candidate now explicitly requires any join to `approval_requests` to include `approval_requests.owner_ref = authenticated owner_id`. Governance migration v3 adds/enforces the owner reference on new approval requests. This closes a design ambiguity only; no query handler exists to prove runtime join scoping or cross-owner denial.
