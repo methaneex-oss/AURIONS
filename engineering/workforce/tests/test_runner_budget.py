@@ -3,6 +3,7 @@ import tempfile
 import unittest
 import sys
 import hashlib
+import subprocess
 from pathlib import Path
 from unittest.mock import patch
 
@@ -128,6 +129,31 @@ class RunnerBudgetTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "exceeded the configured aggregate token budget"):
                 worker.run("small task", [])
         self.assertEqual(worker.total_tokens, 0)
+
+    def test_test_subprocess_does_not_inherit_provider_or_control_plane_secrets(self):
+        env = {
+            "GROQ_API_KEY": "provider-secret",
+            "WORKFORCE_CONTROL_PLANE_URL": "https://control.example",
+            "WORKFORCE_TASK_ID": "task-001",
+            "WORKFORCE_WORKER_TOKEN": "w" * 40,
+            "WORKFORCE_LEASE_TOKEN": "l" * 64,
+            "DIRECTOR_APPROVAL_TOKEN": "d" * 40,
+            "WORKFORCE_ORCHESTRATOR_TOKEN": "o" * 40,
+            "WORKFORCE_WORKER_CREDENTIALS_JSON": "{}",
+            "DATABASE_URL": "postgresql://user:password@localhost/db",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+        with patch("workforce.agents.runner.subprocess.run", return_value=completed) as run:
+            worker.invoke_tool("run_workforce_tests", {})
+        self.assertEqual(run.call_count, 2)
+        for call in run.call_args_list:
+            child_env = call.kwargs["env"]
+            for secret_name in env:
+                self.assertNotIn(secret_name, child_env)
+            self.assertIn("PYTHONPATH", child_env)
+            self.assertIn("PATH", child_env)
 
     def test_cli_claims_starts_runs_and_publishes_report_evidence(self):
         env = {
