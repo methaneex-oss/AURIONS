@@ -132,6 +132,22 @@ def list_tasks(x_orchestrator_token: str | None = Header(default=None, alias="X-
         return cur.fetchall()
 
 
+@app.get("/v1/tasks/{task_id}/evidence")
+def list_task_evidence(
+    task_id: str,
+    x_orchestrator_token: str | None = Header(default=None, alias="X-Orchestrator-Token"),
+):
+    _auth(require_orchestrator, x_orchestrator_token)
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute(
+            """SELECT stage,sha256,evidence_ref,actor,attempt_count,created_at
+                 FROM wf_task_evidence WHERE task_id=%s
+                ORDER BY attempt_count,created_at,evidence_id""",
+            (task_id,),
+        )
+        return cur.fetchall()
+
+
 @app.post("/v1/tasks/{task_id}/claim")
 def claim_task(
     task_id: str,
