@@ -57,6 +57,10 @@ jobs:
           orchestrator = secrets.token_urlsafe(32)
           builder = secrets.token_urlsafe(32)
           reviewer = secrets.token_urlsafe(32)
+          print("::add-mask::" + director)
+          print("::add-mask::" + orchestrator)
+          print("::add-mask::" + builder)
+          print("::add-mask::" + reviewer)
           print("DIRECTOR_APPROVAL_TOKEN=" + director)
           print("WORKFORCE_ORCHESTRATOR_TOKEN=" + orchestrator)
           print("WORKFORCE_WORKER_CREDENTIALS_JSON=" + json.dumps({
