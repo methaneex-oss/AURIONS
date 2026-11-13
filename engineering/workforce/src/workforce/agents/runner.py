@@ -482,6 +482,35 @@ def main() -> None:
             )
             print(json.dumps({**report, "evidence_sha256": evidence_sha256, "evidence_ref": evidence_ref}, indent=2))
         except Exception as exc:
+            # The API may commit CANDIDATE_READY and lose the response. Retry the
+            # identical evidence publication before marking the task failed.
+            try:
+                if report_file.is_file():
+                    saved_report = json.loads(report_file.read_text(encoding="utf-8"))
+                    if saved_report.get("task_id") == task_id and saved_report.get("status") == "CANDIDATE_READY":
+                        saved_bytes = report_file.read_bytes()
+                        saved_sha = hashlib.sha256(saved_bytes).hexdigest()
+                        saved_ref = report_file.relative_to(Path(args.workspace).resolve()).as_posix()
+                        _control_plane_post(
+                            f"{control_plane_url}/v1/tasks/{task_id}/worker-transition",
+                            worker_token,
+                            {
+                                "lease_token": lease_token,
+                                "target": "CANDIDATE_READY",
+                                "reason": "retrying idempotent candidate publication after ambiguous response",
+                                "evidence_sha256": saved_sha,
+                                "evidence_ref": saved_ref,
+                            },
+                        )
+                        print(json.dumps({
+                            **saved_report,
+                            "evidence_sha256": saved_sha,
+                            "evidence_ref": saved_ref,
+                            "idempotent_replay": True,
+                        }, indent=2))
+                        return
+            except Exception:
+                pass
             failure = {
                 "task_id": task_id,
                 "role": args.role,
