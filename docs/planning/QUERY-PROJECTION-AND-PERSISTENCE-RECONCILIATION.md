@@ -370,7 +370,7 @@ This reconciliation is deliberately conservative:
 ### `audit.lookup`
 
 - Result schema: `schemas/domain-payloads.v1.schema.json#/$defs/auditRecord`
-- Bound tables: `governance_audit`, `data_disclosures`
+- Bound tables: `governance_audit`, `data_disclosures`, `approval_requests`
 - Remaining unresolved source/derivation fields: None; proposed DDL/source mappings are recorded below. Legacy NULL rows are excluded where required fields are non-nullable in the result schema.
 
 - `audit_id` → governance_audit.audit_id
