@@ -4,6 +4,8 @@
 **Scope:** BR-002 — all 29 query registry entries, including the foundational objective/world/means/interaction surface proposed by the open-world architecture.  
 **Authority boundary:** This document completes query-side semantic design where it can be determined from the existing architecture. It does not select the first Android action, settle cloud/mobile history topology, authorize implementation, or promote any query to runtime dispatch.
 
+**Projection boundary:** Field-to-storage source candidates and unmapped result fields are tracked in [Query Projection and Persistence Reconciliation](QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md). Registry schema presence is not proof of a valid SQL projection; all result fields, joins, aliases, owner filters and redaction remain unverified until the listed mappings are closed.
+
 ## 1. Normative query invariants
 
 Every query is read-only with respect to domain state. Diagnostic/audit telemetry emitted by the runtime is not a query side effect and MUST NOT be exposed as a domain mutation. A query MUST NOT create a memory, update a belief, refresh a capability descriptor, allocate attention, advance a task, reconcile an operation, grant permission, or alter an approval.
