@@ -735,10 +735,10 @@ def main() -> int:
         ROOT / "docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md",
         ROOT / "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md",
     )
-    catalogue_text = "\\n".join(
+    catalogue_text = "\n".join(
         path.read_text(encoding="utf-8") for path in catalogue_sources
     )
-    catalogue_ids = set(re.findall(r"\\b[A-Z]{2,4}-\\d{3}\\b", catalogue_text))
+    catalogue_ids = set(re.findall(r"\b[A-Z]{2,4}-\d{3}\b", catalogue_text))
     expected_event_scenario_refs = {}
     for scenario in scenarios:
         for step in scenario["steps"]:
