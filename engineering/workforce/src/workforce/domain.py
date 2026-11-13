@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
@@ -75,9 +76,23 @@ class TaskContract:
             "acceptance_criteria", "test_plan", "review_plan",
             "max_model_calls", "max_tokens", "max_duration_minutes", "stop_conditions",
         )
+        allowed_fields = set(cls.__dataclass_fields__)
+        unknown = sorted(set(value) - allowed_fields)
+        if unknown:
+            raise ContractError(f"unknown task contract fields: {', '.join(unknown)}")
         missing = [key for key in required if key not in value or value[key] in (None, "", [])]
         if missing:
             raise ContractError(f"missing mandatory task contract fields: {', '.join(missing)}")
+        deadline = value.get("deadline", "UNSET")
+        if not isinstance(deadline, str):
+            raise ContractError("deadline must be an ISO-8601 timestamp with timezone or UNSET")
+        if deadline != "UNSET":
+            try:
+                parsed_deadline = datetime.fromisoformat(deadline.replace("Z", "+00:00"))
+            except ValueError as exc:
+                raise ContractError("deadline must be an ISO-8601 timestamp with timezone or UNSET") from exc
+            if parsed_deadline.tzinfo is None or parsed_deadline.utcoffset() is None:
+                raise ContractError("deadline must include an explicit timezone offset")
         for key in ("work_package_id", "authorization_ref", "objective"):
             if not isinstance(value[key], str) or not value[key].strip():
                 raise ContractError(f"{key} must be a non-empty string")
