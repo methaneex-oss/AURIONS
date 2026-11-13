@@ -463,6 +463,15 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             [sys.executable, "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
         ]
         test_results = []
+        test_report = report_dir / f"{manifest['run_id']}-test-results.json"
+
+        def persist_test_results(status: str) -> None:
+            test_report.write_text(
+                json.dumps({"status": status, "results": test_results}, indent=2),
+                encoding="utf-8",
+            )
+
+        persist_test_results("RUNNING")
         # Run the suite against a read-only-intent snapshot, not the live candidate
         # workspace. Test code cannot mutate the candidate or access its credentials.
         with tempfile.TemporaryDirectory(prefix="workforce-package-tests-") as test_dir:
@@ -478,22 +487,32 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             for command in test_commands:
                 test_remaining = remaining_orchestration_seconds()
                 if test_remaining < 10:
+                    persist_test_results("FAILED_BUDGET_EXHAUSTED")
                     raise OrchestrationError("work-package wall-clock budget exhausted before test execution")
-                run = subprocess.run(
-                    command, cwd=test_root, env=test_env, capture_output=True, text=True,
-                    timeout=max(1, min(300, test_remaining - 5)), check=False,
-                )
-                test_results.append({
-                    "command": command[1:],
-                    "returncode": run.returncode,
-                    "stdout": run.stdout[-12000:],
-                    "stderr": run.stderr[-12000:],
-                })
-                if run.returncode:
+                try:
+                    run = subprocess.run(
+                        command, cwd=test_root, env=test_env, capture_output=True, text=True,
+                        timeout=max(1, min(300, test_remaining - 5)), check=False,
+                    )
+                    result_record = {
+                        "command": command,
+                        "returncode": run.returncode,
+                        "stdout": run.stdout[-12000:],
+                        "stderr": run.stderr[-12000:],
+                    }
+                except subprocess.TimeoutExpired as exc:
+                    result_record = {
+                        "command": command,
+                        "returncode": 124,
+                        "stdout": str(exc.stdout or "")[-12000:],
+                        "stderr": "test command exceeded its bounded timeout",
+                    }
+                test_results.append(result_record)
+                persist_test_results("FAILED" if result_record["returncode"] else "RUNNING")
+                if result_record["returncode"]:
                     raise OrchestrationError("candidate test suite failed; no reviewer or integration task will proceed")
-        test_report = report_dir / f"{manifest['run_id']}-test-results.json"
-        test_bytes = json.dumps(test_results, indent=2).encode("utf-8")
-        test_report.write_bytes(test_bytes)
+        persist_test_results("PASSED")
+        test_bytes = test_report.read_bytes()
         test_sha = hashlib.sha256(test_bytes).hexdigest()
 
         shared_context = [
