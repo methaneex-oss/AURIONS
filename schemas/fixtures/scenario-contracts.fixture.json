@@ -663,6 +663,7 @@
             "Advance only to a state supported by fresh provider evidence; retain uncertainty if evidence is absent or contradictory."
           ],
           "expected_events": [
+            "operation.reconciling.v1",
             "operation.reconciled.v1"
           ],
           "durable_assertions": [
