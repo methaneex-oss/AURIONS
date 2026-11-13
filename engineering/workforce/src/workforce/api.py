@@ -345,6 +345,20 @@ def worker_transition(
         )
         row = cur.fetchone()
         if not row:
+            cur.execute(
+                "SELECT state,attempt_count FROM wf_tasks WHERE task_id=%s AND role=%s FOR UPDATE",
+                (task_id, worker.role),
+            )
+            current_task = cur.fetchone()
+            if body.target == TaskState.CANDIDATE_READY and current_task and current_task["state"] == TaskState.CANDIDATE_READY.value:
+                cur.execute(
+                    """SELECT 1 FROM wf_task_evidence
+                         WHERE task_id=%s AND stage='WORKER_OUTPUT' AND actor=%s
+                           AND attempt_count=%s AND sha256=%s AND evidence_ref=%s""",
+                    (task_id, worker.actor_id, current_task["attempt_count"], body.evidence_sha256.lower(), body.evidence_ref),
+                )
+                if cur.fetchone():
+                    return {"task_id": task_id, "state": TaskState.CANDIDATE_READY.value, "idempotent_replay": True}
             raise HTTPException(status_code=409, detail="valid current lease required")
         current = TaskState(row["state"])
         if body.target == TaskState.CANDIDATE_READY and current not in {TaskState.RUNNING, TaskState.CHECKPOINTED}:
