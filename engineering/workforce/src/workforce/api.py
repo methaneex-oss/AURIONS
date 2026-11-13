@@ -449,6 +449,25 @@ def transition(
             raise HTTPException(status_code=409, detail="task deadline has passed; further transitions are forbidden")
         current = TaskState(row["state"])
         if principal.role == "orchestrator":
+            replay_stages = {
+                TaskState.TESTING: "CANDIDATE",
+                TaskState.REVIEWING: "TEST",
+                TaskState.INTEGRATION: "REVIEW_BUNDLE",
+                TaskState.AWAITING_DIRECTOR: "INTEGRATED",
+            }
+            if current == body.target and body.target in replay_stages:
+                if not body.evidence_sha256 or not body.evidence_ref:
+                    raise HTTPException(status_code=422, detail="idempotent lifecycle replay requires the original evidence")
+                cur.execute(
+                    """SELECT 1 FROM wf_task_evidence
+                         WHERE task_id=%s AND stage=%s AND attempt_count=%s
+                           AND sha256=%s AND evidence_ref=%s""",
+                    (task_id, replay_stages[body.target], row["attempt_count"],
+                     body.evidence_sha256.lower(), body.evidence_ref),
+                )
+                if cur.fetchone():
+                    return {"task_id": task_id, "state": current.value, "idempotent_replay": True}
+                raise HTTPException(status_code=409, detail="lifecycle state already advanced with different evidence")
             allowed = {
                 TaskState.QUEUED: {TaskState.BLOCKED, TaskState.CANCELLED},
                 TaskState.CLAIMED: {TaskState.BLOCKED, TaskState.FAILED, TaskState.CANCELLED},
