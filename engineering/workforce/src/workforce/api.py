@@ -450,19 +450,20 @@ def transition(
         current = TaskState(row["state"])
         if principal.role == "orchestrator":
             replay_stages = {
-                TaskState.TESTING: "CANDIDATE",
-                TaskState.REVIEWING: "TEST",
-                TaskState.INTEGRATION: "REVIEW_BUNDLE",
-                TaskState.AWAITING_DIRECTOR: "INTEGRATED",
+                TaskState.TESTING: ("CANDIDATE", {TaskState.TESTING, TaskState.REVIEWING, TaskState.INTEGRATION, TaskState.AWAITING_DIRECTOR, TaskState.ACCEPTED}),
+                TaskState.REVIEWING: ("TEST", {TaskState.REVIEWING, TaskState.INTEGRATION, TaskState.AWAITING_DIRECTOR, TaskState.ACCEPTED}),
+                TaskState.INTEGRATION: ("REVIEW_BUNDLE", {TaskState.INTEGRATION, TaskState.AWAITING_DIRECTOR, TaskState.ACCEPTED}),
+                TaskState.AWAITING_DIRECTOR: ("INTEGRATED", {TaskState.AWAITING_DIRECTOR, TaskState.ACCEPTED}),
             }
-            if current == body.target and body.target in replay_stages:
+            replay = replay_stages.get(body.target)
+            if replay and current in replay[1]:
                 if not body.evidence_sha256 or not body.evidence_ref:
                     raise HTTPException(status_code=422, detail="idempotent lifecycle replay requires the original evidence")
                 cur.execute(
                     """SELECT 1 FROM wf_task_evidence
                          WHERE task_id=%s AND stage=%s AND attempt_count=%s
                            AND sha256=%s AND evidence_ref=%s""",
-                    (task_id, replay_stages[body.target], row["attempt_count"],
+                    (task_id, replay[0], row["attempt_count"],
                      body.evidence_sha256.lower(), body.evidence_ref),
                 )
                 if cur.fetchone():
