@@ -55,11 +55,31 @@ jobs:
           cache-dependency-path: engineering/workforce/requirements.txt
       - name: Install workforce dependencies
         run: python -m pip install -r engineering/workforce/requirements.txt
-      - name: Validate protected secrets and work-package manifest
+      - name: Generate ephemeral Director, orchestrator and six worker credentials
+        run: |
+          python - <<'PY' >> "$GITHUB_ENV"
+          import json
+          import secrets
+          roles = (
+              "lead_builder",
+              "specialist_builder",
+              "architecture_reviewer",
+              "code_reviewer",
+              "negative_tester",
+              "integration_verifier",
+          )
+          director = secrets.token_urlsafe(32)
+          orchestrator = secrets.token_urlsafe(32)
+          workers = {
+              f"run-worker-{role}": {"token": secrets.token_urlsafe(32), "role": role}
+              for role in roles
+          }
+          print("DIRECTOR_APPROVAL_TOKEN=" + director)
+          print("WORKFORCE_ORCHESTRATOR_TOKEN=" + orchestrator)
+          print("WORKFORCE_WORKER_CREDENTIALS_JSON=" + json.dumps(workers))
+          PY
+      - name: Validate protected provider secrets and work-package manifest
         env:
-          DIRECTOR_APPROVAL_TOKEN: ${{ secrets.DIRECTOR_APPROVAL_TOKEN }}
-          WORKFORCE_ORCHESTRATOR_TOKEN: ${{ secrets.WORKFORCE_ORCHESTRATOR_TOKEN }}
-          WORKFORCE_WORKER_CREDENTIALS_JSON: ${{ secrets.WORKFORCE_WORKER_CREDENTIALS_JSON }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -128,10 +148,6 @@ jobs:
           print(f"Applied {len(migrations)} migrations to separate control-plane and test databases.")
           PY
       - name: Start authenticated local control plane
-        env:
-          DIRECTOR_APPROVAL_TOKEN: ${{ secrets.DIRECTOR_APPROVAL_TOKEN }}
-          WORKFORCE_ORCHESTRATOR_TOKEN: ${{ secrets.WORKFORCE_ORCHESTRATOR_TOKEN }}
-          WORKFORCE_WORKER_CREDENTIALS_JSON: ${{ secrets.WORKFORCE_WORKER_CREDENTIALS_JSON }}
         run: |
           python -m uvicorn workforce.api:app --host 127.0.0.1 --port 8000 > "$RUNNER_TEMP/workforce-api.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/workforce-api.pid"
@@ -156,9 +172,6 @@ jobs:
           echo $! > "$RUNNER_TEMP/workforce-supervisor.pid"
       - name: Execute six roles and prepare Director packet
         env:
-          DIRECTOR_APPROVAL_TOKEN: ${{ secrets.DIRECTOR_APPROVAL_TOKEN }}
-          WORKFORCE_ORCHESTRATOR_TOKEN: ${{ secrets.WORKFORCE_ORCHESTRATOR_TOKEN }}
-          WORKFORCE_WORKER_CREDENTIALS_JSON: ${{ secrets.WORKFORCE_WORKER_CREDENTIALS_JSON }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
