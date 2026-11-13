@@ -226,7 +226,7 @@ class ControlPlaneApiTests(unittest.TestCase):
     def test_orchestrator_gate_requires_and_records_stage_evidence(self):
         self.assertEqual(self.create_task().status_code, 201)
         with psycopg.connect(DB) as conn:
-            conn.execute("UPDATE wf_tasks SET state='CANDIDATE_READY' WHERE task_id=%s", (self.task_id,))
+            conn.execute("UPDATE wf_tasks SET state='CANDIDATE_READY',attempt_count=1 WHERE task_id=%s", (self.task_id,))
         headers = {"X-Orchestrator-Token": ORCHESTRATOR}
         missing = self.client.post(
             f"/v1/tasks/{self.task_id}/transition",
@@ -271,7 +271,7 @@ class ControlPlaneApiTests(unittest.TestCase):
     def test_only_director_can_accept_and_actor_cannot_be_spoofed(self):
         self.assertEqual(self.create_task().status_code, 201)
         with psycopg.connect(DB) as conn:
-            conn.execute("UPDATE wf_tasks SET state='AWAITING_DIRECTOR' WHERE task_id=%s", (self.task_id,))
+            conn.execute("UPDATE wf_tasks SET state='AWAITING_DIRECTOR',attempt_count=1 WHERE task_id=%s", (self.task_id,))
             conn.execute(
                 """INSERT INTO wf_task_evidence(task_id,stage,sha256,evidence_ref,actor)
                    VALUES (%s,'INTEGRATED',%s,%s,'integration_verifier')""",
