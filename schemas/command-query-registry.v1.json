@@ -1195,11 +1195,11 @@
       "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision",
       "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
       "owning_component": "Goal subsystem",
-      "aggregate": "goals + goal_revisions",
+      "aggregate": "goals + goal_revisions + owner-scoped objective revision bindings",
       "persistence_stores": [
         "aurion_memory.db"
       ],
-      "expected_revision_contract": "Create derived goal_id at revision 1 linked to an existing objective revision and constraints; never create or mutate owner objective.",
+      "expected_revision_contract": "Create derived goal_id at revision 1 linked to the exact objective_id/objective_version supplied in the request. owner_ref is derived from authenticated context, never caller payload. The owner/objective composite reference must resolve; never create or mutate the owner objective.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact goals + goal_revisions target under owner scope before revealing existence. Require owner-scoped domain write authority for Goal subsystem; derived/model-generated content is data, never authority. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
       "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest: SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload; exclude command_id, issued_at and idempotency_key. Same key+digest replays stored response without repeating mutation/event/outbox/worker/dispatch; same key+different digest returns operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH without exposing or changing original receipt. Retain receipt/tombstone through supported replay horizon.",
       "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt/result is replayed, not rolled back. Local cancellation is permitted only before commit; correction after commit is a new linked transition.",
@@ -1237,7 +1237,8 @@
           "tables": [
             "goals",
             "goal_revisions",
-            "outbox"
+            "outbox",
+            "goal_revision_objective_bindings"
           ]
         },
         {
@@ -1258,11 +1259,11 @@
       "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision",
       "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
       "owning_component": "Goal subsystem",
-      "aggregate": "goals + goal_revisions",
+      "aggregate": "goals + goal_revisions + owner-scoped objective revision bindings",
       "persistence_stores": [
         "aurion_memory.db"
       ],
-      "expected_revision_contract": "Require expected goal revision and current objective revision; append successor goal revision, preserving lineage.",
+      "expected_revision_contract": "Require expected goal revision and exact objective_id/objective_version. Append a successor goal revision with a durable owner/objective binding. Do not silently rebind to a newer objective revision, rewrite the objective or alter dependent plans.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact goals + goal_revisions target under owner scope before revealing existence. Require owner-scoped domain write authority for Goal subsystem; derived/model-generated content is data, never authority. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
       "idempotency_contract": "Receipt uniqueness scope: (owner_id, actor_identity, command_type, command_version, idempotency_key). Digest: SHA-256 over RFC 8785 JCS of owner_id, actor_identity, command_type/version, operation_id, deadline, requested_capability, data_classification, approval_reference and exact validated payload; exclude command_id, issued_at and idempotency_key. Same key+digest replays stored response without repeating mutation/event/outbox/worker/dispatch; same key+different digest returns operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH without exposing or changing original receipt. Retain receipt/tombstone through supported replay horizon.",
       "deadline_cancellation_contract": "Deadline bounds validation and local commit. Expiry before commit produces no domain mutation; after commit the stored receipt/result is replayed, not rolled back. Local cancellation is permitted only before commit; correction after commit is a new linked transition.",
@@ -1300,7 +1301,8 @@
           "tables": [
             "goals",
             "goal_revisions",
-            "outbox"
+            "outbox",
+            "goal_revision_objective_bindings"
           ]
         },
         {
@@ -1321,7 +1323,7 @@
       "request_schema": "schemas/domain-payloads.v1.schema.json#/$defs/goalControlRequest",
       "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/commandResponse",
       "owning_component": "Goal subsystem",
-      "aggregate": "goals + goal_revisions",
+      "aggregate": "goals + goal_revisions + owner-scoped objective revision bindings",
       "persistence_stores": [
         "aurion_memory.db"
       ],
@@ -1363,7 +1365,8 @@
           "tables": [
             "goals",
             "goal_revisions",
-            "outbox"
+            "outbox",
+            "goal_revision_objective_bindings"
           ]
         },
         {
@@ -4047,7 +4050,7 @@
       "response_schema": "schemas/domain-payloads.v1.schema.json#/$defs/queryResponse",
       "result_item_schema": "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision",
       "owning_component": "Goal subsystem",
-      "aggregate": "goals + goal_revisions",
+      "aggregate": "goals + goal_revisions + owner-scoped objective revision bindings",
       "persistence_stores": [
         "aurion_memory.db"
       ],
@@ -4055,7 +4058,7 @@
       "authorization_contract": "Derive owner_id, actor identity and device identity from authenticated execution context; enforce scope before joins, counts, ranking, projection and pagination. Caller filters are selectors, never authority. Deny missing owner scope and conceal cross-owner existence. See docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §1.",
       "data_classification": "OWNER_PRIVATE; criteria/context may be SENSITIVE.",
       "redaction_contract": "Deterministic schema-aware field allowlist/redaction; never post-serialization key deletion. Counts, snippets, facets, errors and timing must not leak protected records. Apply the query-specific rules in docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md §2.",
-      "consistency_contract": "local_committed for one goal ID; history goal_id ASC, revision DESC. Unsupported modes are refused, never silently downgraded. No implicit cross-database snapshot.",
+      "consistency_contract": "Return only goal revisions with a committed owner-scoped binding to an exact objective revision. Legacy unbound goal revisions are excluded from valid derived-goal results and require explicit reconciliation; never infer the objective from text or plan references. For one goal ID, read a consistent local committed snapshot; history orders goal_id ASC, revision DESC.",
       "ordering_cursor_contract": "local_committed for one goal ID; history goal_id ASC, revision DESC. Collection cursors bind owner/actor scope, query/version, normalized filter digest, sort version, consistency, snapshot/watermark and expiry; invalid/stale cursor fails explicitly. Single-record queries have no cursor.",
       "limits_contract": "Require a non-null effective endpoint policy for deadline, maximum rows, serialized bytes and expensive-field budget. Numerical values remain blocked on target-runtime measurements; no silent truncation or unmarked partial result.",
       "freshness_cache_contract": "Revision-bound only; mutation invalidates. Never cache authorization, permissions, approvals, mutable task/operation state or current security audit state.",
@@ -4076,14 +4079,15 @@
           "store": "aurion_memory.db",
           "tables": [
             "goals",
-            "goal_revisions"
+            "goal_revisions",
+            "goal_revision_objective_bindings"
           ]
         }
       ],
       "aggregate_binding_status": "mapped_to_proposed_ddl_not_executed",
       "acceptance_case_id": "QCC-014",
-      "acceptance_positive_assertion": "Returns owner-scoped derived goal revision and its objective/constraint lineage.",
-      "acceptance_negative_assertion": "A goal is not aliased to an owner objective or plan; stale revision is not silently substituted.",
+      "acceptance_positive_assertion": "Returns the owner-scoped derived goal revision and exact objective_id/objective_version lineage.",
+      "acceptance_negative_assertion": "Unbound legacy goals, missing objective revisions and cross-owner objective references are not returned or accepted; stale objective revision is not silently substituted.",
       "read_only_invariant": "The handler must leave owning-store rows, event/outbox counts, receipts and all domain revisions unchanged. Any access audit is separately classified, authorized and explicitly specified; it is not a domain mutation.",
       "projection_unresolved_fields": [],
       "projection_contract": "UNVERIFIED: projection fields are compared with candidate direct, JSON and timestamp columns only. Exact SELECT expressions, source table per field, joins, JSON pointers, aliases, nullability, owner filtering, redaction, snapshot and cursor semantics remain unverified; see QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md."
