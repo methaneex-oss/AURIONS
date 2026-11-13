@@ -326,8 +326,8 @@ def main() -> int:
         if unknown_events:
             fail(f"{command_type}: unknown event bindings {sorted(unknown_events)}")
         case_id = item.get("acceptance_case_id")
-        if not isinstance(case_id, str) or not case_id.startswith("CC-") or case_id in command_acceptance_ids:
-            fail(f"{command_type}: missing or duplicate command acceptance case ID")
+        if not isinstance(case_id, str) or not re.fullmatch(r"CC-\\d{3}", case_id) or case_id in command_acceptance_ids:
+            fail(f"{command_type}: missing, malformed or duplicate command acceptance case ID")
         command_acceptance_ids.add(case_id)
         if f"| `{case_id}` | `{command_type}` |" not in command_matrix:
             fail(f"{command_type}: acceptance case {case_id} missing from matrix catalogue")
@@ -343,6 +343,28 @@ def main() -> int:
         fail("command transition matrix rows do not exactly match registry inventory")
     if len(command_acceptance_ids) != len(mapped_command_types):
         fail("every mapped command must have exactly one unique acceptance case")
+
+    matrix_acceptance_rows = [
+        line for line in command_matrix.splitlines()
+        if re.match(r"^\\|\\s*`CC-\\d{3}`s*\\|", line)
+    ]
+    matrix_acceptance_ids = [
+        re.match(r"^\\|\\s*`(CC-\\d{3})`", line).group(1)
+        for line in matrix_acceptance_rows
+    ]
+    if len(matrix_acceptance_ids) != len(set(matrix_acceptance_ids)):
+        fail("command transition matrix contains duplicate CC acceptance rows")
+    if set(matrix_acceptance_ids) != command_acceptance_ids:
+        fail(
+            "command acceptance ID inventory differs between registry and matrix: "
+            f"registry_only={sorted(command_acceptance_ids - set(matrix_acceptance_ids))}; "
+            f"matrix_only={sorted(set(matrix_acceptance_ids) - command_acceptance_ids)}"
+        )
+    expected_command_acceptance_ids = {
+        f"CC-{index:03d}" for index in range(1, len(mapped_command_types) + 1)
+    }
+    if command_acceptance_ids != expected_command_acceptance_ids:
+        fail("command acceptance IDs must be a contiguous CC-001…CC-N inventory")
 
     query_contract_fields = (
         "authorization_contract",
