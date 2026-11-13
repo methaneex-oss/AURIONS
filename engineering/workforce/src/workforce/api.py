@@ -66,12 +66,14 @@ class WorkerTransition(StrictModel):
     lease_token: str = Field(min_length=32, max_length=128)
     target: TaskState
     reason: str = Field(min_length=1, max_length=1000)
+    evidence_sha256: str | None = Field(default=None, pattern=r"^[0-9a-fA-F]{64}$")
 
 
 class Transition(StrictModel):
     target: TaskState
     reason: str = Field(min_length=1, max_length=1000)
     director_decision_ref: str | None = Field(default=None, max_length=300)
+    evidence_sha256: str | None = Field(default=None, pattern=r"^[0-9a-fA-F]{64}$")
 
 
 @app.get("/health")
@@ -274,8 +276,10 @@ def worker_transition(
     x_worker_token: str | None = Header(default=None, alias="X-Worker-Token"),
 ):
     worker = _auth(authenticate_worker, x_worker_token)
-    if body.target not in {TaskState.BLOCKED, TaskState.FAILED, TaskState.CANCELLED}:
-        raise HTTPException(status_code=403, detail="workers may only stop their own task as BLOCKED, FAILED or CANCELLED")
+    if body.target not in {TaskState.CANDIDATE_READY, TaskState.BLOCKED, TaskState.FAILED, TaskState.CANCELLED}:
+        raise HTTPException(status_code=403, detail="worker target is not permitted")
+    if body.target == TaskState.CANDIDATE_READY and not body.evidence_sha256:
+        raise HTTPException(status_code=422, detail="completed worker output requires an immutable evidence SHA-256")
     with connect() as conn, conn.cursor() as cur:
         cur.execute(
             """SELECT state,lease_generation FROM wf_tasks
@@ -289,6 +293,8 @@ def worker_transition(
         if not row:
             raise HTTPException(status_code=409, detail="valid current lease required")
         current = TaskState(row["state"])
+        if body.target == TaskState.CANDIDATE_READY and current not in {TaskState.RUNNING, TaskState.CHECKPOINTED}:
+            raise HTTPException(status_code=409, detail="only a running worker can publish a candidate")
         try:
             validate_transition(current, body.target)
         except TransitionError as exc:
@@ -303,7 +309,7 @@ def worker_transition(
         cur.execute(
             """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
                VALUES (%s,'WORKER_STOPPED_TASK',%s,%s::jsonb)""",
-            (task_id, worker.actor_id, json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason})),
+            (task_id, worker.actor_id, json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason, "evidence_sha256": body.evidence_sha256})),
         )
         return updated
 
@@ -319,6 +325,8 @@ def transition(
         principal = _auth(require_director, x_director_approval_token)
         if not body.director_decision_ref:
             raise HTTPException(status_code=422, detail="Director decision reference is mandatory")
+        if not body.evidence_sha256:
+            raise HTTPException(status_code=422, detail="Director acceptance requires the integrated evidence SHA-256")
     else:
         principal = _auth(require_orchestrator, x_orchestrator_token)
         if body.director_decision_ref:
@@ -331,8 +339,32 @@ def transition(
         if not row["before_deadline"]:
             raise HTTPException(status_code=409, detail="task deadline has passed; further transitions are forbidden")
         current = TaskState(row["state"])
-        if principal.role == "orchestrator" and body.target in {TaskState.CLAIMED, TaskState.RUNNING, TaskState.CHECKPOINTED}:
-            raise HTTPException(status_code=403, detail="only the authenticated lease holder can enter worker execution states")
+        if principal.role == "orchestrator":
+            allowed = {
+                TaskState.QUEUED: {TaskState.BLOCKED, TaskState.CANCELLED},
+                TaskState.CLAIMED: {TaskState.BLOCKED, TaskState.FAILED, TaskState.CANCELLED},
+                TaskState.RUNNING: {TaskState.BLOCKED, TaskState.FAILED, TaskState.CANCELLED},
+                TaskState.CHECKPOINTED: {TaskState.BLOCKED, TaskState.FAILED, TaskState.CANCELLED},
+                TaskState.CANDIDATE_READY: {TaskState.TESTING, TaskState.REJECTED, TaskState.BLOCKED},
+                TaskState.TESTING: {TaskState.REVIEWING, TaskState.REJECTED, TaskState.BLOCKED, TaskState.FAILED},
+                TaskState.REVIEWING: {TaskState.INTEGRATION, TaskState.REJECTED, TaskState.BLOCKED},
+                TaskState.INTEGRATION: {TaskState.AWAITING_DIRECTOR, TaskState.REJECTED, TaskState.BLOCKED},
+                TaskState.AWAITING_DIRECTOR: {TaskState.REJECTED, TaskState.BLOCKED},
+                TaskState.BLOCKED: {TaskState.QUEUED, TaskState.CANCELLED},
+                TaskState.RETRY_WAIT: {TaskState.QUEUED, TaskState.FAILED, TaskState.CANCELLED},
+            }
+            if body.target not in allowed.get(current, set()):
+                raise HTTPException(status_code=403, detail="orchestrator transition is outside its lifecycle authority")
+            evidence_required = {
+                (TaskState.CANDIDATE_READY, TaskState.TESTING),
+                (TaskState.TESTING, TaskState.REVIEWING),
+                (TaskState.REVIEWING, TaskState.INTEGRATION),
+                (TaskState.INTEGRATION, TaskState.AWAITING_DIRECTOR),
+            }
+            if (current, body.target) in evidence_required and not body.evidence_sha256:
+                raise HTTPException(status_code=422, detail="lifecycle advancement requires immutable evidence SHA-256")
+        elif body.evidence_sha256 and principal.role == "director" and body.target != TaskState.ACCEPTED:
+            raise HTTPException(status_code=422, detail="Director evidence is only accepted with final acceptance")
         try:
             validate_transition(current, body.target, director_decision=(principal.role == "director"))
         except TransitionError as exc:
@@ -351,7 +383,7 @@ def transition(
             """INSERT INTO wf_audit_events(task_id,event_type,actor,payload_json)
                VALUES (%s,'STATE_TRANSITION',%s,%s::jsonb)""",
             (task_id, principal.actor_id,
-             json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason, "director_decision_ref": body.director_decision_ref})),
+             json.dumps({"from": current.value, "to": body.target.value, "reason": body.reason, "director_decision_ref": body.director_decision_ref, "evidence_sha256": body.evidence_sha256})),
         )
         return updated
 
