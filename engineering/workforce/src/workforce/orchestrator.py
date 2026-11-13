@@ -153,6 +153,18 @@ def _post(url: str, *, headers: dict[str, str], payload: dict[str, Any]) -> dict
     return data
 
 
+def _get(url: str, *, headers: dict[str, str], allow_404: bool = False) -> dict[str, Any] | list[Any] | None:
+    response = httpx.get(url, headers=headers, timeout=30)
+    if response.status_code == 404 and allow_404:
+        return None
+    if response.status_code >= 400:
+        raise OrchestrationError(f"control-plane read failed (HTTP {response.status_code})")
+    data = response.json()
+    if not isinstance(data, (dict, list)):
+        raise OrchestrationError("control plane returned an invalid read response")
+    return data
+
+
 def _worker_tokens() -> dict[str, tuple[str, str]]:
     try:
         registry = json.loads(os.environ["WORKFORCE_WORKER_CREDENTIALS_JSON"])
