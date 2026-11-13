@@ -1,0 +1,53 @@
+name: AURIONS workforce — independent role screening
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aurions-role-screening-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  role-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - role: lead_builder
+            model: recursive/flint-v1.0:free
+          - role: specialist_builder
+            model: cohere/north-mini-code:free
+          - role: architecture_reviewer
+            model: nvidia/nemotron-3-ultra-550b-a55b:free
+          - role: code_reviewer
+            model: dots-studio/dots-3-note-preview:free
+          - role: negative_tester
+            model: nvidia/nemotron-3.5-lightning:free
+          - role: integration_verifier
+            model: baidu/ernie-5.5-flash-preview:free
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install bounded screening dependency
+        run: python -m pip install httpx==0.28.1
+      - name: Run one-shot independent role screen
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ matrix.model }}
+          ROLE: ${{ matrix.role }}
+          OUTPUT_FILE: ${{ matrix.role }}-screening.json
+        run: python engineering/workforce/evaluation/role_qualification.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: role-screen-${{ matrix.role }}
+          path: ${{ matrix.role }}-screening.json
+          if-no-files-found: ignore
