@@ -29,6 +29,31 @@ class SecurityTests(unittest.TestCase):
             with self.assertRaises(AuthenticationError):
                 require_orchestrator("dddddddddddddddddddddddddddddddddddddddd")
 
+    def test_director_and_orchestrator_tokens_must_be_distinct(self):
+        shared = "shared-authority-token-" + ("x" * 40)
+        with patch.dict("os.environ", {
+            "DIRECTOR_APPROVAL_TOKEN": shared,
+            "WORKFORCE_ORCHESTRATOR_TOKEN": shared,
+        }, clear=True):
+            with self.assertRaises(AuthenticationError):
+                require_director(shared)
+            with self.assertRaises(AuthenticationError):
+                require_orchestrator(shared)
+
+    def test_worker_token_cannot_be_reused_for_director_authority(self):
+        shared = "shared-worker-director-token-" + ("x" * 40)
+        registry = {
+            "builder-01": {"token": shared, "role": "lead_builder"},
+        }
+        with patch.dict("os.environ", {
+            "DIRECTOR_APPROVAL_TOKEN": shared,
+            "WORKFORCE_WORKER_CREDENTIALS_JSON": json.dumps(registry),
+        }, clear=True):
+            with self.assertRaises(AuthenticationError):
+                require_director(shared)
+            with self.assertRaises(AuthenticationError):
+                authenticate_worker(shared)
+
     def test_worker_identity_and_role_are_derived_from_secret_registry(self):
         registry = {
             "builder-01": {"token": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "role": "lead_builder"},
