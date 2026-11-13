@@ -806,12 +806,21 @@ The 29 query result schemas contain 310 fields. The query/persistence reconcilia
 Canonical additive DDL:
 - Memory v7: [`aurion_memory.migration_v7.sql`](../../schemas/persistence/aurion_memory.migration_v7.sql) adds environment observations, descriptor schema version, representation method/source lineage, context provenance/uncertainty, memory provenance/uncertainty, prediction conditions/confidence/evidence and plan context/capability-epoch references. Legacy rows remain NULL where values cannot be established; insert guards require the new mandatory fields for new records.
 - Events v4: [`aurion_events.migration_v4.sql`](../../schemas/persistence/aurion_events.migration_v4.sql) adds task failure and operation policy-decision references.
+- Events v5: [`aurion_events.migration_v5.sql`](../../schemas/persistence/aurion_events.migration_v5.sql) adds ordered saga-step identity, target store, stable idempotency key, request digest, expected revision, result digest, terminal timestamp and a recovery-journal foreign-key binding.
 - Governance v3: [`aurion_governance.migration_v3.sql`](../../schemas/persistence/aurion_governance.migration_v3.sql) binds approval requests to owner/session and enforces exact, pending, unexpired, one-time owner decisions.
 - Governance v4: [`aurion_governance.migration_v4.sql`](../../schemas/persistence/aurion_governance.migration_v4.sql) adds owner/status/policy/approval fields for permissions and owner/evidence/correlation fields for audit and disclosure records.
 
-**Verification:** Exact PR #2 head `2a32dd13253ba501288d9b248a3048f8b0a3a31e` passed [workflow 43386377963](https://github.com/methaneex-oss/AURIONS/actions/runs/43386377963), all nine steps. The host SQLite runner executed all fifteen ordered DDL files on SQLite 3.46.1 and exercised new-write guards and positive/negative inserts for environment observations, capability descriptors, representation/context/memory/prediction lineage, owner-bound approval decisions, permissions, audit and disclosure records.
+**Verification:** Exact PR #2 head `b1d2f9064838031e659b25220f61455c3704718e` passed [workflow 43387080846](https://github.com/methaneex-oss/AURIONS/actions/runs/43387080846), all nine steps. The host SQLite runner executed all fifteen ordered DDL files at that revision on SQLite 3.46.1 and exercised new-write guards and positive/negative inserts for environment observations, capability descriptors, representation/context/memory/prediction lineage, owner-bound approval decisions, permissions, audit and disclosure records. Events v5 is a subsequent increment and requires its own exact-head pass.
 
 **Limits:** Existing legacy rows are not backfilled or assigned inferred owner/provenance/confidence. Query handlers remain design-only/non-dispatchable. No exact SELECT suite, target Android/Termux run, owner-scope/redaction negative control, pagination/resource-budget test, crash/restore or production handler has been verified. BR-002 remains OPEN; BR-005 remains PARTIALLY CLOSED.
+
+### 26.5.4 Durable cross-store saga step ledger — proposed event migration v5
+
+The cross-store saga contract previously described ordered steps but the event/recovery DDL did not persist a stable per-step identity, target store, per-target idempotency key, request digest or exact recovery-journal link. The existing `operation_steps` table is extended by [`aurion_events.migration_v5.sql`](../../schemas/persistence/aurion_events.migration_v5.sql) rather than introducing a duplicate saga-step table.
+
+For the three evolution sagas, each step has an immutable `step_key`, target store, idempotency key, request digest and optional expected revision. Unique constraints prevent duplicate step keys and target-store idempotency keys. Terminal states require completion timestamps. The recovery journal references the exact operation step and verifies that its local store matches the step's target store. Saga step history cannot be deleted or have its identity rewritten.
+
+The host DDL runner now checks these constraints, duplicate/replay identities, terminal timestamps and recovery-journal linkage. This does not implement the saga coordinator or prove crash/replay/compensation behaviour; those remain runtime and independent-test gates.
 
 ### 26.6 Migration protocol
 
