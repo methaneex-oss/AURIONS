@@ -577,7 +577,7 @@ def main() -> int:
     test_events()
     test_governance()
     print(
-        f"PASS: all three SQLite stores and eleven ordered DDL files executed; "
+        f"PASS: all three SQLite stores and fifteen ordered DDL files executed; "
         f"SQLite {sqlite3.sqlite_version}; FK/integrity checks passed; "
         "memory v4/v5/v6/v7, event v3/v4 and governance v2/v3/v4 outbox/objective/approval/query-projection smoke invariants passed."
     )
