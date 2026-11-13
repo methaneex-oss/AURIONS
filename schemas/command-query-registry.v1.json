@@ -204,8 +204,7 @@
       "owning_component": "Context subsystem",
       "aggregate": "contexts",
       "persistence_stores": [
-        "aurion_memory.db",
-        "aurion_events.db"
+        "aurion_memory.db"
       ],
       "expected_revision_contract": "Require exact context_id and expected context revision; mark that revision stale and advance context head once. Never delete source records.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact contexts target under owner scope before revealing existence. Require owner-scoped domain write authority for Context subsystem; derived/model-generated content is data, never authority. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -266,8 +265,7 @@
       "owning_component": "Environment observer / platform adapter",
       "aggregate": "environment observations + experiences",
       "persistence_stores": [
-        "aurion_memory.db",
-        "aurion_events.db"
+        "aurion_memory.db"
       ],
       "expected_revision_contract": "Append immutable observation_id with authenticated device/source identity, permission evidence, observation time and source revision. No continuous capture or overwrite.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact environment observations + experiences target under owner scope before revealing existence. Bind exact device/provider/target and require current scoped permission/capability evidence; operation execution additionally requires exact risk/policy/approval checks before dispatch. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -339,8 +337,7 @@
       "owning_component": "Discovery broker",
       "aggregate": "discovery provenance + capability descriptors",
       "persistence_stores": [
-        "aurion_memory.db",
-        "aurion_events.db"
+        "aurion_memory.db"
       ],
       "expected_revision_contract": "Append discovery attempt and provisional descriptor version scoped to provider/device/interface/context; discovery does not verify or grant capability.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact discovery provenance + capability descriptors target under owner scope before revealing existence. Bind exact device/provider/target and require current scoped permission/capability evidence; operation execution additionally requires exact risk/policy/approval checks before dispatch. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -410,8 +407,7 @@
       "owning_component": "Discovery broker + capability registry",
       "aggregate": "capability descriptors + verification evidence",
       "persistence_stores": [
-        "aurion_memory.db",
-        "aurion_events.db"
+        "aurion_memory.db"
       ],
       "expected_revision_contract": "Require exact descriptor_id, descriptor_version and provider_version; append verification evidence and advance descriptor verification revision only if exact version remains current.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact capability descriptors + verification evidence target under owner scope before revealing existence. Bind exact device/provider/target and require current scoped permission/capability evidence; operation execution additionally requires exact risk/policy/approval checks before dispatch. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -483,8 +479,7 @@
       "owning_component": "Discovery broker + capability registry",
       "aggregate": "capability descriptors + dependent plans",
       "persistence_stores": [
-        "aurion_memory.db",
-        "aurion_events.db"
+        "aurion_memory.db"
       ],
       "expected_revision_contract": "Require exact descriptor_id and expected descriptor revision; mark stale/invalid and advance once; preserve descriptor and invalidate dependent plan/affordance caches.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact capability descriptors + dependent plans target under owner scope before revealing existence. Bind exact device/provider/target and require current scoped permission/capability evidence; operation execution additionally requires exact risk/policy/approval checks before dispatch. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -1308,8 +1303,7 @@
       "owning_component": "Goal subsystem",
       "aggregate": "goals + goal_revisions",
       "persistence_stores": [
-        "aurion_memory.db",
-        "aurion_events.db"
+        "aurion_memory.db"
       ],
       "expected_revision_contract": "Require expected non-terminal goal revision; append terminal cancelled revision; event binding remains unresolved pending schema/consumer confirmation.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact goals + goal_revisions target under owner scope before revealing existence. Require owner-scoped domain write authority for Goal subsystem; derived/model-generated content is data, never authority. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -1936,8 +1930,7 @@
       "owning_component": "Outcome evaluation subsystem",
       "aggregate": "outcome_evaluations + prediction_evaluations",
       "persistence_stores": [
-        "aurion_memory.db",
-        "aurion_events.db"
+        "aurion_memory.db"
       ],
       "expected_revision_contract": "Append immutable outcome evaluation linked to independently observed evidence, prediction and objective revisions; never rewrite observation or infer causality without evidence.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact outcome_evaluations + prediction_evaluations target under owner scope before revealing existence. Require owner-scoped domain write authority for Outcome evaluation subsystem; derived/model-generated content is data, never authority. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -2069,8 +2062,7 @@
       "owning_component": "Learning/evaluation subsystem + worker supervisor",
       "aggregate": "experiment manifests + artifacts",
       "persistence_stores": [
-        "aurion_memory.db",
-        "aurion_events.db"
+        "aurion_memory.db"
       ],
       "expected_revision_contract": "Create immutable experiment manifest and attempt 1 with code/data/config digests, seed, budget and deadline; worker result is quarantined until validation.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact experiment manifests + artifacts target under owner scope before revealing existence. Require owner-scoped domain write authority for Learning/evaluation subsystem + worker supervisor; derived/model-generated content is data, never authority. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -2138,8 +2130,7 @@
       "owning_component": "Learning/evaluation subsystem",
       "aggregate": "candidate evaluations + immutable artifacts",
       "persistence_stores": [
-        "aurion_memory.db",
-        "aurion_events.db"
+        "aurion_memory.db"
       ],
       "expected_revision_contract": "Append immutable candidate evaluation for exact candidate/artifact digest, baseline and held-out/unseen-control dataset revisions; no activation.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact candidate evaluations + immutable artifacts target under owner scope before revealing existence. Require owner-scoped domain write authority for Learning/evaluation subsystem; derived/model-generated content is data, never authority. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -2346,7 +2337,8 @@
       "aggregate": "candidate evaluations + governance decisions",
       "persistence_stores": [
         "aurion_memory.db",
-        "aurion_governance.db"
+        "aurion_governance.db",
+        "aurion_events.db"
       ],
       "expected_revision_contract": "Append immutable evaluation for exact candidate artifact digest and frozen baseline; candidate remains quarantined.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact candidate evaluations + governance decisions target under owner scope before revealing existence. Require owner-scoped domain write authority for Evolution subsystem + governance; derived/model-generated content is data, never authority. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -2407,7 +2399,9 @@
           "store": "aurion_events.db",
           "tables": [
             "events",
-            "outbox"
+            "outbox",
+            "operations",
+            "recovery_journal"
           ]
         }
       ],
@@ -2423,7 +2417,8 @@
       "aggregate": "candidate activation audit + active artifact reference",
       "persistence_stores": [
         "aurion_memory.db",
-        "aurion_governance.db"
+        "aurion_governance.db",
+        "aurion_events.db"
       ],
       "expected_revision_contract": "Require expected candidate and active-pointer revisions, passing evaluation, verified signature/provenance, rollback readiness and explicit current owner/governance grant; atomically advance active pointer and audit.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact candidate activation audit + active artifact reference target under owner scope before revealing existence. Require governance authority over the exact approval/candidate and preserve owner/actor separation. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -2487,7 +2482,9 @@
           "store": "aurion_events.db",
           "tables": [
             "events",
-            "outbox"
+            "outbox",
+            "operations",
+            "recovery_journal"
           ]
         }
       ],
@@ -2503,7 +2500,8 @@
       "aggregate": "rollback audit + prior artifact reference",
       "persistence_stores": [
         "aurion_memory.db",
-        "aurion_governance.db"
+        "aurion_governance.db",
+        "aurion_events.db"
       ],
       "expected_revision_contract": "Require expected active-pointer revision, exact prior approved artifact digest and explicit rollback authority; atomically restore pointer and append audit without deleting failed candidate.",
       "authorization_contract": "Authenticate owner_id and actor_identity outside payload; resolve the exact rollback audit + prior artifact reference target under owner scope before revealing existence. Require governance authority over the exact approval/candidate and preserve owner/actor separation. Effective policy is evaluated at commit/dispatch time; caller filters, proposal fields and model risk estimates cannot widen authority.",
@@ -2567,7 +2565,9 @@
           "store": "aurion_events.db",
           "tables": [
             "events",
-            "outbox"
+            "outbox",
+            "operations",
+            "recovery_journal"
           ]
         }
       ],
