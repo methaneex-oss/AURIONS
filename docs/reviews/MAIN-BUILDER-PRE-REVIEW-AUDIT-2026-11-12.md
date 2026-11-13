@@ -1094,3 +1094,21 @@ Corrections:
 **Exact code head:** \`d7e20808d42e8ab4aa9c5163454c640f6b130c0c\`. [Workflow 43433557247](https://github.com/methaneex-oss/AURIONS/actions/runs/43433557247) passed all nine steps.
 
 **Evidence boundary:** Scenario specifications and reference integrity only. The scenarios remain \`specified_not_executed\`; no runtime cognitive learning, provider behaviour, restart/replay, concurrency or target-device behaviour is established. BR-004 remains OPEN.
+
+
+## BR-003 error/recovery contract cross-artifact parity — 2026-11-13
+
+The 35-code error registry, fixture corpus and category handler matrix were individually schema-valid and inventory-aligned, but CI did not prove that fixture defaults agreed with the machine registry or that each matrix handler anchor resolved to an actual category contract heading.
+
+Added checks for every error code:
+- Fixture category equals registry category.
+- Fixture \`expected_side_effect_default\` equals registry \`default_side_effect_state\`.
+- Fixture payload \`side_effect_state\` equals its declared fixture default.
+- Fixture \`expected_retry_posture\` equals registry \`default_retry_posture\`.
+- Every per-code handler reference resolves to a real \`### EH-NNN\` category section, and the set of referenced headings exactly matches the category headings in the matrix.
+
+**Current corpus scan:** 35/35 fixtures agree on category, default side-effect state and retry posture; 35 code rows map to existing category handler headings; 35 EHR assertions remain uniquely mapped to the registry.
+
+**Exact code head:** \`a45ad914aee564d0815ff61cadbd8db74688f27b\`. [Workflow 43433876661](https://github.com/methaneex-oss/AURIONS/actions/runs/43433876661) passed all nine steps.
+
+**Evidence boundary:** This closes registry/fixture/category-contract reference integrity only. All 35 entries remain \`seed\`; no handler is implemented or production-registered, and no EHR durable-state/replay/fault assertion has been executed. BR-003 remains OPEN.
