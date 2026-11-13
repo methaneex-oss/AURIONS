@@ -15,6 +15,7 @@ import httpx
 from workforce.domain import path_is_permitted
 
 MANDATORY_GOVERNANCE_FILES = (
+    "docs/workforce/AGENT-INDUCTION-AND-ROLE-TRAINING.md",
     "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
     "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
     "docs/workforce/WORKFORCE-CONSTITUTION.md",
@@ -87,12 +88,16 @@ class Worker:
         self.max_total_tokens = max_total_tokens
         self.total_tokens = 0
         self.calls = 0
-        self.model = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3.5-lightning:free")
-        self.api_key = os.environ.get("OPENROUTER_API_KEY", "")
+        self.model = os.getenv("MODEL_ID", os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3.5-lightning:free"))
+        self.api_url = os.getenv("MODEL_API_URL", "https://openrouter.ai/api/v1/chat/completions")
+        self.api_key = os.environ.get("MODEL_API_KEY", os.environ.get("OPENROUTER_API_KEY", ""))
+        direct_provider = "MODEL_API_URL" in os.environ
         if not self.api_key:
-            raise RuntimeError("OPENROUTER_API_KEY is required; provide it through a protected secret store")
-        if not self.model.endswith(":free"):
-            raise RuntimeError("free-only policy: OPENROUTER_MODEL must identify a :free model")
+            raise RuntimeError("model API key is required; provide it through a protected secret store")
+        if direct_provider and os.getenv("MODEL_COST_CLASS") not in {"free", "free_endpoint", "free_daily_allowance"}:
+            raise RuntimeError("free-only policy: direct provider must explicitly declare a free cost class")
+        if not direct_provider and not self.model.endswith(":free"):
+            raise RuntimeError("free-only policy: OpenRouter model must identify a :free model")
         if role not in ROLE_INSTRUCTIONS:
             raise ValueError(f"unsupported role: {role}")
         if max_calls <= 0 or max_tokens <= 0 or max_total_tokens <= 0:
@@ -189,12 +194,14 @@ class Worker:
             "Challenge the task itself if it conflicts with authoritative governance."
         )
         messages = [{"role": "system", "content": system + "\n\nAUTHORITATIVE CONTEXT:\n" + "\n".join(context)}, {"role": "user", "content": task}]
-        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json", "HTTP-Referer": "https://github.com/methaneex-oss/AURIONS", "X-Title": "AURIONS Engineering Workforce"}
+        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+        if not os.getenv("MODEL_API_URL"):
+            headers.update({"HTTP-Referer": "https://github.com/methaneex-oss/AURIONS", "X-Title": "AURIONS Engineering Workforce"})
         while self.calls < self.max_calls and self.total_tokens < self.max_total_tokens:
             self.calls += 1
             remaining = self.max_total_tokens - self.total_tokens
             payload = {"model": self.model, "messages": messages, "tools": TOOLS, "tool_choice": "auto", "max_tokens": min(self.max_tokens, remaining), "temperature": 0.2}
-            response = httpx.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=120)
+            response = httpx.post(self.api_url, headers=headers, json=payload, timeout=120)
             if response.status_code == 429 or response.status_code >= 500:
                 raise RuntimeError(f"provider unavailable or rate limited (HTTP {response.status_code}); stopped without paid fallback")
             response.raise_for_status()
