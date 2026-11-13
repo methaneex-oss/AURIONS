@@ -977,3 +977,14 @@ The existing owning-store source-column validator remains in place. The first CI
 The documentation-updated head initially failed the SQLite DDL step because the pre-existing `validate_query_projection_inventory()` helper searched for the literal characters `\\n### ` instead of a newline section delimiter. That caused the first query's section scan to consume subsequent query sections and report their field names as duplicates. This was a validator defect, not a DDL/schema failure.
 
 Corrected the delimiter in commit `0f69d48dd99fece42ebf44e0ae5e5c75291bf45a`. Exact head passed [workflow 43431379174](https://github.com/methaneex-oss/AURIONS/actions/runs/43431379174), all nine steps, including schema/fixture validation, governance, work-package traceability, SQLite DDL/migration smoke tests and Android probe syntax. The preceding failed run `43431248189` is retained as failure evidence; it is not represented as a product or DDL defect.
+
+
+### BR-002 follow-on — validate every relational source column
+
+The first source-binding guard checked all relational table names, but the SQLite projection smoke helper still inspected only the first `table.column` token on each mapping line. That would leave a second joined source (such as `approval_requests.request_id` in `audit.lookup.approval_ref`) unchecked for actual DDL column existence.
+
+Extended `validate_query_projection_source_columns()` to enumerate every relational `table.column` source before parenthetical derivation annotations and validate each source against its declared query binding, owning store and actual SQLite `PRAGMA table_info` columns.
+
+**Exact code head:** `49f24f3874e4d632779dfc4e5b1ed4fc27fc6bd1`. [Workflow 43431572932](https://github.com/methaneex-oss/AURIONS/actions/runs/43431572932) completed successfully; all nine steps passed. The host log confirms all three SQLite stores and seventeen ordered DDL files executed on SQLite 3.46.1, with foreign-key/integrity and listed migration smoke invariants passing.
+
+**Evidence boundary:** This validates proposed source-column existence and declared read bindings, not executable SELECT statements, join cardinality, owner filters, classification/redaction, cursor consistency or query-handler behaviour. All 29 queries remain design-only/non-dispatchable.
