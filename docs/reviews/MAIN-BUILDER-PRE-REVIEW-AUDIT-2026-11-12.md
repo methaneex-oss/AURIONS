@@ -1231,3 +1231,16 @@ BR-004 remains OPEN. Event coverage gaps and remaining generic/missing scenario 
 - Extended exact command/query/event validation and the concrete-scenario gate to CM-008…CM-010.
 
 **Updated fixture inventory:** 39 scenarios, 222 ordered steps and 45 negative controls. Ten of 36 CM/AD rows are now concrete; 26 remain generic. CM-022…CM-029 remain absent. BR-004 remains OPEN; scenarios are design specifications, not executed runtime acceptance.
+
+
+
+## BR-004 — concrete learning scenario expansion — 2026-11-13
+
+**Batch 5 completed:**
+- CM-011 now specifies evidence-backed learning update proposals, frozen baseline/dataset/protocol, isolated worker experiment, quarantined completion, candidate evaluation, regression controls and restart/replay.
+- CM-012 now specifies the full separation between learning proposal, experiment, candidate evaluation, owner/governance acceptance, evolution proposal/evaluation, exact approval, protected activation and a later related task using the activated version. Acceptance alone is explicitly tested as non-activation.
+- CM-013 now specifies repeated seeded comparisons against frozen baseline, disjoint train/dev/held-out data, related unseen variations, unrelated controls, regression thresholds and quarantine on failure/inconclusive evidence.
+- Added event references for worker completion, learning experiment/evaluation/acceptance, evolution evaluation/activation and later plan proposal.
+- Extended exact command/query/event validation and the concrete-scenario gate to CM-011…CM-013.
+
+**Updated fixture inventory:** 39 scenarios, 240 ordered steps and 45 negative controls. Thirteen of 36 CM/AD rows are now concrete; 23 remain generic. CM-022…CM-029 remain absent. BR-004 remains OPEN; these are design-level specifications, not executed runtime acceptance.
