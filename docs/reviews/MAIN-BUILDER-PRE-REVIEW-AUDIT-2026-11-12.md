@@ -782,3 +782,26 @@ EBT-01 and the mandatory fresh-read gate were confirmed in both.
 **Self-review / remaining BR-008 and BR-010 work:** This increment does not resolve cross-store saga ownership and transaction boundaries across all commands/events, canonical entity/DDL transition semantics, query result-field projections against owning schemas/SQL, full owner-decision traceability, PR #1 scaffold reconciliation, C++ validator equivalence or target runtime evidence. It also does not execute any PR acceptance scenario. These remain builder findings, not tasks delegated to a reviewer/tester.
 
 **Disposition:** Builder work remains IN PROGRESS and NOT READY for independent review or planning-exit approval. No owner-reserved decision, implementation authorization, merge, reviewer handoff or tester handoff was made.
+
+## Builder run — store-local outbox and cross-store saga correction (2026-11-13)
+
+**Fresh governance gate:** The current authoritative Project Directorship and Team Operating Standard (blob `951b9009cbedcf8907b365d611d89559d5a17385`) and Builder Operating Protocol (blob `179b02aaef051173b96f54812f451ede1a2eae0d`) were re-fetched and read before this builder run. EBT-01, autonomous correction and the fresh-read gate were confirmed.
+
+**Root-cause finding:** The normative source specification §§32.1 and 34 requires a transactional outbox in the same database as each authoritative state mutation. The prior DDL violated that requirement: only `aurion_events.db` had an `outbox` table, while memory and governance domain mutations were mapped to the event-store outbox. SQLite cannot atomically commit a mutation in one file with an outbox row in another. The generic prose claiming per-store atomicity therefore had no corresponding memory/governance DDL.
+
+**Corrections implemented:**
+- Added memory migration v5 and governance migration v2 with the same local outbox schema; event-store local outbox retained.
+- Updated persistence README, implementation-ready contracts and initial engineering specification migration references and relay semantics.
+- Added `transaction_contract` to every command registry entry and its JSON Schema. Active commands declare either `SINGLE_STORE_LOCAL_OUTBOX` or `CROSS_STORE_SAGA`; deferred device commands explicitly remain deferred.
+- Added local-outbox table bindings for every authoritative store in each active command.
+- Corrected nine memory-domain command `persistence_stores` declarations so central event-archive publication is asynchronous rather than falsely represented as a second authoritative write store.
+- Reconciled the three cross-store evolution candidate commands with an event/recovery saga coordinator and explicit per-store outbox boundaries. Activation and rollback contracts no longer claim atomicity across databases.
+- Added `STORE-LOCAL-OUTBOX-AND-CROSS-STORE-SAGA-MATRIX.md`, covering all 53 command records and the relay/saga protocol.
+- Extended `validate_schemas.py` to require outbox DDL and bindings for every authoritative store, require a matching transaction contract and verify exact command inventory/mode against the matrix.
+- Extended `validate_sqlite_ddl.py` to execute all ten DDL files and perform memory/governance rollback probes that assert aggregate and local outbox rows roll back together.
+
+**Failure and correction evidence:** Exact-head workflow [43381677423](https://github.com/methaneex-oss/AURIONS/actions/runs/43381677423) failed in the newly added transaction-matrix inventory guard. Logs showed the parser treated the three store names in the preceding ownership table as command rows. The guard was corrected to retain only names in the exact command registry inventory in commit `5bea96e3dee36493905ff6cf12203f614dc21139`. The failure was not hidden. Exact-head CI after the correction and subsequent audit/register updates is pending.
+
+**Builder self-review boundary:** The DDL correction makes the local atomicity claim structurally possible and host rollback tests are now specified in the runner. It does not implement the outbox relay, central archive deduplication/replay, consumer inbox transactions, crash-safe saga progression, compensation, or target-platform behaviour. The three evolution saga sequences remain proposed contracts requiring runtime and independent verification. No command/event becomes dispatchable.
+
+**Disposition:** BR-005 and BR-008 remain OPEN overall. This is a substantive builder correction, not planning-exit completion. Overall builder work remains NOT READY for independent review until the remaining cross-store saga semantics, canonical entity/DDL transitions, query projections, full owner-decision traceability and remaining builder-owned checks are completed. No implementation authorization, merge, reviewer handoff or tester handoff was made.
