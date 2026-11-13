@@ -21,9 +21,9 @@ class RunnerBudgetTests(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
-    def make_worker(self, total_tokens):
+    def make_worker(self, total_tokens, duration_minutes=120):
         with patch.dict("os.environ", {"GROQ_API_KEY": "test-key-only"}, clear=True):
-            return Worker(self.root, "lead_builder", [], 2, 512, total_tokens)
+            return Worker(self.root, "lead_builder", [], 2, 512, total_tokens, duration_minutes)
 
     def response(self, total_tokens=100):
         return httpx.Response(
@@ -54,6 +54,14 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertLessEqual(payload["max_completion_tokens"], 12000 - prompt_bytes - 256)
         self.assertEqual(result["total_tokens"], 100)
         self.assertEqual(result["calls"], 1)
+
+    def test_duration_budget_stops_before_provider_call(self):
+        worker = self.make_worker(12000, duration_minutes=1)
+        with patch("workforce.agents.runner.time.monotonic", side_effect=[100.0, 161.0]):
+            with patch("workforce.agents.runner.httpx.post") as provider:
+                with self.assertRaisesRegex(RuntimeError, "task duration budget exhausted"):
+                    worker.run("small task", [])
+                provider.assert_not_called()
 
     def test_provider_reported_usage_over_budget_fails_closed(self):
         worker = self.make_worker(12000)
