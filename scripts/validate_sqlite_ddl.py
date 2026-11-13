@@ -149,6 +149,7 @@ def test_memory() -> None:
             raise AssertionError(
                 f"memory: invalid interaction outcome reference was accepted: {outcome_id}"
             )
+    db.commit()
     # A new goal revision must bind to an exact objective revision owned by the same owner.
     goal_id = bytes([11]) * 16
     db.execute("BEGIN")
