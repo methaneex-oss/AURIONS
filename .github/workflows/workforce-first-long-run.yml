@@ -1,0 +1,248 @@
+name: AURIONS workforce — first supervised long run
+
+on:
+  push:
+    branches:
+      - feat/engineering-workforce-foundation
+    paths:
+      - "engineering/workforce/**"
+      - ".github/workflows/workforce-first-long-run.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aurions-workforce-first-run-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  lead-builder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install worker dependencies
+        run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Run lead builder
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: nvidia/nemotron-3.5-lightning:free
+          PYTHONPATH: engineering/workforce/src
+          TASK: |
+            Continue the existing WF-01 workforce control-plane implementation. Inspect the current code and canonical workforce documents first. Find the highest-risk correctness gaps in the API, persistence and task lifecycle. Implement only changes under engineering/workforce/src/workforce. Preserve the existing architecture and contracts unless a concrete defect requires a documented correction. Add no AURIONS cognitive/runtime code. Do not alter governance, workflow files, model/provider policy, branch protections or secrets. Run the fixed workforce tests. Stop if the required scope cannot be completed safely within the call/token budget. Report exact changed files, reasoning, test results and unresolved risks.
+        run: |
+          set -o pipefail
+          python -m workforce.agents.runner --role lead_builder --task "$TASK" \
+            --workspace . --permitted-path engineering/workforce/src/workforce \
+            --context-file docs/workforce/WORKFORCE-CONSTITUTION.md \
+            --context-file docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md \
+            --context-file docs/workforce/WORKFORCE-IMPLEMENTATION-ROADMAP.md \
+            --context-file engineering/workforce/README.md \
+            --max-calls 8 --max-tokens 3072 --max-total-tokens 16000 | tee lead-builder-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workforce-candidate-lead
+          path: |
+            engineering/workforce/
+            lead-builder-report.json
+          if-no-files-found: error
+
+  specialist-builder:
+    needs: lead-builder
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: workforce-candidate-lead
+          path: .
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install worker dependencies
+        run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Run specialist builder
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: nvidia/nemotron-3.5-lightning:free
+          PYTHONPATH: engineering/workforce/src
+          TASK: |
+            Independently strengthen the WF-01 test suite for the current candidate. Inspect the implementation and workforce constitution. Add meaningful tests only under engineering/workforce/tests. Focus on lifecycle invariants, invalid contracts, path restrictions, lease and checkpoint assumptions, and regressions. Do not edit implementation source, docs, workflows or AURIONS runtime. Run the fixed workforce tests and report coverage gaps honestly.
+        run: |
+          set -o pipefail
+          python -m workforce.agents.runner --role specialist_builder --task "$TASK" \
+            --workspace . --permitted-path engineering/workforce/tests \
+            --context-file docs/workforce/WORKFORCE-CONSTITUTION.md \
+            --context-file docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md \
+            --context-file engineering/workforce/README.md \
+            --max-calls 6 --max-tokens 3072 --max-total-tokens 12000 | tee specialist-builder-report.json
+      - name: Freeze candidate artifact identity
+        run: |
+          find engineering/workforce -type f -print0 | sort -z | xargs -0 sha256sum > candidate.sha256
+          printf "BASE_COMMIT_SHA=%s\n" "$GITHUB_SHA" > candidate.meta
+          git diff --check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workforce-candidate-final
+          path: |
+            engineering/workforce/
+            lead-builder-report.json
+            specialist-builder-report.json
+            candidate.sha256
+            candidate.meta
+          if-no-files-found: error
+
+  architecture-review:
+    needs: specialist-builder
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: workforce-candidate-final
+          path: .
+      - name: Verify immutable candidate artifact
+        run: sha256sum -c candidate.sha256
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Independent architecture review
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: nvidia/nemotron-3.5-lightning:free
+          PYTHONPATH: engineering/workforce/src
+          TASK: |
+            Independently review the candidate's architecture and project-principle alignment. You are read-only. Check the workforce constitution, authority boundaries, separation from AURIONS runtime, task lifecycle, persistence/recovery claims, provider assumptions and scope. Identify contradictions, missing controls and claims unsupported by code. Classify findings CRITICAL/HIGH/MEDIUM/LOW/INFORMATIONAL and cite exact paths and line ranges. Do not rely on builder reports as truth.
+        run: |
+          set -o pipefail
+          python -m workforce.agents.runner --role architecture_reviewer --task "$TASK" --workspace . \
+            --context-file docs/workforce/WORKFORCE-CONSTITUTION.md \
+            --context-file docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md \
+            --context-file docs/workforce/WORKFORCE-IMPLEMENTATION-ROADMAP.md \
+            --max-calls 4 --max-tokens 3072 --max-total-tokens 6000 | tee architecture-review.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reviewer-architecture
+          path: architecture-review.json
+
+  code-review:
+    needs: specialist-builder
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: workforce-candidate-final
+          path: .
+      - name: Verify immutable candidate artifact
+        run: sha256sum -c candidate.sha256
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Independent code review
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: nvidia/nemotron-3.5-lightning:free
+          PYTHONPATH: engineering/workforce/src
+          TASK: |
+            Independently review implementation correctness, security, concurrency, database transaction behavior, input validation, lease handling, and tests. You are read-only. Look for exploitable trust assumptions, unauthorized state changes, path-policy bypasses, secret exposure and false recovery claims. Classify findings and cite exact paths/lines. Do not rely on builder reports as truth.
+        run: |
+          set -o pipefail
+          python -m workforce.agents.runner --role code_reviewer --task "$TASK" --workspace . \
+            --context-file docs/workforce/WORKFORCE-CONSTITUTION.md \
+            --context-file docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md \
+            --max-calls 4 --max-tokens 3072 --max-total-tokens 6000 | tee code-review.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reviewer-code
+          path: code-review.json
+
+  negative-test:
+    needs: specialist-builder
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: workforce-candidate-final
+          path: .
+      - name: Verify immutable candidate artifact
+        run: sha256sum -c candidate.sha256
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Adversarial test review
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: nvidia/nemotron-3.5-lightning:free
+          PYTHONPATH: engineering/workforce/src
+          TASK: |
+            Actively attempt to falsify the candidate's correctness. You are read-only. Run the fixed test tool and inspect tests for missing negative cases. Examine invalid transitions, spoofed actor identity, expired/replayed leases, checkpoint consistency, duplicate task creation, malformed paths, symlink/path traversal, secret reads, and any unsafe assumptions. Do not modify files. Report reproducible cases and severity; distinguish tested failures from theoretical risks.
+        run: |
+          set -o pipefail
+          python -m workforce.agents.runner --role negative_tester --task "$TASK" --workspace . \
+            --context-file docs/workforce/WORKFORCE-CONSTITUTION.md \
+            --context-file docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md \
+            --max-calls 4 --max-tokens 3072 --max-total-tokens 6000 | tee negative-test.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reviewer-negative
+          path: negative-test.json
+
+  integration-verification:
+    needs: [specialist-builder, architecture-review, code-review, negative-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: workforce-candidate-final
+          path: .
+      - name: Verify immutable candidate artifact
+        run: sha256sum -c candidate.sha256
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: reviewer-*
+          path: review-reports
+          merge-multiple: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Verify candidate and reconcile review evidence
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: nvidia/nemotron-3.5-lightning:free
+          PYTHONPATH: engineering/workforce/src
+          TASK: |
+            Verify the final candidate after the three independent reviews. Run the fixed workforce tests. Read all three review reports under review-reports. Reconcile every CRITICAL/HIGH/MEDIUM finding, identify conflicts between reviewers, and state whether the candidate is safe to present for human review. You are read-only. You cannot accept the milestone, authorize AURIONS runtime work, push commits or merge. Report exact evidence and the next Director decision required.
+        run: |
+          set -o pipefail
+          python -m workforce.agents.runner --role integration_verifier --task "$TASK" --workspace . \
+            --context-file docs/workforce/WORKFORCE-CONSTITUTION.md \
+            --context-file docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md \
+            --context-file docs/workforce/WORKFORCE-IMPLEMENTATION-ROADMAP.md \
+            --max-calls 4 --max-tokens 3072 --max-total-tokens 6000 | tee integration-verification.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workforce-first-run-evidence
+          path: |
+            engineering/workforce/
+            lead-builder-report.json
+            specialist-builder-report.json
+            candidate.sha256
+            candidate.meta
+            review-reports/
+            integration-verification.json
+          if-no-files-found: error
