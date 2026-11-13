@@ -1,4 +1,4 @@
-""""OpenRouter tool-calling worker with mandatory EBT-01 governance context."""
+"""Pinned-provider role worker with mandatory EBT-01 governance context."""
 from __future__ import annotations
 
 import argparse
@@ -68,14 +68,32 @@ TOOLS = [
 ]
 
 
+def is_sensitive_path(path: Path) -> bool:
+    """Deny common credential stores and private-key material by path name."""
+    parts = [part.lower() for part in path.parts]
+    names = {".aws", ".ssh", ".gnupg", ".netrc", ".npmrc", ".pypirc",
+             "credentials", "credentials.json", "id_rsa", "id_ed25519",
+             "authorized_keys", "known_hosts"}
+    if any(part in names for part in parts):
+        return True
+    name = path.name.lower()
+    if name.endswith((".pem", ".key", ".p12", ".pfx", ".jks", ".keystore")):
+        return True
+    if "secret" in name or "credential" in name or name.startswith("service-account"):
+        return True
+    return False
+
+
 def safe_path(root: Path, relative: str) -> Path:
     candidate = (root / relative).resolve()
     if candidate != root and root not in candidate.parents:
         raise ValueError("path escapes workspace")
     if any(part in {".git", ".venv", "__pycache__"} for part in candidate.parts):
         raise ValueError("protected workspace path")
-    if candidate.name == ".env" or candidate.name.startswith(".env."):
+    if any(part == ".env" or part.startswith(".env.") for part in candidate.parts):
         raise ValueError("secret files are not accessible")
+    if is_sensitive_path(candidate):
+        raise ValueError("credential or private-key material is not accessible")
     return candidate
 
 
@@ -137,7 +155,7 @@ class Worker:
                 return "Directory does not exist."
             found = []
             for p in sorted(directory.rglob("*")):
-                if p.is_file() and not any(x in {".git", ".venv", "__pycache__"} for x in p.parts) and not p.name.startswith(".env"):
+                if p.is_file() and not any(x in {".git", ".venv", "__pycache__"} for x in p.parts) and not is_sensitive_path(p) and not any(x == ".env" or x.startswith(".env.") for x in p.parts):
                     found.append(str(p.relative_to(self.workspace)))
                 if len(found) >= 300:
                     break
@@ -220,8 +238,15 @@ class Worker:
                 raise RuntimeError(f"provider unavailable or rate limited (HTTP {response.status_code}); stopped without paid fallback")
             response.raise_for_status()
             data = response.json()
-            usage = data.get("usage") or {}
-            self.total_tokens += int(usage.get("total_tokens", 0))
+            usage = data.get("usage")
+            if not isinstance(usage, dict):
+                raise RuntimeError("provider response omitted token usage; fail-closed budget stop")
+            reported_tokens = usage.get("total_tokens")
+            if not isinstance(reported_tokens, int) or isinstance(reported_tokens, bool) or reported_tokens <= 0:
+                raise RuntimeError("provider returned missing or invalid total_tokens; fail-closed budget stop")
+            if self.total_tokens + reported_tokens > self.max_total_tokens:
+                raise RuntimeError("provider-reported usage exceeded the configured aggregate token budget; worker stopped")
+            self.total_tokens += reported_tokens
             choice = data["choices"][0]["message"]
             messages.append(choice)
             tool_calls = choice.get("tool_calls") or []
