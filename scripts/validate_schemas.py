@@ -214,6 +214,40 @@ def main() -> int:
                     f"{command_type}: transition-matrix event boundary differs from registry; "
                     f"matrix={sorted(matrix_events)}; registry={sorted(registry_events)}"
                 )
+        transaction_row = transaction_rows[command_type]
+        transaction_cells = [
+            cell.strip()
+            for cell in transaction_row.strip().strip("|").split("|")
+        ]
+        if len(transaction_cells) != 5:
+            fail(f"{command_type}: transaction matrix row must have five columns")
+        expected_mode = (
+            "DEFERRED" if item["dispatch_status"] == "deferred_by_scope"
+            else "CROSS_STORE_SAGA" if len(item.get("persistence_stores", [])) > 1
+            else "SINGLE_STORE_LOCAL_OUTBOX"
+        )
+        if transaction_cells[2] != expected_mode:
+            fail(f"{command_type}: transaction matrix mode differs from registry boundary")
+        matrix_stores = (
+            [] if transaction_cells[1] in {"—", "-", ""}
+            else [value.strip().strip("`") for value in transaction_cells[1].split(",")]
+        )
+        registry_stores = item.get("persistence_stores", [])
+        if set(matrix_stores) != set(registry_stores):
+            fail(
+                f"{command_type}: transaction matrix stores differ from registry; "
+                f"matrix={sorted(matrix_stores)}; registry={sorted(registry_stores)}"
+            )
+        matrix_outboxes = (
+            [] if transaction_cells[3].lower().startswith("none")
+            else [value.strip().strip("`") for value in transaction_cells[3].split(",")]
+        )
+        expected_outboxes = [f"{store}:outbox" for store in registry_stores]
+        if set(matrix_outboxes) != set(expected_outboxes):
+            fail(
+                f"{command_type}: transaction matrix outboxes differ from registry; "
+                f"matrix={sorted(matrix_outboxes)}; expected={sorted(expected_outboxes)}"
+            )
         if item["dispatch_status"] == "deferred_by_scope":
             if item.get("acceptance_case_id") or item.get("error_code_bindings") or item.get("emitted_event_bindings"):
                 fail(f"{command_type}: deferred command must not have active contract bindings")
@@ -250,14 +284,6 @@ def main() -> int:
                 fail(f"{command_type}: extra store {store} must be read_dependency or async_archive")
         if set(stores) - set(binding_stores):
             fail(f"{command_type}: authoritative persistence store lacks table binding")
-        matrix_row = transaction_rows[command_type]
-        expected_mode = (
-            "DEFERRED" if item["dispatch_status"] == "deferred_by_scope"
-            else "CROSS_STORE_SAGA" if len(stores) > 1
-            else "SINGLE_STORE_LOCAL_OUTBOX"
-        )
-        if f"| {expected_mode} |" not in matrix_row:
-            fail(f"{command_type}: transaction matrix mode differs from registry boundary")
         if len(stores) == 1 and not transaction_contract.startswith("SINGLE_STORE_LOCAL_OUTBOX:"):
             fail(f"{command_type}: single-store command lacks explicit local-outbox transaction contract")
         if len(stores) > 1:
