@@ -13,7 +13,7 @@ This directory contains engineering-workforce infrastructure only. It is not par
 - Append-only evidence digests and artifact references bound to each lifecycle gate; Director acceptance must reference the exact integrated evidence record.
 - A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces task-duration deadlines.
 - Separate API and supervisor containers with non-root, read-only filesystems.
-- Six distinct pinned model assignments and per-run local call/token ceilings.
+- Six distinct pinned model assignments and per-process hard ceilings (100 calls, 32,768 completion tokens/call, 200,000 reported total tokens and 360 minutes); prompt bytes plus protocol overhead are reserved before inference.
 - Paid inference fallback remains disabled.
 
 ## Required deployment secrets
@@ -44,6 +44,6 @@ The workforce test workflow starts a disposable PostgreSQL 17 service, applies e
 
 ## Explicit status and limitations
 
-The control-plane security, evidence and recovery work is an implementation candidate until the PostgreSQL integration suite and independent review pass. Evidence references record hashes and locations; an independent verifier must still retrieve each artifact and confirm its bytes match the recorded digest. Provider connectivity and role qualification are separate gates: configured model assignments do not prove that credentials work or that agents are competent. The runner's existing token ceilings are per process; a durable, cross-process global inference ledger and provider quota reconciliation remain a separate required gate. No persistent multi-agent run, GitHub write broker or AURIONS runtime implementation is authorized by this infrastructure work.
+The control-plane security, evidence and recovery work is an implementation candidate until the PostgreSQL integration suite and independent review pass. Evidence references record hashes and locations; an independent verifier must still retrieve each artifact and confirm its bytes match the recorded digest. Provider connectivity and role qualification are separate gates: configured model assignments do not prove that credentials work or that agents are competent. The runner's call/token ceilings are per process and reset on a retry; a durable cross-process/per-agent inference ledger and provider quota reconciliation remain required before claiming global budget enforcement. No persistent multi-agent run, GitHub write broker or AURIONS runtime implementation is authorized by this infrastructure work.
 
 The first-run workflow remains dormant. No merge to `main`, paid fallback, production activation or AURIONS runtime implementation is authorized.
