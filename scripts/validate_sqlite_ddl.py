@@ -358,7 +358,7 @@ def test_events() -> None:
         "aurion_events.migration_v2.sql",
         "aurion_events.migration_v3.sql",
         "aurion_events.migration_v4.sql",
-        "aurion_events.migration_v5.sql",
+        "aurion_events.migration_v5.sql", "aurion_events.migration_v6.sql",
     ])
     require_columns(db, "task_runs", {"revision", "owner_id", "failure_ref"})
     require_columns(db, "operation_details", {"policy_decision_ref"})
@@ -718,9 +718,9 @@ def main() -> int:
     test_events()
     test_governance()
     print(
-        f"PASS: all three SQLite stores and sixteen ordered DDL files executed; "
+        f"PASS: all three SQLite stores and seventeen ordered DDL files executed; "
         f"SQLite {sqlite3.sqlite_version}; FK/integrity checks passed; "
-        "memory v4/v5/v6/v7, event v3/v4/v5 and governance v2/v3/v4 outbox/objective/approval/query-projection smoke invariants passed."
+        "memory v4/v5/v6/v7, event v3/v4/v5/v6 and governance v2/v3/v4 outbox/objective/approval/query-projection/saga-ledger smoke invariants passed."
     )
     print(
         "LIMIT: host smoke validation only; Android/Termux baseline, crash/restore, "
