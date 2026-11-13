@@ -614,3 +614,10 @@ The defects were reproduced and corrected across three failed runs:
 **Verification:** Exact PR head `d134a24d35de1c576d3009372cdebbba2f421fd9` passed all nine steps in [workflow 43429463257](https://github.com/methaneex-oss/AURIONS/actions/runs/43429463257), including schema/fixture validation, mandatory governance integrity, work-package traceability, execution of all ordered SQLite DDL migrations with the new positive/negative saga probes, and Android probe shell syntax.
 
 **Evidence boundary:** This closes a bounded host-SQLite schema-integrity subtask only. It does not implement the saga coordinator/runner, local outbox relay, inbox deduplication, cross-store recovery worker, or prove crash/power-loss/target-device behaviour. The migration remains proposed DDL. BR-005 remains PARTIALLY CLOSED; BR-008 remains OPEN. No command/event is made dispatchable and no runtime implementation authority is inferred.
+
+
+## BR-005 / BR-008 follow-on — append-only saga operation and recovery history (2026-11-13)
+
+A second self-review of the new event-store saga migration found that recovery-journal evidence could be deleted and an empty saga operation's identity/idempotency key could be rewritten or deleted before its first step existed. Added triggers preventing those mutations and added negative host-SQLite tests. Exact code revision `dfdf7b8fa85445a58fa2bd7526514bfbf58de688` passed [workflow 43429848541](https://github.com/methaneex-oss/AURIONS/actions/runs/43429848541), all nine steps. The log confirms all three SQLite stores and seventeen ordered DDL files, SQLite 3.46.1, FK/integrity checks, and the complete listed migration smoke invariants.
+
+This closes only additional saga-ledger schema-integrity cases. Runtime saga runner, relay, inbox, recovery worker, cross-store crash/concurrency tests and target Android/Termux verification remain unimplemented/unverified. BR-005 remains PARTIALLY CLOSED; BR-008 remains OPEN; no runtime dispatch or implementation authorization is implied.
