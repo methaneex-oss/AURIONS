@@ -41,7 +41,7 @@ AS $$
             THEN 'infinity'::timestamptz
         ELSE (task_contract->>'deadline')::timestamptz
     END;
-$;
+$$;
 
 COMMENT ON FUNCTION wf_task_deadline(timestamptz, jsonb) IS
     'Returns the absolute deadline while queued, then the earlier of the absolute deadline and max_duration_minutes from first claim.';
