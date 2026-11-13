@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from workforce.orchestrator import (
-    BUILDERS, ROLES, OrchestrationError, _task_contract, _worker_tokens,
+    BUILDERS, ROLES, OrchestrationError, _task_brief, _task_contract, _worker_tokens,
     validate_manifest, workspace_manifest, run_work_package,
 )
 
