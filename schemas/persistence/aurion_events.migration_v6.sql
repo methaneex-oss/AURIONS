@@ -96,3 +96,28 @@ WHEN (SELECT operation_type FROM operations WHERE operation_id=OLD.operation_id)
 BEGIN
   SELECT RAISE(ABORT,'recovery_journal.saga_history_immutable');
 END;
+
+-- Saga identity and deduplication keys are durable; they cannot be rewritten
+-- or erased even before the first step has been appended.
+CREATE TRIGGER operations_saga_identity_immutable
+BEFORE UPDATE OF operation_id,idempotency_key,created_at_ms ON operations
+WHEN OLD.operation_type IN ('evolution.candidate.evaluate',
+                            'evolution.candidate.activate',
+                            'evolution.candidate.rollback')
+  AND (
+    NEW.operation_id IS NOT OLD.operation_id
+    OR NEW.idempotency_key IS NOT OLD.idempotency_key
+    OR NEW.created_at_ms IS NOT OLD.created_at_ms
+  )
+BEGIN
+  SELECT RAISE(ABORT,'operations.saga_identity_immutable');
+END;
+
+CREATE TRIGGER operations_saga_no_delete
+BEFORE DELETE ON operations
+WHEN OLD.operation_type IN ('evolution.candidate.evaluate',
+                            'evolution.candidate.activate',
+                            'evolution.candidate.rollback')
+BEGIN
+  SELECT RAISE(ABORT,'operations.saga_history_immutable');
+END;
