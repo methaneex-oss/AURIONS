@@ -318,7 +318,7 @@ def worker_transition(
         raise HTTPException(status_code=422, detail="worker evidence is only valid when publishing candidate output")
     with connect() as conn, conn.cursor() as cur:
         cur.execute(
-            """SELECT state,lease_generation FROM wf_tasks
+            """SELECT state,lease_generation,attempt_count FROM wf_tasks
                  WHERE task_id=%s AND role=%s AND lease_worker=%s
                    AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                    AND lease_expires_at > now()
@@ -337,9 +337,9 @@ def worker_transition(
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         if body.target == TaskState.CANDIDATE_READY:
             cur.execute(
-                """INSERT INTO wf_task_evidence(task_id,stage,sha256,evidence_ref,actor)
-                   VALUES (%s,'WORKER_OUTPUT',%s,%s,%s)""",
-                (task_id, body.evidence_sha256.lower(), body.evidence_ref, worker.actor_id),
+                """INSERT INTO wf_task_evidence(task_id,stage,sha256,evidence_ref,actor,attempt_count)
+                   VALUES (%s,'WORKER_OUTPUT',%s,%s,%s,%s)""",
+                (task_id, body.evidence_sha256.lower(), body.evidence_ref, worker.actor_id, row["attempt_count"]),
             )
         cur.execute(
             """UPDATE wf_tasks SET state=%s,lease_worker=NULL,lease_token_hash=NULL,
@@ -374,7 +374,7 @@ def transition(
         if body.director_decision_ref:
             raise HTTPException(status_code=422, detail="Director decision reference is only valid for acceptance")
     with connect() as conn, conn.cursor() as cur:
-        cur.execute("SELECT state, (created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()) AS before_deadline FROM wf_tasks WHERE task_id=%s FOR UPDATE", (task_id,))
+        cur.execute("SELECT state,attempt_count, (created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()) AS before_deadline FROM wf_tasks WHERE task_id=%s FOR UPDATE", (task_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="task not found")
@@ -412,8 +412,8 @@ def transition(
             raise HTTPException(status_code=422, detail="Director evidence is only accepted with final acceptance")
         if principal.role == "director":
             cur.execute(
-                "SELECT sha256,evidence_ref FROM wf_task_evidence WHERE task_id=%s AND stage='INTEGRATED'",
-                (task_id,),
+                "SELECT sha256,evidence_ref FROM wf_task_evidence WHERE task_id=%s AND stage='INTEGRATED' AND attempt_count=%s",
+                (task_id, row["attempt_count"]),
             )
             integrated = cur.fetchone()
             if (not integrated or integrated["sha256"].strip().lower() != body.evidence_sha256.lower()
@@ -421,9 +421,9 @@ def transition(
                 raise HTTPException(status_code=409, detail="Director acceptance must reference the exact recorded integrated evidence")
         elif evidence_stage:
             cur.execute(
-                """INSERT INTO wf_task_evidence(task_id,stage,sha256,evidence_ref,actor)
-                   VALUES (%s,%s,%s,%s,%s)""",
-                (task_id, evidence_stage, body.evidence_sha256.lower(), body.evidence_ref, principal.actor_id),
+                """INSERT INTO wf_task_evidence(task_id,stage,sha256,evidence_ref,actor,attempt_count)
+                   VALUES (%s,%s,%s,%s,%s,%s)""",
+                (task_id, evidence_stage, body.evidence_sha256.lower(), body.evidence_ref, principal.actor_id, row["attempt_count"]),
             )
         try:
             validate_transition(current, body.target, director_decision=(principal.role == "director"))
