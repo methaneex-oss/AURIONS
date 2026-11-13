@@ -406,7 +406,15 @@ def transition(
         if body.director_decision_ref:
             raise HTTPException(status_code=422, detail="Director decision reference is only valid for acceptance")
     with connect() as conn, conn.cursor() as cur:
-        cur.execute("SELECT state,attempt_count, (wf_task_deadline(started_at, contract_json) > now()) AS before_deadline FROM wf_tasks WHERE task_id=%s FOR UPDATE", (task_id,))
+        cur.execute(
+            """SELECT state,attempt_count,
+                      CASE WHEN state IN ('CLAIMED','RUNNING','CHECKPOINTED')
+                           THEN wf_task_deadline(started_at, contract_json) > now()
+                           ELSE wf_task_absolute_deadline(contract_json) > now()
+                      END AS before_deadline
+                 FROM wf_tasks WHERE task_id=%s FOR UPDATE""",
+            (task_id,),
+        )
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="task not found")
