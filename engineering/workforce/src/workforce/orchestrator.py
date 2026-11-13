@@ -77,7 +77,7 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
     test_commands = value.get("test_commands", [])
     if not isinstance(test_commands, list) or len(test_commands) > 20:
         raise OrchestrationError("test_commands must be a list of at most 20 argument arrays")
-    allowed_commands = {"python", "python3", "pytest", "cmake", "ctest", "ninja", "cargo", "go", "dotnet"}
+    allowed_commands = {"python", "python3", "pytest", "cmake", "ctest", "ninja"}
     for command in test_commands:
         if (not isinstance(command, list) or not command or len(command) > 100
                 or not all(isinstance(arg, str) and arg and len(arg) <= 1024 for arg in command)):
@@ -93,8 +93,6 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
             raise OrchestrationError("CTest commands must specify --test-dir")
         if executable == "ninja" and (len(command) < 2 or command[1] != "-C"):
             raise OrchestrationError("Ninja commands must specify -C")
-        if executable in {"cargo", "go", "dotnet"} and (len(command) < 2 or command[1] != "test"):
-            raise OrchestrationError(f"{executable} commands must use the test subcommand")
         if any(re.search(r"(?:password|passwd|secret|token|api[_-]?key)", arg, re.IGNORECASE) for arg in command[1:]):
             raise OrchestrationError("test commands must not embed credentials or secret-like arguments")
     value["test_commands"] = test_commands
