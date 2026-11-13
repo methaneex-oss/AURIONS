@@ -1,0 +1,145 @@
+import json
+import os
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+from workforce.orchestrator import (
+    BUILDERS, ROLES, OrchestrationError, _task_contract, _worker_tokens,
+    validate_manifest, workspace_manifest,
+)
+
+
+def valid_manifest():
+    roles = {}
+    for role in ROLES:
+        paths = ["engineering/workforce/src/workforce"] if role == "lead_builder" else (
+            ["engineering/workforce/tests"] if role == "specialist_builder" else []
+        )
+        roles[role] = {
+            "task": f"Perform the {role} assignment with exact evidence.",
+            "permitted_paths": paths,
+            "context_files": [],
+            "max_model_calls": 2,
+            "max_tokens": 4000,
+            "max_completion_tokens": 1024,
+            "max_duration_minutes": 30,
+        }
+    return {
+        "work_package_id": "WF-ORCHESTRATOR-TEST",
+        "authorization_ref": "director-approved-test-001",
+        "objective": "Test the six-role orchestrator contract",
+        "base_commit_sha": "a" * 40,
+        "canonical_sources": ["workforce constitution"],
+        "acceptance_criteria": ["all six role records exist"],
+        "test_plan": ["orchestrator unit tests"],
+        "review_plan": ["independent review"],
+        "stop_conditions": ["budget exhausted"],
+        "roles": roles,
+    }
+
+
+class OrchestratorTests(unittest.TestCase):
+    def test_manifest_requires_exactly_six_roles(self):
+        value = valid_manifest()
+        del value["roles"]["negative_tester"]
+        with self.assertRaises(OrchestrationError):
+            validate_manifest(value)
+
+    def test_builder_write_scopes_must_be_disjoint(self):
+        value = valid_manifest()
+        value["roles"]["specialist_builder"]["permitted_paths"] = ["engineering/workforce"]
+        with self.assertRaisesRegex(OrchestrationError, "overlap"):
+            validate_manifest(value)
+
+    def test_reviewers_cannot_receive_write_allowlists(self):
+        value = valid_manifest()
+        value["roles"]["code_reviewer"]["permitted_paths"] = ["engineering/workforce/tests"]
+        with self.assertRaisesRegex(OrchestrationError, "read-only"):
+            validate_manifest(value)
+
+    def test_role_budgets_are_bounded(self):
+        value = valid_manifest()
+        value["roles"]["lead_builder"]["max_tokens"] = 200001
+        with self.assertRaisesRegex(OrchestrationError, "max_tokens"):
+            validate_manifest(value)
+
+    def test_manifest_generates_a_unique_run_id(self):
+        result = validate_manifest(valid_manifest())
+        self.assertRegex(result["run_id"], r"^[A-Za-z0-9_-]{1,32}$")
+
+    def test_task_contract_gives_read_only_roles_no_write_scope(self):
+        value = validate_manifest(valid_manifest())
+        contract = _task_contract(value, "code_reviewer")
+        self.assertEqual(contract["permitted_paths"], ["engineering/workforce"])
+        self.assertEqual(contract["max_tokens"], 4000)
+
+    def test_worker_registry_requires_one_strong_token_per_role(self):
+        registry = {
+            f"worker-{index}": {
+                "token": f"worker-token-{index}-" + ("x" * 40),
+                "role": role,
+            }
+            for index, role in enumerate(ROLES)
+        }
+        with patch.dict(os.environ, {"WORKFORCE_WORKER_CREDENTIALS_JSON": json.dumps(registry)}, clear=True):
+            result = _worker_tokens()
+        self.assertEqual(set(result), set(ROLES))
+
+    def test_worker_registry_rejects_missing_role(self):
+        registry = {
+            "worker-1": {"token": "x" * 40, "role": "lead_builder"},
+        }
+        with patch.dict(os.environ, {"WORKFORCE_WORKER_CREDENTIALS_JSON": json.dumps(registry)}, clear=True):
+            with self.assertRaisesRegex(OrchestrationError, "exactly one"):
+                _worker_tokens()
+
+    def test_workspace_manifest_hashes_only_scoped_candidate_files(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "engineering/workforce/src/workforce").mkdir(parents=True)
+            source = root / "engineering/workforce/src/workforce/example.py"
+            source.write_text("original = True\n", encoding="utf-8")
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Workforce Test"], cwd=root, check=True)
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "base"], cwd=root, check=True)
+            base = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True).stdout.strip()
+            source.write_text("original = False\n", encoding="utf-8")
+            (root / "engineering/workforce/tests").mkdir(parents=True)
+            (root / "engineering/workforce/tests/new_test.py").write_text("assert True\n", encoding="utf-8")
+            (root / ".workforce-artifacts").mkdir()
+            (root / ".workforce-artifacts/report.json").write_text("{}\n", encoding="utf-8")
+            records = workspace_manifest(
+                root, base,
+                ["engineering/workforce/src/workforce", "engineering/workforce/tests"],
+            )
+            self.assertEqual({record["path"] for record in records}, {
+                "engineering/workforce/src/workforce/example.py",
+                "engineering/workforce/tests/new_test.py",
+            })
+            self.assertTrue(all(record["sha256"] for record in records))
+
+    def test_workspace_manifest_rejects_out_of_scope_changes(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "engineering/workforce/src/workforce").mkdir(parents=True)
+            source = root / "engineering/workforce/src/workforce/example.py"
+            source.write_text("value = 1\n", encoding="utf-8")
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Workforce Test"], cwd=root, check=True)
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "base"], cwd=root, check=True)
+            base = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True).stdout.strip()
+            (root / "src").mkdir()
+            (root / "src/unauthorized.py").write_text("bad = True\n", encoding="utf-8")
+            with self.assertRaisesRegex(OrchestrationError, "outside builder write scopes"):
+                workspace_manifest(root, base, ["engineering/workforce/src/workforce"])
+
+
+if __name__ == "__main__":
+    unittest.main()
