@@ -491,8 +491,8 @@ def main() -> int:
     ingress_matrix_events = set(
         re.findall(r"`([a-z][a-z0-9_.]+\.v1)`", ingress_matrix)
     )
-    if len(non_command_events) != 23 or ingress_matrix_events != non_command_events:
-        fail("non-command event trigger matrix must exactly cover the 23 non-command/non-Action-Gateway events")
+    if len(non_command_events) != 22 or ingress_matrix_events != non_command_events:
+        fail("non-command event trigger matrix must exactly cover the 22 non-command/non-Action-Gateway events")
     ingress_rows = {}
     for line in ingress_matrix.splitlines():
         if not line.startswith("| `") or line.count("|") < 4:
