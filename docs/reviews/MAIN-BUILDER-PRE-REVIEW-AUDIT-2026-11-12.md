@@ -1256,3 +1256,13 @@ BR-004 remains OPEN. Event coverage gaps and remaining generic/missing scenario 
 - Added exact event references and extended the concrete-scenario validator gate to CM-014…CM-016.
 
 **Updated fixture inventory:** 39 scenarios, 248 ordered steps and 45 negative controls. Sixteen of 36 CM/AD rows are now concrete; 20 remain generic. CM-022…CM-029 remain absent. BR-004 remains OPEN; scenarios are design specifications, not executed runtime acceptance.
+
+
+## BR-004 — governed evolution rollback scenario and CI reconciliation — 2026-11-13
+
+- CM-017 was present in the latest branch state as a concrete governed evolution lifecycle scenario: proposal, evaluation, approval request/decision, activation, rollback, audit lookup and restart/replay.
+- Reconciled the scenario validator inventory from 248 to 255 ordered steps and added CM-017 to the concrete-scenario gate.
+- Reconciled the event registry for CM-017 approval, evolution proposal/evaluation, activation and rollback events.
+- Updated architecture and planning inventory references to 255 steps.
+
+The prior CI failure was an exact inventory mismatch (validator expected 248; fixture contained 255). The event-reference mismatches were separately identified and corrected. Awaiting CI verification. Runtime acceptance remains unproven.
