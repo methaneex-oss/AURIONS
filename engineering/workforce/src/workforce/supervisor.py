@@ -52,7 +52,7 @@ def recover_once(conn) -> dict[str, int]:
             UPDATE wf_tasks
                SET state='FAILED', lease_worker=NULL, lease_token_hash=NULL,
                    lease_expires_at=NULL, retry_after=NULL, updated_at=now()
-             WHERE state IN ('QUEUED','RETRY_WAIT','CLAIMED','RUNNING','CHECKPOINTED')
+             WHERE state IN ('QUEUED','RETRY_WAIT','CLAIMED','RUNNING','CHECKPOINTED','CANDIDATE_READY','TESTING','REVIEWING','INTEGRATION','AWAITING_DIRECTOR','BLOCKED')
                AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) <= now()
             RETURNING task_id
         """)
