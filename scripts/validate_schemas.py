@@ -135,13 +135,15 @@ def main() -> int:
             "aurion_memory.base.sql", "aurion_memory.migration_v2.sql",
             "aurion_memory.migration_v3.sql", "aurion_memory.migration_v4.sql",
             "aurion_memory.migration_v5.sql", "aurion_memory.migration_v6.sql",
+            "aurion_memory.migration_v7.sql",
         ],
         "aurion_events.db": [
             "aurion_events.base.sql", "aurion_events.migration_v2.sql",
-            "aurion_events.migration_v3.sql",
+            "aurion_events.migration_v3.sql", "aurion_events.migration_v4.sql",
         ],
         "aurion_governance.db": [
             "aurion_governance.base.sql", "aurion_governance.migration_v2.sql",
+            "aurion_governance.migration_v3.sql", "aurion_governance.migration_v4.sql",
         ],
     }
     store_tables = {}
