@@ -205,7 +205,14 @@ class Worker:
                 [sys.executable, "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
             ]
             outputs = []
-            env = {**os.environ, "PYTHONPATH": str(self.workspace / "engineering/workforce/src")}
+            # Repository tests are untrusted code. Never pass provider, control-plane,
+            # database, cloud, or Director credentials into their subprocess.
+            env = {
+                "PATH": os.environ.get("PATH", ""),
+                "PYTHONPATH": str(self.workspace / "engineering/workforce/src"),
+                "PYTHONDONTWRITEBYTECODE": "1",
+                "CI": "1",
+            }
             for command in commands:
                 remaining = self.remaining_seconds()
                 if remaining <= 0:
