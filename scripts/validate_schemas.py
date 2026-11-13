@@ -1040,7 +1040,7 @@ def main() -> int:
 
     matrix_path = ROOT / "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md"
     error_matrix_text = matrix_path.read_text(encoding="utf-8")
-    handler_headings = set(re.findall(r"^### (EH-\\d{3})$", error_matrix_text, flags=re.MULTILINE))
+    handler_headings = set(re.findall(r"^### (EH-\d{3})$", error_matrix_text, flags=re.MULTILINE))
     matrix_rows = {}
     for line_number, line in enumerate(
         matrix_path.read_text(encoding="utf-8").splitlines(), start=1
