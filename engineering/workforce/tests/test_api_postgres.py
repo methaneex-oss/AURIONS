@@ -14,8 +14,8 @@ from workforce.api import app
 DB = os.environ.get("DATABASE_URL", "")
 DIRECTOR = os.environ.get("DIRECTOR_APPROVAL_TOKEN", "")
 ORCHESTRATOR = os.environ.get("WORKFORCE_ORCHESTRATOR_TOKEN", "")
-BUILDER = "test-builder-token"
-REVIEWER = "test-reviewer-token"
+BUILDER = "b" * 40
+REVIEWER = "r" * 40
 
 
 def contract():
