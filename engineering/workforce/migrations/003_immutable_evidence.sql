@@ -6,8 +6,9 @@ CREATE TABLE IF NOT EXISTS wf_task_evidence (
     sha256 char(64) NOT NULL CHECK (sha256 ~ '^[0-9a-fA-F]{64}$'),
     evidence_ref text NOT NULL CHECK (length(evidence_ref) BETWEEN 1 AND 512),
     actor text NOT NULL,
+    attempt_count integer NOT NULL DEFAULT 1 CHECK (attempt_count > 0),
     created_at timestamptz NOT NULL DEFAULT now(),
-    UNIQUE(task_id, stage)
+    UNIQUE(task_id, stage, attempt_count)
 );
 CREATE INDEX IF NOT EXISTS wf_task_evidence_task_created_idx
     ON wf_task_evidence(task_id, created_at DESC);
