@@ -558,3 +558,19 @@ Added `docs/planning/QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md` after s
 The static scan found **62 result fields across 16 queries** with no direct, `_json`, or `_ms` candidate column in the declared tables. Highest-risk gaps include environment observation provenance/content, memory retrieval receipt persistence, attention event-payload projection, permission/audit result semantics, representation method/source lineage, prediction conditions/confidence/evidence, and interaction deadline/execution binding. Thirteen queries had no field lacking a name-based candidate, but none has an executed, field-by-field SELECT/alias/join/owner-scope/redaction proof.
 
 **Evidence boundary:** Candidate column-name matching is not a correct projection. The exact source table per field, JSON pointer, join, alias, conversion, nullability, owner filter, redaction, consistency snapshot, cursor and resource bounds remain unresolved. BR-002 remains OPEN; no query is dispatchable. The new validator and report require exact-head CI before this increment can be marked structurally validated.
+
+## BR-005 / BR-008 builder increment — objective/goal lineage and same-owner outcome integrity (2026-11-13)
+
+The semantic reconciliation found that `goal.create` and `goal.revise` required an exact objective revision in prose, but the `goalRevision` request/result schema and `goal_revisions` DDL did not persist that relationship. The `goal.get` acceptance assertion promised objective lineage that the storage model could not return. The interaction outcome table also lacked a same-owner foreign key to its interaction proposal.
+
+Corrections:
+- Added memory migration v6 with `goal_revision_objective_bindings`, a composite FK to the exact `objective_records(objective_id,version,owner_ref)` row, and a trigger rejecting new goal revisions without a binding.
+- Extended `goalRevision` schema and its positive fixture with `objective_id` and `objective_version`; updated goal create/revise/cancel bindings and `goal.get` projection bindings/acceptance assertions.
+- Defined legacy goal revisions without a binding as unbound; they must not be silently assigned an objective or surfaced as valid derived goals before explicit reconciliation.
+- Added a composite owner-scoped FK from `interaction_outcomes(interaction_ref,owner_ref)` to `interaction_proposals(interaction_id,owner_ref)`, with a matching unique parent key.
+- Extended host SQLite tests for valid goal/objective binding, missing-binding rejection, cross-owner objective rejection, valid same-owner interaction outcome and rejection of missing/cross-owner interaction references.
+- Updated query projection reconciliation and PR-06 acceptance traceability for the newly persisted objective lineage.
+
+**Verification:** Code-bearing exact PR head `4fe74e09c5d3bbc4d9c03a35e707926bdf9c4b77` passed all nine workflow steps in [run 43383148511](https://github.com/methaneex-oss/AURIONS/actions/runs/43383148511), including schema/fixture validation, governance, owner/WP/acceptance traceability, all eleven ordered SQLite DDL files and migration-specific rollback/reference probes, and Android probe shell syntax. Subsequent changes to the persistence README and owner-decision evidence table are documentation-only.
+
+**Evidence boundary:** This does not implement goal handlers, query SQL, owner-scope middleware or legacy-goal reconciliation at runtime. It does not prove target Android/Termux behaviour or crash/power-loss safety. BR-005 remains PARTIALLY CLOSED; BR-008 remains OPEN.
