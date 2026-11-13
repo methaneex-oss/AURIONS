@@ -1055,3 +1055,25 @@ Added per-command parity checks for all 54 rows:
 **Exact code head:** \`3267cc744225d33ae90b4c97732262049bf368be\`. [Workflow 43432722355](https://github.com/methaneex-oss/AURIONS/actions/runs/43432722355) passed all nine steps.
 
 **Evidence boundary:** This closes registry-to-transaction-matrix structural parity only. It does not prove runtime transactions, outbox relay, saga execution, command handlers or acceptance-case behaviour. All mapped commands remain design-only/non-dispatchable.
+
+
+
+## BR-008 — event producer inventory narrative parity — 2026-11-13
+
+A direct crosswalk at the current registry revision found that the machine-readable event inventory and producer-trigger matrices agree, but current narrative summaries had not been reconciled after `approval.decided.v1` gained its command producer.
+
+**Verified inventory:**
+- Event registry: 89 events total; 52 have one or more command producers; 37 have no command producer binding.
+- Action Gateway lifecycle transition matrix: 15 events.
+- Non-command ingress/internal producer matrix: 22 events.
+- The two trigger matrices contain exactly the 37 registry events without command producers: zero missing IDs, zero extra IDs and zero duplicate IDs.
+
+**Corrections:**
+- Reconciled current counts in the event producer/consumer matrix, semantic architecture reconciliation report and planning completion register to 52/37/15/22.
+- Reconciled the current command inventory in the completion register to 54 total (52 mapped, two deferred).
+- Preserved historical append-only audit entries as historical evidence; they were not rewritten.
+- Added a registry-derived narrative parity guard to `scripts/validate_schemas.py`. It checks current summary sections against the registry and deliberately excludes historical audit entries.
+
+**Verification:** Exact event-summary guard revision `0fe0e43c747d98e991ecb43aecfcfa1e4a4a3c9f` passed [workflow 43433290439](https://github.com/methaneex-oss/AURIONS/actions/runs/43433290439), all nine steps. The subsequent validator catalogue-reference matcher correction at exact HEAD `8e9b557df9ffc27565d4604776aef78787f98b37` passed [workflow 43433453662](https://github.com/methaneex-oss/AURIONS/actions/runs/43433453662), all nine steps, retaining the event-summary guard.
+
+**Evidence boundary:** This closes registry/matrix count parity and current narrative consistency only. It does not complete semantic review of the 89 consumer/owner-transition contracts, owner acceptance of the non-command trigger specifications, runtime handler/consumer implementation, executable event behaviour or dispatch authorization. BR-008 remains OPEN; implementation remains unauthorized.
