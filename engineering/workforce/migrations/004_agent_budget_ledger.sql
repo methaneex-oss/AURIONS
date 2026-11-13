@@ -29,3 +29,32 @@ CREATE TABLE IF NOT EXISTS wf_budget_reservations (
 );
 CREATE INDEX IF NOT EXISTS wf_budget_reservations_task_state_idx
     ON wf_budget_reservations(task_id, state, created_at);
+
+CREATE OR REPLACE FUNCTION wf_create_agent_budget() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+    existing wf_agent_budgets%ROWTYPE;
+BEGIN
+    INSERT INTO wf_agent_budgets(work_package_id,role,max_model_calls,max_tokens)
+    VALUES (
+        NEW.contract_json->>'work_package_id',
+        NEW.role,
+        (NEW.contract_json->>'max_model_calls')::int,
+        (NEW.contract_json->>'max_tokens')::bigint
+    )
+    ON CONFLICT (work_package_id,role) DO NOTHING;
+
+    SELECT * INTO existing FROM wf_agent_budgets
+     WHERE work_package_id=NEW.contract_json->>'work_package_id' AND role=NEW.role FOR UPDATE;
+
+    IF existing.max_model_calls <> (NEW.contract_json->>'max_model_calls')::int
+       OR existing.max_tokens <> (NEW.contract_json->>'max_tokens')::bigint THEN
+        RAISE EXCEPTION 'work-package role budget ceilings must remain identical';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS wf_task_create_agent_budget ON wf_tasks;
+CREATE TRIGGER wf_task_create_agent_budget
+AFTER INSERT ON wf_tasks
+FOR EACH ROW EXECUTE FUNCTION wf_create_agent_budget();
