@@ -52,14 +52,18 @@ def authenticate_worker(token: str | None) -> Principal:
     if not isinstance(credentials, dict) or not credentials:
         raise AuthenticationError("worker credential registry is empty or invalid")
     matched: Principal | None = None
-    # Compare every configured token to avoid leaking which worker ID matched.
+    seen_tokens: set[str] = set()
+    # Reject ambiguous registries and compare every configured token.
     for worker_id, entry in credentials.items():
         if not isinstance(worker_id, str) or not isinstance(entry, dict):
             raise AuthenticationError("worker credential registry has an invalid entry")
         expected = entry.get("token")
         role = entry.get("role")
-        if not isinstance(expected, str) or not expected or role not in ROLES:
+        if not isinstance(expected, str) or not expected or role not in ROLES or not worker_id:
             raise AuthenticationError("worker credential registry has an invalid entry")
+        if expected in seen_tokens:
+            raise AuthenticationError("worker credential registry contains duplicate tokens")
+        seen_tokens.add(expected)
         if hmac.compare_digest(expected, token):
             matched = Principal(worker_id, role)
     if matched is None:
