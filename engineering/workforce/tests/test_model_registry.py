@@ -95,7 +95,7 @@ class ModelRegistryTests(unittest.TestCase):
         self.assertFalse(is_sensitive_path(Path("docs/workforce/constitution.md")))
 
     def test_yaml_duplicate_registry_is_removed(self):
-        self.assertFalse((Path(__file__).resolve().parents[3] / "model_registry.yaml").exists())
+        self.assertFalse((Path(__file__).resolve().parents[1] / "model_registry.yaml").exists())
 
 
 if __name__ == "__main__":
