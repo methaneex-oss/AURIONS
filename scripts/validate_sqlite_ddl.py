@@ -193,6 +193,7 @@ def test_memory() -> None:
             raise
     else:
         raise AssertionError("memory: new goal revision without objective binding was accepted")
+    db.rollback()
 
     # A binding that crosses owner scope fails its deferred composite FK at commit.
     cross_owner_goal_id = bytes([13]) * 16
