@@ -1,7 +1,7 @@
 # AURIONS — Owner Decision Traceability Matrix
 
 - **Status:** Builder traceability baseline; IN PROGRESS pending complete repository audit and owner review.
-- **Authority:** Section 3 and operational-authority sections of [Initial Engineering Specification](INITIAL-ENGINEERING-SPECIFICATION.md). That source remains authoritative.
+- **Authority:** Section 3 and operational-authority sections of [Initial Engineering Specification](INITIAL-ENGINEERING-SPECIFICATION.md), plus the explicit first-release owner decisions and unresolved gates in [First Usable Release Definition](../product/FIRST-USABLE-RELEASE-DEFINITION.md) §8. Those sources remain authoritative.
 - **Purpose:** Prove that owner decisions are reflected in architecture, contracts, roadmap and acceptance criteria without converting engineering proposals into owner decisions.
 - **Evidence rule:** A reference to a document is not proof of implementation or validation. All rows below are currently **SPECIFIED** unless a separate test/review result is explicitly cited.
 
@@ -63,7 +63,17 @@
 | Contextual sharing/private information | Data minimization, explicit approval for sensitive external disclosure, provider scope and durable disclosure audit. | R3/R4 policy; AU tests; disclosure audit | SPECIFIED. Actual egress enforcement and penetration tests outstanding. |
 | 30-day historical-backup expiry | Immediate active deletion, index/reference cleanup, tombstones, exclusion from future backups and historical expiry within 30 days. | ART and SY deletion tests; retention job schema | SPECIFIED. Execution and restore tests outstanding. |
 
-## 5. Traceability limitations and completion rule
+## 5. First-release product decisions and explicit owner gates
+
+| Owner decision / gate | Authoritative source | Architectural disposition | Contract / acceptance trace | Status / remaining gap |
+|---|---|---|---|---|
+| First user-facing interface: **CLI** | First Usable Release Definition §8.1 | CLI is the first user-facing interface, not merely a debug tool. Native Android UI is not selected. | PR-01, PR-02; WP-15; CLI application contract | OWNER DECISION SPECIFIED. CLI runtime/context and process topology remain engineering validation details; no native UI choice is inferred. |
+| Concurrent first-release deployment: **cloud and offline-capable mobile** | First Usable Release Definition §8.2 | Both are first-class concurrent targets using the same authoritative cognitive-core implementation and shared versioned contracts. Offline mobile must remain useful without cloud. | PR-15…PR-18; WP-15 | OWNER DECISION SPECIFIED. Target-platform build/runtime/resource validation remains open. |
+| Cross-context cognitive-history continuity | First Usable Release Definition §8.2 and §8.7 | Shared core/contracts do not imply shared mutable state. Selective synchronization (Option B) and separate histories/no sync (Option A) remain distinct architectures. | PR-16, PR-18; WP-02, WP-15; topology decision record | **UNRESOLVED OWNER DECISION.** No sync topology may be implemented or assumed until the owner selects/approves it. |
+| First permitted Android local action | First Usable Release Definition §8.3 and PR-07 | General objective-led interaction model is platform-independent; Android OS permission and gateway are one realization. Example actions are illustrative only. | PR-07; INT-003; AD-001…AD-015; WP-11, WP-15 | **UNRESOLVED OWNER DECISION.** The builder must not select the action or treat examples as authorization. |
+| Approval of the first-release product definition | First Usable Release Definition §9 | Product acceptance conditions PR-01…PR-18 become the release gate only after owner approval. | PR-01…PR-18; WP-15 | **PENDING OWNER APPROVAL.** A traceability matrix or builder correction does not approve the product proposal or authorize implementation. |
+
+## 6. Traceability limitations and completion rule
 
 - This matrix maps the current documented owner decisions; it does not authorize changes to them.
 - Engineering details in architecture/contracts remain proposals until owner approval where they materially affect product behaviour, privacy, authority or release scope.
