@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import subprocess
@@ -304,6 +305,38 @@ class OrchestratorTests(unittest.TestCase):
                     network="internal-test-network",
                     timeout=30,
                 )
+
+    def test_evidence_digest_verification_detects_tampering(self):
+        from workforce.orchestrator import _verify_artifact_digest
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            artifact = root / "report.json"
+            artifact.write_text('{"status":"ok"}', encoding="utf-8")
+            digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+            verified = _verify_artifact_digest(root, "report.json", digest)
+            self.assertTrue(verified["verified"])
+            artifact.write_text('{"status":"altered"}', encoding="utf-8")
+            with self.assertRaisesRegex(OrchestrationError, "digest mismatch"):
+                _verify_artifact_digest(root, "report.json", digest)
+
+    def test_candidate_file_verification_detects_post_snapshot_changes(self):
+        from workforce.orchestrator import _verify_candidate_files
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            candidate = root / "src/example.py"
+            candidate.parent.mkdir()
+            candidate.write_text("value = 1\n", encoding="utf-8")
+            raw = candidate.read_bytes()
+            records = [{
+                "path": "src/example.py",
+                "status": "present",
+                "bytes": len(raw),
+                "sha256": hashlib.sha256(raw).hexdigest(),
+            }]
+            self.assertTrue(_verify_candidate_files(root, records)[0]["verified"])
+            candidate.write_text("value = 2\n", encoding="utf-8")
+            with self.assertRaisesRegex(OrchestrationError, "changed after snapshot"):
+                _verify_candidate_files(root, records)
 
     def test_workspace_manifest_hashes_only_scoped_candidate_files(self):
         with tempfile.TemporaryDirectory() as temp:
