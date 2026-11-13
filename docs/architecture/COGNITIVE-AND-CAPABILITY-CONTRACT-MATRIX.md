@@ -232,7 +232,7 @@ This section makes the architecture scenario IDs individually traceable to the e
 ### 8.3 Evidence boundary
 
 - The existing `schemas/fixtures/domain-payloads.fixture.json` remains payload-shape coverage only; it does not prove scenario sequences or durable-state assertions.
-- Added `schemas/scenario-contracts.v1.schema.json` and `schemas/fixtures/scenario-contracts.fixture.json` with 39 scenario specifications (INT-001…INT-003, CM-001…CM-021 and AD-001…AD-015), 192 ordered steps and 45 negative controls, restart/replay, concurrency, fault and held-out controls. CI validates the fixture schema and its command/query/event references.
+- Added `schemas/scenario-contracts.v1.schema.json` and `schemas/fixtures/scenario-contracts.fixture.json` with 39 scenario specifications (INT-001…INT-003, CM-001…CM-021 and AD-001…AD-015), 208 ordered steps and 45 negative controls, restart/replay, concurrency, fault and held-out controls. CI validates the fixture schema and its command/query/event references.
 - These are machine-readable test specifications, **not executed runtime tests**. No AURIONS runtime scenario runner or production handler exists in this planning branch. All 21 CM and 15 AD scenario IDs now have individual fixture entries. The fixtures remain design specifications; they are not executed runtime tests.
 - Implementation packages must execute the scenarios with isolated stores and deterministic fakes, then record exact code revision, fixture hash, toolchain, environment, durable-state snapshots and results. A scenario may be marked VALIDATED only from a reproducible run against implementation. This matrix remains **SPECIFIED**, not validated.
 
