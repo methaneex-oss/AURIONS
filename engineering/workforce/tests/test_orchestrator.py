@@ -56,6 +56,9 @@ class OrchestratorTests(unittest.TestCase):
         value["test_commands"] = [["python", "arbitrary_script.py"]]
         with self.assertRaisesRegex(OrchestrationError, "Python test commands"):
             validate_manifest(value)
+        value["test_commands"] = [["/usr/bin/python", "-m", "unittest"]]
+        with self.assertRaisesRegex(OrchestrationError, "not allowed"):
+            validate_manifest(value)
 
     def test_manifest_accepts_explicit_cmake_and_ctest_commands(self):
         value = valid_manifest()
@@ -84,6 +87,12 @@ class OrchestratorTests(unittest.TestCase):
             self.assertTrue((target / "engineering/workforce/src/module.py").is_file())
             self.assertFalse((target / "core/cpp/api_key.json").exists())
             self.assertFalse((target / "core/cpp/.env.production").exists())
+
+    def test_manifest_rejects_non_string_base_sha(self):
+        value = valid_manifest()
+        value["base_commit_sha"] = ["a" * 40]
+        with self.assertRaisesRegex(OrchestrationError, "full Git SHA"):
+            validate_manifest(value)
 
     def test_manifest_rejects_unfilled_placeholders(self):
         value = valid_manifest()
