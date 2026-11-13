@@ -893,3 +893,18 @@ Thirteen queries have no fields missing by the direct/JSON/timestamp name scan, 
 **Verification:** Exact PR head `d134a24d35de1c576d3009372cdebbba2f421fd9` passed all nine steps in [workflow 43429463257](https://github.com/methaneex-oss/AURIONS/actions/runs/43429463257), including schema/fixture validation, mandatory governance integrity, work-package traceability, execution of all ordered SQLite DDL migrations with the new positive/negative saga probes, and Android probe shell syntax.
 
 **Evidence boundary:** This closes a bounded host-SQLite schema-integrity subtask only. It does not implement the saga coordinator/runner, local outbox relay, inbox deduplication, cross-store recovery worker, or prove crash/power-loss/target-device behaviour. The migration remains proposed DDL. BR-005 remains PARTIALLY CLOSED; BR-008 remains OPEN. No command/event is made dispatchable and no runtime implementation authority is inferred.
+
+
+## Follow-on saga-ledger hardening — append-only recovery and operation identity (2026-11-13)
+
+Further review of the v6 saga DDL found two additional history-integrity gaps: recovery-journal rows could be deleted, and a saga operation's idempotency key/creation identity could be rewritten or the operation deleted before child rows existed.
+
+Corrections:
+- Added `recovery_journal_saga_no_delete` so saga recovery evidence is append-only.
+- Added `operations_saga_identity_immutable` to protect operation ID, idempotency key and creation timestamp.
+- Added `operations_saga_no_delete` so a saga operation cannot be erased before step/journal creation.
+- Added negative SQLite tests for recovery-journal deletion, idempotency-key rewrite and operation deletion.
+
+**Exact final code revision:** `dfdf7b8fa85445a58fa2bd7526514bfbf58de688`. GitHub Actions [run 43429848541](https://github.com/methaneex-oss/AURIONS/actions/runs/43429848541) passed all nine workflow steps. The SQLite log explicitly confirms all three stores and seventeen ordered DDL files executed on SQLite 3.46.1, foreign-key/integrity checks passed, and memory v4-v7, event v3-v6 and governance v2-v4 smoke invariants passed.
+
+**Limit:** This is host SQLite structural verification only. It does not prove runtime saga coordination, cross-store crash recovery, concurrency, Android/Termux compatibility or provider behaviour. Saga commands remain design-only/non-dispatchable.
