@@ -381,7 +381,7 @@ This reconciliation is deliberately conservative:
 - `decision` → governance_audit.decision
 - `policy_version_ref` → governance_audit.policy_version_ref; data_disclosures.policy_version_ref
 - `operation_id` → governance_audit.operation_id
-- `approval_ref` → governance_audit.request_id joined to approval_requests.request_id when present
+- `approval_ref` → governance_audit.request_id; approval_requests.request_id joined only with approval_requests.owner_ref = authenticated owner_id
 - `evidence_refs` → governance_audit.evidence_refs_json (JSON decode; legacy NULL rows excluded)
 - `occurred_at` → governance_audit.occurred_at_ms (timestamp conversion)
 - `correlation_id` → governance_audit.correlation_id (legacy NULL rows excluded)
