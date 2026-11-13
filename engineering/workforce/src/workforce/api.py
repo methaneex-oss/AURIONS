@@ -273,7 +273,7 @@ def checkpoint(
 @app.get("/v1/tasks/{task_id}/checkpoints/latest")
 def latest_checkpoint(
     task_id: str,
-    lease_token: str,
+    lease_token: str = Header(..., alias="X-Worker-Lease-Token"),
     x_worker_token: str | None = Header(default=None, alias="X-Worker-Token"),
 ):
     worker = _auth(authenticate_worker, x_worker_token)
