@@ -50,7 +50,7 @@ jobs:
         run: python -m pip install -r engineering/workforce/requirements.txt
       - name: Generate ephemeral test-only actor credentials
         run: |
-          python - <<'PY' >> "$GITHUB_ENV"
+          python - <<'PY'
           import json
           import secrets
           director = secrets.token_urlsafe(32)
@@ -61,12 +61,13 @@ jobs:
           print("::add-mask::" + orchestrator)
           print("::add-mask::" + builder)
           print("::add-mask::" + reviewer)
-          print("DIRECTOR_APPROVAL_TOKEN=" + director)
-          print("WORKFORCE_ORCHESTRATOR_TOKEN=" + orchestrator)
-          print("WORKFORCE_WORKER_CREDENTIALS_JSON=" + json.dumps({
-              "builder-01": {"token": builder, "role": "lead_builder"},
-              "reviewer-01": {"token": reviewer, "role": "code_reviewer"},
-          }))
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write("DIRECTOR_APPROVAL_TOKEN=" + director + "\\n")
+              env_file.write("WORKFORCE_ORCHESTRATOR_TOKEN=" + orchestrator + "\\n")
+              env_file.write("WORKFORCE_WORKER_CREDENTIALS_JSON=" + json.dumps({
+                  "builder-01": {"token": builder, "role": "lead_builder"},
+                  "reviewer-01": {"token": reviewer, "role": "code_reviewer"},
+              }) + "\\n")
           PY
       - name: Apply database migrations
         run: |
