@@ -58,6 +58,21 @@ class DomainTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             TaskContract.from_dict(value)
 
+    def test_contract_rejects_budget_values_above_hard_ceilings(self):
+        base = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
+            "base_commit_sha": "a" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"],
+        }
+        for field, value in (("max_model_calls", 101), ("max_tokens", 200001), ("max_duration_minutes", 361)):
+            contract = dict(base)
+            contract[field] = value
+            with self.subTest(field=field), self.assertRaisesRegex(ContractError, field):
+                TaskContract.from_dict(contract)
+
     def test_contract_rejects_unknown_fields(self):
         value = {
             "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
