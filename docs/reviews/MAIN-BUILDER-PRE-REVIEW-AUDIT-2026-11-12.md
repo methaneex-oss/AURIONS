@@ -1244,3 +1244,15 @@ BR-004 remains OPEN. Event coverage gaps and remaining generic/missing scenario 
 - Extended exact command/query/event validation and the concrete-scenario gate to CM-011…CM-013.
 
 **Updated fixture inventory:** 39 scenarios, 240 ordered steps and 45 negative controls. Thirteen of 36 CM/AD rows are now concrete; 23 remain generic. CM-022…CM-029 remain absent. BR-004 remains OPEN; these are design-level specifications, not executed runtime acceptance.
+
+
+
+## BR-004 — capability and self-model scenario expansion — 2026-11-13
+
+**Batch 6 completed:**
+- CM-014 now specifies evidence-scoped capability-knowledge revision after failure, preserving contradictory evidence and preventing universal prohibition.
+- CM-015 now specifies that one successful outcome cannot create universal competence, permission or owner authority; the independent gateway still evaluates the exact target/effect.
+- CM-016 now specifies self-model calibration against a scope-matched measured outcome sample, frozen calibration protocol, authorized acceptance and audit lineage.
+- Added exact event references and extended the concrete-scenario validator gate to CM-014…CM-016.
+
+**Updated fixture inventory:** 39 scenarios, 248 ordered steps and 45 negative controls. Sixteen of 36 CM/AD rows are now concrete; 20 remain generic. CM-022…CM-029 remain absent. BR-004 remains OPEN; scenarios are design specifications, not executed runtime acceptance.
