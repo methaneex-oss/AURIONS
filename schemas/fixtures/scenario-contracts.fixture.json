@@ -2666,7 +2666,7 @@
     },
     {
       "scenario_id": "CM-011",
-      "title": "CM-011 — canonical scenario acceptance probe",
+      "title": "CM-011 — learning updates retain complete evidence and evaluation lineage",
       "purpose": "Update links hypothesis, scope, evidence, frozen baseline, evaluation, regression and rollback artifacts.",
       "source_scenario_ids": [
         "CM-011"
@@ -2680,9 +2680,9 @@
         "catalogue:DB-015"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: learningUpdate, learningExperimentRequest, artifactManifest, learningExperimentCompleted.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Freeze a baseline artifact, dataset manifest, protocol version, scoring procedure, regression suite and deterministic random seed.",
+        "Prepare a learning hypothesis with explicit target mechanism, update kind, scope and evidence references.",
+        "Prepare a candidate artifact and immutable experiment manifest; worker isolation excludes production keys, live database credentials and activation authority."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -2694,87 +2694,137 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize the frozen baseline, hypothesis, scope, evidence, candidate artifact and regression/evaluation manifests.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed the experiment inputs and immutable hashes only; no learning update or worker job is committed."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "Baseline, dataset, protocol, regression suite and seed are frozen before candidate evaluation; candidate and baseline artifact hashes are distinct."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Update links hypothesis, scope, evidence, frozen baseline, evaluation, regression and rollback artifacts.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Propose a learning update with exact target mechanism, scope, hypothesis and evidence lineage.",
+          "contract_action": "command:learning.update.propose",
           "expected_transitions": [
-            "Update links hypothesis, scope, evidence, frozen baseline, evaluation, regression and rollback artifacts."
+            "Append the learning update proposal without changing active behaviour or capability state."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "learning.update.proposed.v1"
+          ],
           "durable_assertions": [
-            "Update links hypothesis, scope, evidence, frozen baseline, evaluation, regression and rollback artifacts.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The proposal links hypothesis, scope, evidence, baseline artifact, candidate artifact, evaluation protocol and regression artifacts; active state remains unchanged."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Submit the bounded learning experiment using the frozen baseline, dataset, protocol, seed and resource budget.",
+          "contract_action": "command:learning.experiment.submit",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append one worker job request with isolated inputs, bounded resources and a deadline."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "worker.job.requested.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "The worker request carries exact immutable references; worker has no production keys, live database credentials or activation authority."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Observe worker completion and learning-supervisor verification of the completed experiment manifest.",
+          "contract_action": "fake:scenario.observe_worker_completion",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Persist worker completion as quarantined output, then append the learning experiment completion transition after manifest validation."
+          ],
+          "expected_events": [
+            "worker.job.completed.v1",
+            "learning.experiment.completed.v1"
+          ],
+          "durable_assertions": [
+            "Completion records code revision, data/artifact hashes, environment, seed, metrics, regression results and status; completion alone does not accept or activate the candidate."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Evaluate the candidate against the frozen baseline and declared regression protocol.",
+          "contract_action": "command:learning.candidate.evaluate",
+          "expected_transitions": [
+            "Append a candidate evaluation tied to exact baseline, candidate, dataset, protocol and regression-suite revisions."
+          ],
+          "expected_events": [
+            "learning.candidate.evaluated.v1"
+          ],
+          "durable_assertions": [
+            "Evaluation reports repeated seeded comparisons, sample size/confidence and critical regressions; incomplete evidence is not a pass; active behaviour remains unchanged."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Inspect the current capability-knowledge state after candidate evaluation.",
+          "contract_action": "query:capability.knowledge.inspect",
+          "expected_transitions": [
+            "Return current active capability knowledge and revision lineage without mutation."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The evaluated candidate remains quarantined; active capability knowledge is unchanged until a separate acceptance/activation transition."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Attempt evaluation with a missing protocol, altered baseline hash or incomplete regression manifest.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Return not-evaluated/rejected or an explicit validation error; do not treat missing evidence as a pass."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No candidate acceptance, active pointer change or capability grant occurs; frozen baseline and original artifacts remain unchanged."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Restart and replay the proposal, worker and evaluation receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover the learning update, quarantined artifacts and evaluation lineage without rerunning or duplicating completed work."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Baseline, candidate, experiment and regression artifacts remain linked after restart; no candidate is activated by replay."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-011-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Submit a learning candidate evaluation with missing evaluation protocol, changed baseline digest, missing regression results or unverified worker artifact.",
+          "expected_disposition": "Return not-evaluated/rejected; do not infer success from training loss or worker completion.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Frozen baseline and dataset/protocol hashes",
+            "Active memory/capability/strategy state",
+            "Candidate acceptance/activation state and audit history"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay learning.update.propose and learning.experiment.submit receipts; no duplicate proposal or worker job is created.",
+        "After restart, completed worker output remains quarantined and evaluation references the exact frozen baseline/protocol/artifacts."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race baseline revision changes against candidate evaluation; reject stale baseline/protocol references.",
+        "Race duplicate experiment submissions with the same idempotency identity; return one job request and one immutable receipt."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Crash after worker completion but before supervisor manifest verification; output remains quarantined and can be revalidated.",
+        "Crash during candidate evaluation; resume/retry with the same evaluation identity without mutating the baseline or activating the candidate."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Change the dataset manifest after experiment submission; reject evaluation against the changed data identity.",
+        "Use a worker result with missing code revision or artifact hash; do not accept the candidate."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
@@ -2792,7 +2842,7 @@
     },
     {
       "scenario_id": "CM-012",
-      "title": "CM-012 — canonical scenario acceptance probe",
+      "title": "CM-012 — accepted learning update changes a later task only after governed activation",
       "purpose": "Accepted update persists across restart and changes a later related task under the declared evaluation protocol.",
       "source_scenario_ids": [
         "CM-012"
@@ -2806,9 +2856,9 @@
         "catalogue:LE-005…LE-007"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: learningUpdate, artifactManifest, planRevision.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Freeze a baseline strategy artifact, related-task plan revision, evaluation protocol and regression suite.",
+        "Prepare one evidence-backed learning update and candidate artifact with exact source/hypothesis/scope references.",
+        "Prepare an owner/governance approval path for the exact evolution candidate; no activation approval exists initially."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -2820,87 +2870,235 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize the frozen active strategy, related-task plan, learning hypothesis, candidate artifact and approval inputs.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed baseline and candidate inputs only; active strategy and plan remain on the baseline."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "Baseline artifact and current plan revision are immutable and hash-identified; no learning update or approval exists."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Accepted update persists across restart and changes a later related task under the declared evaluation protocol.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Propose the learning update with exact scope, hypothesis, evidence and evaluation protocol.",
+          "contract_action": "command:learning.update.propose",
           "expected_transitions": [
-            "Accepted update persists across restart and changes a later related task under the declared evaluation protocol."
+            "Append the learning update proposal; active strategy remains unchanged."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "learning.update.proposed.v1"
+          ],
           "durable_assertions": [
-            "Accepted update persists across restart and changes a later related task under the declared evaluation protocol.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The update links the frozen baseline, candidate artifact, evidence and evaluation protocol; proposal does not change active behaviour."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Submit the bounded experiment against the frozen baseline and held-out dataset manifest.",
+          "contract_action": "command:learning.experiment.submit",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append one isolated worker job request with stable experiment ID, seed, budget and deadline."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "worker.job.requested.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "Worker receives no activation authority or production credentials; experiment references exact baseline/data/protocol versions."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Observe verified worker completion and the learning supervisor's experiment-completed transition.",
+          "contract_action": "fake:scenario.observe_worker_completion",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Persist quarantined output and append completion only after manifest, hash and regression evidence are validated."
+          ],
+          "expected_events": [
+            "worker.job.completed.v1",
+            "learning.experiment.completed.v1"
+          ],
+          "durable_assertions": [
+            "Experiment completion is evidence, not acceptance or activation; all artifacts and metrics remain linked."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Evaluate the learning candidate against the frozen baseline and declared regression suite.",
+          "contract_action": "command:learning.candidate.evaluate",
+          "expected_transitions": [
+            "Append candidate evaluation without changing active strategy."
+          ],
+          "expected_events": [
+            "learning.candidate.evaluated.v1"
+          ],
+          "durable_assertions": [
+            "The candidate meets the declared improvement/regression protocol; evaluation is bound to exact baseline, data, code, seed and protocol revisions."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Observe authenticated owner/governance acceptance of the exact learning update.",
+          "contract_action": "fake:scenario.observe_owner_acceptance",
+          "expected_transitions": [
+            "Append the learning update acceptance decision with exact owner/governance evidence; do not activate the candidate yet."
+          ],
+          "expected_events": [
+            "learning.update.accepted.v1"
+          ],
+          "durable_assertions": [
+            "Acceptance state is durable but active strategy and current plan remain on the baseline until the separate evolution activation transition."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Inspect current capability knowledge after learning-update acceptance but before evolution activation.",
+          "contract_action": "query:capability.knowledge.inspect",
+          "expected_transitions": [
+            "Return the current active strategy/capability state without mutation."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "Accepted update remains quarantined; active pointer and current related-task plan still reference the baseline artifact."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Propose an evolution candidate linked to the accepted learning update, candidate artifact and exact evaluation evidence.",
+          "contract_action": "command:evolution.change.propose",
+          "expected_transitions": [
+            "Append an evolution proposal that references the accepted learning update and its candidate/evaluation artifacts."
+          ],
+          "expected_events": [
+            "evolution.proposed.v1"
+          ],
+          "durable_assertions": [
+            "Evolution proposal preserves provenance and rollback target; proposal does not activate or change current behaviour."
+          ]
+        },
+        {
+          "step_id": "S09",
+          "trigger": "Evaluate the evolution candidate and its activation/rollback readiness.",
+          "contract_action": "command:evolution.candidate.evaluate",
+          "expected_transitions": [
+            "Append evolution candidate evaluation tied to exact proposal, artifact, baseline and governance evidence."
+          ],
+          "expected_events": [
+            "evolution.candidate.evaluated.v1"
+          ],
+          "durable_assertions": [
+            "Candidate remains quarantined until exact owner/governance approval; rollback readiness and prior active artifact are verified."
+          ]
+        },
+        {
+          "step_id": "S10",
+          "trigger": "Request owner/governance approval for the exact candidate, artifact hash, target mechanism and rollback plan.",
+          "contract_action": "command:approval.request",
+          "expected_transitions": [
+            "Append an approval request bound to the exact candidate/proposal/artifact/effect and expiry."
+          ],
+          "expected_events": [
+            "approval.requested.v1"
+          ],
+          "durable_assertions": [
+            "Approval is specific to this candidate and artifact; it cannot be reused for a different candidate, scope or hash."
+          ]
+        },
+        {
+          "step_id": "S11",
+          "trigger": "Record explicit owner/governance approval for the exact evolution candidate.",
+          "contract_action": "command:approval.decide",
+          "expected_transitions": [
+            "Append the approved decision with actor, scope, artifact hash, expiry and rollback readiness."
+          ],
+          "expected_events": [
+            "approval.decided.v1"
+          ],
+          "durable_assertions": [
+            "Approval is independently auditable and does not itself change the active pointer."
+          ]
+        },
+        {
+          "step_id": "S12",
+          "trigger": "Activate the evaluated candidate through the separately governed evolution transition.",
+          "contract_action": "command:evolution.candidate.activate",
+          "expected_transitions": [
+            "Execute the protected activation saga and advance the active artifact pointer only after all required governance/memory steps reconcile."
+          ],
+          "expected_events": [
+            "candidate.activated.v1"
+          ],
+          "durable_assertions": [
+            "Activation references the exact approved candidate/artifact and prior active artifact; the saga is fully reconciled and rollback remains available."
+          ]
+        },
+        {
+          "step_id": "S13",
+          "trigger": "Propose a later related task plan after activation.",
+          "contract_action": "command:plan.propose",
+          "expected_transitions": [
+            "Append a plan proposal that may use the newly active strategy artifact under the same declared evaluation protocol."
+          ],
+          "expected_events": [
+            "plan.proposed.v1"
+          ],
+          "durable_assertions": [
+            "The later plan references the activated candidate/version and preserves the task's evidence/context; unrelated task controls remain unchanged."
+          ]
+        },
+        {
+          "step_id": "S14",
+          "trigger": "Read the later plan and current capability knowledge by exact owner-scoped IDs.",
+          "contract_action": "query:plan.get",
+          "expected_transitions": [
+            "Return the plan and active artifact lineage without mutation."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The later related task uses the activated version; the original baseline and all evaluation/approval/activation artifacts remain auditable."
+          ]
+        },
+        {
+          "step_id": "S15",
+          "trigger": "Restart and replay the acceptance, approval, activation and later-plan receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover the active candidate pointer and later plan; replay receipts without duplicating activation or task effects."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The activated version and later plan survive restart; baseline remains available for rollback; replay does not re-run the activation saga."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-012-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Attempt evolution.candidate.activate with missing, expired, mismatched or wrong-owner approval, or attempt to treat learning.update.accepted as activation authority.",
+          "expected_disposition": "Reject activation; preserve the baseline active pointer and require exact current approval for the candidate/artifact/rollback plan.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Active artifact pointer and baseline strategy",
+            "Approval-use/audit records and candidate state",
+            "Current related-task plan and operation dispatch state"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay learning update acceptance and evolution approval receipts; do not activate without the exact approval-use transition.",
+        "After activation, restart must recover the new active pointer and later task plan; replay cannot duplicate activation or erase the rollback target."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race approval revocation/expiry with candidate activation; the activation saga must evaluate current approval state at commit time.",
+        "Race two activations against the same prior active pointer; optimistic concurrency permits one successor and preserves rollback lineage."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Crash between governance approval-use and memory active-pointer commit; leave saga pending/uncertain until reconciled, never report partial activation as complete.",
+        "Crash after active-pointer commit but before event publication; recover local outbox and complete reconciliation without duplicate activation."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Use a candidate artifact hash different from the approved hash; activation must reject it.",
+        "Use an unrelated task after activation; do not force the strategy update outside its declared scope."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
@@ -2918,7 +3116,7 @@
     },
     {
       "scenario_id": "CM-013",
-      "title": "CM-013 — canonical scenario acceptance probe",
+      "title": "CM-013 — held-out improvement must not regress unrelated controls",
       "purpose": "Related unseen variations improve without unrelated regression; repeated seeded comparisons against frozen baseline.",
       "source_scenario_ids": [
         "CM-013"
@@ -2931,9 +3129,9 @@
         "catalogue:LE-002…LE-005"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: learningExperimentRequest, learningCandidateEvaluationRequest, artifactManifest.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Freeze baseline artifact, training/development/held-out dataset manifests, disjointness checks, regression suite, evaluation protocol and random seeds.",
+        "Prepare related unseen variations and unrelated control tasks with separate IDs and declared scoring/tolerance rules.",
+        "Prepare a quarantined candidate artifact; no acceptance or activation authority exists."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -2945,87 +3143,123 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize frozen baseline, disjoint datasets, related unseen variations, unrelated controls and candidate artifact.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed immutable manifests and hashes only; no worker job or candidate evaluation exists."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "Train/dev/held-out manifests are disjoint by ID and content-similarity checks; unrelated controls and tolerances are fixed before evaluation."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Related unseen variations improve without unrelated regression; repeated seeded comparisons against frozen baseline.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Submit the bounded repeated-seed experiment with the frozen protocol and held-out manifest.",
+          "contract_action": "command:learning.experiment.submit",
           "expected_transitions": [
-            "Related unseen variations improve without unrelated regression; repeated seeded comparisons against frozen baseline."
+            "Append an isolated worker job request with exact baseline, data, protocol, seed set and budget."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "worker.job.requested.v1"
+          ],
           "durable_assertions": [
-            "Related unseen variations improve without unrelated regression; repeated seeded comparisons against frozen baseline.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The worker request cannot access held-out labels during training; experiment identity and all artifact hashes are fixed."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Observe completed experiment output, metrics and regression artifacts after worker isolation.",
+          "contract_action": "fake:scenario.observe_worker_completion",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Persist the worker result as quarantined and append experiment completion after artifact/hash validation."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "worker.job.completed.v1",
+            "learning.experiment.completed.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "Completion includes code revision, data hashes, candidate/baseline hashes, seeds, sample size, confidence and regression results; no activation occurs."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Evaluate the candidate against the frozen baseline on related unseen variations and unrelated controls.",
+          "contract_action": "command:learning.candidate.evaluate",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Append evaluation results for the exact candidate, baseline, held-out manifest, protocol and regression suite."
+          ],
+          "expected_events": [
+            "learning.candidate.evaluated.v1"
+          ],
+          "durable_assertions": [
+            "Candidate passes only if predefined minimum improvement and confidence requirements are met across repeated seeded runs and no critical unrelated regression exceeds tolerance."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Inspect active capability knowledge to confirm evaluation alone has not activated the candidate.",
+          "contract_action": "query:capability.knowledge.inspect",
+          "expected_transitions": [
+            "Return current active capability knowledge and version without mutation."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The candidate remains quarantined; active state remains the frozen baseline until a separate owner/policy activation."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Inject data leakage, held-out overlap or an unrelated-control regression above the declared tolerance.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Mark the candidate evaluation failed/inconclusive; do not accept or activate the candidate."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No active pointer changes; the failed/inconclusive evaluation and regression artifacts remain durable and auditable."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Restart and replay experiment/evaluation receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover baseline, candidate, manifests and evaluation lineage without rerunning or duplicating completed work."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Held-out and regression evidence survives restart; candidate remains quarantined and no activation is inferred from improved training loss alone."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-013-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Leak held-out data into training, omit unrelated controls, or provide an improvement that is below the predefined minimum or accompanied by critical regression.",
+          "expected_disposition": "Fail/inconclusive evaluation; preserve the baseline and quarantine the candidate.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Active baseline artifact pointer",
+            "Held-out dataset identity and scoring protocol",
+            "Candidate acceptance/activation state and governance records"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay experiment and evaluation receipts; do not duplicate worker jobs or candidate evaluation events.",
+        "After restart, preserve the same frozen manifests, seeds, metrics and regression results; candidate remains quarantined."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race baseline revision change with candidate evaluation; reject evaluation against stale baseline hashes.",
+        "Race duplicate experiment submission with same ID/key; preserve one worker job and immutable receipt."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Worker crash after partial output; keep partial artifacts quarantined and mark experiment failed/cancelled.",
+        "Evaluation crash after metrics are written; resume/retry against the same immutable evaluation identity without altering baseline."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Use a distribution-shift variation not present in development data; report measured performance without leakage.",
+        "Use an unrelated control task with no expected benefit; reject broad regression beyond declared tolerance."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
