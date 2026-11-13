@@ -30,13 +30,13 @@ Selection is a reasoned engineering choice, not an empirical qualification resul
 
 ## Better free providers outside OpenRouter
 
-**Groq is the strongest direct provider for the high-volume part of this workforce.** Its current rate-limit documentation lists GPT-OSS 120B, GPT-OSS 20B and Qwen 3.8 27B on the free developer plan with up to 30 requests/minute, 1,000 requests/day, 8,000 tokens/minute and 200,000 tokens/day per model. Actual limits remain account-specific. Groq documents tool use for these models.
+**Groq is the strongest direct provider for the high-volume part of this workforce.** It exposes the selected GPT-OSS 120B, GPT-OSS 20B and Qwen 3.8 27B models through its API and provides a no-charge Free tier. Groq's public rate-limit page is not a reliable substitute for the account's live Free-tier limits: it notes tier differences and account-specific exceptions. The runner must treat 429 responses as a hard stop, and the Director should verify the actual Free-tier limits in the Groq console before a long run. Groq documents tool use and reasoning for the selected models.
 
 **Cloudflare Workers AI is the second selected direct provider.** Its Free Workers plan includes 10,000 Neurons per day across Workers AI. The three selected models support function calling; Cloudflare states that standard inference inputs and outputs are not retained after processing and are not used to train models. The daily Neuron allowance is shared across all three Cloudflare agents, so the orchestrator must track usage and stop at the quota boundary.
 
-OpenRouter is not in the selected roster. Its free variants are limited to 20 requests/minute and 50 requests/day until the qualifying credit threshold is reached. More importantly, free endpoint data practices vary. The current NVIDIA free Nemotron endpoints explicitly state that prompts may be logged and used to improve NVIDIA products and instruct users not to submit confidential information. That is unsuitable for AURIONS repository context. OpenRouter's provider data policy filter cannot override an endpoint's own published terms.
+OpenRouter is not in the selected roster. Its free variants are limited to 20 requests/minute and 50 requests/day until the qualifying credit threshold is reached. More importantly, free endpoint data practices vary. The current NVIDIA free Nemotron endpoints explicitly state that prompts may be logged and used to improve NVIDIA products and instruct users not to submit confidential information. That is unsuitable for AURIONS repository context. OpenRouter's Free plan also does not include its data policy-based routing feature, so the earlier proposed provider-data filter cannot be relied upon on the Free plan.
 
-Google AI Studio's free Gemini tier is technically attractive, but Google states that free-tier content may be used to improve its products. It is therefore not selected for private repository code. Z.ai GLM Flash models are free, but the free API's exact rate limits are not publicly specified; its individual-user data terms are not sufficiently clear for this repository workflow. These are not preferred over Groq and Cloudflare for this use.
+Google AI Studio's free Gemini tier is technically attractive, but Google's pricing documentation explicitly marks free-tier content as used to improve its products. It is therefore not selected for private repository code. Z.ai GLM Flash models are also listed as free, but their public rate limits are not specified and the individual-user data terms are not sufficiently clear for this repository workflow. These are not preferred over Groq and Cloudflare for this use.
 
 ## Credentials required
 
@@ -67,3 +67,10 @@ The Cloudflare token should have only the Workers AI inference permissions requi
 - **Model execution:** not yet tested with the newly selected roster.
 - **Agent qualification:** not established.
 - **Overnight supervision:** not established; the current workflow is a finite GitHub Actions pipeline, not a persistent worker supervisor.
+
+## Provider documentation reviewed
+
+- Groq [Free-tier billing FAQ](https://console.groq.com/docs/billing-faqs), [rate limits](https://console.groq.com/docs/rate-limits), [data retention controls](https://console.groq.com/docs/your-data), [GPT-OSS 120B](https://console.groq.com/docs/model/openai/gpt-oss-120b), [Qwen 3.8 27B](https://console.groq.com/docs/model/qwen/qwen3.8-27b).
+- Cloudflare [Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/), [data usage commitments](https://developers.cloudflare.com/workers-ai/platform/data-usage/), [OpenAI-compatible endpoint](https://developers.cloudflare.com/workers-ai/configuration/open-ai-compatibility/), [Gemma 4 26B](https://developers.cloudflare.com/workers-ai/models/gemma-4-26b-a4b-it/), [GLM 4.7 Flash](https://developers.cloudflare.com/workers-ai/models/glm-4.7-flash/), [Mistral Small 3.1 24B](https://developers.cloudflare.com/workers-ai/models/mistral-small-3.1-24b-instruct/).
+- OpenRouter [Free model limits and pricing](https://openrouter.ai/collections/free-models), [plan comparison and routing limits](https://openrouter.ai/pricing), [NVIDIA Nemotron free endpoint data notice](https://openrouter.ai/nvidia/nemotron-3-ultra-550b-a55b:free).
+- Google [Gemini API pricing and data-use distinctions](https://ai.google.dev/gemini-api/docs/pricing).
