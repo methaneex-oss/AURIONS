@@ -988,3 +988,10 @@ Extended `validate_query_projection_source_columns()` to enumerate every relatio
 **Exact code head:** `49f24f3874e4d632779dfc4e5b1ed4fc27fc6bd1`. [Workflow 43431572932](https://github.com/methaneex-oss/AURIONS/actions/runs/43431572932) completed successfully; all nine steps passed. The host log confirms all three SQLite stores and seventeen ordered DDL files executed on SQLite 3.46.1, with foreign-key/integrity and listed migration smoke invariants passing.
 
 **Evidence boundary:** This validates proposed source-column existence and declared read bindings, not executable SELECT statements, join cardinality, owner filters, classification/redaction, cursor consistency or query-handler behaviour. All 29 queries remain design-only/non-dispatchable.
+
+
+### BR-002 security reconciliation — approval reference join owner scope
+
+Inspection of the actual governance DDL confirmed `approval_requests.owner_ref` is introduced by migration v3 and enforced as non-null for newly inserted approval requests. The `audit.lookup` projection mapping now states that any approval-request join used to resolve `approval_ref` must constrain `approval_requests.owner_ref` to the authenticated owner context. This makes the generic owner-scope rule explicit at the specific cross-record join.
+
+**Boundary:** This is a required query-design constraint only. No query SQL/handler exists to execute or prove the join predicate; cross-owner denial and existence-concealment remain unverified runtime requirements.
