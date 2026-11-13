@@ -107,11 +107,23 @@ jobs:
           if root not in manifest_path.parents or not manifest_path.is_file():
               raise SystemExit("manifest_path must identify a committed file inside this checkout")
           manifest = validate_manifest(json.loads(manifest_path.read_text(encoding="utf-8")))
-          head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-          if manifest["base_commit_sha"].lower() != head.lower():
-              raise SystemExit("manifest base_commit_sha must equal the exact checked-out commit")
+          base_sha = manifest["base_commit_sha"]
+          subprocess.run(["git", "cat-file", "-e", f"{base_sha}^{{commit}}"], check=True)
+          manifest_rel = manifest_path.relative_to(root).as_posix()
+          changed = subprocess.check_output(
+              ["git", "diff", "--name-only", base_sha, "HEAD"], text=True
+          ).splitlines()
+          if changed != [manifest_rel]:
+              raise SystemExit("the work-package commit must change only the manifest; base SHA must identify the exact clean code baseline")
           _worker_tokens()
-          print("Manifest, exact base SHA and six role credentials validated.")
+          workspace = Path(os.environ["RUNNER_TEMP"]) / "aurions-workspace"
+          subprocess.run(["git", "worktree", "add", "--detach", str(workspace), base_sha], check=True)
+          manifest_copy = Path(os.environ["RUNNER_TEMP"]) / "work-package.json"
+          manifest_copy.write_bytes(manifest_path.read_bytes())
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"WORKSPACE_DIR={workspace}\\n")
+              env_file.write(f"WORKFORCE_MANIFEST_COPY={manifest_copy}\\n")
+          print("Manifest, exact clean base commit, isolated worktree and six role credentials validated.")
           PY
       - name: Generate isolated PostgreSQL integration-test credentials
         run: |
@@ -176,17 +188,18 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          python -m workforce.orchestrator --manifest "$MANIFEST_PATH" --workspace .
+          python -m workforce.orchestrator --manifest "$WORKFORCE_MANIFEST_COPY" --workspace "$WORKSPACE_DIR"
       - name: Capture candidate patch without committing
         if: always()
         run: |
           python - <<'PY'
+          import os
           import subprocess
           from pathlib import Path
-
+          os.chdir(os.environ["WORKSPACE_DIR"])
           untracked = subprocess.check_output(
               ["git", "ls-files", "--others", "--exclude-standard", "-z"]
-          ).decode().split("\0")
+          ).decode().split("\\0")
           untracked = [path for path in untracked if path and ".workforce-artifacts" not in path.split("/")]
           if untracked:
               subprocess.run(["git", "add", "-N", "--", *untracked], check=True)
@@ -199,8 +212,8 @@ jobs:
         with:
           name: aurions-workforce-${{ github.run_id }}
           path: |
-            candidate.patch
-            engineering/workforce/.workforce-artifacts/
+            ${{ env.WORKSPACE_DIR }}/candidate.patch
+            ${{ env.WORKSPACE_DIR }}/engineering/workforce/.workforce-artifacts/
           if-no-files-found: warn
           retention-days: 14
       - name: Stop local control plane and supervisor
@@ -209,3 +222,6 @@ jobs:
           for pid_file in "$RUNNER_TEMP/workforce-api.pid" "$RUNNER_TEMP/workforce-supervisor.pid"; do
             if [ -f "$pid_file" ]; then kill "$(cat "$pid_file")" 2>/dev/null || true; fi
           done
+          if [ -n "${WORKSPACE_DIR:-}" ] && [ -d "$WORKSPACE_DIR" ]; then
+            git worktree remove --force "$WORKSPACE_DIR" || true
+          fi
