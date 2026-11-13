@@ -19,23 +19,23 @@ class SecurityTests(unittest.TestCase):
 
     def test_director_and_orchestrator_are_separate_authorities(self):
         with patch.dict("os.environ", {
-            "DIRECTOR_APPROVAL_TOKEN": "director-secret",
-            "WORKFORCE_ORCHESTRATOR_TOKEN": "orchestrator-secret",
+            "DIRECTOR_APPROVAL_TOKEN": "dddddddddddddddddddddddddddddddddddddddd",
+            "WORKFORCE_ORCHESTRATOR_TOKEN": "oooooooooooooooooooooooooooooooooooooooo",
         }, clear=True):
-            self.assertEqual(require_director("director-secret").role, "director")
-            self.assertEqual(require_orchestrator("orchestrator-secret").role, "orchestrator")
+            self.assertEqual(require_director("dddddddddddddddddddddddddddddddddddddddd").role, "director")
+            self.assertEqual(require_orchestrator("oooooooooooooooooooooooooooooooooooooooo").role, "orchestrator")
             with self.assertRaises(AuthenticationError):
-                require_director("orchestrator-secret")
+                require_director("oooooooooooooooooooooooooooooooooooooooo")
             with self.assertRaises(AuthenticationError):
-                require_orchestrator("director-secret")
+                require_orchestrator("dddddddddddddddddddddddddddddddddddddddd")
 
     def test_worker_identity_and_role_are_derived_from_secret_registry(self):
         registry = {
-            "builder-01": {"token": "builder-secret", "role": "lead_builder"},
-            "reviewer-01": {"token": "reviewer-secret", "role": "code_reviewer"},
+            "builder-01": {"token": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "role": "lead_builder"},
+            "reviewer-01": {"token": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr", "role": "code_reviewer"},
         }
         with patch.dict("os.environ", {"WORKFORCE_WORKER_CREDENTIALS_JSON": json.dumps(registry)}, clear=True):
-            principal = authenticate_worker("reviewer-secret")
+            principal = authenticate_worker("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
             self.assertEqual((principal.actor_id, principal.role), ("reviewer-01", "code_reviewer"))
             with self.assertRaises(AuthenticationError):
                 authenticate_worker("invalid")
