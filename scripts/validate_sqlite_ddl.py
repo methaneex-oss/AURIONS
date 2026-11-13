@@ -131,34 +131,36 @@ def validate_query_projection_source_columns(
             field_name, source = field_match.groups()
             if source.startswith("**UNMAPPED"):
                 continue
-            source_match = re.search(
+            # Parenthetical text records a derivation/annotation (for
+            # example an event type); relational sources occur before it.
+            relational_source = source.split("(", 1)[0]
+            source_matches = list(re.finditer(
                 r"\b([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\b",
-                source,
-            )
-            if not source_match:
-                continue
-            table, column = source_match.groups()
-            owners = table_owners.get(table, set())
-            if not owners:
-                raise AssertionError(
-                    f"{query_type}.{field_name}: source {table}.{column} "
-                    "is absent from declared query table bindings"
-                )
-            if store_name not in owners:
-                continue
-            if table not in actual_tables:
-                raise AssertionError(
-                    f"{query_type}.{field_name}: source table {table} "
-                    f"is absent from {store_name} DDL"
-                )
-            actual_columns = {
-                row[1] for row in connection.execute(f'PRAGMA table_info("{table}")')
-            }
-            if column not in actual_columns:
-                raise AssertionError(
-                    f"{query_type}.{field_name}: source column {table}.{column} "
-                    f"is absent from {store_name} DDL"
-                )
+                relational_source,
+            ))
+            for source_match in source_matches:
+                table, column = source_match.groups()
+                owners = table_owners.get(table, set())
+                if not owners:
+                    raise AssertionError(
+                        f"{query_type}.{field_name}: source {table}.{column} "
+                        "is absent from declared query table bindings"
+                    )
+                if store_name not in owners:
+                    continue
+                if table not in actual_tables:
+                    raise AssertionError(
+                        f"{query_type}.{field_name}: source table {table} "
+                        f"is absent from {store_name} DDL"
+                    )
+                actual_columns = {
+                    row[1] for row in connection.execute(f'PRAGMA table_info("{table}")')
+                }
+                if column not in actual_columns:
+                    raise AssertionError(
+                        f"{query_type}.{field_name}: source column {table}.{column} "
+                        f"is absent from {store_name} DDL"
+                    )
 
 
 def expect_integrity_error(
