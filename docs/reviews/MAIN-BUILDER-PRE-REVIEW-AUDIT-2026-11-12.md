@@ -1009,3 +1009,8 @@ Corrections:
 **Exact code revision:** `4c3007302a4c9e01a92a9cf517650f79029932e5`. [Workflow 43431857829](https://github.com/methaneex-oss/AURIONS/actions/runs/43431857829) passed all nine steps, including schema/fixture validation, governance, work-package traceability, all SQLite DDL/migration smoke tests and Android probe syntax.
 
 **Evidence boundary:** This closes a command-matrix/registry event-name consistency defect. It does not execute command handlers or prove that emitted events are produced correctly at runtime. All 52 mapped commands remain design-only/non-dispatchable; BR-001 and BR-008 remain OPEN.
+
+
+### Parallel validation correction — command/event transition regex
+
+A subsequent CI attempt exposed an independent escaped-regex defect in the command transition parity validator: the event-version matcher treated regex metacharacters as literal backslashes and therefore found no emitted events for `experience.submit`. The matcher was corrected in commit `4c3007302a4c9e01a92a9cf517650f79029932e5`. Exact head passed [workflow 43431857829](https://github.com/methaneex-oss/AURIONS/actions/runs/43431857829), all nine steps. This correction is recorded as a branch validation fix; it does not change command dispatch status or establish runtime command/event behaviour.
