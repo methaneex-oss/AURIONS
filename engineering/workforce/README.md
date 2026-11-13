@@ -11,7 +11,7 @@ This directory contains engineering-workforce infrastructure only. It is not par
 - Atomic role-matched task claims, lease generations and expiry fencing.
 - Idempotent checkpoint writes tied to the current live lease, with authorized restoration after recovery.
 - Append-only evidence digests and artifact references bound to each lifecycle gate; Director acceptance must reference the exact integrated evidence record.
-- A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces the earlier of the contract's absolute deadline or maximum task lifetime.
+- A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces the contract's absolute deadline while queued, then the earlier of that deadline or the maximum task lifetime measured from first claim.
 - Separate API and supervisor containers with non-root, read-only filesystems.
 - Six distinct pinned model assignments; runner hard ceilings of 100 calls, 32,768 completion tokens/call, 200,000 total tokens and 360 minutes. Every CLI task execution requires a live control-plane lease and atomically reserves/settles per-work-package/per-role token and call budgets in PostgreSQL. Reservations left by a crashed or fenced worker are conservatively charged at their full reserved amount.
 - Paid inference fallback remains disabled.
@@ -38,7 +38,7 @@ Provider secrets remain separate:
 
 Run `docker compose -f engineering/workforce/compose.yaml up --build` from the repository root after setting the protected environment variables. The API binds to loopback port 8000. PostgreSQL data is persisted in the named volume. The supervisor runs independently and polls every five seconds.
 
-Apply new SQL files in `migrations/` to an existing database in lexical order (including `003_immutable_evidence.sql`, `004_agent_budget_ledger.sql` and `005_absolute_task_deadlines.sql`). The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
+Apply new SQL files in `migrations/` to an existing database in lexical order (including `003_immutable_evidence.sql`, `004_agent_budget_ledger.sql`, `005_absolute_task_deadlines.sql` and `006_start_deadline_on_first_claim.sql`). The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
 
 ## Six-role orchestration
 
@@ -52,7 +52,7 @@ The CLI coordinates all six roles in one pinned workspace, sequentially: lead bu
 
 The worker process receives only its own role token and its pinned provider credential. Repository tests run from an isolated copy with credentials removed. The orchestrator's test suite also runs from a separate snapshot. A disposable PostgreSQL test database is used only when `WORKFORCE_TEST_DATABASE_URL` and the three `WORKFORCE_TEST_*` credentials are explicitly supplied; it must never point at the live control-plane database.
 
-The orchestrator is a bounded sequential dispatcher, not a distributed queue or parallel scheduler. The control plane persists tasks, leases, checkpoints, evidence and per-work-package/per-role budgets. A new run ID creates new task records but consumes the same work-package budget. If an orchestration process is interrupted, the supervisor recovers expired worker leases; a new orchestration attempt requires a clean workspace and a new run ID. Preserve the previous evidence folder before resetting or creating a fresh workspace.
+The orchestrator is a bounded sequential dispatcher, not a distributed queue or parallel scheduler. Queued tasks do not consume their execution-duration budget until first claim; the absolute contract deadline still applies while queued. The control plane persists tasks, leases, checkpoints, evidence and per-work-package/per-role budgets. A new run ID creates new task records but consumes the same work-package budget. If an orchestration process is interrupted, the supervisor recovers expired worker leases; a new orchestration attempt requires a clean workspace and a new run ID. Preserve the previous evidence folder before resetting or creating a fresh workspace.
 
 ## Verification
 
