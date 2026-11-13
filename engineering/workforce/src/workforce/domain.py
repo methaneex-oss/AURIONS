@@ -98,13 +98,15 @@ class TaskContract:
         for key in ("work_package_id", "authorization_ref", "objective"):
             if not isinstance(value[key], str) or not value[key].strip():
                 raise ContractError(f"{key} must be a non-empty string")
-        if value["authorization_ref"].strip().lower() in {"none", "tbd", "unset"}:
-            raise ContractError("an explicit authorization reference is required")
+        if value["authorization_ref"].strip().lower() in {"none", "tbd", "unset"} or value["authorization_ref"].strip().upper().startswith("REPLACE_"):
+            raise ContractError("an explicit non-placeholder authorization reference is required")
+        if value["work_package_id"].strip().upper().startswith("REPLACE_"):
+            raise ContractError("work_package_id must not be a template placeholder")
         sha = value["base_commit_sha"]
         if not isinstance(sha, str):
             raise ContractError("base_commit_sha must be a string")
-        if len(sha) != 40 or any(c not in "0123456789abcdefABCDEF" for c in sha):
-            raise ContractError("base_commit_sha must be a full 40-character Git commit SHA")
+        if len(sha) != 40 or any(c not in "0123456789abcdefABCDEF" for c in sha) or set(sha) == {"0"}:
+            raise ContractError("base_commit_sha must be a real full 40-character Git commit SHA")
         budget_ceilings = {"max_model_calls": 100, "max_tokens": 200000, "max_duration_minutes": 360}
         for key, ceiling in budget_ceilings.items():
             if not isinstance(value[key], int) or isinstance(value[key], bool) or value[key] <= 0 or value[key] > ceiling:
