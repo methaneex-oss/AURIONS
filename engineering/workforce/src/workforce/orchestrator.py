@@ -393,6 +393,8 @@ def _run_candidate_tests(
         docker(["network", "create", "--internal", network])
         docker([
             "run", "--detach", "--name", database_container, "--network", network,
+            "--memory=1g", "--cpus=1", "--pids-limit=128",
+            "--cap-drop=ALL", "--security-opt=no-new-privileges:true",
             "--env", "POSTGRES_USER=workforce",
             "--env", f"POSTGRES_PASSWORD={password}",
             "--env", "POSTGRES_DB=workforce_test",
