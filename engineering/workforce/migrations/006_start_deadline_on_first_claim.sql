@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION wf_task_deadline(
 RETURNS timestamptz
 LANGUAGE sql
 IMMUTABLE
-AS $
+AS $$
     SELECT CASE
         WHEN task_started_at IS NULL THEN
             CASE
@@ -35,7 +35,7 @@ RETURNS timestamptz
 LANGUAGE sql
 IMMUTABLE
 STRICT
-AS $
+AS $$
     SELECT CASE
         WHEN COALESCE(task_contract->>'deadline', 'UNSET') = 'UNSET'
             THEN 'infinity'::timestamptz
