@@ -349,7 +349,7 @@ def main() -> int:
         if re.match(r"^\|\s*\x60CC-\d{3}\x60\s*\|", line)
     ]
     matrix_acceptance_ids = [
-        re.match(r"^\\|\\s*`(CC-\\d{3})`", line).group(1)
+        re.match(r"^\|\s*`(CC-\d{3})`\s*\|", line).group(1)
         for line in matrix_acceptance_rows
     ]
     if len(matrix_acceptance_ids) != len(set(matrix_acceptance_ids)):
