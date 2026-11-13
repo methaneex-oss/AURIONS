@@ -28,14 +28,14 @@ TRANSITIONS: dict[TaskState, frozenset[TaskState]] = {
     TaskState.QUEUED: frozenset({TaskState.CLAIMED, TaskState.BLOCKED, TaskState.CANCELLED}),
     TaskState.CLAIMED: frozenset({TaskState.RUNNING, TaskState.RETRY_WAIT, TaskState.FAILED, TaskState.CANCELLED}),
     TaskState.RUNNING: frozenset({TaskState.CHECKPOINTED, TaskState.CANDIDATE_READY, TaskState.BLOCKED, TaskState.RETRY_WAIT, TaskState.FAILED, TaskState.CANCELLED}),
-    TaskState.CHECKPOINTED: frozenset({TaskState.RUNNING, TaskState.CANDIDATE_READY, TaskState.BLOCKED, TaskState.CANCELLED}),
+    TaskState.CHECKPOINTED: frozenset({TaskState.RUNNING, TaskState.CANDIDATE_READY, TaskState.BLOCKED, TaskState.RETRY_WAIT, TaskState.FAILED, TaskState.CANCELLED}),
     TaskState.CANDIDATE_READY: frozenset({TaskState.TESTING, TaskState.REJECTED, TaskState.BLOCKED}),
     TaskState.TESTING: frozenset({TaskState.REVIEWING, TaskState.REJECTED, TaskState.BLOCKED, TaskState.FAILED}),
     TaskState.REVIEWING: frozenset({TaskState.INTEGRATION, TaskState.REJECTED, TaskState.BLOCKED}),
     TaskState.INTEGRATION: frozenset({TaskState.AWAITING_DIRECTOR, TaskState.REJECTED, TaskState.BLOCKED}),
     TaskState.AWAITING_DIRECTOR: frozenset({TaskState.ACCEPTED, TaskState.REJECTED, TaskState.BLOCKED}),
     TaskState.BLOCKED: frozenset({TaskState.QUEUED, TaskState.CANCELLED}),
-    TaskState.RETRY_WAIT: frozenset({TaskState.QUEUED, TaskState.FAILED, TaskState.CANCELLED}),
+    TaskState.RETRY_WAIT: frozenset({TaskState.QUEUED, TaskState.CLAIMED, TaskState.FAILED, TaskState.CANCELLED}),
     TaskState.FAILED: frozenset(), TaskState.REJECTED: frozenset(),
     TaskState.CANCELLED: frozenset(), TaskState.ACCEPTED: frozenset(),
 }
@@ -103,9 +103,15 @@ def validate_transition(current: TaskState, target: TaskState, *, director_decis
 
 def path_is_permitted(path: str, permitted: tuple[str, ...], prohibited: tuple[str, ...]) -> bool:
     """Conservative prefix policy; callers must normalize paths before checking."""
-    normalized = path.strip("/")
-    if not normalized or ".." in normalized.split("/"):
+    normalized = path.replace("\\\\", "/").strip("/")
+    if not normalized or normalized.startswith("/") or ":" in normalized.split("/")[0]:
         return False
-    if any(normalized == p.strip("/") or normalized.startswith(p.strip("/") + "/") for p in prohibited):
+    parts = normalized.split("/")
+    if any(part in {"", ".", ".."} for part in parts):
         return False
-    return any(normalized == p.strip("/") or normalized.startswith(p.strip("/") + "/") for p in permitted)
+    def matches(candidate: str, prefix: str) -> bool:
+        clean = prefix.replace("\\\\", "/").strip("/")
+        return bool(clean) and (candidate == clean or candidate.startswith(clean + "/"))
+    if any(matches(normalized, prefix) for prefix in prohibited):
+        return False
+    return any(matches(normalized, prefix) for prefix in permitted)
