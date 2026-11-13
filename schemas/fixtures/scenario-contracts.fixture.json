@@ -3277,7 +3277,7 @@
     },
     {
       "scenario_id": "CM-014",
-      "title": "CM-014 — canonical scenario acceptance probe",
+      "title": "CM-014 — failure revises only evidence-supported capability scope",
       "purpose": "One failure revises only evidence-supported scope; prior knowledge and contradictory evidence remain.",
       "source_scenario_ids": [
         "CM-014"
@@ -3289,9 +3289,9 @@
         "catalogue:NHC-004"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: capabilityKnowledgeRevision, evidenceItem.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed capability knowledge K-001 revision 1 for capability C-001 in context scope A, supported by prior successful evidence E-A.",
+        "Prepare a new failure observation E-B with independent provenance in the same narrow context; preserve evidence for other contexts/capabilities.",
+        "Capture the current knowledge revision, evidence links and scope boundaries before submitting E-B."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -3303,87 +3303,109 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize K-001 revision 1, prior success evidence E-A and the new scoped failure observation E-B.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed existing knowledge and evidence only; do not change the knowledge head."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "K-001 revision 1 and E-A are immutable; E-B has distinct provenance and is scoped to context A."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: One failure revises only evidence-supported scope; prior knowledge and contradictory evidence remain.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Submit the new failure observation with exact capability/context scope and provenance.",
+          "contract_action": "command:experience.submit",
           "expected_transitions": [
-            "One failure revises only evidence-supported scope; prior knowledge and contradictory evidence remain."
+            "Append E-B as immutable experience/evidence; do not overwrite prior success evidence."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "experience.observed.v1",
+            "evidence.recorded.v1"
+          ],
           "durable_assertions": [
-            "One failure revises only evidence-supported scope; prior knowledge and contradictory evidence remain.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "E-B retains source/time/uncertainty; E-A and prior knowledge remain unchanged."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Revise capability knowledge using expected revision 1 and both supporting E-A and failure E-B.",
+          "contract_action": "command:capability.knowledge.revise",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append a successor capability-knowledge revision limited to the evidence-supported capability/context scope."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "capability.knowledge.revised.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "The revision preserves contradictory evidence and prior history; it changes only the supported scope and does not create a universal prohibition."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Inspect capability knowledge by exact capability and context scope.",
+          "contract_action": "query:capability.knowledge.inspect",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Return current and prior knowledge revisions with evidence and scope lineage without mutation."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The narrow context A revision reflects the new evidence; unrelated contexts/capabilities and their prior knowledge remain unchanged."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Attempt to generalize one scoped failure into a universal capability prohibition across unrelated contexts.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Reject or retain the unsupported universal conclusion; require evidence for each additional scope."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No unrelated capability/context is disabled; no contradictory evidence is deleted and no broad permission state is changed."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Restart and replay the observation and knowledge-revision receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover K-001 history and the scoped successor revision without duplicate evidence or knowledge events."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Prior success and failure evidence remain linked after restart; only the supported scope is revised."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-014-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Use one failure observation in context A to request a global capability prohibition across all contexts and targets.",
+          "expected_disposition": "Reject unsupported scope expansion or mark other contexts unknown pending evidence; preserve prior knowledge.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Unrelated capability/context knowledge revisions",
+            "Prior supporting and contradictory evidence",
+            "Permission/approval state and owner-scoped event history"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay experience.submit and capability.knowledge.revise receipts; do not duplicate evidence or revisions.",
+        "After restart, preserve scope boundaries and the complete prior/success/failure evidence chain."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race two knowledge revisions against expected revision 1; only one successor may commit and the other receives EXPECTED_REVISION_CONFLICT.",
+        "Race new evidence append with knowledge revision; the revision must reference exact evidence IDs/revisions."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Fail knowledge revision before commit; prior knowledge remains current and no revised event is appended.",
+        "Simulate uncertain revision commit; reconcile the receipt before retry to prevent duplicate knowledge revisions."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Use the same capability in a different context with successful evidence; do not inherit the failure as a universal prohibition.",
+        "Use an unrelated capability with no evidence; keep it unknown rather than inferring failure."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
@@ -3401,7 +3423,7 @@
     },
     {
       "scenario_id": "CM-015",
-      "title": "CM-015 — canonical scenario acceptance probe",
+      "title": "CM-015 — one success cannot create universal competence or permission",
       "purpose": "Success cannot create universal competence, permission or owner authority.",
       "source_scenario_ids": [
         "CM-015"
@@ -3414,9 +3436,9 @@
         "catalogue:NHC-005"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: capabilityKnowledgeRevision, permissionEvaluated, approvalDecision.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed a capability with unknown/limited knowledge and one successful operation receipt/outcome observation in a narrow context.",
+        "Prepare a second target/context and an interaction proposal requiring independent permission/approval that has not been granted.",
+        "Capture the current knowledge, policy and approval revisions before using the success evidence."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -3428,87 +3450,138 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize scoped success evidence, unknown broader contexts, current policy and an unauthorized target/effect.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed prior evidence and authorization inputs only; no universal competence or permission is created."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "The success evidence is limited to one capability/context/target; no approval or permission grant exists for the second target."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Success cannot create universal competence, permission or owner authority.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Submit the successful outcome evidence with exact operation receipt, target and context provenance.",
+          "contract_action": "command:experience.submit",
           "expected_transitions": [
-            "Success cannot create universal competence, permission or owner authority."
+            "Append the success observation and evidence links without broadening its scope."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "experience.observed.v1",
+            "evidence.recorded.v1"
+          ],
           "durable_assertions": [
-            "Success cannot create universal competence, permission or owner authority.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The success evidence remains tied to the exact operation/target/context and is not treated as universal competence."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Revise capability knowledge using the scoped success evidence and expected current revision.",
+          "contract_action": "command:capability.knowledge.revise",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append a scoped knowledge revision that records observed success and remaining uncertainty."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "capability.knowledge.revised.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "Knowledge improvement is limited to supported scope; it does not create permission, owner authority or universal competence."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Propose an interaction on a different target/effect using the capability knowledge as context.",
+          "contract_action": "command:interaction.propose",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Append the interaction proposal and send it through independent gateway authorization evaluation."
+          ],
+          "expected_events": [
+            "interaction.proposed.v1"
+          ],
+          "durable_assertions": [
+            "The proposal retains its target/effect and evidence scope; success history is not treated as authorization."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Observe the gateway's current permission evaluation and rejection for the unauthorized target/effect.",
+          "contract_action": "fake:scenario.observe_runtime_transition",
+          "expected_transitions": [
+            "Evaluate current principal, policy, target, effect and approval state; reject or hold without dispatch."
+          ],
+          "expected_events": [
+            "permission.evaluated.v1",
+            "operation.rejected.v1"
+          ],
+          "durable_assertions": [
+            "No operation.dispatched or operation.running event occurs; capability knowledge and permission remain separate."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Inspect capability knowledge after the unauthorized proposal.",
+          "contract_action": "query:capability.knowledge.inspect",
+          "expected_transitions": [
+            "Return the scoped knowledge revision and evidence lineage without mutation."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The prior success remains scoped; no universal competence or permission grant was created by the interaction proposal."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Attempt to use the single success as proof of competence and authority for all targets and effects.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Reject unsupported scope/authority expansion; require independent evidence and exact authorization for the new target/effect."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No capability-wide permission, approval or owner authority is created; the prior scoped success remains unchanged."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Restart and replay the evidence, knowledge and interaction proposal receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover scoped knowledge and rejected interaction history without broadening capability or authority."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The new target remains unauthorized after restart; no dispatch or permission grant is inferred from the success record."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-015-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Use one successful operation in one context as a universal capability claim and submit a different target/effect without a matching approval.",
+          "expected_disposition": "Keep competence scoped and deny/hold the interaction at the independent gateway authorization boundary.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Capability knowledge outside the evidenced scope",
+            "Permission grants, approval records and owner authority",
+            "Operation dispatch/provider effect counts"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay experience.submit and capability.knowledge.revise receipts; do not duplicate evidence or knowledge revisions.",
+        "After restart, preserve the same limited scope and independent authorization denial for the second target."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race capability-knowledge revision with permission evaluation; a knowledge update must not bypass current policy evaluation.",
+        "Race a new approval with interaction proposal; only an exact current approval for the target/effect may authorize dispatch."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Fail knowledge revision before commit; prior knowledge remains current and no permission state changes.",
+        "Simulate uncertain gateway evaluation; reconcile policy/approval evidence before any retry or dispatch."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Use a different target with the same capability name; do not generalize success without supporting evidence.",
+        "Use a different effect with the same target; require separate effect-level authorization."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
@@ -3526,7 +3599,7 @@
     },
     {
       "scenario_id": "CM-016",
-      "title": "CM-016 — canonical scenario acceptance probe",
+      "title": "CM-016 — self-model confidence is calibrated against measured outcomes",
       "purpose": "Confidence/calibration is compared with measured outcomes over a defined sample and scope.",
       "source_scenario_ids": [
         "CM-016"
@@ -3539,9 +3612,9 @@
         "catalogue:CG-008"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: selfModelUpdated, operationAttemptReceipt, outcomeEvaluation.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed a self-model baseline revision with confidence estimates scoped by task/capability/context.",
+        "Prepare a sufficiently sized set of operation-attempt receipts and independently evaluated outcomes with matching scope, timestamps and provenance.",
+        "Freeze the calibration protocol, sample window, scoring metric and minimum evidence threshold before proposing an update."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -3553,87 +3626,108 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize the self-model baseline, measured operation receipts, outcome evaluations and frozen calibration protocol.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed immutable calibration inputs only; no self-model update is proposed or applied."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "Attempt receipts and outcome evaluations are independent and scope-matched; sample window and protocol are fixed before calibration."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Confidence/calibration is compared with measured outcomes over a defined sample and scope.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Propose a self-model update from the measured outcome sample and declared calibration protocol.",
+          "contract_action": "command:self_model.update.propose",
           "expected_transitions": [
-            "Confidence/calibration is compared with measured outcomes over a defined sample and scope."
+            "Append a self-model update proposal with exact baseline revision, sample window, calibration metric and evidence references."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "self_model.update.proposed.v1"
+          ],
           "durable_assertions": [
-            "Confidence/calibration is compared with measured outcomes over a defined sample and scope.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The proposal reports calibration error/confidence by declared scope; it does not claim competence outside the measured sample."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Observe authenticated owner/governance acceptance and the self-model revision transition.",
+          "contract_action": "fake:scenario.observe_owner_acceptance",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append the accepted self-model revision with exact approval evidence and source outcome lineage."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "self_model.updated.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "The new self-model revision is versioned and auditable; prior revision remains historical and unrelated scopes remain unchanged."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Inspect the audit record for the self-model update and its measured outcome references.",
+          "contract_action": "query:audit.lookup",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Return the exact self-model update event and linked operation/outcome evidence without mutation."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The audit record exposes sample window, calibration protocol, evidence references and revision identity; lookup does not change the self-model."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Attempt to increase confidence using one successful outcome, an out-of-scope sample or a sample below the declared threshold.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Reject the update or retain the prior self-model revision as insufficient evidence."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No unsupported confidence increase or scope expansion occurs; prior calibration and outcome records remain unchanged."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Restart and replay the self-model proposal and acceptance receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover the accepted self-model revision and its calibration evidence without duplicate updates."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The current self-model revision and its exact sample/protocol lineage survive restart; replay cannot inflate confidence."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-016-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Submit a self-model confidence increase based on one success, mismatched task scope or a sample smaller than the declared calibration threshold.",
+          "expected_disposition": "Reject or retain the prior revision as insufficient evidence; require a valid measured sample and authorized acceptance.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Current self-model confidence/revision",
+            "Scope boundaries and historical calibration records",
+            "Operation/outcome evidence and governance audit trail"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay self_model.update.propose and acceptance receipts; do not duplicate revisions or reapply confidence changes.",
+        "After restart, confidence remains tied to the same measured sample, scope and calibration protocol."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race two self-model updates against the same expected revision; only one successor may commit.",
+        "Race new outcome evidence with calibration; the update must bind one exact sample window and reject mixed/stale revisions."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Fail self-model acceptance before commit; prior self-model revision remains active.",
+        "Crash after revision commit but before event publication; reconcile outbox/audit state without duplicate confidence updates."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Use a new task family outside the calibration sample; do not generalize confidence without evidence.",
+        "Use a measured failure in the same scope; calibration must incorporate it rather than cherry-pick successes."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
