@@ -804,6 +804,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
                 persist_test_results("FAILED")
                 raise
         persist_test_results("PASSED")
+        save_journal("TESTS_PASSED")
 
         test_bytes = test_report.read_bytes()
         test_sha = hashlib.sha256(test_bytes).hexdigest()
@@ -854,6 +855,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         integrated_bytes = json.dumps(integrated, indent=2).encode("utf-8")
         integrated_path.write_bytes(integrated_bytes)
         integrated_sha = hashlib.sha256(integrated_bytes).hexdigest()
+        save_journal("DIRECTOR_PACKET_READY")
 
         integration_task = task_ids["integration_verifier"]
         transitions = [
@@ -866,6 +868,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             _post(f"{control}/v1/tasks/{integration_task}/transition",
                   headers={"X-Orchestrator-Token": orchestrator},
                   payload={"target": target, "reason": reason, "evidence_sha256": digest, "evidence_ref": ref})
+        save_journal("AWAITING_DIRECTOR_REVIEW")
         return {
             "run_id": manifest["run_id"],
             "task_ids": task_ids,
@@ -877,15 +880,9 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             "status": "AWAITING_DIRECTOR_REVIEW",
         }
     except Exception:
-        for role in created:
-            if role in completed:
-                continue
-            try:
-                _post(f"{control}/v1/tasks/{task_ids[role]}/transition",
-                      headers={"X-Orchestrator-Token": orchestrator},
-                      payload={"target": "CANCELLED", "reason": "work package stopped after upstream failure"})
-            except Exception:
-                pass
+        # Keep durable task/evidence state intact. The supervisor recovers expired
+        # worker leases; a later invocation with the same run_id resumes safely.
+        save_journal("INTERRUPTED")
         raise
 
 
