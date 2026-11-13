@@ -5,7 +5,6 @@ ALTER TABLE wf_tasks
 
 DROP FUNCTION IF EXISTS wf_task_deadline(timestamptz, jsonb);
 CREATE OR REPLACE FUNCTION wf_task_deadline(
-    task_created_at timestamptz,
     task_started_at timestamptz,
     task_contract jsonb
 )
@@ -31,5 +30,5 @@ AS $
     END;
 $$;
 
-COMMENT ON FUNCTION wf_task_deadline(timestamptz, timestamptz, jsonb) IS
+COMMENT ON FUNCTION wf_task_deadline(timestamptz, jsonb) IS
     'Returns the absolute deadline while queued, then the earlier of the absolute deadline and max_duration_minutes from first claim.';
