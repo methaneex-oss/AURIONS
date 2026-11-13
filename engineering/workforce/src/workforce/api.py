@@ -224,7 +224,7 @@ def start_task(
                    AND lease_token_hash=encode(digest(%s,'sha256'),'hex')
                    AND lease_expires_at > now()
                    AND created_at + make_interval(mins => (contract_json->>'max_duration_minutes')::int) > now()
-                   AND state IN ('CLAIMED','CHECKPOINTED')
+                   AND state IN ('CLAIMED','CHECKPOINTED','RUNNING')
              RETURNING task_id,state,lease_generation""",
             (body.lease_seconds, task_id, worker.role, worker.actor_id, body.lease_token),
         )
