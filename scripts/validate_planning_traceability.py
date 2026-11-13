@@ -94,7 +94,7 @@ def parse_acceptance_rows(path: Path, label: str) -> dict[str, list[str]]:
         if not in_acceptance_section or not line.startswith("| PR-"):
             continue
         cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        match = re.match(r"^(PR-\\d{2})\\b", cells[0])
+        match = re.match(r"^(PR-\d{2})\b", cells[0])
         if not match:
             fail(f"{label}:{line_number}: malformed acceptance identifier")
         acceptance_id = match.group(1)
