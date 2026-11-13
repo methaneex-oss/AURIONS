@@ -1638,7 +1638,7 @@
     },
     {
       "scenario_id": "CM-006",
-      "title": "CM-006 — canonical scenario acceptance probe",
+      "title": "CM-006 — interrupt and replan only at safe points",
       "purpose": "Interrupt/replan at safe points; preserve committed state and reconcile dispatched work.",
       "source_scenario_ids": [
         "CM-006"
@@ -1653,9 +1653,9 @@
         "catalogue:TS-004"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: taskRunStatus, taskRunTransition, taskCheckpointDetails, contextSnapshot.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed one owner-scoped active task run with a committed plan revision, checkpoint and one operation that has already crossed the dispatch boundary.",
+        "Prepare new evidence that invalidates one future plan step but does not invalidate already committed local state.",
+        "Capture task, plan, checkpoint and operation revisions so pause/replan/reconciliation ordering is observable."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -1667,87 +1667,198 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize the active task, committed checkpoint, future plan step and dispatched operation receipt.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed the task and operation history only; no task transition or new external effect is initiated."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "The task has a stable run ID and checkpoint; the dispatched operation has an exact receipt/status and stable idempotency identity."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Interrupt/replan at safe points; preserve committed state and reconcile dispatched work.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Start the task run against the committed plan revision.",
+          "contract_action": "command:task.start",
           "expected_transitions": [
-            "Interrupt/replan at safe points; preserve committed state and reconcile dispatched work."
+            "Append the task control request and transition the task into its active state."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "task.control.requested.v1",
+            "task.run.transitioned.v1"
+          ],
           "durable_assertions": [
-            "Interrupt/replan at safe points; preserve committed state and reconcile dispatched work.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "Task run and plan revision are linked; the checkpoint and previously committed state remain unchanged."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Propose the exact external operation required by the current plan step.",
+          "contract_action": "command:operation.propose",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append one operation proposal bound to the task run, plan step, capability descriptor and authority context."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "operation.proposed.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "The operation proposal is durable and idempotent; no provider effect is assumed from proposal alone."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Observe the operation crossing the dispatch boundary and entering its running state.",
+          "contract_action": "fake:scenario.observe_runtime_transition",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Record the dispatched/running operation transition with its stable provider correlation and receipt."
+          ],
+          "expected_events": [
+            "operation.dispatched.v1",
+            "operation.running.v1"
+          ],
+          "durable_assertions": [
+            "The operation is now treated as externally consequential; later task interruption must reconcile it rather than erase or blindly retry it."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Submit new evidence that invalidates a future plan step while preserving the committed checkpoint.",
+          "contract_action": "command:experience.submit",
+          "expected_transitions": [
+            "Append the new immutable evidence and its provenance without rewriting the task's committed history."
+          ],
+          "expected_events": [
+            "experience.observed.v1",
+            "evidence.recorded.v1"
+          ],
+          "durable_assertions": [
+            "The new evidence is linked to the task context; committed task state and dispatched operation receipt remain intact."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Request a task pause at the next declared safe point.",
+          "contract_action": "command:task.pause",
+          "expected_transitions": [
+            "Append the pause request and transition the task to paused only at a safe point; do not interrupt an in-flight atomic local commit."
+          ],
+          "expected_events": [
+            "task.control.requested.v1",
+            "task.run.transitioned.v1"
+          ],
+          "durable_assertions": [
+            "The task pauses at the checkpoint boundary; committed work remains durable and the dispatched operation remains explicitly unresolved/running until reconciled."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Revise the future plan from the new evidence while retaining completed step and checkpoint lineage.",
+          "contract_action": "command:plan.revise",
+          "expected_transitions": [
+            "Append a successor plan revision; preserve the original plan and all completed steps."
+          ],
+          "expected_events": [
+            "plan.revised.v1"
+          ],
+          "durable_assertions": [
+            "The new plan revision identifies the invalidated future step and retains completed work; it does not silently delete or replay committed steps."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Reconcile the already-dispatched operation before deciding whether the task may resume.",
+          "contract_action": "command:operation.reconcile",
+          "expected_transitions": [
+            "Append reconciliation start and terminal reconciliation result against the original operation receipt."
+          ],
+          "expected_events": [
+            "operation.reconciling.v1",
+            "operation.reconciled.v1"
+          ],
+          "durable_assertions": [
+            "The operation is classified from provider/independent evidence; no duplicate dispatch occurs and the task's recovery decision references the reconciled result."
+          ]
+        },
+        {
+          "step_id": "S09",
+          "trigger": "Resume the task using the successor plan and latest checkpoint after operation reconciliation.",
+          "contract_action": "command:task.resume",
+          "expected_transitions": [
+            "Append the resume request and transition the task to active on the new plan revision."
+          ],
+          "expected_events": [
+            "task.control.requested.v1",
+            "task.run.transitioned.v1"
+          ],
+          "durable_assertions": [
+            "The task resumes from the latest committed checkpoint; completed work is not repeated and the reconciled operation is not dispatched again."
+          ]
+        },
+        {
+          "step_id": "S10",
+          "trigger": "Read current task status and checkpoint by exact owner-scoped run ID.",
+          "contract_action": "query:task.status",
+          "expected_transitions": [
+            "Return current task/plan/checkpoint/operation references without mutating state."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The status identifies the successor plan and latest checkpoint; all earlier task and operation transitions remain auditable."
+          ]
+        },
+        {
+          "step_id": "S11",
+          "trigger": "Attempt to resume before reconciliation has completed or from a stale checkpoint.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Reject or retain paused status until the exact dispatched operation and checkpoint are reconciled."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No task transition, repeated dispatch, checkpoint rewind or committed-state deletion occurs."
+          ]
+        },
+        {
+          "step_id": "S12",
+          "trigger": "Restart and replay accepted task-control, plan and operation-reconciliation receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover task state from durable checkpoints and operation receipts; replay accepted commands without repeating effects."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Task remains on the correct plan/checkpoint; dispatched operation is not repeated; no duplicate task, plan or operation events are appended."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-006-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Request task.resume while the previously dispatched operation remains uncertain or while the requested checkpoint is stale.",
+          "expected_disposition": "Keep the task paused and require operation reconciliation/current checkpoint proof before resuming.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Committed task state and checkpoint history",
+            "Original dispatched operation receipt and provider correlation",
+            "Plan revision history and event/outbox counts"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay task.start/pause/resume and operation.reconcile receipts; return original receipts without repeating provider effects.",
+        "After restart, recover the task from its latest committed checkpoint and preserve the operation's reconciled state."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race task.pause with a local task-step commit; the commit must either complete atomically before pause or not commit at all.",
+        "Race task.resume with operation.reconcile; resume must not pass the safe-point gate until reconciliation is terminal."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Crash after dispatch but before local response; preserve the operation receipt and reconcile before retry.",
+        "Crash after task pause but before plan revision; preserve paused state and allow a later plan revision without repeating committed work."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Invalidate a different future plan step while preserving the same completed checkpoint; only dependent future work is revised.",
+        "Use an operation with a terminal provider failure; task recovery must preserve the failure evidence and not infer success."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
@@ -1765,7 +1876,7 @@
     },
     {
       "scenario_id": "CM-007",
-      "title": "CM-007 — canonical scenario acceptance probe",
+      "title": "CM-007 — stale capability descriptors block plans until revalidation",
       "purpose": "Plan binds exact descriptor version; stale/unavailable descriptor blocks dispatch and triggers revalidation.",
       "source_scenario_ids": [
         "CM-007"
@@ -1779,9 +1890,9 @@
         "catalogue:CAP-002"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: planRevision, planStepContract, capabilityDescriptorRecord, capabilityKnowledgeRevision.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed an owner-scoped discovery context and provider identity with no verified capability descriptor.",
+        "Prepare a plan step that will bind to the exact descriptor ID, version, provider and precondition set returned by discovery.",
+        "Prepare a later descriptor invalidation/version change; no plan or operation is committed yet."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -1793,87 +1904,194 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize discovery context, provider identity and the plan request.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed discovery and plan inputs only; no capability or plan is committed."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "Provider identity, owner scope and discovery context are fixed; no capability version is assumed."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Plan binds exact descriptor version; stale/unavailable descriptor blocks dispatch and triggers revalidation.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Discover the provider capability from current environment evidence.",
+          "contract_action": "command:capability.discover",
           "expected_transitions": [
-            "Plan binds exact descriptor version; stale/unavailable descriptor blocks dispatch and triggers revalidation."
+            "Append the discovered descriptor with exact provider, version, scope, preconditions and provenance."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "capability.discovered.v1"
+          ],
           "durable_assertions": [
-            "Plan binds exact descriptor version; stale/unavailable descriptor blocks dispatch and triggers revalidation.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The descriptor is evidence-backed and owner/context scoped; discovery does not grant execution authority."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Verify the discovered descriptor against its declared contract and current environment evidence.",
+          "contract_action": "command:capability.verify",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append verification status for the exact descriptor version without mutating its source evidence."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "capability.verified.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "The verified descriptor version and verification evidence are explicit; a different version is not silently substituted."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Propose a plan revision that binds the exact verified descriptor ID and version.",
+          "contract_action": "command:plan.propose",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Append a plan proposal with the descriptor version, preconditions, effects and verification lineage."
+          ],
+          "expected_events": [
+            "plan.proposed.v1"
+          ],
+          "durable_assertions": [
+            "The plan step binds the exact descriptor version; proposal remains non-dispatchable until current gateway authority and preconditions are evaluated."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Invalidate the descriptor after provider/environment version evidence changes.",
+          "contract_action": "command:capability.invalidate",
+          "expected_transitions": [
+            "Mark the exact descriptor version invalid and preserve the prior verified record as history."
+          ],
+          "expected_events": [
+            "capability.invalidated.v1"
+          ],
+          "durable_assertions": [
+            "The invalidation references the exact prior descriptor version; the plan's old binding is now stale and cannot be treated as current."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Propose an interaction using the stale plan/descriptor version.",
+          "contract_action": "command:interaction.propose",
+          "expected_transitions": [
+            "Record the interaction proposal for gateway evaluation; do not dispatch using stale descriptor evidence."
+          ],
+          "expected_events": [
+            "interaction.proposed.v1"
+          ],
+          "durable_assertions": [
+            "The proposal retains its stale descriptor reference and remains non-dispatchable; no provider call is made from stale capability metadata."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Observe the gateway rejection of the stale descriptor binding.",
+          "contract_action": "fake:scenario.observe_runtime_transition",
+          "expected_transitions": [
+            "Emit the internal rejection transition and preserve the reason as stale/unavailable capability evidence."
+          ],
+          "expected_events": [
+            "operation.rejected.v1"
+          ],
+          "durable_assertions": [
+            "No operation.dispatched or operation.running event occurs; the stale plan is blocked and a revalidation path is required."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Rediscover the provider capability after the environment/version change.",
+          "contract_action": "command:capability.discover",
+          "expected_transitions": [
+            "Append a new descriptor version with fresh provenance and preconditions."
+          ],
+          "expected_events": [
+            "capability.discovered.v1"
+          ],
+          "durable_assertions": [
+            "The new descriptor has a distinct version/identity; the invalidated descriptor remains historical."
+          ]
+        },
+        {
+          "step_id": "S09",
+          "trigger": "Verify the new descriptor version against current evidence.",
+          "contract_action": "command:capability.verify",
+          "expected_transitions": [
+            "Append verification for the new descriptor version."
+          ],
+          "expected_events": [
+            "capability.verified.v1"
+          ],
+          "durable_assertions": [
+            "Only the new exact descriptor version is verified; no verification status is inherited from the invalidated version."
+          ]
+        },
+        {
+          "step_id": "S10",
+          "trigger": "Revise the plan to bind the new verified descriptor version and current preconditions.",
+          "contract_action": "command:plan.revise",
+          "expected_transitions": [
+            "Append a successor plan revision with the new descriptor ID/version and refreshed preconditions."
+          ],
+          "expected_events": [
+            "plan.revised.v1"
+          ],
+          "durable_assertions": [
+            "The prior plan remains historical; the successor plan references the new verified descriptor version and cannot inherit stale authority."
+          ]
+        },
+        {
+          "step_id": "S11",
+          "trigger": "Read the current plan by exact owner-scoped ID.",
+          "contract_action": "query:plan.get",
+          "expected_transitions": [
+            "Return the current plan revision and descriptor lineage without mutation."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The plan references only the new verified descriptor version; the old plan/descriptor remain visible as stale history."
+          ]
+        },
+        {
+          "step_id": "S12",
+          "trigger": "Restart and replay discovery, verification and plan receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover descriptor versions and plan history; replay accepted receipts without duplicate discovery/plan events."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Invalidated descriptor remains invalid after restart; new descriptor verification and successor plan remain current; no dispatch occurs during replay."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-007-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Attempt to dispatch or resume an interaction using the invalidated descriptor version after a newer environment/provider version is observed.",
+          "expected_disposition": "Reject with stale/unavailable capability status; require fresh discovery, verification and plan revision before dispatch.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Invalidated descriptor's historical record",
+            "Current plan revision and owner authorization state",
+            "Provider dispatch count and operation/outbox state"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay capability.discover/verify and plan proposal/revision receipts; do not create duplicate descriptor versions or plans.",
+        "After restart, the invalidated descriptor remains invalid and only the newly verified version may satisfy current plan preconditions."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race capability.invalidate against interaction.propose; the gateway must evaluate the descriptor's current version at dispatch time and reject stale metadata.",
+        "Race descriptor rediscovery with plan.revise; the successor plan must bind one exact verified descriptor version."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Fail capability verification before commit; the descriptor remains discovered but unverified and cannot satisfy a plan's verified capability requirement.",
+        "Simulate uncertain descriptor invalidation commit; reconcile its receipt before any interaction can be proposed against that descriptor."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Change provider version while keeping the capability name constant; the plan must still detect descriptor version mismatch.",
+        "Discover an unknown optional capability field; preserve it as unknown/unsupported rather than granting an inferred affordance."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
