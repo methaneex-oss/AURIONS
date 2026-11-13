@@ -48,6 +48,18 @@ class OrchestratorTests(unittest.TestCase):
         with self.assertRaises(OrchestrationError):
             validate_manifest(value)
 
+    def test_manifest_rejects_unfilled_placeholders(self):
+        value = valid_manifest()
+        value["authorization_ref"] = "REPLACE_WITH_DIRECTOR_APPROVAL"
+        with self.assertRaisesRegex(OrchestrationError, "placeholder"):
+            validate_manifest(value)
+
+    def test_manifest_rejects_role_durations_above_total_runtime(self):
+        value = valid_manifest()
+        value["max_total_duration_minutes"] = 100
+        with self.assertRaisesRegex(OrchestrationError, "sum of role duration"):
+            validate_manifest(value)
+
     def test_builder_write_scopes_must_be_disjoint(self):
         value = valid_manifest()
         value["roles"]["specialist_builder"]["permitted_paths"] = ["engineering/workforce"]
