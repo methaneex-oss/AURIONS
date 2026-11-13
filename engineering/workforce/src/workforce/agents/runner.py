@@ -82,7 +82,15 @@ def is_sensitive_path(path: Path) -> bool:
     name = path.name.lower()
     if name.endswith((".pem", ".key", ".p12", ".pfx", ".jks", ".keystore")):
         return True
-    if "secret" in name or "credential" in name or name.startswith("service-account"):
+    sensitive_fragments = (
+        "secret", "credential", "password", "passwd",
+        "private-key", "private_key", "privatekey",
+        "api-key", "api_key", "apikey",
+        "access-token", "access_token", "refresh-token", "refresh_token",
+        "auth-token", "auth_token", "client-secret", "client_secret",
+        "service-account",
+    )
+    if any(fragment in name for fragment in sensitive_fragments):
         return True
     return False
 
