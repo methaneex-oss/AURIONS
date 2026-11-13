@@ -100,7 +100,7 @@ jobs:
               "CLOUDFLARE_ACCOUNT_ID",
           ):
               if not os.environ.get(key):
-                  raise SystemExit(f"required protected secret is missing: {key}")
+                  raise SystemExit(f"required environment value is missing: {key}")
 
           root = Path.cwd().resolve()
           manifest_path = (root / os.environ["MANIFEST_PATH"]).resolve()
