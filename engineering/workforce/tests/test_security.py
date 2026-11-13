@@ -40,6 +40,20 @@ class SecurityTests(unittest.TestCase):
             with self.assertRaises(AuthenticationError):
                 authenticate_worker("invalid")
 
+    def test_weak_actor_secrets_are_rejected(self):
+        with patch.dict("os.environ", {"DIRECTOR_APPROVAL_TOKEN": "short"}, clear=True):
+            with self.assertRaises(AuthenticationError):
+                require_director("short")
+
+    def test_duplicate_worker_tokens_are_rejected(self):
+        registry = {
+            "worker-a": {"token": "same-token-value-that-is-long-enough-0001", "role": "lead_builder"},
+            "worker-b": {"token": "same-token-value-that-is-long-enough-0001", "role": "code_reviewer"},
+        }
+        with patch.dict("os.environ", {"WORKFORCE_WORKER_CREDENTIALS_JSON": json.dumps(registry)}, clear=True):
+            with self.assertRaises(AuthenticationError):
+                authenticate_worker("same-token-value-that-is-long-enough-0001")
+
     def test_invalid_worker_registry_fails_closed(self):
         with patch.dict("os.environ", {"WORKFORCE_WORKER_CREDENTIALS_JSON": "{broken"}, clear=True):
             with self.assertRaises(AuthenticationError):
