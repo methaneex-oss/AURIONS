@@ -82,6 +82,8 @@ class RunnerBudgetTests(unittest.TestCase):
         def fake_post(url, **kwargs):
             calls.append(url)
             request = httpx.Request("POST", url)
+            if url.endswith("/heartbeat"):
+                return httpx.Response(200, json={"task_id": "task-001", "lease_generation": 1}, request=request)
             if url.endswith("/budget/reserve"):
                 amount = kwargs["json"]["requested_tokens"]
                 return httpx.Response(200, json={"reservation_id": "reservation-001", "reserved_tokens": amount}, request=request)
@@ -91,10 +93,11 @@ class RunnerBudgetTests(unittest.TestCase):
         with patch("workforce.agents.runner.httpx.post", side_effect=fake_post):
             result = worker.run("small task", [])
         self.assertEqual(result["total_tokens"], 100)
-        self.assertEqual(len(calls), 3)
-        self.assertTrue(calls[0].endswith("/budget/reserve"))
-        self.assertIn("api.groq.com", calls[1])
-        self.assertTrue(calls[2].endswith("/budget/settle"))
+        self.assertEqual(len(calls), 4)
+        self.assertTrue(calls[0].endswith("/heartbeat"))
+        self.assertTrue(calls[1].endswith("/budget/reserve"))
+        self.assertIn("api.groq.com", calls[2])
+        self.assertTrue(calls[3].endswith("/budget/settle"))
 
     def test_runner_stops_before_provider_when_durable_budget_denies_reservation(self):
         env = {
