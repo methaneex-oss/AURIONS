@@ -638,7 +638,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             if not isinstance(existing, dict) or existing.get("role") != role or existing.get("contract_json") != expected_contract:
                 raise OrchestrationError(f"persisted task {task_ids[role]} does not match the authorized role contract")
             state = existing.get("state")
-            if state == "CANDIDATE_READY":
+            if state in {"CANDIDATE_READY", "TESTING", "REVIEWING", "INTEGRATION", "AWAITING_DIRECTOR", "ACCEPTED"}:
                 if not report_path.is_file() or report_path.stat().st_size > MAX_REPORT_BYTES:
                     raise OrchestrationError(f"{role} is complete in the control plane but its durable report artifact is missing")
                 report = json.loads(report_path.read_text(encoding="utf-8"))
