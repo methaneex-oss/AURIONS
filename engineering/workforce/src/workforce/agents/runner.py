@@ -77,7 +77,7 @@ def is_sensitive_path(path: Path) -> bool:
     names = {".aws", ".ssh", ".gnupg", ".netrc", ".npmrc", ".pypirc",
              "credentials", "credentials.json", "id_rsa", "id_ed25519",
              "authorized_keys", "known_hosts"}
-    if any(part in names for part in parts):
+    if any(part in names or part == ".env" or part.startswith(".env.") for part in parts):
         return True
     name = path.name.lower()
     if name.endswith((".pem", ".key", ".p12", ".pfx", ".jks", ".keystore")):
