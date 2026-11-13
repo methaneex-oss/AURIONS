@@ -475,12 +475,12 @@ def test_events() -> None:
     )
     expect_integrity_error(
         db, "saga terminal state without completion timestamp",
-        "UPDATE operation_steps SET state='succeeded' WHERE operation_step_id=?",
+        "UPDATE operation_steps SET state='succeeded',completed_at_ms=12 WHERE operation_step_id=?",
         (bytes([41])*16,),
     )
     db.execute(
         """UPDATE operation_steps
-        SET state='succeeded',completed_at_ms=12,result_ref='approval:receipt',
+        SET state='succeeded',started_at_ms=11,completed_at_ms=12,result_ref='approval:receipt',
             result_digest=?
         WHERE operation_step_id=?""",
         ("c"*64,bytes([41])*16),
