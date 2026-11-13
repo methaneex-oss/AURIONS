@@ -133,7 +133,7 @@ def validate_query_projection_source_columns(
                 continue
             # Parenthetical text records a derivation/annotation (for
             # example an event type); relational sources occur before it.
-            relational_source = source.split("(", 1)[0]
+            relational_source = re.sub(r"\([^)]*\)", "", source)
             source_matches = list(re.finditer(
                 r"\b([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\b",
                 relational_source,
