@@ -574,3 +574,23 @@ Corrections:
 **Verification:** Code-bearing exact PR head `4fe74e09c5d3bbc4d9c03a35e707926bdf9c4b77` passed all nine workflow steps in [run 43383148511](https://github.com/methaneex-oss/AURIONS/actions/runs/43383148511), including schema/fixture validation, governance, owner/WP/acceptance traceability, all eleven ordered SQLite DDL files and migration-specific rollback/reference probes, and Android probe shell syntax. Subsequent changes to the persistence README and owner-decision evidence table are documentation-only.
 
 **Evidence boundary:** This does not implement goal handlers, query SQL, owner-scope middleware or legacy-goal reconciliation at runtime. It does not prove target Android/Termux behaviour or crash/power-loss safety. BR-005 remains PARTIALLY CLOSED; BR-008 remains OPEN.
+
+
+## BR-001 / BR-008 builder increment — command inventory and approval producer reconciliation (2026-11-13)
+
+The live registry contained 54 command entries (52 mapped, two deferred), while its metadata, schema constants and validator still described 53 total / 51 mapped. The newly mapped `approval.decide` command also lacked a transition-matrix row and transaction-matrix row, and its `approval.decided.v1` event remained incorrectly classified as having no command producer.
+
+Corrections:
+- Updated registry counts and schema constants to 52 mapped, two deferred, 54 total command-envelope bindings and 52 proposed-DDL-mapped commands.
+- Made the validator derive the total from the registry's declared mapped/deferred counts and verify unique command IDs plus envelope/DDL count parity.
+- Added the missing `approval.decide` transition and `CC-052` acceptance case, and added its governance-store local-outbox transaction row.
+- Bound `approval.decided.v1` to `approval.decide`, reconciled the event producer/consumer matrix and removed it from the non-command ingress matrix; the non-command/non-Action-Gateway inventory is now 22.
+
+The defects were reproduced and corrected across three failed runs:
+- [43383924746](https://github.com/methaneex-oss/AURIONS/actions/runs/43383924746): stale 53-command validator count.
+- [43384323527](https://github.com/methaneex-oss/AURIONS/actions/runs/43384323527): missing `approval.decide` transaction-matrix row.
+- [43384455772](https://github.com/methaneex-oss/AURIONS/actions/runs/43384455772): event producer mismatch for `approval.decided.v1`.
+
+**Verified code-bearing revision:** `0efdd4bbec4a031a1067d533151a732a0290449d` passed all nine workflow steps in [run 43384669652](https://github.com/methaneex-oss/AURIONS/actions/runs/43384669652). This validates registry/matrix/producer consistency, governance integrity, WP graph, host SQLite DDL smoke and Android probe syntax. It does not implement or execute command/event handlers or owner authentication.
+
+**Status:** The inventory/producer consistency subtask is closed. BR-001 and BR-008 remain OPEN overall; commands/events remain non-dispatchable. No implementation authorization, owner decision, independent-review/tester handoff or merge is implied.
