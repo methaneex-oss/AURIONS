@@ -49,8 +49,8 @@ def main() -> int:
             {"role": "system", "content": system + "\nRole: " + role + "\nAssessment criteria: " + ROLE_CRITERIA[role]},
             {"role": "user", "content": CASES[role]},
         ],
-        "max_tokens": 1400,
-        "reasoning": {"effort": "low"},
+        "max_tokens": 700,
+        "reasoning": {"enabled": False},
         "temperature": 0,
     }
     response = httpx.post(
