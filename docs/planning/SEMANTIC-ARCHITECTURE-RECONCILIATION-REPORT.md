@@ -127,3 +127,12 @@ Exact revision `4e509a194f206c52d41fda1f6d3b3599bc5c0375` passed GitHub Actions 
 The schema validator now compares producer origin, exact trigger contract and owner-transition contract field-for-field between the event registry and both trigger matrices. Coverage is exact: 15 Action Gateway internal events plus 23 other non-command events. All 89 event entries now retain only the unresolved runtime-handler and event-specific-acceptance-execution gates.
 
 Exact HEAD 2f4218c669ced79920af16ff122e5ab7080124b4 passed CI run [43323863934](https://github.com/methaneex-oss/AURIONS/actions/runs/43323863934). This closes specification parity only; owner acceptance, runtime handlers and executed event behaviour remain open.
+
+
+## BR-004/BR-008 builder increment — open-world scenario and evidence-count reconciliation (2026-11-13)
+
+The current integrated scenario corpus now contains **47 specifications**: INT-001…INT-003, CM-001…CM-029 and AD-001…AD-015. The fixture contains **287 ordered steps and 53 negative controls**. CM-022…CM-029 are individually instantiated with concrete command/event transitions, durable assertions, negative controls, restart/replay, concurrency, fault and held-out controls. The schema validator enforces the exact inventory/counts and concrete command/event requirements. The event registry's acceptance-scenario references were recomputed from the full fixture; the current mismatch count is zero.
+
+The 37 events without command producers remain intentionally non-command events: 15 Action Gateway state-transition events and 22 other trusted-ingress/internal producer events. This is a trigger-origin classification, not a missing-command defect and not a reason to invent public commands.
+
+**Evidence boundary:** The scenario fixture and event-reference consistency are machine-checkable specifications. They do not execute runtime behaviour. Event consumer semantics, cross-store saga behaviour, target SQLite/Android validation, C++ conformance, independent review and owner decisions remain separate gates. The current revision must pass CI before the new fixture increment is considered validated.
