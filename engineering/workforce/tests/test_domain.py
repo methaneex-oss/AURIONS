@@ -46,6 +46,18 @@ class DomainTests(unittest.TestCase):
         }
         self.assertEqual(TaskContract.from_dict(value).work_package_id, "WF-01")
 
+    def test_contract_rejects_resource_budget_above_hard_ceiling(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
+            "base_commit_sha": "a" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 101, "max_tokens": 100, "max_duration_minutes": 1,
+            "stop_conditions": ["budget"]
+        }
+        with self.assertRaises(ContractError):
+            TaskContract.from_dict(value)
+
     def test_contract_rejects_missing_authorization(self):
         value = {
             "work_package_id": "WF-01", "authorization_ref": "UNSET", "objective": "Build",
