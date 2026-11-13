@@ -770,7 +770,7 @@
     },
     {
       "scenario_id": "CM-001",
-      "title": "CM-001 — canonical scenario acceptance probe",
+      "title": "CM-001 — immutable experience with independent representations",
       "purpose": "One immutable experience with multiple independently versioned representations; source record unchanged.",
       "source_scenario_ids": [
         "CM-001"
@@ -782,9 +782,9 @@
         "catalogue:CG-002"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: experienceObserved, representationCreated.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Prepare one owner-scoped experienceObserved payload with stable source identity, observed time, provenance, uncertainty and exact source revision.",
+        "Prepare two distinct representation requests with unique IDs and different representation types/method versions; both reference the same exact experience revision.",
+        "Record the source payload digest and authenticated owner/actor scope before any command is accepted."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -796,87 +796,124 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize the owner-scoped source payload, two representation requests and fixed source digest.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed the test inputs only; no experience or representation is committed."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "Owner/actor scope and source provenance are fixed; initial durable state contains no target experience or representation."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: One immutable experience with multiple independently versioned representations; source record unchanged.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Submit the source observation with provenance, observed time and explicit uncertainty.",
+          "contract_action": "command:experience.submit",
           "expected_transitions": [
-            "One immutable experience with multiple independently versioned representations; source record unchanged."
+            "Append one immutable experience and its validated evidence links in the owning memory-store transaction."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "experience.observed.v1",
+            "evidence.recorded.v1"
+          ],
           "durable_assertions": [
-            "One immutable experience with multiple independently versioned representations; source record unchanged.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "The source record is append-only; source content, provenance, observed time and uncertainty are retained exactly; the experience and evidence events are emitted once."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Create representation R-A from the exact submitted experience ID and revision using method A.",
+          "contract_action": "command:representation.create",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Create representation R-A at revision 1 with an exact source experience ID/revision reference."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "representation.created.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "R-A is independently versioned and points to the exact immutable source revision; the source experience digest is unchanged."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Create representation R-B from the same source revision using a different representation type or method version.",
+          "contract_action": "command:representation.create",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Create representation R-B at revision 1 without mutating R-A or the source experience."
+          ],
+          "expected_events": [
+            "representation.created.v1"
+          ],
+          "durable_assertions": [
+            "R-A and R-B have distinct identities and independent revisions while retaining the same exact source lineage; the source digest remains unchanged."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Read both representations and their source lineage by exact owner-scoped IDs.",
+          "contract_action": "query:representation.inspect",
+          "expected_transitions": [
+            "Return both immutable representation revisions and their source references without a write."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The query returns exactly R-A and R-B with source revision lineage; owning rows, event/outbox counts and receipts remain unchanged."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Attempt representation creation with a cross-owner source or stale source revision.",
+          "contract_action": "fake:scenario.inject_negative_control",
+          "expected_transitions": [
+            "Deny or return a typed stale-dependency conflict before committing any representation."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No representation is appended; no source record, existing representation, event/outbox count or other owner state changes."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Restart the isolated runtime and replay the accepted command receipts with their original idempotency identities.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover the immutable source and both representations; return stored receipts without repeating committed effects."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Both representations and the source survive restart; event/outbox counts remain unchanged after replay; no duplicate representation or source revision appears."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-001-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Submit representation.create with either an experience owned by another principal or an obsolete source revision.",
+          "expected_disposition": "Return a scoped denial or DEPENDENCY_VERSION_STALE conflict; do not reveal cross-owner existence or create a representation.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Immutable source experience and evidence",
+            "Existing representation identities and revisions",
+            "Owner-scoped event/outbox counts and receipts"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay the same experience.submit key and digest; return its original receipt and do not append another experience/evidence pair.",
+        "Replay each representation.create key and digest; return the original representation receipt without another representation.created event.",
+        "Crash after a representation commit but before response; restart must return the stored receipt and preserve exactly one representation revision."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race two representation.create requests with distinct IDs against the same immutable source revision; both may commit independently without changing the source.",
+        "Race duplicate representation IDs or a stale source revision; one identity cannot be committed twice and stale lineage must fail closed."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Fail the representation transaction before commit; no representation or representation.created event may survive.",
+        "Simulate uncertain commit after write; reconcile the receipt before retry and prohibit duplicate representation creation."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Use an unseen but schema-compatible representation type/method version; the generic representation contract must accept or explicitly reject it based on schema/evidence, not a task-specific branch.",
+        "Use a second unrelated source experience as a control; its lineage and digest must remain unchanged."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
@@ -894,7 +931,7 @@
     },
     {
       "scenario_id": "CM-002",
-      "title": "CM-002 — canonical scenario acceptance probe",
+      "title": "CM-002 — context revision invalidates dependent reasoning",
       "purpose": "Context revision invalidates dependent reasoning inputs; stale input is rejected or recomputed.",
       "source_scenario_ids": [
         "CM-002"
@@ -907,9 +944,9 @@
         "catalogue:DB-016"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: contextSnapshot, contextInvalidated, reasoningAssessmentRequest.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed owner-scoped source records at fixed revisions and an authenticated actor; do not pre-create the context snapshot.",
+        "Prepare a reasoningAssessmentRequest that will bind to the context snapshot created by the first context.assemble command.",
+        "Capture source record revisions and digests so reassembly can be distinguished from source mutation."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -921,87 +958,150 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize source records, fixed revisions and the dependent reasoning request.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed only source records and request inputs; no context snapshot or reasoning assessment is committed."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "Source records and revisions are fixed; context and reasoning aggregates are initially absent."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Context revision invalidates dependent reasoning inputs; stale input is rejected or recomputed.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Assemble context snapshot C-001 from the exact source record revisions and assembly policy version.",
+          "contract_action": "command:context.assemble",
           "expected_transitions": [
-            "Context revision invalidates dependent reasoning inputs; stale input is rejected or recomputed."
+            "Create immutable context snapshot C-001 at revision 1 with explicit unknown and missing inputs."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "context.assembled.v1"
+          ],
           "durable_assertions": [
-            "Context revision invalidates dependent reasoning inputs; stale input is rejected or recomputed.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "C-001 records every source ID/revision and the assembly policy version; source records remain unchanged."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Create a reasoning assessment that references C-001 revision 1.",
+          "contract_action": "command:reasoning.assess",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append an immutable reasoning assessment and hypothesis/evidence lineage bound to C-001 revision 1."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "reasoning.hypothesis.proposed.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "The assessment records the exact context revision; a hypothesis remains a proposal, not a fact, plan, decision or action."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Invalidate C-001 revision 1 after one dependent source revision changes or becomes stale.",
+          "contract_action": "command:context.invalidate",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Mark the exact current context revision stale and advance the context head once; preserve all source records."
+          ],
+          "expected_events": [
+            "context.invalidated.v1"
+          ],
+          "durable_assertions": [
+            "The invalidation identifies C-001 revision 1; source evidence is not deleted and dependent reasoning inputs are no longer treated as current."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Retry reasoning.assess using the stale C-001 revision 1 request.",
+          "contract_action": "command:reasoning.assess",
+          "expected_transitions": [
+            "Reject with DEPENDENCY_VERSION_STALE or an equivalent typed stale-input result; append no new assessment or hypothesis."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "No reasoning.hypothesis.proposed event or new assessment is committed for stale context; prior assessment and source revisions remain intact."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Reassemble context C-002 from the current source revisions.",
+          "contract_action": "command:context.assemble",
+          "expected_transitions": [
+            "Create a new immutable context snapshot with a new revision and exact current source lineage."
+          ],
+          "expected_events": [
+            "context.assembled.v1"
+          ],
+          "durable_assertions": [
+            "C-002 is distinct from C-001; the stale snapshot remains historical and source records are not rewritten."
+          ]
+        },
+        {
+          "step_id": "S07",
+          "trigger": "Re-run reasoning.assess using C-002 and its exact current dependency revisions.",
+          "contract_action": "command:reasoning.assess",
+          "expected_transitions": [
+            "Append a new reasoning assessment bound to C-002; do not reuse the stale C-001 assessment as current."
+          ],
+          "expected_events": [
+            "reasoning.hypothesis.proposed.v1"
+          ],
+          "durable_assertions": [
+            "The new assessment records C-002's revision and dependencies; prior assessment history remains retrievable."
+          ]
+        },
+        {
+          "step_id": "S08",
+          "trigger": "Read the current context by owner-scoped ID and verify the prior snapshot's stale status.",
+          "contract_action": "query:context.get",
+          "expected_transitions": [
+            "Return the current immutable snapshot and its exact dependency revisions without reassembly or mutation."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "C-002 is current; C-001 remains stale/history; the query leaves context, reasoning, event/outbox and receipt state unchanged."
+          ]
+        },
+        {
+          "step_id": "S09",
+          "trigger": "Restart and replay the accepted context and reasoning command receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover both context snapshots and assessments; do not promote stale C-001 or duplicate accepted events."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Current/stale revision status survives restart; replay creates no additional context or reasoning events."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-002-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Submit reasoning.assess with a dependency digest or context revision that no longer matches the current context head.",
+          "expected_disposition": "Reject with DEPENDENCY_VERSION_STALE; do not silently reassemble or accept the stale reasoning input.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Source records and their revisions",
+            "Prior context snapshots and reasoning assessments",
+            "Current context head and event/outbox counts"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay context.assemble and reasoning.assess with the same scoped keys/digests; return stored receipts without new events.",
+        "After restart, C-001 remains stale and C-002 remains the current snapshot; do not infer freshness from creation time alone."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race context.invalidate against reasoning.assess using the same expected context revision; serialize the owner transition so stale reasoning cannot commit after invalidation.",
+        "Race two context.assemble requests against changed source revisions; each snapshot must bind to one exact dependency set."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Fail context invalidation before commit; the old context remains current and no invalidation event is appended.",
+        "Simulate uncertain commit after invalidation; reconcile its receipt before reasoning can proceed."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Change one source revision while preserving all other inputs; only dependent context and reasoning inputs become stale.",
+        "Add an unknown optional source attribute; context assembly must preserve it as unknown/unsupported rather than fabricate a value."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
@@ -1019,7 +1119,7 @@
     },
     {
       "scenario_id": "CM-003",
-      "title": "CM-003 — canonical scenario acceptance probe",
+      "title": "CM-003 — contradictory evidence creates a new belief revision",
       "purpose": "Contradictory evidence creates a new revision; prior evidence and revisions remain retrievable.",
       "source_scenario_ids": [
         "CM-003"
@@ -1030,9 +1130,9 @@
         "catalogue:CG-004"
       ],
       "initial_state": [
-        "Initialize isolated owner-scoped test state for the scenario's required payloads: beliefRevision, evidenceItem.",
-        "Freeze source revisions, provenance, test data IDs and event sequence before the scenario begins.",
-        "Route every provider, clock, inference and authority interaction through deterministic fakes."
+        "Seed one owner-scoped belief B-001 at revision 1 with supporting evidence E-A and a fixed provenance chain.",
+        "Prepare a new contradictory observation E-B with independent source/time/provenance; do not alter E-A or B-001 revision 1.",
+        "Capture the current belief revision and evidence digests before submitting the new observation."
       ],
       "deterministic_fakes": {
         "clock": "Monotonic virtual clock with deterministic advancement.",
@@ -1044,87 +1144,109 @@
       "steps": [
         {
           "step_id": "S01",
-          "trigger": "Load the scenario's exact preconditions, source evidence and versioned state.",
+          "trigger": "Initialize B-001 revision 1, its supporting evidence E-A and the independent contradictory observation payload E-B.",
           "contract_action": "fake:scenario.initialize",
           "expected_transitions": [
-            "Create only the declared initial state; preserve unknown, conflicting and absent values explicitly."
+            "Seed the existing belief and evidence only; do not mutate the belief head or append E-B."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Initial state matches the fixture and has a reproducible digest.",
-            "No provider side effect or authority grant occurs during setup."
+            "B-001 revision 1 and E-A are immutable and retrievable; E-B has a distinct source identity and provenance."
           ]
         },
         {
           "step_id": "S02",
-          "trigger": "Execute the owning contract sequence for this scenario: Contradictory evidence creates a new revision; prior evidence and revisions remain retrievable.",
-          "contract_action": "fake:scenario.exercise_contract_sequence",
+          "trigger": "Submit contradictory observation E-B as a new immutable experience/evidence record.",
+          "contract_action": "command:experience.submit",
           "expected_transitions": [
-            "Contradictory evidence creates a new revision; prior evidence and revisions remain retrievable."
+            "Append E-B and its evidence link without overwriting or deleting E-A."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "experience.observed.v1",
+            "evidence.recorded.v1"
+          ],
           "durable_assertions": [
-            "Contradictory evidence creates a new revision; prior evidence and revisions remain retrievable.",
-            "Each state transition is attributable to its owning component and exact source revision."
+            "E-B retains its own source, observed time, provenance and uncertainty; E-A and B-001 revision 1 remain unchanged."
           ]
         },
         {
           "step_id": "S03",
-          "trigger": "Remove or stale one required evidence, revision, permission, approval or provider precondition relevant to this scenario.",
-          "contract_action": "fake:scenario.inject_negative_control",
+          "trigger": "Revise B-001 using expected revision 1 and explicit links to both supporting E-A and contradicting E-B.",
+          "contract_action": "command:belief.revise",
           "expected_transitions": [
-            "Reject, defer, recompute or preserve uncertainty according to the owning contract; never silently claim success."
+            "Append belief revision 2 with both supporting and contradicting evidence lineage; preserve revision 1."
           ],
-          "expected_events": [],
+          "expected_events": [
+            "belief.revised.v1"
+          ],
           "durable_assertions": [
-            "Negative control cannot mutate unrelated owner state or protected authority.",
-            "No stale or unauthorized transition is committed."
+            "The belief head advances once; prior claim, confidence, rationale and evidence links remain auditable; contradiction is not silently discarded."
           ]
         },
         {
           "step_id": "S04",
-          "trigger": "Restart the isolated runtime and replay accepted messages using their original idempotency identities.",
-          "contract_action": "fake:scenario.restart_and_replay",
+          "trigger": "Read B-001 and its revision/evidence history by exact owner-scoped ID.",
+          "contract_action": "query:belief.inspect",
           "expected_transitions": [
-            "Recover durable state and receipts; reconcile uncertain external effects before any retry."
+            "Return both revision 1 and revision 2 with supporting and contradicting evidence references."
           ],
           "expected_events": [],
           "durable_assertions": [
-            "Committed state survives restart and is not duplicated by replay.",
-            "Transient state is reconstructed from current durable inputs rather than stale historical allocation."
+            "The query exposes contradiction lineage and prior history without promoting, revising or deleting the belief."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Attempt another belief.revise using stale expected revision 1 after revision 2 is current.",
+          "contract_action": "command:belief.revise",
+          "expected_transitions": [
+            "Reject with EXPECTED_REVISION_CONFLICT; append no revision 3 and emit no belief.revised event."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Belief head remains revision 2; evidence and prior revisions are unchanged; no additional event/outbox row is appended."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "Restart and replay the accepted experience.submit and belief.revise receipts.",
+          "contract_action": "fake:scenario.restart_and_replay",
+          "expected_transitions": [
+            "Recover E-A, E-B and both belief revisions; return stored receipts without duplicate appends."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Both evidence records and the full belief revision history survive restart; replay creates no duplicate evidence or belief event."
           ]
         }
       ],
       "negative_controls": [
         {
           "control_id": "CM-003-NC-001",
-          "injection": "Remove or stale one required input or authorization precondition and attempt the same transition.",
-          "expected_disposition": "Fail closed, return a typed conflict/denial, or retain explicit unknown/uncertain state as required by the owning contract.",
+          "injection": "Attempt belief.revise with a stale expected revision or omit the evidence link that supports the claimed contradiction.",
+          "expected_disposition": "Reject with EXPECTED_REVISION_CONFLICT or EVIDENCE_INSUFFICIENT; do not create a revision from unsupported evidence.",
           "must_not_change": [
-            "Immutable source evidence and prior revisions",
-            "Owner objective and protected policy/permission state",
-            "Unrelated aggregate revisions and event/outbox counts"
+            "Belief B-001 revision head and prior revision history",
+            "Supporting evidence E-A and contradictory evidence E-B",
+            "Owner-scoped event/outbox counts and immutable receipts"
           ]
         }
       ],
       "restart_replay_controls": [
-        "Crash before the owning transaction commits; restart must show no partial domain mutation.",
-        "Crash after commit but before response; replay must return the stored receipt without duplicate state/event effects.",
-        "Where external effects exist, a dispatched/unknown attempt must be reconciled before retry."
+        "Replay the same experience.submit and belief.revise keys/digests; return original receipts and do not append another evidence item or belief revision.",
+        "After restart, both supporting and contradicting evidence remain linked to their exact belief revisions."
       ],
       "concurrency_controls": [
-        "Race two transitions against the same expected aggregate revision; enforce one valid winner or a documented commutative merge.",
-        "Race the scenario's relevant invalidation, cancellation or revocation against the state transition; enforce the owning boundary's serialization rule."
+        "Race two belief.revise requests against expected revision 1; only one successor may commit and the other must receive EXPECTED_REVISION_CONFLICT.",
+        "Race an evidence append against belief.revise; the revision must reference the exact evidence revision it evaluated."
       ],
       "fault_controls": [
-        "Inject storage failure before commit and uncertain commit after write; distinguish no-commit from committed receipt.",
-        "Inject fake provider timeout or malformed evidence where relevant; preserve uncertainty and prohibit blind retry.",
-        "Inject restart between each durable step and verify recovery from persisted state."
+        "Fail belief.revise before commit; revision 1 remains the head and no belief.revised event is appended.",
+        "Simulate uncertain commit after revision 2 is written; reconcile the receipt before retry to prevent revision 3 duplication."
       ],
       "held_out_controls": [
-        "Replace one entity, context, provider descriptor or evidence source with a previously unseen but schema-compatible variant.",
-        "Include an unrelated control case to detect unintended generalization or regression.",
-        "Do not add a task-specific core branch to make the held-out case pass."
+        "Use a second independent contradictory evidence source with a different timestamp and provenance; preserve both sources without privileging the newer timestamp automatically.",
+        "Use a neutral, non-contradictory evidence item as a control; do not force a belief revision when the evidence does not justify one."
       ],
       "acceptance_thresholds": {
         "hard_invariants": [
