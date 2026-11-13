@@ -1134,3 +1134,18 @@ Added checks requiring every event to declare unique consumer components and req
 **Exact code head:** \`7732d8b1823c9ac69fa96d481a20bb1c935b3c1d\`. [Workflow 43434350081](https://github.com/methaneex-oss/AURIONS/actions/runs/43434350081) passed all nine steps.
 
 **Evidence boundary:** This is event registry/matrix semantic-summary consistency only. It does not prove consumer implementations, subscriptions, delivery, ordering, idempotency under execution or owner-state transitions. BR-008 remains OPEN.
+
+
+## BR-010 work-package dependency crosswalk — roadmap/matrix parity (2026-11-13)
+
+A direct comparison of the canonical roadmap dependency column against the work-package traceability matrix's prerequisite column found one mismatch: WP-07 depended on WP-06 in the roadmap, but the traceability matrix listed only WP-01, WP-02 and WP-03.
+
+Correction:
+- Added the missing WP-06 world/means-context prerequisite to the WP-07 traceability row.
+- Extended \`validate_planning_traceability.py\` to require each work-package matrix prerequisite set to exactly match the canonical roadmap dependency set, preventing future drift.
+
+**Independent comparison:** 17 work packages; zero roadmap/matrix dependency mismatches after correction.
+
+**Exact code head:** \`af83d6bdf11f4796591bdff83803ff99eb163885\`. [Workflow 43434637578](https://github.com/methaneex-oss/AURIONS/actions/runs/43434637578) passed all nine steps.
+
+**Evidence boundary:** This closes dependency traceability parity only. It does not prove package deliverables are implemented, acceptance evidence is achieved, owner gates are accepted or planning exit is approved. BR-010 remains OPEN.
