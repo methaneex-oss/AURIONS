@@ -1194,3 +1194,15 @@ Corrections:
 - Extended the command/query/event validator and concrete-scenario gate to CM-004 and CM-005.
 
 **Updated fixture inventory:** 39 scenarios, 192 ordered steps and 45 negative controls. Five of 36 CM/AD rows are now concrete; 31 remain generic. CM-022…CM-029 remain absent from the fixture corpus. BR-004 remains OPEN; scenarios are design specifications, not executed runtime acceptance.
+
+
+
+## BR-004 / event-coverage accounting correction — 2026-11-13
+
+The batch-1 note's 28/61 event-coverage estimate used substring matching on serialized fixture JSON. That incorrectly treated `interaction.outcome.observed.v1` as a reference to the distinct `outcome.observed.v1` event.
+
+**Correct exact-ID result after CM-004/CM-005:** 32 event types are referenced by scenario `expected_events`; the registry contains exactly those same 32 scenario-reference sets, with zero missing IDs and zero mismatches. The remaining 57 of 89 event types have no direct scenario reference. `outcome.observed.v1` is not currently referenced by a scenario; the similarly named interaction event is a different event type.
+
+Current fixture state remains 39 scenarios, 192 steps and 45 negative controls. Five of 36 CM/AD rows are concrete; 31 remain generic, and CM-022…CM-029 remain absent. Exact PR HEAD `db78f6e74007258207bf56f7e4565f5a18f5b5ad` passed [workflow 43435834491](https://github.com/methaneex-oss/AURIONS/actions/runs/43435834491).
+
+BR-004 remains OPEN. Event coverage gaps and remaining generic/missing scenario fixtures are not accepted as complete.
