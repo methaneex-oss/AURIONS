@@ -1362,10 +1362,12 @@
         "runtime_handler",
         "event_specific_acceptance_execution"
       ],
-      "command_producers": [],
-      "command_producer_binding_status": "unresolved",
-      "producer_origin": "owner_governance_interface",
-      "producer_trigger_contract": "Emitted when the authenticated owner-governance interface returns a signed/validated decision bound to one approval request ID, exact operation digest, owner session, one-time nonce and expiry; governance verifies identity, scope and replay before recording the decision. Model text cannot emit this event.",
+      "command_producers": [
+        "approval.decide"
+      ],
+      "command_producer_binding_status": "bound",
+      "producer_origin": "command",
+      "producer_trigger_contract": "Emitted only by approval.decide after the trusted owner-governance interface authenticates the owner and validates the one-time nonce/session, pending request, exact operation digest, policy version and expiry; the decision, request transition, audit and local outbox commit in one governance-store transaction. Model text cannot emit this event.",
       "owning_component": "Governance approval subsystem",
       "consumer_contracts": [
         {
