@@ -1,11 +1,6 @@
 name: AURIONS workforce — provider connectivity smoke test
 
 on:
-  push:
-    branches:
-      - feat/engineering-workforce-foundation
-    paths:
-      - .github/workflows/workforce-provider-smoke-test.yml
   workflow_dispatch:
 
 permissions:
