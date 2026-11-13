@@ -1,0 +1,14 @@
+{
+  "discovery_id": "b1100000-0000-4000-8000-000000000001",
+  "environment_scope": {
+    "device_ref": "device:local"
+  },
+  "provider_filters": [],
+  "discovery_strategy_ref": "strategy:general_discovery",
+  "environment_observation_refs": [],
+  "requested_at": "2026-11-11T08:09:00Z",
+  "deadline": "2026-11-11T08:10:00Z",
+  "resource_budget": {
+    "cpu_ms": 10000
+  }
+}

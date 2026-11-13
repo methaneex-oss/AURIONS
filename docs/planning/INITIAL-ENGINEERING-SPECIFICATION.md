@@ -205,7 +205,7 @@ Every event contract must define schema version, source, timestamps, correlation
 
 Initial proposal: three SQLite databases:
 
-1. aurion_memory.db: experiences, representations, contexts, memory, knowledge, beliefs, evidence, predictions, goals, plans and learning metadata.
+1. aurion_memory.db: experiences, representations, contexts, memory, knowledge, beliefs, evidence, predictions, goals, plans, discovered capability descriptors/knowledge, durable appraisal/decision/outcome summaries, self-model revisions, evolution proposals and learning metadata.
 2. aurion_events.db: durable events, operations, operation steps, recovery journal, task runs and checkpoints.
 3. aurion_governance.db: policies, permissions, approval requests/decisions, protected changes, audit, provider permissions and data disclosures.
 
@@ -213,13 +213,14 @@ Working memory remains in RAM. Large content/model/dataset artifacts live in fil
 
 Ownership:
 
-- Memory owns memory records.
-- Knowledge owns consolidated knowledge.
-- Belief subsystem owns provisional/revised beliefs.
+- Memory owns episodic/semantic memory records and retrieval metadata.
+- Knowledge owns consolidated knowledge; belief subsystem owns provisional/revised beliefs and evidence lineage.
+- Capability discovery owns versioned capability descriptors, discovery evidence, capability knowledge revisions and evidence-supported capability relationships in the memory domain; it does not own permission grants.
 - Event infrastructure owns durable event history.
 - Model manager owns model metadata/deployment.
-- Evolution owns candidate changes/evaluation.
-- Governance owns protected policies and authorization.
+- Appraisal/reasoning/decision/outcome subsystems own bounded durable assessment/decision/evaluation records; transient attention allocation remains in working runtime state unless a durable event is required.
+- Self-model owns evidence-backed self-model revisions; evolution owns change proposals and candidate/evaluation references.
+- Governance owns protected policies, owner identity, permission grants, approvals and authorization.
 
 Cross-store consistency uses shared durable operation IDs, transactions within each DB, idempotent event processing, explicit commit states, recovery journal/reconciliation, periodic consistency checks and coordinated backup/restore. Do not assume a global transaction across database files.
 
@@ -229,7 +230,7 @@ A proposed SQL schema was drafted in the planning conversation. It is a proposal
 
 ### Memory DB entities
 
-experiences; representations; contexts; memory_records; memory_links; knowledge_items; beliefs; evidence_items; belief_revisions; belief_evidence; predictions; prediction_evaluations; goals; plans; plan_steps; plan_step_dependencies; learning_updates.
+experiences; representations; contexts; memory_records; memory_links; knowledge_items; beliefs; evidence_items; belief_revisions; belief_evidence; predictions; prediction_evaluations; goals; plans; plan_steps; plan_step_dependencies; capability_descriptors; capability_discovery_evidence; capability_knowledge_revisions; capability_knowledge_evidence; capability_relationships; appraisal_records; reasoning_assessments; decision_records; outcome_evaluations; self_model_revisions; evolution_proposals; learning_updates.
 
 Rules:
 
@@ -396,6 +397,9 @@ Chat history alone is not sufficient evidence of memory or learning.
 
 ## 18. Implementation work packages — planning baseline
 
+**Historical planning table:** This original WP-00…WP-16 breakdown is retained for decision history. It is superseded by `docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md`, which reconciles the later detailed contracts and the owner's concurrent cloud/offline-mobile first-release decision. Do not use the historical numbering as the current implementation sequence.
+
+
 | Work package | Scope |
 | --- | --- |
 | WP-00 | Foundation and build system |
@@ -421,7 +425,9 @@ WP-00 → WP-01 → WP-02/WP-03 → WP-04/WP-05 → WP-06/WP-07 → WP-08 → WP
 
 Worker infrastructure follows shared contracts and artifact-management foundations. This is a dependency baseline, not a promise that all work is strictly sequential.
 
-## 19. Remaining specification checklist
+## 19. Remaining specification checklist — historical snapshot
+
+This checklist records the outstanding items at the time of the original specification. Later sections and the [Planning Completion Register](PLANNING-COMPLETION-REGISTER.md) supersede its status. Do not use this historical checklist alone to determine current completion.
 
 - [ ] Exact versioned event schemas and C++/Python worker message contracts.
 - [ ] Component dependency matrix: ownership, allowed/forbidden dependencies, cycle prevention and interfaces.
@@ -445,7 +451,9 @@ Each section must define purpose/scope; requirements/invariants; component owner
 - Initial capture: consolidated AURION mission, owner decisions, architecture baselines, device/model groundwork, cognitive architecture, storage design, SQL entity model, operational/security requirements, first milestone and remaining planning work from the planning conversation.
 - Status: SQL schema and architecture are proposals/baselines, not verified implementation. No implementation is authorized by this document alone.
 
-## 22. Immediate next action
+## 22. Immediate next action — historical snapshot
+
+This was the next action when the initial specification was first consolidated. It is superseded by the later planning supplements and the current builder-owned work ledger in [Planning Completion Register](PLANNING-COMPLETION-REGISTER.md).
 
 Continue the remaining specification checklist in this same controlled project record. Do not restart from the mission or re-summarize settled decisions. Complete exact event/message contracts, component dependencies, authorization, recovery, deletion/sync, tests, dependency/licensing and consistency review. Update this record as each section is completed and preserve the change log. Only after the entire initial planning stage is complete should the owner be asked to approve implementation.
 
@@ -514,7 +522,7 @@ Field rules:
 
 A receiver adds its own received_at_ms and processing metadata in its receiving store; the producer must not claim to know when another component received the message.
 
-**Timestamp convention:** wire format uses UTC RFC 3339; SQLite stores UTC Unix epoch milliseconds as previously proposed. Reject timestamps without timezone information. Clock skew is possible; causal ordering uses IDs, sequence and operation state, not wall-clock timestamps alone.
+**Timestamp convention:** wire format uses UTC RFC 3339; SQLite stores UTC Unix epoch milliseconds as previously proposed. Reject timestamps without timezone information. Clock skew is possible; causal ordering uses causation/correlation IDs, the receiving event store's monotonically assigned `event_sequence`, aggregate/domain revisions and operation state, not wall-clock timestamps alone. `event_sequence` is local to one event store and does not imply global ordering across independent devices or producers.
 
 **Identifier convention:** UUID text on the wire; 16-byte UUID BLOB in SQLite. IDs must not be reused.
 
@@ -711,489 +719,22 @@ For cross-database writes, no global SQLite transaction exists. Use an explicit 
 - Timestamps: UTC Unix epoch milliseconds in INTEGER columns; RFC 3339 at interfaces.
 - JSON TEXT only for bounded, validated flexible documents. Query-critical fields remain typed columns.
 - Enable foreign keys on every connection. Use short write transactions; never hold DB transactions during inference or external actions.
+- Proposed minimum supported SQLite version is 3.38.0: STRICT tables require 3.37.0 or later, and JSON functions are built in by default from 3.38.0. The target build must not define `SQLITE_OMIT_JSON`. This is a proposed minimum, not evidence that the Termux/Android build meets it; record and test the actual version and compile options before acceptance.
 - Use STRICT tables only if the shipped SQLite version supports them; otherwise add explicit type checks. Verify JSON functions, WAL and backup API on the actual Termux SQLite build.
 - Keep large models/datasets outside SQLite as immutable artifacts with metadata and checksums.
 - Back up live DBs through SQLite backup facilities or a coordinated checkpointed procedure, not by blindly copying a live WAL database.
 
 ### 26.2 Memory database — aurion_memory.db
 
-```sql
-PRAGMA foreign_keys = ON;
-
-CREATE TABLE schema_migrations (
-  version INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  checksum TEXT NOT NULL,
-  applied_at_ms INTEGER NOT NULL
-) STRICT;
-
-CREATE TABLE experiences (
-  experience_id BLOB PRIMARY KEY CHECK(length(experience_id)=16),
-  source_type TEXT NOT NULL,
-  observed_at_ms INTEGER NOT NULL,
-  recorded_at_ms INTEGER NOT NULL,
-  content_ref TEXT NOT NULL,
-  sensitivity INTEGER NOT NULL CHECK(sensitivity BETWEEN 0 AND 4),
-  provenance_ref TEXT NOT NULL,
-  retention_state TEXT NOT NULL CHECK(retention_state IN
-    ('active','archived','pending_deletion','deleted_active','backup_expiry_pending')),
-  deleted_at_ms INTEGER
-) STRICT;
-CREATE INDEX idx_experiences_time ON experiences(observed_at_ms DESC);
-CREATE INDEX idx_experiences_retention ON experiences(retention_state,recorded_at_ms);
-
-CREATE TABLE representations (
-  representation_id BLOB PRIMARY KEY CHECK(length(representation_id)=16),
-  experience_id BLOB NOT NULL REFERENCES experiences(experience_id),
-  representation_type TEXT NOT NULL,
-  content_json TEXT NOT NULL CHECK(json_valid(content_json)),
-  method TEXT NOT NULL,
-  uncertainty_json TEXT NOT NULL CHECK(json_valid(uncertainty_json)),
-  created_at_ms INTEGER NOT NULL
-) STRICT;
-CREATE INDEX idx_representations_experience ON representations(experience_id);
-
-CREATE TABLE contexts (
-  context_id BLOB NOT NULL CHECK(length(context_id)=16),
-  version INTEGER NOT NULL CHECK(version>0),
-  scope TEXT NOT NULL,
-  valid_from_ms INTEGER NOT NULL,
-  valid_until_ms INTEGER,
-  attributes_json TEXT NOT NULL CHECK(json_valid(attributes_json)),
-  provenance_ref TEXT NOT NULL,
-  created_at_ms INTEGER NOT NULL,
-  PRIMARY KEY(context_id,version),
-  CHECK(valid_until_ms IS NULL OR valid_until_ms>valid_from_ms)
-) STRICT;
-
-CREATE TABLE memory_records (
-  memory_id BLOB PRIMARY KEY CHECK(length(memory_id)=16),
-  memory_type TEXT NOT NULL,
-  content_ref TEXT NOT NULL,
-  summary TEXT,
-  sensitivity INTEGER NOT NULL CHECK(sensitivity BETWEEN 0 AND 4),
-  status TEXT NOT NULL CHECK(status IN ('active','archived','pending_deletion','deleted_active')),
-  created_at_ms INTEGER NOT NULL,
-  updated_at_ms INTEGER NOT NULL,
-  last_accessed_at_ms INTEGER,
-  retention_until_ms INTEGER,
-  deleted_at_ms INTEGER
-) STRICT;
-CREATE INDEX idx_memory_status_type ON memory_records(status,memory_type);
-CREATE INDEX idx_memory_retention ON memory_records(retention_until_ms)
-  WHERE retention_until_ms IS NOT NULL;
-
-CREATE TABLE memory_links (
-  source_memory_id BLOB NOT NULL REFERENCES memory_records(memory_id),
-  target_memory_id BLOB NOT NULL REFERENCES memory_records(memory_id),
-  relation_type TEXT NOT NULL,
-  created_at_ms INTEGER NOT NULL,
-  PRIMARY KEY(source_memory_id,target_memory_id,relation_type),
-  CHECK(source_memory_id<>target_memory_id)
-) STRICT;
-
-CREATE TABLE knowledge_items (
-  knowledge_id BLOB PRIMARY KEY CHECK(length(knowledge_id)=16),
-  proposition TEXT NOT NULL,
-  domain TEXT NOT NULL,
-  status TEXT NOT NULL CHECK(status IN ('active','superseded','withdrawn')),
-  created_at_ms INTEGER NOT NULL,
-  updated_at_ms INTEGER NOT NULL
-) STRICT;
-
-CREATE TABLE beliefs (
-  belief_id BLOB PRIMARY KEY CHECK(length(belief_id)=16),
-  knowledge_id BLOB NOT NULL REFERENCES knowledge_items(knowledge_id),
-  created_at_ms INTEGER NOT NULL,
-  updated_at_ms INTEGER NOT NULL
-) STRICT;
-
-CREATE TABLE belief_revisions (
-  revision_id BLOB PRIMARY KEY CHECK(length(revision_id)=16),
-  belief_id BLOB NOT NULL REFERENCES beliefs(belief_id),
-  revision_number INTEGER NOT NULL CHECK(revision_number>0),
-  previous_revision_id BLOB REFERENCES belief_revisions(revision_id),
-  epistemic_status TEXT NOT NULL CHECK(epistemic_status IN
-    ('provisional','supported','consolidated','disputed','withdrawn')),
-  confidence REAL CHECK(confidence IS NULL OR confidence BETWEEN 0.0 AND 1.0),
-  revision_reason TEXT NOT NULL,
-  created_at_ms INTEGER NOT NULL,
-  UNIQUE(belief_id,revision_number),
-  UNIQUE(belief_id,revision_id)
-) STRICT;
-CREATE INDEX idx_belief_revision_order ON belief_revisions(belief_id,revision_number DESC);
-
-CREATE TABLE evidence_items (
-  evidence_id BLOB PRIMARY KEY CHECK(length(evidence_id)=16),
-  source_experience_id BLOB REFERENCES experiences(experience_id),
-  source_ref TEXT NOT NULL,
-  evidence_type TEXT NOT NULL,
-  observed_at_ms INTEGER,
-  recorded_at_ms INTEGER NOT NULL,
-  reliability_json TEXT CHECK(reliability_json IS NULL OR json_valid(reliability_json))
-) STRICT;
-
-CREATE TABLE belief_revision_evidence (
-  revision_id BLOB NOT NULL REFERENCES belief_revisions(revision_id),
-  evidence_id BLOB NOT NULL REFERENCES evidence_items(evidence_id),
-  stance TEXT NOT NULL CHECK(stance IN ('supports','contradicts','contextualizes')),
-  relevance REAL CHECK(relevance IS NULL OR relevance BETWEEN 0.0 AND 1.0),
-  PRIMARY KEY(revision_id,evidence_id,stance)
-) STRICT;
-
-CREATE TABLE predictions (
-  prediction_id BLOB PRIMARY KEY CHECK(length(prediction_id)=16),
-  subject_ref TEXT NOT NULL,
-  expected_outcome_json TEXT NOT NULL CHECK(json_valid(expected_outcome_json)),
-  evaluation_criteria_json TEXT NOT NULL CHECK(json_valid(evaluation_criteria_json)),
-  horizon_end_ms INTEGER,
-  created_at_ms INTEGER NOT NULL,
-  status TEXT NOT NULL CHECK(status IN ('open','partially_evaluated','evaluated','cancelled'))
-) STRICT;
-
-CREATE TABLE prediction_evaluations (
-  evaluation_id BLOB PRIMARY KEY CHECK(length(evaluation_id)=16),
-  prediction_id BLOB NOT NULL REFERENCES predictions(prediction_id),
-  observed_outcome_ref TEXT NOT NULL,
-  result TEXT NOT NULL CHECK(result IN ('correct','partially_correct','incorrect','inconclusive')),
-  evaluator TEXT NOT NULL,
-  evaluated_at_ms INTEGER NOT NULL,
-  details_json TEXT CHECK(details_json IS NULL OR json_valid(details_json))
-) STRICT;
-
-CREATE TABLE goals (
-  goal_id BLOB PRIMARY KEY CHECK(length(goal_id)=16),
-  created_at_ms INTEGER NOT NULL,
-  updated_at_ms INTEGER NOT NULL
-) STRICT;
-
-CREATE TABLE goal_revisions (
-  goal_id BLOB NOT NULL REFERENCES goals(goal_id),
-  revision INTEGER NOT NULL CHECK(revision>0),
-  description TEXT NOT NULL,
-  state TEXT NOT NULL CHECK(state IN ('proposed','active','paused','completed','abandoned','blocked')),
-  priority REAL NOT NULL,
-  constraints_json TEXT NOT NULL CHECK(json_valid(constraints_json)),
-  reason_ref TEXT,
-  created_at_ms INTEGER NOT NULL,
-  PRIMARY KEY(goal_id,revision)
-) STRICT;
-
-CREATE TABLE plans (
-  plan_id BLOB PRIMARY KEY CHECK(length(plan_id)=16),
-  goal_id BLOB NOT NULL,
-  goal_revision INTEGER NOT NULL,
-  plan_version INTEGER NOT NULL CHECK(plan_version>0),
-  status TEXT NOT NULL CHECK(status IN ('draft','ready','running','paused','completed','failed','superseded')),
-  created_at_ms INTEGER NOT NULL,
-  FOREIGN KEY(goal_id,goal_revision) REFERENCES goal_revisions(goal_id,revision),
-  UNIQUE(goal_id,plan_version)
-) STRICT;
-
-CREATE TABLE plan_steps (
-  step_id BLOB PRIMARY KEY CHECK(length(step_id)=16),
-  plan_id BLOB NOT NULL REFERENCES plans(plan_id),
-  sequence INTEGER NOT NULL CHECK(sequence>=0),
-  description TEXT NOT NULL,
-  status TEXT NOT NULL CHECK(status IN ('pending','ready','running','completed','failed','skipped','blocked')),
-  action_id BLOB CHECK(action_id IS NULL OR length(action_id)=16),
-  created_at_ms INTEGER NOT NULL,
-  UNIQUE(plan_id,sequence)
-) STRICT;
-
-CREATE TABLE plan_step_dependencies (
-  step_id BLOB NOT NULL REFERENCES plan_steps(step_id),
-  depends_on_step_id BLOB NOT NULL REFERENCES plan_steps(step_id),
-  PRIMARY KEY(step_id,depends_on_step_id),
-  CHECK(step_id<>depends_on_step_id)
-) STRICT;
-
-CREATE TABLE learning_updates (
-  learning_update_id BLOB PRIMARY KEY CHECK(length(learning_update_id)=16),
-  mechanism TEXT NOT NULL,
-  state TEXT NOT NULL CHECK(state IN
-    ('identified','proposed','evaluating','accepted','rejected','revised','deferred','rolled_back')),
-  evidence_ref TEXT NOT NULL,
-  baseline_ref TEXT,
-  evaluation_ref TEXT,
-  decision_reason TEXT,
-  created_at_ms INTEGER NOT NULL,
-  updated_at_ms INTEGER NOT NULL
-) STRICT;
-CREATE INDEX idx_learning_state ON learning_updates(state,updated_at_ms);
-
-CREATE TABLE retention_jobs (
-  retention_job_id BLOB PRIMARY KEY CHECK(length(retention_job_id)=16),
-  subject_type TEXT NOT NULL,
-  subject_id BLOB NOT NULL,
-  requested_at_ms INTEGER NOT NULL,
-  active_deleted_at_ms INTEGER,
-  index_cleanup_at_ms INTEGER,
-  sync_cleanup_at_ms INTEGER,
-  backup_expiry_at_ms INTEGER,
-  status TEXT NOT NULL CHECK(status IN ('queued','processing','waiting_backup_expiry','completed','failed')),
-  failure_ref TEXT
-) STRICT;
-```
+Canonical machine-readable DDL: [`schemas/persistence/aurion_memory.base.sql`](../../schemas/persistence/aurion_memory.base.sql). This file remains a proposed migration; it has executed in the complete host-side SQLite chain in CI. Target Termux/Android compatibility and runtime behaviour remain unverified.
 
 ### 26.3 Event/recovery database — aurion_events.db
 
-```sql
-PRAGMA foreign_keys = ON;
-
-CREATE TABLE schema_migrations (
-  version INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  checksum TEXT NOT NULL,
-  applied_at_ms INTEGER NOT NULL
-) STRICT;
-
-CREATE TABLE events (
-  event_id BLOB PRIMARY KEY CHECK(length(event_id)=16),
-  message_id BLOB NOT NULL UNIQUE CHECK(length(message_id)=16),
-  message_type TEXT NOT NULL,
-  contract_version TEXT NOT NULL,
-  producer_component TEXT NOT NULL,
-  producer_instance_id BLOB NOT NULL CHECK(length(producer_instance_id)=16),
-  correlation_id BLOB NOT NULL CHECK(length(correlation_id)=16),
-  causation_id BLOB CHECK(causation_id IS NULL OR length(causation_id)=16),
-  occurred_at_ms INTEGER NOT NULL,
-  recorded_at_ms INTEGER NOT NULL,
-  payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),
-  payload_digest TEXT NOT NULL,
-  sensitivity INTEGER NOT NULL CHECK(sensitivity BETWEEN 0 AND 4),
-  retention_class TEXT NOT NULL CHECK(retention_class IN ('operational','durable','audit','recovery'))
-) STRICT;
-CREATE INDEX idx_events_type_time ON events(message_type,occurred_at_ms DESC);
-CREATE INDEX idx_events_correlation ON events(correlation_id,occurred_at_ms);
-
-CREATE TABLE event_consumers (
-  consumer_id TEXT PRIMARY KEY,
-  last_sequence INTEGER NOT NULL DEFAULT 0 CHECK(last_sequence>=0),
-  updated_at_ms INTEGER NOT NULL
-) STRICT;
-
-CREATE TABLE event_receipts (
-  consumer_id TEXT NOT NULL REFERENCES event_consumers(consumer_id),
-  message_id BLOB NOT NULL CHECK(length(message_id)=16),
-  payload_digest TEXT NOT NULL,
-  processed_at_ms INTEGER NOT NULL,
-  outcome TEXT NOT NULL CHECK(outcome IN ('applied','duplicate','rejected','deferred')),
-  diagnostic_ref TEXT,
-  PRIMARY KEY(consumer_id,message_id)
-) STRICT;
-
-CREATE TABLE operations (
-  operation_id BLOB PRIMARY KEY CHECK(length(operation_id)=16),
-  operation_type TEXT NOT NULL,
-  origin_goal_id BLOB CHECK(origin_goal_id IS NULL OR length(origin_goal_id)=16),
-  origin_plan_id BLOB CHECK(origin_plan_id IS NULL OR length(origin_plan_id)=16),
-  state TEXT NOT NULL CHECK(state IN
-    ('created','prepared','authorized','running','succeeded','failed','cancel_requested','cancelled','uncertain','reconciling')),
-  idempotency_key TEXT,
-  created_at_ms INTEGER NOT NULL,
-  updated_at_ms INTEGER NOT NULL,
-  terminal_at_ms INTEGER
-) STRICT;
-CREATE UNIQUE INDEX idx_operation_idempotency ON operations(operation_type,idempotency_key)
-  WHERE idempotency_key IS NOT NULL;
-CREATE INDEX idx_operations_state ON operations(state,updated_at_ms);
-
-CREATE TABLE operation_steps (
-  operation_step_id BLOB PRIMARY KEY CHECK(length(operation_step_id)=16),
-  operation_id BLOB NOT NULL REFERENCES operations(operation_id),
-  step_number INTEGER NOT NULL CHECK(step_number>=0),
-  action_id BLOB NOT NULL CHECK(length(action_id)=16),
-  state TEXT NOT NULL CHECK(state IN
-    ('pending','authorized','running','succeeded','failed','uncertain','compensated','cancelled')),
-  attempt_count INTEGER NOT NULL DEFAULT 0 CHECK(attempt_count>=0),
-  result_ref TEXT,
-  updated_at_ms INTEGER NOT NULL,
-  UNIQUE(operation_id,step_number)
-) STRICT;
-
-CREATE TABLE recovery_journal (
-  journal_id BLOB PRIMARY KEY CHECK(length(journal_id)=16),
-  operation_id BLOB NOT NULL REFERENCES operations(operation_id),
-  phase TEXT NOT NULL,
-  local_store TEXT NOT NULL,
-  local_record_ref TEXT,
-  intended_transition TEXT NOT NULL,
-  state TEXT NOT NULL CHECK(state IN ('pending','applied','compensated','manual_intervention')),
-  created_at_ms INTEGER NOT NULL,
-  updated_at_ms INTEGER NOT NULL,
-  diagnostic_ref TEXT
-) STRICT;
-CREATE INDEX idx_recovery_pending ON recovery_journal(state,updated_at_ms)
-  WHERE state IN ('pending','manual_intervention');
-
-CREATE TABLE outbox (
-  outbox_id BLOB PRIMARY KEY CHECK(length(outbox_id)=16),
-  message_id BLOB NOT NULL UNIQUE CHECK(length(message_id)=16),
-  destination TEXT NOT NULL,
-  envelope_json TEXT NOT NULL CHECK(json_valid(envelope_json)),
-  state TEXT NOT NULL CHECK(state IN ('pending','published','dead_letter')),
-  attempt_count INTEGER NOT NULL DEFAULT 0 CHECK(attempt_count>=0),
-  next_attempt_at_ms INTEGER,
-  created_at_ms INTEGER NOT NULL,
-  published_at_ms INTEGER,
-  last_error_ref TEXT
-) STRICT;
-CREATE INDEX idx_outbox_dispatch ON outbox(state,next_attempt_at_ms);
-
-CREATE TABLE task_runs (
-  task_run_id BLOB PRIMARY KEY CHECK(length(task_run_id)=16),
-  task_definition_ref TEXT NOT NULL,
-  state TEXT NOT NULL CHECK(state IN
-    ('queued','running','paused','completed','failed','cancelled','blocked','lost')),
-  priority REAL NOT NULL,
-  budget_json TEXT NOT NULL CHECK(json_valid(budget_json)),
-  created_at_ms INTEGER NOT NULL,
-  started_at_ms INTEGER,
-  updated_at_ms INTEGER NOT NULL,
-  completed_at_ms INTEGER
-) STRICT;
-
-CREATE TABLE task_checkpoints (
-  checkpoint_id BLOB PRIMARY KEY CHECK(length(checkpoint_id)=16),
-  task_run_id BLOB NOT NULL REFERENCES task_runs(task_run_id),
-  sequence INTEGER NOT NULL CHECK(sequence>=0),
-  checkpoint_ref TEXT NOT NULL,
-  state_digest TEXT NOT NULL,
-  created_at_ms INTEGER NOT NULL,
-  UNIQUE(task_run_id,sequence)
-) STRICT;
-```
+Canonical machine-readable DDL: [`schemas/persistence/aurion_events.base.sql`](../../schemas/persistence/aurion_events.base.sql). This file is proposed and has not been executed or validated.
 
 ### 26.4 Governance database — aurion_governance.db
 
-```sql
-PRAGMA foreign_keys = ON;
-
-CREATE TABLE schema_migrations (
-  version INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  checksum TEXT NOT NULL,
-  applied_at_ms INTEGER NOT NULL
-) STRICT;
-
-CREATE TABLE policies (
-  policy_id BLOB PRIMARY KEY CHECK(length(policy_id)=16),
-  policy_name TEXT NOT NULL,
-  policy_version INTEGER NOT NULL CHECK(policy_version>0),
-  policy_document_json TEXT NOT NULL CHECK(json_valid(policy_document_json)),
-  protected INTEGER NOT NULL CHECK(protected IN (0,1)),
-  active INTEGER NOT NULL CHECK(active IN (0,1)),
-  created_at_ms INTEGER NOT NULL,
-  UNIQUE(policy_name,policy_version)
-) STRICT;
-CREATE UNIQUE INDEX idx_policy_active ON policies(policy_name) WHERE active=1;
-
-CREATE TABLE permissions (
-  permission_id BLOB PRIMARY KEY CHECK(length(permission_id)=16),
-  subject_id TEXT NOT NULL,
-  capability_id TEXT NOT NULL,
-  operation_scope_json TEXT NOT NULL CHECK(json_valid(operation_scope_json)),
-  resource_scope_json TEXT NOT NULL CHECK(json_valid(resource_scope_json)),
-  data_scope_json TEXT NOT NULL CHECK(json_valid(data_scope_json)),
-  side_effect_scope_json TEXT NOT NULL CHECK(json_valid(side_effect_scope_json)),
-  environment_scope_json TEXT NOT NULL CHECK(json_valid(environment_scope_json)),
-  budget_json TEXT CHECK(budget_json IS NULL OR json_valid(budget_json)),
-  valid_from_ms INTEGER NOT NULL,
-  expires_at_ms INTEGER,
-  grant_source TEXT NOT NULL,
-  policy_id BLOB NOT NULL REFERENCES policies(policy_id),
-  revoked_at_ms INTEGER,
-  revocation_reason TEXT,
-  created_at_ms INTEGER NOT NULL,
-  CHECK(expires_at_ms IS NULL OR expires_at_ms>valid_from_ms)
-) STRICT;
-CREATE INDEX idx_permissions_lookup ON permissions(subject_id,capability_id,valid_from_ms,expires_at_ms);
-
-CREATE TABLE approval_requests (
-  request_id BLOB PRIMARY KEY CHECK(length(request_id)=16),
-  operation_id BLOB NOT NULL CHECK(length(operation_id)=16),
-  requester_id TEXT NOT NULL,
-  operation_digest TEXT NOT NULL,
-  operation_summary TEXT NOT NULL,
-  risk_class TEXT NOT NULL CHECK(risk_class IN ('R0','R1','R2','R3','R4','R5')),
-  data_categories_json TEXT NOT NULL CHECK(json_valid(data_categories_json)),
-  recipient_summary TEXT,
-  policy_version_ref TEXT NOT NULL,
-  requested_at_ms INTEGER NOT NULL,
-  expires_at_ms INTEGER NOT NULL,
-  state TEXT NOT NULL CHECK(state IN ('pending','approved','denied','expired','invalidated','revoked')),
-  CHECK(expires_at_ms>requested_at_ms)
-) STRICT;
-CREATE INDEX idx_approval_expiry ON approval_requests(state,expires_at_ms);
-
-CREATE TABLE approval_decisions (
-  decision_id BLOB PRIMARY KEY CHECK(length(decision_id)=16),
-  request_id BLOB NOT NULL UNIQUE REFERENCES approval_requests(request_id),
-  authenticated_owner_ref TEXT NOT NULL,
-  decision TEXT NOT NULL CHECK(decision IN ('approved','denied')),
-  approved_digest TEXT NOT NULL,
-  decided_at_ms INTEGER NOT NULL,
-  authentication_context_ref TEXT NOT NULL
-) STRICT;
-
-CREATE TABLE protected_changes (
-  change_id BLOB PRIMARY KEY CHECK(length(change_id)=16),
-  target_ref TEXT NOT NULL,
-  old_version_ref TEXT NOT NULL,
-  candidate_version_ref TEXT NOT NULL,
-  approval_request_id BLOB NOT NULL REFERENCES approval_requests(request_id),
-  validation_report_ref TEXT NOT NULL,
-  state TEXT NOT NULL CHECK(state IN ('proposed','validated','approved','activated','rolled_back','rejected')),
-  created_at_ms INTEGER NOT NULL,
-  activated_at_ms INTEGER,
-  rolled_back_at_ms INTEGER
-) STRICT;
-
-CREATE TABLE governance_audit (
-  audit_id BLOB PRIMARY KEY CHECK(length(audit_id)=16),
-  actor_id TEXT NOT NULL,
-  action TEXT NOT NULL,
-  target_ref TEXT,
-  decision TEXT,
-  policy_version_ref TEXT,
-  operation_id BLOB,
-  request_id BLOB,
-  details_digest TEXT NOT NULL,
-  occurred_at_ms INTEGER NOT NULL,
-  previous_record_digest TEXT,
-  record_digest TEXT NOT NULL
-) STRICT;
-CREATE INDEX idx_governance_audit_time ON governance_audit(occurred_at_ms DESC);
-
-CREATE TABLE provider_permissions (
-  provider_permission_id BLOB PRIMARY KEY CHECK(length(provider_permission_id)=16),
-  provider_id TEXT NOT NULL,
-  capability_scope_json TEXT NOT NULL CHECK(json_valid(capability_scope_json)),
-  data_categories_json TEXT NOT NULL CHECK(json_valid(data_categories_json)),
-  purpose_scope_json TEXT NOT NULL CHECK(json_valid(purpose_scope_json)),
-  policy_id BLOB NOT NULL REFERENCES policies(policy_id),
-  valid_from_ms INTEGER NOT NULL,
-  expires_at_ms INTEGER,
-  revoked_at_ms INTEGER,
-  created_at_ms INTEGER NOT NULL,
-  CHECK(expires_at_ms IS NULL OR expires_at_ms>valid_from_ms)
-) STRICT;
-
-CREATE TABLE data_disclosures (
-  disclosure_id BLOB PRIMARY KEY CHECK(length(disclosure_id)=16),
-  provider_id TEXT NOT NULL,
-  purpose TEXT NOT NULL,
-  data_categories_json TEXT NOT NULL CHECK(json_valid(data_categories_json)),
-  payload_digest TEXT NOT NULL,
-  payload_ref TEXT,
-  approval_request_id BLOB REFERENCES approval_requests(request_id),
-  policy_version_ref TEXT NOT NULL,
-  disclosed_at_ms INTEGER NOT NULL,
-  outcome TEXT NOT NULL CHECK(outcome IN ('sent','blocked','failed','uncertain'))
-) STRICT;
-CREATE INDEX idx_disclosures_provider_time ON data_disclosures(provider_id,disclosed_at_ms DESC);
-```
+Canonical machine-readable DDL: [`schemas/persistence/aurion_governance.base.sql`](../../schemas/persistence/aurion_governance.base.sql). This file is proposed and has not been executed or validated.
 
 ### 26.5 DDL review issues that must be resolved before implementation
 
@@ -1201,13 +742,89 @@ CREATE INDEX idx_disclosures_provider_time ON data_disclosures(provider_id,discl
 - Plan dependency acyclicity must be enforced by planner validation and transactional tests; SQLite CHECK constraints cannot express arbitrary graph-cycle detection.
 - Cross-file action/goal/plan references require reconciliation because they are not foreign keys.
 - JSON validity is not schema validation, authorization or encryption. Validate each JSON document against its contract before storage.
-- Add artifact registry tables and immutable artifact metadata before storing production references.
+- The proposed additive memory-schema migration in Section 26.5.1 now defines artifact metadata and lineage tables; execution, hash/lineage invariants and deletion/restore fault tests remain outstanding.
 - Define sensitive event-payload encryption/redaction before durable event storage.
 - Audit-chain hashes need an external signed checkpoint if tamper evidence against whole-database rewrite is required.
 - Use non-null idempotency keys for operations that claim idempotency; enforce this at operation creation.
 - Verify STRICT, JSON functions, WAL and foreign-key behaviour on the actual SQLite runtime before adopting this DDL unchanged.
 
+### 26.5.1 Capability and cognitive-state schema extension — proposed migration v2
+
+The initial memory DDL did not include durable storage for the artifact registry, dynamic capability registry and several durable cognitive state domains introduced by the Android and cognitive mechanism architectures. That is a schema completeness gap; the registry must not be hidden inside an untyped blob or confused with governance permissions.
+
+The following is a proposed additive migration for `aurion_memory.db`. It is not executed or validated. It deliberately stores capability descriptions and evidence-backed knowledge separately from authority grants. Current Android permission state remains authoritative in the OS and is rechecked at execution; AURIONS grants/approvals remain in `aurion_governance.db`.
+
+Canonical machine-readable DDL: [`schemas/persistence/aurion_memory.migration_v2.sql`](../../schemas/persistence/aurion_memory.migration_v2.sql). This file is proposed and has not been executed or validated.
+
+**Storage semantics:**
+- Artifact metadata is authoritative for immutable content references; blobs remain in filesystem/object storage. Lineage is required for derived-data deletion and model/dataset provenance. Content hashes identify bytes but do not merge authorization, retention or sensitivity semantics.
+- Capability descriptors are versioned discovered interface descriptions, not permissions. The descriptor JSON is schema-validated by the application and hash-checked; unknown fields do not grant authority.
+- Discovery evidence and capability knowledge revisions retain provenance and contradictory evidence. A failed attempt is contextual evidence, not a universal prohibition.
+- Capability relationships describe evidence-supported composition/constraints; they are not fixed task recipes.
+- Appraisal and reasoning records store bounded evidence-linked assessments and concise rationale references, not unbounded internal reasoning transcripts. Attention allocations are transient runtime state; durable attention decisions may be represented by typed events when needed.
+- Decision and outcome records summarize durable decisions and observed effects. Operation lifecycle remains authoritative in `aurion_events.db`; policy grants and approvals remain authoritative in `aurion_governance.db`.
+- Self-model revisions and evolution proposals preserve evidence and version history. They cannot grant permissions or activate protected changes.
+- Cross-store operation IDs and approval references are validated by application services; no cross-file foreign keys are introduced.
+
+This migration must be reconciled with the final component contracts and tested for index coverage, JSON schema validation, retention/deletion, migrations and crash recovery before implementation. Application-level invariants still include descriptor JSON schema validation, exact evidence ownership, decision-to-plan/goal consistency, capability relationship validity, and the rule that no descriptor status or learned knowledge grants authority. The migration's CHECK constraints are necessary but not sufficient.
+
+
+### 26.5.2 Plan execution and operation-evidence contract extension — proposed migration
+
+The cross-document contract audit identified that the cognitive plan contract and operation lifecycle require more structured durable state than the initial DDL currently provides. The following additions are proposed before any migration is executed. They are additive and keep capability descriptions separate from authority.
+
+**Memory database — proposed migration v3**
+
+Canonical machine-readable DDL: [`schemas/persistence/aurion_memory.migration_v3.sql`](../../schemas/persistence/aurion_memory.migration_v3.sql). This file is proposed and has not been executed or validated.
+
+A plan step that does not invoke an environment capability may leave `capability_id` and `descriptor_version` NULL; it still declares typed inputs, preconditions, expected effects, budgets, verification and stop conditions. The legacy `plan_steps.action_id` is not a capability identity and must not be used as a substitute for the versioned capability reference. Capability reference is not permission or approval.
+
+**Event/recovery database — proposed migration v2**
+
+Canonical machine-readable DDL: [`schemas/persistence/aurion_events.migration_v2.sql`](../../schemas/persistence/aurion_events.migration_v2.sql). This file is proposed and has not been executed or validated.
+
+The expanded `operations.state` and `operation_steps.state` values in the proposed base DDL are the canonical durable lifecycle projection. The operation-attempt table records each dispatch attempt and its receipt/verification evidence. Operation details bind owner, actor, device, originating plan step, exact capability version and the canonical parameter artifact ID/digest. Parameter payloads and sensitive effect details are stored as governed artifacts with sensitivity and encryption metadata, not copied as plaintext into the event database. Task checkpoint details bind a resumable checkpoint to the exact plan version, context/capability epoch and dependency-state digest. State transitions remain governed by Section 7.1; SQL CHECK constraints restrict values but do not enforce the transition graph. The command handler must atomically append the lifecycle event and update the owning projection in one `aurion_events.db` transaction.
+
+Cross-store capability descriptor and approval references are validated by application services against the current memory and governance stores immediately before dispatch. No cross-file foreign keys are introduced.
+
+These additions close specification mismatches at the DDL level and have executed in the complete host-side SQLite chain. They have not been benchmarked or validated against the target Termux/Android SQLite build. Migration interruption, restore, duplicate attempts, uncertain dispatch, stale checkpoint invalidation, recovery and rollback still require dedicated tests.
+
+
+
+**Memory database — proposed migration v4: objective/world/means and interaction lineage**
+
+Canonical machine-readable DDL: [`schemas/persistence/aurion_memory.migration_v4.sql`](../../schemas/persistence/aurion_memory.migration_v4.sql). This is a proposed additive migration and has not been executed or validated. It persists owner-scoped, versioned objective records (distinct from derived goals), owner/scope details for existing evidence records, world entities, relationships, situation snapshots, context-dependent affordance hypotheses, interaction proposals and observed outcomes. The corresponding context-independent payload contracts are defined in `schemas/world-interaction.v1.schema.json`; event names and payload/fixture references are in `schemas/event-registry.v1.json`.
+
+This migration does not make a device capability descriptor mandatory for possible means. The world/means records are context-independent; the existing device/provider capability descriptor tables remain one specific integration evidence source. The `execution_operation_ref` on an interaction proposal is a cross-store reference only, not a foreign key or proof of execution. Application-level validation must resolve owner scope, stable identifiers, evidence lineage, revision/temporal validity, authority decisions and cross-store operation state. No distributed transaction across the three SQLite files is implied.
+
+Required v4 validation includes fresh install and upgrade paths, owner isolation, revision/temporal validity, evidence-details linkage, referential-integrity and stale-reference checks, interaction proposal versus authorization separation, cross-store operation reconciliation, retention/deletion propagation, crash/rollback and restore. The new schema and DDL remain IN PROGRESS until those checks are executed on the pinned SQLite baseline.
+
+### 26.5.3 Query projection source completion — proposed migrations v7/v4/v4
+
+The 29 query result schemas contain 310 fields. The query/persistence reconciliation now declares an explicit proposed source or derivation for every field in `projection_resolved_fields`; no field remains unclassified in `projection_unresolved_fields`. This is not a claim that the SQL handlers exist or that owner scope, redaction, pagination or consistency has been behaviourally verified.
+
+Canonical additive DDL:
+- Memory v7: [`aurion_memory.migration_v7.sql`](../../schemas/persistence/aurion_memory.migration_v7.sql) adds environment observations, descriptor schema version, representation method/source lineage, context provenance/uncertainty, memory provenance/uncertainty, prediction conditions/confidence/evidence and plan context/capability-epoch references. Legacy rows remain NULL where values cannot be established; insert guards require the new mandatory fields for new records.
+- Events v4: [`aurion_events.migration_v4.sql`](../../schemas/persistence/aurion_events.migration_v4.sql) adds task failure and operation policy-decision references.
+- Events v5: [`aurion_events.migration_v5.sql`](../../schemas/persistence/aurion_events.migration_v5.sql) adds ordered saga-step identity, target store, stable idempotency key, request digest, expected revision, result digest, terminal timestamp and a recovery-journal foreign-key binding.
+- Governance v3: [`aurion_governance.migration_v3.sql`](../../schemas/persistence/aurion_governance.migration_v3.sql) binds approval requests to owner/session and enforces exact, pending, unexpired, one-time owner decisions.
+- Governance v4: [`aurion_governance.migration_v4.sql`](../../schemas/persistence/aurion_governance.migration_v4.sql) adds owner/status/policy/approval fields for permissions and owner/evidence/correlation fields for audit and disclosure records.
+
+**Verification:** Exact PR #2 head `b1d2f9064838031e659b25220f61455c3704718e` passed [workflow 43387080846](https://github.com/methaneex-oss/AURIONS/actions/runs/43387080846), all nine steps. The host SQLite runner executed all fifteen ordered DDL files at that revision on SQLite 3.46.1 and exercised new-write guards and positive/negative inserts for environment observations, capability descriptors, representation/context/memory/prediction lineage, owner-bound approval decisions, permissions, audit and disclosure records. Events v5 is a subsequent increment and requires its own exact-head pass.
+
+**Limits:** Existing legacy rows are not backfilled or assigned inferred owner/provenance/confidence. Query handlers remain design-only/non-dispatchable. No exact SELECT suite, target Android/Termux run, owner-scope/redaction negative control, pagination/resource-budget test, crash/restore or production handler has been verified. BR-002 remains OPEN; BR-005 remains PARTIALLY CLOSED.
+
+### 26.5.4 Durable cross-store saga step ledger — proposed event migration v5
+
+The cross-store saga contract previously described ordered steps but the event/recovery DDL did not persist a stable per-step identity, target store, per-target idempotency key, request digest or exact recovery-journal link. The existing `operation_steps` table is extended by [`aurion_events.migration_v5.sql`](../../schemas/persistence/aurion_events.migration_v5.sql) rather than introducing a duplicate saga-step table.
+
+For the three evolution sagas, each step has an immutable `step_key`, target store, idempotency key, request digest and optional expected revision. Unique constraints prevent duplicate step keys and target-store idempotency keys. Terminal states require completion timestamps. The recovery journal references the exact operation step and verifies that its local store matches the step's target store. Saga step history cannot be deleted or have its identity rewritten.
+
+The host DDL runner now checks these constraints, duplicate/replay identities, terminal timestamps and recovery-journal linkage. This does not implement the saga coordinator or prove crash/replay/compensation behaviour; those remain runtime and independent-test gates.
+
 ### 26.6 Migration protocol
+
+The canonical local-outbox migrations are `schemas/persistence/aurion_memory.migration_v5.sql` and `schemas/persistence/aurion_governance.migration_v2.sql`. Memory migration v6 adds owner-scoped, exact objective-revision bindings for every new derived goal revision; legacy unbound goals must not be assigned an objective by inference. They add the transactional outbox to the memory and governance stores; the event/recovery store retains its own outbox. Every authoritative store must commit its state mutation and its local publication intent in the same per-file transaction. The central event archive is populated asynchronously by the outbox relay. These migrations are proposed and host-smoke-tested only; target SQLite/Termux validation and relay crash/replay tests remain open.
 
 Each DB has its own monotonic migration version and checksum. There is no cross-file atomic migration.
 
@@ -1358,7 +975,9 @@ Termux is a development/runtime environment, not a guarantee of always-on backgr
 
 Exit criteria: dependency bill of materials, model/dataset license register, ARM64 build verification, unnecessary dependency removal and documented unsupported platform assumptions.
 
-## 31. Architecture consistency review and planning exit gate
+## 31. Architecture consistency review and planning exit gate — historical baseline
+
+The gate principles remain relevant, but the work-package and status snapshot in this section is superseded by [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md) and [Planning Completion Register](PLANNING-COMPLETION-REGISTER.md).
 
 Mandatory pre-implementation resolutions:
 
@@ -1404,7 +1023,7 @@ Every work package must specify inputs/dependencies, owned outputs, interface re
 
 **Status:** Normative design baseline. Exact C++ type names are selected during WP-01; wire semantics are fixed here.
 
-### 32.1 Common message envelope
+### 41.1 Common message envelope
 
 Every inter-module event and worker message carries:
 
@@ -1436,7 +1055,7 @@ Rules:
 - Encrypt or redact sensitive payloads before durable storage; never copy secrets into diagnostic logs.
 - Events are immutable facts. Commands are explicit requests; never disguise a command as an event.
 
-### 32.2 Core event families
+### 41.2 Core event families
 
 | Event | Required semantics |
 | --- | --- |
@@ -1458,7 +1077,7 @@ Rules:
 
 Semantic changes require a new major contract version. Event payloads must not contain credentials or unbounded raw conversation dumps by default.
 
-### 32.3 C++ interface rules
+### 41.3 C++ interface rules
 
 - Public module interfaces use explicit value types, typed results/errors and stable IDs; no shared mutable global state.
 - Asynchronous work uses cancellation tokens, deadlines and explicit lifecycle states.
@@ -1468,7 +1087,7 @@ Semantic changes require a new major contract version. Event payloads must not c
 - Error categories: invalid input, contract/version mismatch, unauthorized, unavailable, timeout, resource exhausted, conflict, persistence failure, uncertain side effect, cancelled and internal fault.
 - Diagnostics are structured and must not expose secrets.
 
-### 32.4 Python worker contract
+### 41.4 Python worker contract
 
 Workers are replaceable, separately supervised processes. They do not own live cognition, user authority, production deployment or protected policy.
 
@@ -1478,7 +1097,7 @@ Responses carry the same job ID/version; state (accepted, running, checkpointed,
 
 Workers do not write application databases, change permissions or activate production artifacts. The C++ coordinator validates worker identity, schema, checksum, budget and output. Duplicate delivery is idempotent; partial outputs are quarantined.
 
-### 32.5 Contract compatibility
+### 41.5 Contract compatibility
 
 Maintain versioned JSON Schema or equivalent typed definitions and one shared fixture corpus consumed by C++ and Python. CI tests valid/invalid payloads, missing fields, unknown versions, size limits, duplicate IDs, digest mismatch, cancellation, deadline expiry and compatibility. Breaking changes require migration notes and a compatibility window for persisted messages.
 
@@ -1593,29 +1212,12 @@ Security acceptance requires threat-model review, authorization bypass and repla
 
 Residual risks: Termux cannot guarantee background execution; no local model is guaranteed accurate; removing training influence may require retraining/unlearning; external providers add availability/data risks; an unlocked compromised device may expose data despite encryption.
 
-## 38. Work-package deliverables and exit gates
+## 38. Work-package deliverables and exit gates — superseded
 
-| WP | Deliverables | Exit gate |
-| --- | --- | --- |
-| WP-00 Foundation | Reproducible build, repo layout, CI, dependency inventory | Clean documented build; baseline tests pass |
-| WP-01 Contracts | IDs, time, errors, envelope, schemas, fixtures | C++/Python agree on valid/invalid fixture corpus |
-| WP-02 Persistence | Three DBs, migrations, artifact registry, outbox, backup/restore, deletion | Restart/migration/crash/restore tests pass |
-| WP-03 Runtime | Lifecycle, scheduler, budgets, cancellation, telemetry, supervision | Pause/resume and resource degradation demonstrated |
-| WP-04 Inference | Model adapter, provider registry, capability metadata | Swap backend without cognitive-module changes |
-| WP-05 Experience | Observation, provenance, representation interfaces | Experience stored and traced to source |
-| WP-06 Memory | Durable memory, retrieval, retention/deletion | Retrieve after restart with provenance; deletion excludes it |
-| WP-07 Knowledge | Evidence, provisional beliefs, revision/consolidation | Contradictory evidence creates traceable revision |
-| WP-08 Cognition | Context, prediction, appraisal/attention, reasoning | Integrated cycle emits inspectable traces |
-| WP-09 Goals | Goal revisions, plans, dependencies, budgets | Goal change cannot mutate historical plan |
-| WP-10 Action | Tool registry, policy gate, execution, verification | Denied action never executes; allowed outcome recorded |
-| WP-11 Learning | Outcome feedback, mechanism updates, evaluation | Held-out improvement and regression report |
-| WP-12 Self-model | Capability, limitation, confidence, resource/performance | Estimates calibrated against outcomes |
-| WP-13 Evolution | Isolation, comparison, approval, rollout, rollback | Candidate cannot self-approve; regression rolls back |
-| WP-14 Python workers | Supervisor, typed IPC, dataset/training/eval jobs | Crash/retry/cancel safe; outputs validated |
-| WP-15 Hardening | Security, fault injection, performance, recovery | Risk-based acceptance suite passes |
-| WP-16 Expansion | Android, voice, external compute, multi-device | Separately approved after single-device acceptance |
+The table previously in this section is retained in repository history and is no longer the active work-package baseline. It deferred Android integration to expansion, which conflicts with the owner's later decision that offline-capable mobile and cloud operation are concurrent first-release targets.
 
-Critical path: WP-00 → WP-01 → WP-02/WP-03 → WP-04/WP-05 → WP-06/WP-07 → WP-08 → WP-09/WP-10 → WP-11 → WP-12/WP-13 → WP-15. WP-14 follows stable contracts and artifact APIs but need not block the first local cycle. WP-16 is deferred.
+Use [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md) for the current proposed WP-00…WP-16 sequence, dependencies, first-release platform work and exit criteria. This roadmap remains subject to planning review and owner approval; it does not authorize implementation.
+
 
 ## 39. First milestone acceptance protocol
 
@@ -1639,40 +1241,19 @@ Pass only when one reproducible test run demonstrates:
 
 A scripted demo, hardcoded response, transcript alone or one successful inference is insufficient. The learned outcome must survive restart.
 
-## 40. Final planning status and approval gate
+## 40. Earlier planning status — superseded by current completion register
 
-| Area | Status |
-| --- | --- |
-| Mission, principles and owner decisions | Recorded |
-| Architecture and module responsibilities | Specified at logical level |
-| Database entities and initial DDL | Drafted; target-runtime validation outstanding |
-| Event/worker contracts | Semantics specified; concrete schemas/fixtures outstanding |
-| Cross-store transaction/recovery | Protocol specified; fault-injection validation outstanding |
-| Artifact registry | Specified; implementation outstanding |
-| Authorization/risk/privacy | Policy model specified; owner authentication mechanism must be verified in security design |
-| Key management/threat model | Requirements specified; platform-specific design/review outstanding |
-| Deletion/backup/sync | Lifecycle specified; restore/offline-device tests outstanding |
-| Test catalogue/milestone acceptance | Specified; executable fixtures/tests outstanding |
-| Dependencies/licenses | Review criteria specified; exact SBOM/license audit outstanding |
-| Device performance | Basic inference only; benchmark outstanding |
-| Work packages/roadmap | Deliverables and exit gates specified |
-| Implementation | Not started |
+This section's former status table and WP-00/WP-01 planning-exit statement were an earlier planning snapshot. They are superseded by Section 33 of this specification and by [Planning Completion Register](PLANNING-COMPLETION-REGISTER.md) and [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md).
 
-### Planning exit decision
+In particular:
+- The earlier checked/drafted status did not establish COMPLETE — VERIFIED.
+- The former recommendation to begin WP-00/WP-01 is not current implementation authorization.
+- Foundational objective/world/means contracts, cognitive mechanism contracts, cross-document consistency, Android-specific interaction realization and canonical work-package reconciliation remain builder-owned planning work.
+- External validation, independent review of the exact final revision and explicit owner approval remain separate gates.
 
-The architecture and initial engineering plan are now consolidated as the implementation-planning baseline. They are not a validated release specification: concrete schemas, platform security choices, dependency audit and measured resource thresholds must be completed before the affected capabilities are enabled.
+**Current status:** Planning is IN PROGRESS. Implementation is not authorized.
 
-This prevents planning from becoming endless without representing unverified assumptions as proven. The first implementation scope should be limited to WP-00 and WP-01: repository/build baseline, dependency inventory, stable contracts and CI. That work does not enable live autonomous action, sensitive external disclosure, production training or protected-policy mutation.
-
-**Owner approval is required before implementation begins.** Approval authorizes transition only to WP-00/WP-01 against this specification, not every future consequential capability. Later security, privacy and governance gates remain mandatory.
-
-### Change log
-
-- 2026-11-11: Added Sections 32–40: message contracts, C++/Python boundaries, artifact registry, transactional outbox, authorization/risk/privacy, security/key requirements, risk register, work-package exit gates, first-milestone acceptance and final planning status.
-- Sections 26–31 retain the DDL, migration, recovery, deletion, testing, dependency and roadmap baselines.
-- Specification work only: no source code, database, device configuration or repository was changed by this update.
-
-## 32. Final engineering resolutions for implementation readiness
+## 41. Final engineering resolutions for implementation readiness
 
 **Status:** Engineering baseline selected to close routine design gaps. These are proposed implementation constraints, not validated code. The owner retains approval over the complete specification and transition to implementation.
 
@@ -1681,7 +1262,7 @@ This prevents planning from becoming endless without representing unverified ass
 Do not attempt distributed ACID transactions across the three SQLite files. Use a durable operation coordinator and a transactional outbox in the same database as the state mutation that must publish an event.
 
 - The authoritative store for a domain owns its state change and its outbox row in one SQLite transaction.
-- Each store has a local outbox table. The event/recovery database is the central event archive and dispatch ledger, not the only place where an event can be made durable.
+- Each store has a local outbox table. The memory-store outbox is introduced by migration v5 and the governance-store outbox by migration v2; the event/recovery database retains its own outbox for event-store-owned state and downstream dispatch. The event/recovery database is the central event archive and dispatch ledger, not the only place where an event can be made durable.
 - A relay copies outbox envelopes into the central event archive using stable message IDs and payload digests. Repeated delivery is expected and deduplicated by consumer ID plus message ID.
 - A consumer applies its local state mutation and records its receipt in the same local transaction whenever both are in the same store. If state and receipt live in different stores, use a durable operation step and reconciliation; never claim atomicity.
 - Cross-store workflows are sagas: each step records intent, performs one local transaction or external effect, records the result, and advances. Compensation is a new explicit operation, not deletion of history.
@@ -1744,7 +1325,7 @@ Risk is determined by actual effects, scope, reversibility, data sensitivity and
 
 Standing permissions specify subject, capability, operation, target/resource, data categories, side effects, environment, budget, validity period and revocation. Deny by default when policy evaluation is unavailable or ambiguous. A model may propose but cannot grant, widen or self-renew permissions.
 
-### 32.6 C++/Python contracts and dependency boundaries
+### 41.6 C++/Python contracts and dependency boundaries
 
 - C++ owns authoritative runtime state, policy enforcement, operation lifecycle, goal/plan state, memory/knowledge writes, evaluation acceptance and deployment decisions.
 - Python workers receive immutable job envelopes and write only to assigned staging/artifact areas. They cannot directly update live domain state, grant permissions, publish accepted knowledge or activate a model.
@@ -1754,7 +1335,7 @@ Standing permissions specify subject, capability, operation, target/resource, da
 - Standard error carries diagnostics; standard output carries protocol envelopes only. No shell interpolation of untrusted fields. Worker processes run with least filesystem/network privileges feasible.
 - C++ validates every result, checks artifact digest and provenance, runs required evaluation, and makes the accept/reject decision.
 
-### 32.7 Component ownership and dependency direction
+### 41.7 Component ownership and dependency direction
 
 | Component | Owns | May depend on | Must not own |
 | --- | --- | --- | --- |
@@ -1776,11 +1357,11 @@ Standing permissions specify subject, capability, operation, target/resource, da
 
 Dependency direction is inward toward stable contracts. Domain modules call interfaces, not concrete UI/platform implementations. Governance enforcement is injected at the action boundary and cannot be bypassed by internal module calls.
 
-### 32.8 Operational budgets and preemption
+### 41.8 Operational budgets and preemption
 
 Every autonomous task receives a budget envelope: wall-clock deadline, CPU time/priority, memory ceiling, storage quota, network allowance, external spend ceiling (default zero unless explicitly authorized), retry count, concurrency class and cancellation policy. The scheduler reserves resources before starting work, checkpoints at safe boundaries, and preempts lower-priority work under memory/thermal pressure. On the phone, background execution is best-effort; missed deadlines are surfaced as delayed/blocked, not silently treated as completed.
 
-### 32.9 Security and privacy defaults
+### 41.9 Security and privacy defaults
 
 - Local-first processing; external transfer is purpose-bound and data-minimized.
 - Sensitive categories are classified before storage, indexing, prompt construction or provider transfer.
@@ -1791,31 +1372,35 @@ Every autonomous task receives a budget envelope: wall-clock deadline, CPU time/
 - Policy evaluation failure, corrupted governance state or unavailable authenticator fails closed for consequential actions.
 - Security events and data disclosures are auditable without retaining unnecessary plaintext.
 
-## 33. Final planning status and owner gate
+## 42. Planning status and owner gate — corrected status record
 
-The initial planning specification now has a coherent engineering baseline covering mission, owner decisions, architecture, domain ownership, persistence, initial DDL, event delivery, C++/Python contracts, artifact lifecycle, authorization, encryption, recovery, deletion, testing, dependencies, device constraints and roadmap.
+This specification contains a substantial proposed engineering baseline. The presence of the sections below does not mean the corresponding planning layers are complete or verified. The later builder audit identified remaining design work, particularly the foundational open-world interaction model and dependent contracts, cognitive mechanism contracts, architecture-wide consistency, platform-specific validation and canonical work-package reconciliation.
 
-**Planning deliverables status**
+**Status vocabulary:** SPECIFIED means documented; REVIEWED means consistency-checked; VALIDATED means tested against executable schemas, tools or measured environments; IMPLEMENTED means present in code; VERIFIED means acceptance evidence demonstrates the requirement. These states must not be conflated.
 
-- [x] Mission, non-goals and owner decisions consolidated.
-- [x] Architecture layers, module responsibilities and dependency direction defined.
-- [x] Persistence domains and initial DDL baseline documented.
-- [x] Migration, cross-store consistency and recovery protocols defined.
-- [x] Event envelope and worker contract requirements defined.
-- [x] Artifact lifecycle, encryption and key-management baseline defined.
-- [x] Authorization classes, owner authentication and approval binding defined.
-- [x] Privacy, retention, deletion and sync rules defined.
-- [x] Test catalogue, learning proof standard and device benchmark plan defined.
-- [x] Dependency/licensing review criteria and implementation roadmap defined.
-- [ ] Exact third-party dependency versions and license inventory verified against selected releases.
-- [ ] Target-device SQLite/crypto/runtime capabilities measured and recorded.
-- [ ] Full DDL executed against the selected SQLite version; migrations, constraints and fault tests pass.
-- [ ] Security threat model and residual risks reviewed against actual implementation choices.
-- [ ] Owner review and explicit approval to begin implementation.
+| Area | Current honest status |
+| --- | --- |
+| Mission, non-goals and owner decisions | SPECIFIED; consistency audit in progress |
+| Architecture and module responsibilities | SPECIFIED at logical level; mechanism/interface completeness in progress |
+| Open-world objective/world/means architecture | IN PROGRESS; foundational model and first contract/persistence mapping added, dependent semantic and executable reconciliation outstanding |
+| Android platform interaction realization | IN PROGRESS; one context-specific implementation design, target API/permission/lifecycle validation outstanding |
+| Database entities and initial DDL | Drafted; execution and target-runtime validation outstanding |
+| Event/worker contracts | Semantics specified; complete executable schemas/fixtures and component traceability outstanding |
+| Cross-store transaction/recovery | Protocol specified; fault-injection validation outstanding |
+| Artifact registry | Design specified; implementation outstanding |
+| Authorization/risk/privacy | Policy model specified; platform authenticator and enforcement validation outstanding |
+| Key management/threat model | Requirements specified; platform-specific design and review outstanding |
+| Deletion/backup/sync | Lifecycle specified; restore/offline-device tests outstanding |
+| Test catalogue/milestone acceptance | Catalogue specified; executable fixtures/tests outstanding |
+| Dependencies/licenses | Review criteria specified; actual SBOM/license audit outstanding |
+| Device performance | Basic inference only; benchmark outstanding |
+| Work packages/roadmap | Multiple proposals exist; canonical dependency-driven roadmap reconciliation outstanding |
+| Architecture-wide consistency | IN PROGRESS |
+| Implementation | Not started; not authorized |
 
-**Interpretation:** The design/planning work is consolidated to the point where the remaining unchecked items are validation against concrete versions, hardware and security implementation—not another round of abstract architecture brainstorming. They cannot honestly be marked complete without running code, checking current dependency licenses and measuring the target device. Those activities belong at the implementation-readiness validation gate and must not be represented as already passed.
+The previous checklist's checked boxes represented that text had been drafted, not that planning layers were complete or verified. They are intentionally replaced by explicit evidence statuses.
 
-**Implementation remains blocked** until the owner explicitly approves the specification and roadmap. Once approved, start WP-00 and WP-01; do not reopen settled product decisions without evidence.
+**Planning exit is not declared.** The builder must finish the remaining design and consistency work recorded in the planning completion register. External validation, independent review of the exact final revision and explicit owner approval remain separate gates. Implementation remains blocked until the owner authorizes the transition.
 
 ## Change log — final planning consolidation
 
@@ -1828,5 +1413,20 @@ The initial planning specification now has a coherent engineering baseline cover
 - Defined module ownership and dependency direction.
 - Defined per-task resource budgets, cancellation and preemption.
 - Consolidated privacy/security defaults and explicit fail-closed behaviour.
-- Marked planning design deliverables complete while retaining evidence-dependent validation and owner approval as explicit gates.
+- Recorded an earlier draft-level planning baseline; this was later superseded by the evidence-based completion register. Drafted sections are not proof of verified planning completion.
 - No implementation code, database migration, device configuration or repository changes were performed by this planning update.
+
+- 2026-11-11: Corrected the former planning checklist: checked boxes had indicated documented sections, not verified completion. Replaced the implied completion claim with explicit specified/reviewed/validated/implemented/verified status and linked the builder-owned planning completion register.
+
+
+## 27. Open-world interaction interpretation addendum — 2026-11-12
+
+This addendum clarifies the architectural meaning of device, platform and capability language used in earlier sections of this owner specification. It does not alter owner decisions, select additional platforms, choose a first external action or authorize implementation.
+
+The foundational [Open-World Interaction and Means Architecture](../architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) is the authoritative conceptual model. AURIONS is organized around objectives and relevant changing situations, not around Android, desktop, iOS, devices, applications, tools, connectors or a capability registry. The model distinguishes objectives, entities and actors, relationships, observations/evidence, beliefs/uncertainty, context-dependent affordances and possible means, authority/consent, interactions, effects and outcomes.
+
+Earlier references to Android environment observation, device agents, capability descriptors, platform permissions and device-specific discovery are scoped to those concrete integrations. They describe one possible source and realization of interaction means; they do not define the complete world, action space or intelligence architecture. A device capability descriptor is not required for a human-mediated, physical, institutional, service-based or otherwise non-device means. No task must be routed through a platform adapter or a fixed registry. The system may observe, ask, wait, delegate, combine means, choose a supported alternative or stop when evidence/authority is insufficient.
+
+The owner-selected Android target remains a concrete mobile engineering/validation target, not the sole environment or universal capability model. Desktop and iOS are acknowledged as possible contexts, not commitments that their integrations are already designed, implemented or validated. Their future treatment must follow task requirements and actual evidence, not a predetermined platform hierarchy.
+
+The initial machine-readable open-world contracts are schemas/world-interaction.v1.schema.json, its fixtures and the proposed memory migration v4. Their schema, command/query/event registry references and integrated scenario references are now covered by the Python-host CI validator; the integrated corpus contains 47 specifications, 287 ordered steps and 53 negative controls, including individual CM-022…CM-029 cases. This is specification-level validation only. Runtime DDL/retention/deletion and cross-store execution, stable-ID semantics under concurrent runtime use, C++ ownership/conformance and executable acceptance tests remain open. The first permitted local action remains an owner decision. No implementation authorization follows from this addendum.

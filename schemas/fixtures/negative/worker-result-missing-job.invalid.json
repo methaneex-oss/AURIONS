@@ -1,0 +1,11 @@
+{
+  "status": "completed",
+  "output_artifact_refs": [],
+  "metrics": {},
+  "environment_manifest": "artifact:env",
+  "dataset_manifest": "artifact:data",
+  "code_revision": "commit:1",
+  "random_seed": 1,
+  "started_at": "2026-11-11T08:04:00Z",
+  "finished_at": "2026-11-11T08:06:00Z"
+}

@@ -1,0 +1,10 @@
+{
+  "operation_id": "70000000-0000-4000-8000-000000000001",
+  "control_action": "execute",
+  "reason_ref": "reason:fixture",
+  "idempotency_key": "control:1",
+  "expected_state": null,
+  "reconciliation_query_ref": null,
+  "requested_at": "2026-11-11T08:09:00Z",
+  "deadline": "2026-11-11T08:10:00Z"
+}

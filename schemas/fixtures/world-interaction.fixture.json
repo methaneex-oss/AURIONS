@@ -1,0 +1,262 @@
+{
+  "contract_id": "aurions.world-interaction",
+  "contract_version": "1.0",
+  "status": "design_baseline_not_dispatchable",
+  "source_architecture": "docs/architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md",
+  "definitions": {
+    "objective": {
+      "objective_id": "objective:fixture:1",
+      "statement": "Obtain a verified copy of a document from its current custodian.",
+      "request_source_ref": "experience:owner-request:1",
+      "created_at": "2026-11-12T08:00:00Z",
+      "status": "active",
+      "success_evidence": [
+        "evidence:document-received-and-verified"
+      ],
+      "constraints": {
+        "disclosure": "do not disclose document contents to an unapproved party"
+      },
+      "assumptions": [],
+      "uncertainty": {
+        "custodian_identity": "not yet established"
+      },
+      "owner_ref": "owner:primary",
+      "version": 1
+    },
+    "entity": {
+      "entity_id": "entity:fixture:custodian",
+      "identity_status": "provisional",
+      "description": "A person who may currently hold the requested document.",
+      "first_observed_at": "2026-11-12T08:00:01Z",
+      "last_observed_at": null,
+      "evidence_refs": [
+        "evidence:user-mentioned-custodian"
+      ],
+      "scope": {
+        "context_ref": "situation:fixture:1",
+        "valid_from": null,
+        "valid_until": null
+      },
+      "attributes": {
+        "role_claim": "possible custodian"
+      },
+      "sensitivity": 1,
+      "owner_ref": "owner:primary",
+      "version": 1
+    },
+    "relationship": {
+      "relationship_id": "relationship:fixture:1",
+      "subject_ref": "entity:fixture:custodian",
+      "predicate": "may_custody",
+      "object_ref": "entity:fixture:document",
+      "epistemic_status": "provisional",
+      "confidence": 0.4,
+      "evidence_refs": [
+        "evidence:user-mentioned-custodian"
+      ],
+      "valid_from": "2026-11-12T08:00:01Z",
+      "valid_until": null,
+      "context_ref": "situation:fixture:1",
+      "owner_ref": "owner:primary",
+      "version": 1
+    },
+    "situation": {
+      "situation_id": "situation:fixture:1",
+      "version": 1,
+      "objective_refs": [
+        "objective:fixture:1"
+      ],
+      "entity_refs": [
+        "entity:fixture:custodian",
+        "entity:fixture:document"
+      ],
+      "observed_at": "2026-11-12T08:00:01Z",
+      "recorded_at": "2026-11-12T08:00:02Z",
+      "state_claims": [
+        {
+          "claim": "The person may hold the document.",
+          "epistemic_status": "reported_unverified",
+          "confidence": 0.4,
+          "evidence_refs": [
+            "evidence:user-mentioned-custodian"
+          ]
+        }
+      ],
+      "unknowns": [
+        "whether the person currently has the document",
+        "whether the person is reachable",
+        "whether the document may be shared"
+      ],
+      "conflicts": [],
+      "evidence_refs": [
+        "evidence:user-mentioned-custodian"
+      ],
+      "context_ref": null,
+      "owner_ref": "owner:primary"
+    },
+    "evidence": {
+      "evidence_id": "evidence:user-mentioned-custodian",
+      "source_ref": "experience:owner-request:1",
+      "source_kind": "owner_report",
+      "observed_at": "2026-11-12T08:00:01Z",
+      "recorded_at": "2026-11-12T08:00:02Z",
+      "content_ref": "artifact:owner-report:1",
+      "epistemic_status": "reported_unverified",
+      "scope": {
+        "situation_ref": "situation:fixture:1"
+      },
+      "limitations": [
+        "No independent confirmation has been obtained."
+      ],
+      "sensitivity": 1,
+      "owner_ref": "owner:primary"
+    },
+    "affordanceHypothesis": {
+      "hypothesis_id": "means:fixture:ask-custodian",
+      "objective_ref": "objective:fixture:1",
+      "actor_refs": [
+        "actor:aurions",
+        "entity:fixture:custodian"
+      ],
+      "resource_refs": [
+        "entity:fixture:document"
+      ],
+      "interaction_description": "Ask the possible custodian whether they hold the document and whether they can share it.",
+      "preconditions": [
+        "The person can be contacted through an authorized channel."
+      ],
+      "expected_effects": [
+        "A response may clarify custody and sharing permission."
+      ],
+      "authority_requirements": [
+        "Use only a channel and disclosure scope authorized by the owner."
+      ],
+      "evidence_refs": [
+        "evidence:user-mentioned-custodian"
+      ],
+      "confidence": 0.3,
+      "status": "hypothesis_unverified",
+      "scope": {
+        "context_refs": [
+          "situation:fixture:1"
+        ],
+        "valid_from": null,
+        "valid_until": null
+      },
+      "limitations": [
+        "This hypothesis does not establish reachability or consent."
+      ],
+      "composition_refs": [],
+      "owner_ref": "owner:primary",
+      "version": 1,
+      "created_at": "2026-11-12T08:00:02Z"
+    },
+    "interactionProposal": {
+      "interaction_id": "interaction:fixture:1",
+      "objective_ref": "objective:fixture:1",
+      "actor_ref": "actor:aurions",
+      "target_refs": [
+        "entity:fixture:custodian"
+      ],
+      "means_hypothesis_refs": [
+        "means:fixture:ask-custodian"
+      ],
+      "proposed_effects": [
+        "Send a narrowly scoped request for confirmation."
+      ],
+      "authority_context_ref": "authority:owner:fixture",
+      "risk_assessment": {
+        "level": "low",
+        "basis": [
+          "No document content is disclosed in the request."
+        ]
+      },
+      "precondition_evidence_refs": [
+        "evidence:user-mentioned-custodian"
+      ],
+      "proposed_at": "2026-11-12T08:00:03Z",
+      "deadline": null,
+      "status": "proposal_only_not_authorized",
+      "authorization_ref": null,
+      "execution_binding_ref": null,
+      "owner_ref": "owner:primary"
+    },
+    "interactionOutcome": {
+      "outcome_id": "outcome:fixture:1",
+      "interaction_ref": "interaction:fixture:1",
+      "observed_at": "2026-11-12T08:00:04Z",
+      "recorded_at": "2026-11-12T08:00:05Z",
+      "result_status": "not_executed",
+      "observed_effects": [],
+      "evidence_refs": [],
+      "unresolved_effects": [
+        "No contact was attempted; reachability and consent remain unknown."
+      ],
+      "attribution": {
+        "status": "not_applicable",
+        "hypotheses": []
+      },
+      "side_effects": [],
+      "owner_ref": "owner:primary"
+    },
+    "relatedEntities": [
+      {
+        "entity_id": "entity:fixture:document",
+        "identity_status": "provisional",
+        "description": "The document requested by the owner.",
+        "first_observed_at": "2026-11-12T08:00:01Z",
+        "last_observed_at": null,
+        "evidence_refs": [
+          "evidence:user-mentioned-custodian"
+        ],
+        "scope": {
+          "context_ref": "situation:fixture:1",
+          "valid_from": null,
+          "valid_until": null
+        },
+        "attributes": {
+          "requested_artifact": true
+        },
+        "sensitivity": 1,
+        "owner_ref": "owner:primary",
+        "version": 1
+      }
+    ],
+    "objectiveRevision": {
+      "objective_id": "objective:fixture:1",
+      "statement": "Obtain a verified copy of the document from its current custodian using the newly confirmed scope.",
+      "request_source_ref": "experience:owner-request:1",
+      "created_at": "2026-11-12T08:00:00Z",
+      "status": "active",
+      "success_evidence": [
+        "evidence:document-received-and-verified"
+      ],
+      "constraints": {
+        "disclosure": "do not disclose document contents to an unapproved party"
+      },
+      "assumptions": [],
+      "uncertainty": {
+        "custodian_identity": "not yet established"
+      },
+      "owner_ref": "owner:primary",
+      "version": 2
+    },
+    "relationshipRevision": {
+      "relationship_id": "relationship:fixture:1",
+      "subject_ref": "entity:fixture:custodian",
+      "predicate": "may_custody",
+      "object_ref": "entity:fixture:document",
+      "epistemic_status": "supported",
+      "confidence": 0.75,
+      "evidence_refs": [
+        "evidence:user-mentioned-custodian",
+        "evidence:follow-up-confirmation"
+      ],
+      "valid_from": "2026-11-12T08:05:00Z",
+      "valid_until": null,
+      "context_ref": "situation:fixture:1",
+      "owner_ref": "owner:primary",
+      "version": 2
+    }
+  }
+}

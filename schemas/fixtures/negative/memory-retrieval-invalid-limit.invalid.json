@@ -1,0 +1,12 @@
+{
+  "query_id": "b1200000-0000-4000-8000-000000000001",
+  "query_representation_ref": "representation:query:1",
+  "context_ref": "context:1",
+  "scope": {
+    "owner_id": "owner:primary"
+  },
+  "retrieval_constraints": {},
+  "requested_at": "2026-11-11T08:09:00Z",
+  "limit": 0,
+  "include_provenance": true
+}

@@ -1,0 +1,813 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "world-interaction.v1.schema.json",
+  "title": "AURIONS open-world objective and interaction contracts",
+  "description": "Foundational context-independent contracts for objectives, entities, relationships, situations, evidence, possible means, interactions and outcomes. They do not define a closed ontology, task catalogue, platform list or executable capability registry.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_id",
+    "contract_version",
+    "status",
+    "source_architecture",
+    "definitions"
+  ],
+  "properties": {
+    "contract_id": {
+      "const": "aurions.world-interaction"
+    },
+    "contract_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "const": "design_baseline_not_dispatchable"
+    },
+    "source_architecture": {
+      "const": "docs/architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md"
+    },
+    "definitions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objective",
+        "entity",
+        "relationship",
+        "situation",
+        "evidence",
+        "affordanceHypothesis",
+        "interactionProposal",
+        "interactionOutcome",
+        "relatedEntities",
+        "objectiveRevision",
+        "relationshipRevision"
+      ],
+      "properties": {
+        "objective": {
+          "$ref": "#/$defs/objective"
+        },
+        "entity": {
+          "$ref": "#/$defs/entity"
+        },
+        "relationship": {
+          "$ref": "#/$defs/relationship"
+        },
+        "situation": {
+          "$ref": "#/$defs/situation"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidence"
+        },
+        "affordanceHypothesis": {
+          "$ref": "#/$defs/affordanceHypothesis"
+        },
+        "interactionProposal": {
+          "$ref": "#/$defs/interactionProposal"
+        },
+        "interactionOutcome": {
+          "$ref": "#/$defs/interactionOutcome"
+        },
+        "relatedEntities": {
+          "$ref": "#/$defs/entityCollection"
+        },
+        "objectiveRevision": {
+          "description": "Optional successor revision of the objective represented in the same fixture; revision lineage is illustrative and remains non-dispatchable.",
+          "$ref": "#/$defs/objective"
+        },
+        "relationshipRevision": {
+          "description": "Optional successor revision of a relationship represented in the same fixture; revision lineage is illustrative and remains non-dispatchable.",
+          "$ref": "#/$defs/relationship"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objective_id",
+        "owner_ref",
+        "version",
+        "statement",
+        "request_source_ref",
+        "created_at",
+        "status",
+        "success_evidence",
+        "constraints",
+        "uncertainty"
+      ],
+      "properties": {
+        "objective_id": {
+          "$ref": "#/$defs/ref"
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_source_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "created_at": {
+          "$ref": "#/$defs/time"
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "success_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "constraints": {
+          "type": "object"
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "uncertainty": {
+          "type": "object"
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entity_id",
+        "owner_ref",
+        "version",
+        "identity_status",
+        "description",
+        "first_observed_at",
+        "evidence_refs",
+        "scope",
+        "attributes"
+      ],
+      "properties": {
+        "entity_id": {
+          "$ref": "#/$defs/ref"
+        },
+        "identity_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "first_observed_at": {
+          "$ref": "#/$defs/time"
+        },
+        "last_observed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "scope": {
+          "type": "object",
+          "required": [
+            "context_ref"
+          ],
+          "properties": {
+            "context_ref": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "valid_from": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "valid_until": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false
+        },
+        "attributes": {
+          "type": "object"
+        },
+        "sensitivity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relationship_id",
+        "owner_ref",
+        "version",
+        "subject_ref",
+        "predicate",
+        "object_ref",
+        "epistemic_status",
+        "evidence_refs",
+        "valid_from"
+      ],
+      "properties": {
+        "relationship_id": {
+          "$ref": "#/$defs/ref"
+        },
+        "subject_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "predicate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "epistemic_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "valid_from": {
+          "$ref": "#/$defs/time"
+        },
+        "valid_until": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "context_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "situation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "situation_id",
+        "owner_ref",
+        "version",
+        "objective_refs",
+        "entity_refs",
+        "observed_at",
+        "recorded_at",
+        "state_claims",
+        "unknowns",
+        "conflicts",
+        "evidence_refs"
+      ],
+      "properties": {
+        "situation_id": {
+          "$ref": "#/$defs/ref"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "objective_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "entity_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "observed_at": {
+          "$ref": "#/$defs/time"
+        },
+        "recorded_at": {
+          "$ref": "#/$defs/time"
+        },
+        "state_claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "claim",
+              "epistemic_status",
+              "evidence_refs"
+            ],
+            "properties": {
+              "claim": {
+                "type": "string",
+                "minLength": 1
+              },
+              "epistemic_status": {
+                "type": "string",
+                "minLength": 1
+              },
+              "confidence": {
+                "$ref": "#/$defs/confidence"
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/ref"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "unknowns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "conflicts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "context_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "owner_ref",
+        "source_ref",
+        "source_kind",
+        "observed_at",
+        "recorded_at",
+        "content_ref",
+        "epistemic_status",
+        "scope",
+        "limitations"
+      ],
+      "properties": {
+        "evidence_id": {
+          "$ref": "#/$defs/ref"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "source_kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_at": {
+          "$ref": "#/$defs/time"
+        },
+        "recorded_at": {
+          "$ref": "#/$defs/time"
+        },
+        "content_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "epistemic_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "object"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sensitivity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
+        }
+      }
+    },
+    "affordanceHypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hypothesis_id",
+        "owner_ref",
+        "version",
+        "objective_ref",
+        "actor_refs",
+        "resource_refs",
+        "interaction_description",
+        "preconditions",
+        "expected_effects",
+        "authority_requirements",
+        "evidence_refs",
+        "confidence",
+        "status",
+        "scope",
+        "created_at"
+      ],
+      "properties": {
+        "hypothesis_id": {
+          "$ref": "#/$defs/ref"
+        },
+        "objective_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "actor_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "resource_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "interaction_description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "preconditions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "expected_effects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authority_requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "object",
+          "required": [
+            "context_refs"
+          ],
+          "properties": {
+            "context_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ref"
+              }
+            },
+            "valid_from": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "valid_until": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "composition_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "$ref": "#/$defs/time"
+        }
+      }
+    },
+    "interactionProposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "interaction_id",
+        "owner_ref",
+        "objective_ref",
+        "actor_ref",
+        "target_refs",
+        "means_hypothesis_refs",
+        "proposed_effects",
+        "authority_context_ref",
+        "risk_assessment",
+        "precondition_evidence_refs",
+        "proposed_at",
+        "status"
+      ],
+      "properties": {
+        "interaction_id": {
+          "$ref": "#/$defs/ref"
+        },
+        "objective_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "actor_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "target_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "means_hypothesis_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "proposed_effects": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "authority_context_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "risk_assessment": {
+          "type": "object",
+          "required": [
+            "level",
+            "basis"
+          ],
+          "properties": {
+            "level": {
+              "type": "string",
+              "minLength": 1
+            },
+            "basis": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "precondition_evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "proposed_at": {
+          "$ref": "#/$defs/time"
+        },
+        "deadline": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authorization_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "execution_binding_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
+        }
+      }
+    },
+    "interactionOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome_id",
+        "owner_ref",
+        "interaction_ref",
+        "observed_at",
+        "recorded_at",
+        "result_status",
+        "observed_effects",
+        "evidence_refs",
+        "unresolved_effects",
+        "attribution"
+      ],
+      "properties": {
+        "outcome_id": {
+          "$ref": "#/$defs/ref"
+        },
+        "interaction_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "observed_at": {
+          "$ref": "#/$defs/time"
+        },
+        "recorded_at": {
+          "$ref": "#/$defs/time"
+        },
+        "result_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_effects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ref"
+          }
+        },
+        "unresolved_effects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attribution": {
+          "type": "object",
+          "required": [
+            "status",
+            "hypotheses"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "minLength": 1
+            },
+            "hypotheses": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "side_effects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "owner_ref": {
+          "$ref": "#/$defs/ref"
+        }
+      }
+    },
+    "entityCollection": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/entity"
+      }
+    },
+    "objectiveRevision": {
+      "description": "Complete immutable objective snapshot for a specific aggregate revision; consumers compare version with the expected predecessor and never apply it as an unversioned patch.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/objective"
+        }
+      ]
+    },
+    "relationshipRevision": {
+      "description": "Complete immutable relationship snapshot for a specific aggregate revision; consumers compare version with the expected predecessor and preserve evidence lineage.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/relationship"
+        }
+      ]
+    }
+  }
+}

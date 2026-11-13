@@ -1,0 +1,12 @@
+{
+  "resource_selector": {
+    "domain": "goal"
+  },
+  "filters": [],
+  "sort": [],
+  "projection": [],
+  "temporal_scope": null,
+  "cursor": null,
+  "limit": 10001,
+  "requested_at": "2026-11-11T08:09:00Z"
+}

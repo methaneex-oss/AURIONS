@@ -1,0 +1,395 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aurions:schema:capability-descriptor-body:1",
+  "title": "AURIONS discovered capability descriptor body",
+  "description": "Extensible evidence-backed descriptor body for one provider/interface-specific means of interaction. A descriptor may inform a context-dependent affordance hypothesis; it is not the universal representation of possible means, an exhaustive action catalogue, or an authority grant. Non-device and human-mediated means need not have a descriptor.",
+  "type": "object",
+  "required": [
+    "descriptor_schema_version",
+    "interface",
+    "preconditions",
+    "effects",
+    "platform_requirements",
+    "constraints",
+    "risk_facts",
+    "execution",
+    "verification",
+    "resource_profile",
+    "lifecycle",
+    "provenance"
+  ],
+  "properties": {
+    "descriptor_schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "interface": {
+      "type": "object",
+      "required": [
+        "invocation_contract_ref",
+        "input_schema_ref",
+        "output_schema_ref"
+      ],
+      "properties": {
+        "invocation_contract_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_schema_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "output_schema_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transport": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider_api_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "preconditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "predicate_ref",
+          "state"
+        ],
+        "properties": {
+          "predicate_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state": {
+            "enum": [
+              "satisfied",
+              "unsatisfied",
+              "unknown"
+            ]
+          },
+          "scope": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "effect_type",
+          "target_scope",
+          "reversibility"
+        ],
+        "properties": {
+          "effect_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "impact": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "data_access": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "side_effects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reversibility": {
+            "enum": [
+              "unknown",
+              "reversible",
+              "partially_reversible",
+              "irreversible"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "platform_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "requirement_ref",
+          "rationale"
+        ],
+        "properties": {
+          "requirement_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scope": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Provider- and environment-specific constraints. Values are descriptive evidence and never grant authority.",
+      "additionalProperties": true
+    },
+    "risk_facts": {
+      "type": "array",
+      "description": "Effect facts for independent policy evaluation; providers cannot choose the final risk class.",
+      "items": {
+        "type": "object",
+        "required": [
+          "fact_type",
+          "value"
+        ],
+        "properties": {
+          "fact_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {},
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "timeout_ms",
+        "cancellation",
+        "idempotency",
+        "retry_semantics",
+        "uncertain_outcome_semantics"
+      ],
+      "properties": {
+        "timeout_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cancellation": {
+          "enum": [
+            "supported",
+            "cooperative",
+            "unsupported",
+            "unknown"
+          ]
+        },
+        "idempotency": {
+          "enum": [
+            "idempotent",
+            "keyed",
+            "non_idempotent",
+            "unknown"
+          ]
+        },
+        "retry_semantics": {
+          "enum": [
+            "safe",
+            "after_reconciliation",
+            "never",
+            "unknown"
+          ]
+        },
+        "uncertain_outcome_semantics": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "verification": {
+      "type": "object",
+      "required": [
+        "strategy",
+        "postconditions",
+        "evidence_sources",
+        "limitations"
+      ],
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "postconditions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "resource_profile": {
+      "type": "object",
+      "required": [
+        "estimates",
+        "uncertainty"
+      ],
+      "properties": {
+        "estimates": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "uncertainty": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": [
+        "status",
+        "first_discovered_at"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "discovered",
+            "unverified",
+            "verified",
+            "unavailable",
+            "permission_required",
+            "revoked",
+            "stale",
+            "retired"
+          ]
+        },
+        "first_discovered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_verified_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "invalidation_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "source_id",
+        "discovery_method",
+        "evidence_refs",
+        "device_context",
+        "collector_version",
+        "observed_at"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "discovery_method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "device_context": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "collector_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Non-authoritative extension data. Extensions cannot alter permissions, risk classification, approval requirements or execution policy.",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

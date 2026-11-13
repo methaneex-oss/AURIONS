@@ -1,0 +1,88 @@
+# Builder Operating Protocol — Execution and Accountability
+
+**Status:** Mandatory  
+**Applies to:** All builders, implementation agents, reviewers and testers.  
+**Scope:** All current and future development projects.
+
+**Role/workflow authority:** The [Project Directorship and Team Operating Standard](PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md) governs director, builder, independent reviewer and tester authority, workflow gates, handoffs and acceptance. This protocol supplies the detailed execution and verification obligations for builders; it does not replace independent review, independent testing or director acceptance.
+
+## 1. Core objective
+
+Produce completed, working, independently verifiable deliverables. Optimize for measurable progress, not appearances of productivity, code volume, excessive planning, premature completion claims or unnecessary scope expansion.
+
+## 2. Scope discipline
+
+Before implementation, understand the existing project and architecture, identify requirements and constraints, define phase boundaries, and identify dependencies and acceptance criteria.
+
+During implementation, avoid unrelated features and unjustified redesign. Record necessary discoveries and assess their impact before changing scope. Complete the agreed scope before proposing additional work.
+
+## 3. Autonomous execution
+
+Builders carry assigned work through implementation, self-review, testing and correction. Do not ask the project owner to supervise ordinary engineering decisions. Use judgment within assigned authority.
+
+Escalate only material architecture/requirement changes, critical dependency blockers, significant security/data-loss/compatibility risks, or essential ambiguity that cannot safely be resolved. Autonomy is not permission for arbitrary architectural change.
+
+## 4. Mandatory verification
+
+Before declaring work complete:
+
+1. Review implementation against requirements.
+2. Examine affected architecture and integration points.
+3. Run relevant tests and applicable integration/regression tests.
+4. Investigate failures to root cause.
+5. Correct defects and rerun affected tests.
+6. Record actual results and remaining limitations.
+
+Never claim an unexecuted test passed or claim independent review when none occurred.
+
+## 5. Definition of done
+
+A task is complete only when all agreed requirements are implemented, integration requirements are satisfied, relevant tests actually pass, known defects are resolved or documented, implementation is reviewed, and evidence supports the claim.
+
+Code written is not functionality delivered. A successful build is not a successful system.
+
+## 6. Progress reporting
+
+Report requirements, implementation, verification, actual test results, remaining gaps, evidence and commit references. Distinguish exactly:
+
+- **NOT STARTED**
+- **IN PROGRESS**
+- **IMPLEMENTED — UNVERIFIED**
+- **TESTED — FAILURES**
+- **VERIFIED COMPLETE**
+
+Never use optimistic language to conceal unfinished work. Keep specification, implementation, test, builder review and independent review evidence distinct.
+
+## 7. Independent accountability
+
+Builders review their own work before requesting independent review. Reviewers independently examine the implementation rather than accepting builder conclusions. Testers exercise actual behavior rather than inspecting implementation claims. These responsibilities remain distinct.
+
+## 8. Continuous improvement
+
+For recurring mistakes, identify root causes, correct the underlying process, update project rules/documentation, and add enforceable checks where practical. Do not repeatedly address the same failure class through manual intervention.
+
+## 9. Governing principle
+
+High standards must produce reliable engineering processes, not endless supervision. The builder delivers verified results within agreed scope. Completion is demonstrated through evidence, not asserted through confidence.
+
+## 10. Mandatory fresh governance read before every run
+
+Before every execution run, regardless of size or type, the builder must freshly retrieve and read the current [Project Directorship and Team Operating Standard](PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md) and this protocol. This applies to investigation, planning, implementation, documentation, self-review, testing, correction and handoff preparation. Previous reads, remembered rules, summaries and prior-chat context do not satisfy the requirement.
+
+Record the source revision (commit/blob identifier or equivalent), confirm the read, and identify the applicable scope and acceptance gate for that run. If the current authoritative documents cannot be retrieved or revision currency cannot be established, stop rather than proceed from memory. If governance changes during the run, re-read the changed requirements before continuing. No small-task, urgent-task or routine-task exception exists.
+
+Independent reviewers, testers, directors and supporting agents have the same mandatory pre-run obligation under the team standard; this builder protocol does not dilute their role-specific responsibilities.
+
+## 11. EBT-01 — builder behaviour and ownership
+
+The mandatory engineering behaviour requirements in Part J of the team standard apply to every builder run. In addition, the builder must:
+
+- Independently derive the necessary next engineering steps from the approved scope, requirements, architecture and evidence; do not wait for the director to identify omissions or obvious integration work.
+- Identify missing requirements, contradictions, root causes, integration risks and weak assumptions before handoff.
+- Finish the authorised scope, including in-scope corrections, before expanding into optional improvements.
+- Own implementation quality through self-review, relevant tests, correction, regression checks and an evidence-complete handoff.
+- Correct defects within builder authority autonomously. Escalate owner-reserved decisions, material architecture/requirement changes and material security, data-loss or compatibility risks with evidence and options.
+- Challenge inaccurate assumptions or acceptance claims with precise evidence, including when the assumption comes from the director.
+- Report specification, implementation, verification, independent review and acceptance as separate states. Never imply that builder testing is independent testing.
+
+**Compliance is judged by the completed artifact, defect prevention, root-cause quality, integration results, test evidence and handoff quality—not by acknowledgment or activity reporting.**

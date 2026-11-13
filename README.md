@@ -10,14 +10,25 @@ The system is not intended to be a chatbot wrapper or a collection of hardcoded 
 
 ## Project status
 
-**Current stage:** repository foundation / WP-00.
+**Current stage:** architecture planning and technical design; implementation planning is in progress.
 
-The initial planning design is consolidated. Implementation-readiness evidence gates remain; see the [planning status and owner gate](docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md). Do not interpret a documented design as implemented functionality.
+Implementation has not been authorized. PR #1 is a proposed foundation scaffold, not an active implementation phase. No planning layer is declared complete merely because a document exists. See the [planning completion register](docs/planning/PLANNING-COMPLETION-REGISTER.md) for exact statuses and builder-owned work, and the [canonical implementation roadmap](docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md) for the proposed dependency sequence.
 
 ## Start here
 
+- [Mandatory Project Directorship and Team Operating Standard](docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md) — role authority, milestone gates, handoffs, scope/change control and final acceptance across current and future projects.
+- [Mandatory Builder Operating Protocol](docs/governance/BUILDER-OPERATING-PROTOCOL.md) — builder execution, self-review, testing, correction and evidence requirements.
+
 - [Planning documentation index](docs/planning/README.md)
+- [Owner decision traceability matrix](docs/planning/OWNER-DECISION-TRACEABILITY-MATRIX.md)
 - [Complete initial engineering specification](docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md)
+- [System architecture](docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md)
+- [Open-world interaction and means architecture](docs/architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) — foundational, objective-led model across contexts
+- [Android platform interaction realization](docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md) — Android-specific realization only
+- [Cognitive mechanism and interaction architecture](docs/architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md)
+- [Cloud/offline-mobile topology decision](docs/architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md)
+- [Canonical contract schemas](schemas/README.md) — partial planning artifacts; not yet validated by the final C++/Python toolchain
+- [Cognitive and capability contract matrix](docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md)
 - [Canonical Notion project control center](https://app.notion.com/p/41505b96eab381778361fc0d0ccf6344?pvs=204)
 
 ## Engineering direction
