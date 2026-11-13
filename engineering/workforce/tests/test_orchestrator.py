@@ -48,6 +48,15 @@ class OrchestratorTests(unittest.TestCase):
         with self.assertRaises(OrchestrationError):
             validate_manifest(value)
 
+    def test_agent_brief_contains_objective_acceptance_and_read_only_scope(self):
+        value = valid_manifest()
+        brief = _task_brief(value, "integration_verifier")
+        self.assertIn(value["objective"], brief)
+        self.assertIn(value["acceptance_criteria"][0], brief)
+        self.assertIn(value["roles"]["integration_verifier"]["task"], brief)
+        self.assertIn("READ-ONLY: no write paths", brief)
+        self.assertIn(value["base_commit_sha"], brief)
+
     def test_manifest_rejects_shell_and_unapproved_test_commands(self):
         value = valid_manifest()
         value["test_commands"] = [["bash", "-c", "echo unsafe"]]
