@@ -53,8 +53,10 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
     for key in ("work_package_id", "authorization_ref", "objective"):
         if not isinstance(value[key], str) or not value[key].strip():
             raise OrchestrationError(f"{key} must be a non-empty string")
-    if not re.fullmatch(r"[0-9a-fA-F]{40}", str(value["base_commit_sha"])):
-        raise OrchestrationError("base_commit_sha must be a full Git SHA")
+        if value[key].strip().upper().startswith("REPLACE_"):
+            raise OrchestrationError(f"{key} still contains a template placeholder")
+    if not re.fullmatch(r"[0-9a-fA-F]{40}", str(value["base_commit_sha"])) or set(value["base_commit_sha"]) == {"0"}:
+        raise OrchestrationError("base_commit_sha must be a real full Git SHA")
     if not isinstance(value["roles"], dict) or set(value["roles"]) != set(ROLES):
         raise OrchestrationError("manifest must define each of the six roles exactly once")
     for key in ("canonical_sources", "acceptance_criteria", "test_plan", "review_plan", "stop_conditions"):
@@ -64,6 +66,8 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
         spec = value["roles"][role]
         if not isinstance(spec, dict) or not isinstance(spec.get("task"), str) or not spec["task"].strip():
             raise OrchestrationError(f"{role} requires a non-empty task instruction")
+        if spec["task"].strip().upper().startswith("REPLACE_"):
+            raise OrchestrationError(f"{role} task still contains a template placeholder")
         paths = spec.get("permitted_paths", [])
         contexts = spec.get("context_files", [])
         if not isinstance(paths, list) or not all(isinstance(x, str) and x.strip() for x in paths):
@@ -92,8 +96,8 @@ def validate_manifest(value: dict[str, Any]) -> dict[str, Any]:
             if _path_overlap(a, b):
                 raise OrchestrationError(f"builder write scopes overlap: {a!r} and {b!r}")
     value.setdefault("run_id", uuid.uuid4().hex[:12])
-    if not re.fullmatch(r"[A-Za-z0-9_-]{1,32}", str(value["run_id"])):
-        raise OrchestrationError("run_id may contain only letters, digits, underscore and hyphen (max 32)")
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,32}", str(value["run_id"])) or str(value["run_id"]).upper().startswith("REPLACE_"):
+        raise OrchestrationError("run_id must be a unique non-placeholder identifier (max 32 characters)")
     return value
 
 
