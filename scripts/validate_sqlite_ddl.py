@@ -469,6 +469,11 @@ def test_events() -> None:
         (bytes([41])*16,),
     )
     expect_integrity_error(
+        db, "saga step history deletion",
+        "DELETE FROM operation_steps WHERE operation_step_id=?",
+        (bytes([41])*16,),
+    )
+    expect_integrity_error(
         db, "saga terminal state without completion timestamp",
         "UPDATE operation_steps SET state='succeeded' WHERE operation_step_id=?",
         (bytes([41])*16,),
@@ -488,6 +493,15 @@ def test_events() -> None:
         VALUES (?,?,?,?,?,?,?,?)""",
         (bytes([49])*16,operation_id,"governance","aurion_governance.db",
          "approval_committed","applied",12,12),
+    )
+    expect_integrity_error(
+        db, "recovery journal local store differs from saga step target",
+        """INSERT INTO recovery_journal
+        (journal_id,operation_id,phase,local_store,intended_transition,state,
+         created_at_ms,updated_at_ms,operation_step_id)
+        VALUES (?,?,?,?,?,?,?,?,?)""",
+        (bytes([50])*16,operation_id,"memory","aurion_memory.db",
+         "memory_commit","applied",12,12,bytes([41])*16),
     )
     db.execute(
         """INSERT INTO recovery_journal
