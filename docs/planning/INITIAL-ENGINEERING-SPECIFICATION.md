@@ -726,7 +726,7 @@ For cross-database writes, no global SQLite transaction exists. Use an explicit 
 
 ### 26.2 Memory database — aurion_memory.db
 
-Canonical machine-readable DDL: [`schemas/persistence/aurion_memory.base.sql`](../../schemas/persistence/aurion_memory.base.sql). This file is proposed and has not been executed or validated.
+Canonical machine-readable DDL: [`schemas/persistence/aurion_memory.base.sql`](../../schemas/persistence/aurion_memory.base.sql). This file remains a proposed migration; it has executed in the complete host-side SQLite chain in CI. Target Termux/Android compatibility and runtime behaviour remain unverified.
 
 ### 26.3 Event/recovery database — aurion_events.db
 
@@ -787,7 +787,7 @@ The expanded `operations.state` and `operation_steps.state` values in the propos
 
 Cross-store capability descriptor and approval references are validated by application services against the current memory and governance stores immediately before dispatch. No cross-file foreign keys are introduced.
 
-These additions close specification mismatches only. They have not been executed, benchmarked or validated against the target SQLite build. They require migration fixtures for fresh install, upgrade, interruption, invalid references, duplicate attempts, uncertain dispatch, stale checkpoint invalidation, recovery and rollback.
+These additions close specification mismatches at the DDL level and have executed in the complete host-side SQLite chain. They have not been benchmarked or validated against the target Termux/Android SQLite build. Migration interruption, restore, duplicate attempts, uncertain dispatch, stale checkpoint invalidation, recovery and rollback still require dedicated tests.
 
 
 
@@ -798,6 +798,20 @@ Canonical machine-readable DDL: [`schemas/persistence/aurion_memory.migration_v4
 This migration does not make a device capability descriptor mandatory for possible means. The world/means records are context-independent; the existing device/provider capability descriptor tables remain one specific integration evidence source. The `execution_operation_ref` on an interaction proposal is a cross-store reference only, not a foreign key or proof of execution. Application-level validation must resolve owner scope, stable identifiers, evidence lineage, revision/temporal validity, authority decisions and cross-store operation state. No distributed transaction across the three SQLite files is implied.
 
 Required v4 validation includes fresh install and upgrade paths, owner isolation, revision/temporal validity, evidence-details linkage, referential-integrity and stale-reference checks, interaction proposal versus authorization separation, cross-store operation reconciliation, retention/deletion propagation, crash/rollback and restore. The new schema and DDL remain IN PROGRESS until those checks are executed on the pinned SQLite baseline.
+
+### 26.5.3 Query projection source completion — proposed migrations v7/v4/v4
+
+The 29 query result schemas contain 310 fields. The query/persistence reconciliation now declares an explicit proposed source or derivation for every field in `projection_resolved_fields`; no field remains unclassified in `projection_unresolved_fields`. This is not a claim that the SQL handlers exist or that owner scope, redaction, pagination or consistency has been behaviourally verified.
+
+Canonical additive DDL:
+- Memory v7: [`aurion_memory.migration_v7.sql`](../../schemas/persistence/aurion_memory.migration_v7.sql) adds environment observations, descriptor schema version, representation method/source lineage, context provenance/uncertainty, memory provenance/uncertainty, prediction conditions/confidence/evidence and plan context/capability-epoch references. Legacy rows remain NULL where values cannot be established; insert guards require the new mandatory fields for new records.
+- Events v4: [`aurion_events.migration_v4.sql`](../../schemas/persistence/aurion_events.migration_v4.sql) adds task failure and operation policy-decision references.
+- Governance v3: [`aurion_governance.migration_v3.sql`](../../schemas/persistence/aurion_governance.migration_v3.sql) binds approval requests to owner/session and enforces exact, pending, unexpired, one-time owner decisions.
+- Governance v4: [`aurion_governance.migration_v4.sql`](../../schemas/persistence/aurion_governance.migration_v4.sql) adds owner/status/policy/approval fields for permissions and owner/evidence/correlation fields for audit and disclosure records.
+
+**Verification:** Exact PR #2 head `2a32dd13253ba501288d9b248a3048f8b0a3a31e` passed [workflow 43386377963](https://github.com/methaneex-oss/AURIONS/actions/runs/43386377963), all nine steps. The host SQLite runner executed all fifteen ordered DDL files on SQLite 3.46.1 and exercised new-write guards and positive/negative inserts for environment observations, capability descriptors, representation/context/memory/prediction lineage, owner-bound approval decisions, permissions, audit and disclosure records.
+
+**Limits:** Existing legacy rows are not backfilled or assigned inferred owner/provenance/confidence. Query handlers remain design-only/non-dispatchable. No exact SELECT suite, target Android/Termux run, owner-scope/redaction negative control, pagination/resource-budget test, crash/restore or production handler has been verified. BR-002 remains OPEN; BR-005 remains PARTIALLY CLOSED.
 
 ### 26.6 Migration protocol
 
