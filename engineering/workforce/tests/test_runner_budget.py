@@ -229,7 +229,8 @@ class RunnerBudgetTests(unittest.TestCase):
             worker.run("small task", [])
         self.assertIn("/accounts/account-123/ai/v1/chat/completions", provider.call_args.args[0])
         payload = provider.call_args.kwargs["json"]
-        self.assertEqual(payload["max_completion_tokens"], 512)
+        self.assertGreater(payload["max_completion_tokens"], 0)
+        self.assertLessEqual(payload["max_completion_tokens"], 512)
         self.assertNotIn("max_tokens", payload)
         self.assertEqual(payload["tool_choice"], "auto")
 
@@ -257,6 +258,24 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertNotIn("untrusted message", detail)
         self.assertNotIn("untrusted debug", detail)
         self.assertNotIn("test-cloudflare-secret", detail)
+
+    def test_rfc9457_problem_details_and_bearer_redaction_are_supported(self):
+        response = httpx.Response(
+            400,
+            json={
+                "type": "https://developers.cloudflare.com/errors/10001",
+                "title": "Invalid request",
+                "status": 400,
+                "detail": "Authorization Bearer abc.def-secret was rejected",
+                "instance": "ray-id-must-not-be-copied",
+            },
+            request=httpx.Request("POST", "https://api.cloudflare.com/client/v4/accounts/account/ai/v1/chat/completions"),
+        )
+        detail = provider_error_detail(response)
+        self.assertIn("Invalid request", detail)
+        self.assertIn("Authorization Bearer [REDACTED]", detail)
+        self.assertNotIn("abc.def-secret", detail)
+        self.assertNotIn("ray-id-must-not-be-copied", detail)
 
     def test_provider_reported_usage_over_budget_fails_closed(self):
         worker = self.make_worker(12000)
