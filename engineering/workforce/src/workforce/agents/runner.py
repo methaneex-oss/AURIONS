@@ -153,7 +153,7 @@ def provider_error_detail(response: httpx.Response, secrets: tuple[str, ...] = (
     for secret in secrets:
         if secret:
             rendered = rendered.replace(secret, "[REDACTED]")
-    rendered = re.sub(r"(?i)(bearer\\s+)[A-Za-z0-9._~+/=-]+", r"\\1[REDACTED]", rendered)
+    rendered = re.sub(r"(?i)(bearer\s+)[A-Za-z0-9._~+/=-]+", r"\1[REDACTED]", rendered)
     return rendered[:1600]
 
 
