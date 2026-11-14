@@ -716,9 +716,9 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             created.add(role)
         from workforce.model_registry import role_assignment
         profile = role_assignment(role)
-        # Workers receive only their own role token and the one provider credential
-        # required by their pinned model. Director/orchestrator/other-agent secrets
-        # never enter the model worker process.
+        # Workers receive only their own role token, their pinned primary-provider
+        # credential, and the shared free-only transient-fallback credential.
+        # Director/orchestrator/other-agent credentials never enter the worker process.
         env = {
             "PATH": os.environ.get("PATH", ""),
             "HOME": os.environ.get("HOME", str(root)),
@@ -730,6 +730,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             "WORKFORCE_TASK_ID": task_ids[role],
             "WORKFORCE_WORKER_TOKEN": worker_token,
             profile["key_env"]: os.environ.get(profile["key_env"], ""),
+            "OPENROUTER_API_KEY": os.environ.get("OPENROUTER_API_KEY", ""),
         }
         if profile["account_env"]:
             env[profile["account_env"]] = os.environ.get(profile["account_env"], "")
