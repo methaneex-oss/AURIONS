@@ -372,9 +372,33 @@ class Worker:
                 payload["max_tokens"] = output_limit
 
             response = httpx.post(self.api_url, headers=headers, json=payload, timeout=max(1, min(120, remaining_seconds)))
-            if response.status_code == 429 or response.status_code >= 500:
-                raise RuntimeError(f"provider unavailable or rate limited (HTTP {response.status_code}); stopped without paid fallback")
-            response.raise_for_status()
+            if response.status_code >= 400:
+                if response.status_code == 429 or response.status_code >= 500:
+                    raise RuntimeError(
+                        f"provider unavailable or rate limited (HTTP {response.status_code}); "
+                        "stopped without paid fallback"
+                    )
+                # Preserve the provider's structured validation message. The prior
+                # raise_for_status() discarded this body, making HTTP 400 failures
+                # impossible to diagnose from the immutable run artifact.
+                try:
+                    error_payload = response.json()
+                except ValueError:
+                    error_payload = {}
+                error_object = error_payload.get("error", error_payload) if isinstance(error_payload, dict) else {}
+                safe_fields = {
+                    key: error_object[key]
+                    for key in ("message", "type", "code", "param")
+                    if isinstance(error_object, dict)
+                    and isinstance(error_object.get(key), (str, int, float, bool))
+                }
+                detail = json.dumps(safe_fields, ensure_ascii=True)[:1600] if safe_fields else "no structured provider error detail"
+                for secret in (self.api_key, self.worker_token, self.lease_token):
+                    if secret:
+                        detail = detail.replace(secret, "[REDACTED]")
+                raise RuntimeError(
+                    f"provider rejected request (HTTP {response.status_code}): {detail}"
+                )
             data = response.json()
             usage = data.get("usage")
             if not isinstance(usage, dict):
