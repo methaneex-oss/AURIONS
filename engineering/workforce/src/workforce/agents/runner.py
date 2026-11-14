@@ -416,9 +416,11 @@ class Worker:
             "Challenge the task itself if it conflicts with authoritative governance."
         )
         messages = [{"role": "system", "content": system + "\n\nAUTHORITATIVE CONTEXT:\n" + "\n".join(context)}, {"role": "user", "content": task}]
-        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
-        if self.provider == "cloudflare":
-            headers["Content-Type"] = "application/json"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
         while self.calls < self.max_calls and self.total_tokens < self.max_total_tokens:
             remaining_seconds = self.remaining_seconds()
             if remaining_seconds <= 0:
