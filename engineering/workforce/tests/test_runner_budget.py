@@ -50,6 +50,37 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertGreater(estimate, 1000)
         self.assertLess(estimate, len(sample))
 
+    def test_governance_sources_are_hashed_but_only_compact_brief_is_injected(self):
+        worker = self.make_worker(12000)
+        for relative in MANDATORY_GOVERNANCE_FILES:
+            path = self.root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("LARGE_GOVERNANCE_BODY_SENTINEL\\n" + ("x" * 12000), encoding="utf-8")
+        brief = self.root / "docs/workforce/AGENT-RUNTIME-GOVERNANCE-BRIEF.md"
+        brief.write_text("COMPACT_BRIEF_SENTINEL\\n", encoding="utf-8")
+
+        context, records = worker.load_mandatory_governance()
+        combined = "\\n".join(context)
+
+        self.assertIn("COMPACT_BRIEF_SENTINEL", combined)
+        self.assertNotIn("LARGE_GOVERNANCE_BODY_SENTINEL", combined)
+        self.assertEqual(len(records), len(MANDATORY_GOVERNANCE_FILES))
+        for record in records:
+            source = self.root / record["path"]
+            self.assertEqual(record["sha256"], hashlib.sha256(source.read_bytes()).hexdigest())
+
+    def test_oversized_task_context_is_referenced_instead_of_injected(self):
+        worker = self.make_worker(12000)
+        large = self.root / "large-context.md"
+        large.write_text("TASK_CONTEXT_BODY_SENTINEL\\n" + ("x" * (MAX_INLINE_CONTEXT_BYTES + 1000)), encoding="utf-8")
+
+        with patch("workforce.agents.runner.httpx.post", return_value=self.response(100)) as provider:
+            worker.run("small task", ["large-context.md"])
+
+        system_content = provider.call_args.kwargs["json"]["messages"][0]["content"]
+        self.assertIn("TASK CONTEXT NOT INLINED; use read_file: large-context.md", system_content)
+        self.assertNotIn("TASK_CONTEXT_BODY_SENTINEL", system_content)
+
     def test_prompt_budget_is_reserved_before_provider_call(self):
         worker = self.make_worker(64)
         with patch("workforce.agents.runner.httpx.post") as provider:
