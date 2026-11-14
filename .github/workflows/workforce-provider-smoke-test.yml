@@ -88,7 +88,6 @@ jobs:
                   }
                   if model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
                       payload["parallel_tool_calls"] = False
-                  }
               else:
                   url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account}/ai/v1/chat/completions"
                   token = cf_token
