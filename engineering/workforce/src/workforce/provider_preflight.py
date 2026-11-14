@@ -60,7 +60,11 @@ def main() -> int:
         try:
             response = httpx.post(
                 url,
-                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
                 json=payload,
                 timeout=45,
             )
