@@ -235,6 +235,22 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertEqual(payload["tool_choice"], "auto")
         self.assertEqual(provider.call_args.kwargs["headers"]["Accept"], "application/json")
 
+    def test_mistral_worker_uses_its_documented_max_tokens_parameter(self):
+        env = {
+            "CLOUDFLARE_API_TOKEN": "test-cloudflare",
+            "CLOUDFLARE_ACCOUNT_ID": "account-123",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "integration_verifier", [], 2, 512, 12000)
+        with patch("workforce.agents.runner.httpx.post", return_value=self.response(100)) as provider:
+            worker.run("small task", [])
+        payload = provider.call_args.kwargs["json"]
+        self.assertEqual(payload["max_tokens"], payload.get("max_tokens"))
+        self.assertGreater(payload["max_tokens"], 0)
+        self.assertLessEqual(payload["max_tokens"], 512)
+        self.assertNotIn("max_completion_tokens", payload)
+        self.assertIn("/accounts/account-123/ai/v1/chat/completions", provider.call_args.args[0])
+
     def test_cloudflare_error_envelope_is_bounded_and_secret_safe(self):
         response = httpx.Response(
             400,
