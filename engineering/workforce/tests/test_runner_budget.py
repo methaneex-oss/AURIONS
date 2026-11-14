@@ -146,7 +146,7 @@ class RunnerBudgetTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     safe_path(self.root, name)
 
-    def test_test_subprocess_does_not_inherit_provider_or_control_plane_secrets(self):
+    def test_worker_cannot_execute_candidate_tests_in_provider_process(self):
         env = {
             "GROQ_API_KEY": "provider-secret",
             "WORKFORCE_CONTROL_PLANE_URL": "https://control.example",
@@ -158,21 +158,11 @@ class RunnerBudgetTests(unittest.TestCase):
             "WORKFORCE_WORKER_CREDENTIALS_JSON": "{}",
             "DATABASE_URL": "postgresql://user:password@localhost/db",
         }
-        (self.root / "engineering/workforce/src").mkdir(parents=True)
-        (self.root / "engineering/workforce/tests").mkdir(parents=True)
         with patch.dict("os.environ", env, clear=True):
             worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
-        completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
-        with patch("workforce.agents.runner.subprocess.run", return_value=completed) as run:
-            worker.invoke_tool("run_workforce_tests", {})
-        self.assertEqual(run.call_count, 2)
-        for call in run.call_args_list:
-            child_env = call.kwargs["env"]
-            for secret_name in env:
-                self.assertNotIn(secret_name, child_env)
-            self.assertIn("PYTHONPATH", child_env)
-            self.assertIn("PATH", child_env)
-            self.assertNotEqual(call.kwargs["cwd"], self.root)
+        tool_names = {item["function"]["name"] for item in TOOLS}
+        self.assertNotIn("run_workforce_tests", tool_names)
+        self.assertEqual(worker.invoke_tool("run_workforce_tests", {}), "DENIED: unknown tool.")
 
     def test_cli_claims_starts_runs_and_publishes_report_evidence(self):
         env = {
