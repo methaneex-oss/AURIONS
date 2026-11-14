@@ -1,9 +1,9 @@
 {
   "work_package_id": "WF03-QUAL-20261114-001",
-  "run_id": "WF03-RUN-20261114-002",
-  "authorization_ref": "Explicit Project Director authorization in ChatGPT conversation on 2026-11-14; user replied 'Yes' to the request to execute WF-03 and start supervised six-role training. Retry after GitHub created a failed run with zero jobs.",
+  "run_id": "WF03-RUN-20261114-003",
+  "authorization_ref": "Explicit Project Director authorization in ChatGPT conversation on 2026-11-14. Workflow trigger repaired to run only on a committed work-package manifest change; this manifest-only commit starts supervised WF-03.",
   "objective": "Qualify the six configured workforce roles on a bounded, isolated Unicode label-normalization task without modifying AURIONS runtime code.",
-  "base_commit_sha": "1a13b2d983dcc1d47821fe5bbdeeebe0aed5d15d",
+  "base_commit_sha": "b57038132ad54644f3f909f401ad45a264b6e9e9",
   "max_total_duration_minutes": 75,
   "canonical_sources": [
     "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
