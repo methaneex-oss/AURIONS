@@ -19,8 +19,9 @@ free-model identity, and function-call support.
 ## Provider policy
 
 - Pinned Groq and Cloudflare role assignments remain primary.
-- OpenRouter is attempted after a primary HTTP 403, HTTP 429, HTTP 5xx, or network
-  failure. HTTP 401 and malformed/invalid requests do not trigger fallback.
+- OpenRouter is attempted only after a transient primary HTTP 429, HTTP 5xx, or
+  network failure. HTTP 401/403 permission or authentication errors and malformed/
+  invalid requests stop immediately; fallback must not conceal a broken primary setup.
 - Every fallback-passed check records the primary provider failure; fallback success
   does not make the primary endpoint healthy.
 - The only configured OpenRouter model is `openrouter/free`.
@@ -28,8 +29,11 @@ free-model identity, and function-call support.
   function calling.
 - The fallback response must report a model identifier ending in `:free`; otherwise
   the fallback is rejected.
+- OpenRouter free variants are rate-limited (currently 20 requests/minute and 50
+  requests/day without a qualifying credit purchase); failed attempts count toward
+  the daily cap. Treat the quota as a hard ceiling and never purchase credits to raise it.
 - No paid model, paid credit, automatic paid upgrade, or non-free router is allowed.
-- Authentication and request-contract errors do not trigger fallback.
+- Authentication/permission and request-contract errors do not trigger fallback.
 - The workflow does not print provider response bodies or credentials.
 
 ## Required GitHub Actions secrets
