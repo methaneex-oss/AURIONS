@@ -1,0 +1,154 @@
+name: Workforce deterministic and PostgreSQL integration tests
+
+on:
+  pull_request:
+    paths:
+      - "engineering/workforce/**"
+      - ".github/workflows/workforce-control-plane-tests.yml"
+  push:
+    branches:
+      - "feat/workforce-control-plane-hardening"
+    paths:
+      - "engineering/workforce/**"
+      - ".github/workflows/workforce-control-plane-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  workforce-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine@sha256:d3244e8ce3f165ee3c93d9c4a4b1d0fe48b3a89e2287b717fdcbbde92d405065
+        env:
+          POSTGRES_DB: workforce
+          POSTGRES_USER: workforce
+          POSTGRES_PASSWORD: workforce-test-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U workforce -d workforce"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://workforce:workforce-test-password@localhost:5432/workforce
+      PYTHONPATH: engineering/workforce/src
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: engineering/workforce/requirements.txt
+      - name: Install workforce dependencies
+        run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Generate ephemeral test-only actor credentials
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import secrets
+          director = secrets.token_urlsafe(32)
+          orchestrator = secrets.token_urlsafe(32)
+          builder = secrets.token_urlsafe(32)
+          reviewer = secrets.token_urlsafe(32)
+          print("::add-mask::" + director)
+          print("::add-mask::" + orchestrator)
+          print("::add-mask::" + builder)
+          print("::add-mask::" + reviewer)
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write("DIRECTOR_APPROVAL_TOKEN=" + director + "\n")
+              env_file.write("WORKFORCE_ORCHESTRATOR_TOKEN=" + orchestrator + "\n")
+              env_file.write("WORKFORCE_WORKER_CREDENTIALS_JSON=" + json.dumps({
+                  "builder-01": {"token": builder, "role": "lead_builder"},
+                  "reviewer-01": {"token": reviewer, "role": "code_reviewer"},
+              }) + "\n")
+          PY
+      - name: Apply and verify database migrations
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import psycopg
+
+          migration_dir = Path("engineering/workforce/migrations")
+          migrations = sorted(migration_dir.glob("*.sql"))
+          expected = [
+              "001_initial.sql",
+              "002_recovery_and_idempotency.sql",
+              "003_immutable_evidence.sql",
+              "004_agent_budget_ledger.sql",
+              "005_absolute_task_deadlines.sql",
+              "006_start_deadline_on_first_claim.sql",
+          ]
+          actual = [path.name for path in migrations]
+          if actual != expected:
+              raise SystemExit(f"unexpected workforce migration set/order: {actual!r}")
+
+          with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+              for path in migrations:
+                  with conn.cursor() as cur:
+                      cur.execute(path.read_text(encoding="utf-8"), prepare=False)
+                  conn.commit()
+                  print(f"Applied {path.name}")
+              with conn.cursor() as cur:
+                  cur.execute("""
+                      SELECT to_regclass('public.wf_tasks'),
+                             to_regclass('public.wf_checkpoints'),
+                             to_regclass('public.wf_audit_events'),
+                             to_regclass('public.wf_task_evidence'),
+                             to_regclass('public.wf_agent_budgets'),
+                             to_regclass('public.wf_budget_reservations'),
+                             to_regprocedure('public.wf_task_deadline(timestamp with time zone,jsonb)'),
+                             to_regprocedure('public.wf_task_absolute_deadline(jsonb)')
+                  """)
+                  schema = cur.fetchone()
+                  if any(value is None for value in schema):
+                      raise SystemExit(f"workforce schema verification failed: {schema!r}")
+                  print("Verified all required workforce tables and deadline functions.")
+          PY
+      - name: Compile workforce
+        run: python -m compileall -q engineering/workforce/src engineering/workforce/tests
+      - name: Build credential-free candidate test image
+        run: |
+          docker pull postgres:17-alpine@sha256:d3244e8ce3f165ee3c93d9c4a4b1d0fe48b3a89e2287b717fdcbbde92d405065
+          docker build --pull --file engineering/workforce/Dockerfile.test-runner --tag aurions-workforce-test-runner:ci .
+      - name: Execute workforce suite inside the isolated candidate sandbox
+        run: |
+          python - <<'PY'
+          import tempfile
+          from pathlib import Path
+          from workforce.orchestrator import _copy_test_snapshot, _run_candidate_tests
+
+          with tempfile.TemporaryDirectory(prefix="workforce-sandbox-ci-") as temp:
+              root = Path(temp)
+              _copy_test_snapshot(
+                  Path.cwd(),
+                  root,
+                  ["engineering/workforce/src", "engineering/workforce/tests"],
+              )
+              results = _run_candidate_tests(
+                  test_root=root,
+                  test_commands=[
+                      ["python3", "-m", "compileall", "-q", "engineering/workforce/src", "engineering/workforce/tests"],
+                      ["python3", "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
+                  ],
+                  test_image="aurions-workforce-test-runner:ci",
+                  remaining_seconds=lambda: 600,
+              )
+              for result in results:
+                  print(f"Sandbox command exit={result['returncode']}: {result['command']}")
+                  print(result["stdout"][-4000:])
+                  if result["stderr"]:
+                      print(result["stderr"][-2000:])
+              if any(result["returncode"] for result in results):
+                  raise SystemExit("isolated candidate test sandbox failed")
+          PY
+      - name: Run all workforce tests
+        run: python -m unittest discover -s engineering/workforce/tests -v

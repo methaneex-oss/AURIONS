@@ -15,6 +15,7 @@ ROLE_MODEL_ASSIGNMENTS = {
         "key_env": "GROQ_API_KEY",
         "account_env": "",
         "cost_class": "free",
+        "max_request_tokens": 7000,
         "selection_basis": "Large reasoning model with coding and tool-use support for the primary implementation owner.",
     },
     "specialist_builder": {
@@ -24,6 +25,7 @@ ROLE_MODEL_ASSIGNMENTS = {
         "key_env": "CLOUDFLARE_API_TOKEN",
         "account_env": "CLOUDFLARE_ACCOUNT_ID",
         "cost_class": "free_daily_allowance",
+        "max_request_tokens": 12000,
         "selection_basis": "Reasoning, code generation, vision and native function calling with a 256K context.",
     },
     "architecture_reviewer": {
@@ -33,6 +35,7 @@ ROLE_MODEL_ASSIGNMENTS = {
         "key_env": "CLOUDFLARE_API_TOKEN",
         "account_env": "CLOUDFLARE_ACCOUNT_ID",
         "cost_class": "free_daily_allowance",
+        "max_request_tokens": 12000,
         "selection_basis": "Reasoning and multi-turn function calling, 131K context, suitable for bounded architecture review.",
     },
     "code_reviewer": {
@@ -42,6 +45,7 @@ ROLE_MODEL_ASSIGNMENTS = {
         "key_env": "GROQ_API_KEY",
         "account_env": "",
         "cost_class": "free",
+        "max_request_tokens": 7000,
         "selection_basis": "Code-capable model with native tool calling and structured-output support.",
     },
     "negative_tester": {
@@ -51,6 +55,7 @@ ROLE_MODEL_ASSIGNMENTS = {
         "key_env": "GROQ_API_KEY",
         "account_env": "",
         "cost_class": "free",
+        "max_request_tokens": 7000,
         "selection_basis": "Tool-capable reasoning model for generating and executing bounded adversarial test hypotheses.",
     },
     "integration_verifier": {
@@ -60,6 +65,7 @@ ROLE_MODEL_ASSIGNMENTS = {
         "key_env": "CLOUDFLARE_API_TOKEN",
         "account_env": "CLOUDFLARE_ACCOUNT_ID",
         "cost_class": "free_daily_allowance",
+        "max_request_tokens": 12000,
         "selection_basis": "Function-calling model with 128K context for evidence reconciliation and consistency verification.",
     },
 }
@@ -91,6 +97,8 @@ def validate_registry() -> None:
             raise ValueError(f"unsupported provider for {role}")
         if entry["cost_class"] not in {"free", "free_daily_allowance"}:
             raise ValueError(f"non-free model registered for {role}")
+        if not isinstance(entry.get("max_request_tokens"), int) or not 1024 <= entry["max_request_tokens"] <= 32768:
+            raise ValueError(f"invalid per-request token ceiling for {role}")
         if entry["provider"] == "cloudflare" and not entry["account_env"]:
             raise ValueError(f"Cloudflare account identifier is missing for {role}")
         if entry["provider"] == "groq" and entry["account_env"]:

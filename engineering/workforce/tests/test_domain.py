@@ -12,12 +12,27 @@ class DomainTests(unittest.TestCase):
         with self.assertRaises(TransitionError):
             validate_transition(TaskState.QUEUED, TaskState.ACCEPTED, director_decision=True)
 
+    def test_retry_recovery_can_reclaim_after_backoff(self):
+        validate_transition(TaskState.RETRY_WAIT, TaskState.CLAIMED)
+
+    def test_checkpointed_lease_can_be_recovered(self):
+        validate_transition(TaskState.CHECKPOINTED, TaskState.RETRY_WAIT)
+
     def test_path_policy_blocks_traversal_and_prohibited_paths(self):
         permitted = ("engineering/workforce",)
         prohibited = ("docs/governance", "src/aurions")
         self.assertTrue(path_is_permitted("engineering/workforce/src/api.py", permitted, prohibited))
         self.assertFalse(path_is_permitted("docs/governance/policy.md", permitted, prohibited))
         self.assertFalse(path_is_permitted("engineering/workforce/../../main.py", permitted, prohibited))
+
+    def test_path_policy_blocks_windows_traversal_and_absolute_paths(self):
+        permitted = ("engineering/workforce",)
+        separator = chr(92)
+        windows_traversal = "engineering" + separator + "workforce" + separator + ".." + separator + ".." + separator + "main.py"
+        windows_absolute = "C:" + separator + "repo" + separator + "main.py"
+        self.assertFalse(path_is_permitted(windows_traversal, permitted, ()))
+        self.assertFalse(path_is_permitted(windows_absolute, permitted, ()))
+        self.assertFalse(path_is_permitted("/etc/passwd", permitted, ()))
 
     def test_task_contract_accepts_complete_authorized_contract(self):
         value = {
@@ -30,6 +45,94 @@ class DomainTests(unittest.TestCase):
             "max_tokens": 100000, "max_duration_minutes": 120, "stop_conditions": ["budget exhausted"]
         }
         self.assertEqual(TaskContract.from_dict(value).work_package_id, "WF-01")
+
+    def test_contract_rejects_resource_budget_above_hard_ceiling(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
+            "base_commit_sha": "a" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 101, "max_tokens": 100, "max_duration_minutes": 1,
+            "stop_conditions": ["budget"]
+        }
+        with self.assertRaises(ContractError):
+            TaskContract.from_dict(value)
+
+    def test_contract_rejects_budget_values_above_hard_ceilings(self):
+        base = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
+            "base_commit_sha": "a" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"],
+        }
+        for field, value in (("max_model_calls", 101), ("max_tokens", 200001), ("max_duration_minutes", 361)):
+            contract = dict(base)
+            contract[field] = value
+            with self.subTest(field=field), self.assertRaisesRegex(ContractError, field):
+                TaskContract.from_dict(contract)
+
+    def test_contract_allows_empty_write_scope_for_read_only_roles(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Review",
+            "base_commit_sha": "a" * 40, "permitted_paths": [],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["review report"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"],
+        }
+        self.assertEqual(TaskContract.from_dict(value).permitted_paths, ())
+
+    def test_contract_rejects_unknown_fields(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
+            "base_commit_sha": "a" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"], "worker_id": "forged",
+        }
+        with self.assertRaisesRegex(ContractError, "unknown task contract fields"):
+            TaskContract.from_dict(value)
+
+    def test_contract_rejects_template_authorization_and_zero_sha(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "REPLACE_WITH_APPROVAL", "objective": "Build",
+            "base_commit_sha": "0" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"],
+        }
+        with self.assertRaisesRegex(ContractError, "authorization reference"):
+            TaskContract.from_dict(value)
+        value["authorization_ref"] = "director-approval-001"
+        with self.assertRaisesRegex(ContractError, "real full"):
+            TaskContract.from_dict(value)
+
+    def test_contract_deadline_requires_explicit_timezone(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
+            "base_commit_sha": "a" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"], "deadline": "2026-11-14T12:00:00",
+        }
+        with self.assertRaisesRegex(ContractError, "timezone"):
+            TaskContract.from_dict(value)
+
+    def test_contract_accepts_timezone_aware_deadline(self):
+        value = {
+            "work_package_id": "WF-01", "authorization_ref": "director-approval-001", "objective": "Build",
+            "base_commit_sha": "a" * 40, "permitted_paths": ["engineering/workforce"],
+            "prohibited_paths": ["src/aurions"], "canonical_sources": ["constitution"],
+            "acceptance_criteria": ["tests"], "test_plan": ["unit"], "review_plan": ["review"],
+            "max_model_calls": 1, "max_tokens": 1000, "max_duration_minutes": 10,
+            "stop_conditions": ["budget"], "deadline": "2026-11-14T12:00:00Z",
+        }
+        self.assertEqual(TaskContract.from_dict(value).deadline, "2026-11-14T12:00:00Z")
 
     def test_contract_rejects_missing_authorization(self):
         value = {

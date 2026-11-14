@@ -7,6 +7,9 @@ import json
 import os
 import subprocess
 import sys
+import time
+import tempfile
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +25,7 @@ MANDATORY_GOVERNANCE_FILES = (
     "docs/workforce/WORKFORCE-CONSTITUTION.md",
     "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
     "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
+    "docs/workforce/AGENT-RUNTIME-GOVERNANCE-BRIEF.md",
 )
 
 ROLE_INSTRUCTIONS = {
@@ -62,10 +66,12 @@ ROLE_INSTRUCTIONS = {
 
 TOOLS = [
     {"type": "function", "function": {"name": "list_files", "description": "List repository files under a relative directory. Excludes .git, secrets and virtual environments.", "parameters": {"type": "object", "properties": {"directory": {"type": "string"}}, "required": ["directory"], "additionalProperties": False}}},
-    {"type": "function", "function": {"name": "read_file", "description": "Read a UTF-8 text file from the repository. Secret files are denied.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"], "additionalProperties": False}}},
+    {"type": "function", "function": {"name": "read_file", "description": "Read a bounded UTF-8 text file or line range from the repository. Secret files are denied; responses are capped at 6 KB.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}, "start_line": {"type": "integer", "minimum": 1}, "end_line": {"type": "integer", "minimum": 1}}, "required": ["path"], "additionalProperties": False}}},
     {"type": "function", "function": {"name": "write_file", "description": "Create or replace a UTF-8 file only within task-permitted paths. Builders only.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}, "content": {"type": "string"}}, "required": ["path", "content"], "additionalProperties": False}}},
-    {"type": "function", "function": {"name": "run_workforce_tests", "description": "Run only the fixed workforce unit-test and compile checks. No arbitrary shell execution.", "parameters": {"type": "object", "properties": {}, "additionalProperties": False}}},
 ]
+
+
+MAX_INLINE_CONTEXT_BYTES = 10_000
 
 
 def is_sensitive_path(path: Path) -> bool:
@@ -74,12 +80,20 @@ def is_sensitive_path(path: Path) -> bool:
     names = {".aws", ".ssh", ".gnupg", ".netrc", ".npmrc", ".pypirc",
              "credentials", "credentials.json", "id_rsa", "id_ed25519",
              "authorized_keys", "known_hosts"}
-    if any(part in names for part in parts):
+    if any(part in names or part == ".env" or part.startswith(".env.") for part in parts):
         return True
     name = path.name.lower()
     if name.endswith((".pem", ".key", ".p12", ".pfx", ".jks", ".keystore")):
         return True
-    if "secret" in name or "credential" in name or name.startswith("service-account"):
+    sensitive_fragments = (
+        "secret", "credential", "password", "passwd",
+        "private-key", "private_key", "privatekey",
+        "api-key", "api_key", "apikey",
+        "access-token", "access_token", "refresh-token", "refresh_token",
+        "auth-token", "auth_token", "client-secret", "client_secret",
+        "service-account",
+    )
+    if any(fragment in name for fragment in sensitive_fragments):
         return True
     return False
 
@@ -98,13 +112,23 @@ def safe_path(root: Path, relative: str) -> Path:
 
 
 class Worker:
-    def __init__(self, workspace: Path, role: str, permitted_paths: list[str], max_calls: int, max_tokens: int, max_total_tokens: int):
+    def __init__(self, workspace: Path, role: str, permitted_paths: list[str], max_calls: int, max_tokens: int, max_total_tokens: int, max_duration_minutes: int = 120):
         self.workspace = workspace.resolve()
         self.role = role
         self.permitted_paths = tuple(permitted_paths)
         self.max_calls = max_calls
         self.max_tokens = max_tokens
         self.max_total_tokens = max_total_tokens
+        self.max_duration_minutes = max_duration_minutes
+        self.deadline_monotonic: float | None = None
+        self.control_plane_url = os.environ.get("WORKFORCE_CONTROL_PLANE_URL", "").rstrip("/")
+        self.task_id = os.environ.get("WORKFORCE_TASK_ID", "")
+        self.worker_token = os.environ.get("WORKFORCE_WORKER_TOKEN", "")
+        self.lease_token = os.environ.get("WORKFORCE_LEASE_TOKEN", "")
+        budget_config = (self.control_plane_url, self.task_id, self.worker_token, self.lease_token)
+        if any(budget_config) and not all(budget_config):
+            raise RuntimeError("durable budget integration requires control-plane URL, task ID, worker token and live lease token")
+        self.durable_budget_enabled = all(budget_config)
         self.total_tokens = 0
         self.calls = 0
         if role not in ROLE_INSTRUCTIONS:
@@ -114,6 +138,7 @@ class Worker:
         profile = role_assignment(role)
         self.provider = profile["provider"]
         self.model = profile["model"]
+        self.max_request_tokens = profile["max_request_tokens"]
         self.api_url = profile["api_url"]
         if self.provider == "cloudflare":
             account_id = os.environ.get(profile["account_env"], "")
@@ -131,8 +156,11 @@ class Worker:
             )
         if profile["cost_class"] not in {"free", "free_daily_allowance"}:
             raise RuntimeError("free-only policy: selected role model is not registered as free")
-        if max_calls <= 0 or max_tokens <= 0 or max_total_tokens <= 0:
-            raise ValueError("model-call and token budgets must be positive")
+        if (max_calls <= 0 or max_calls > 100 or max_tokens <= 0 or max_tokens > 32768
+                or max_total_tokens <= 0 or max_total_tokens > 200000
+                or max_duration_minutes <= 0 or max_duration_minutes > 360
+                or not isinstance(self.max_request_tokens, int) or self.max_request_tokens < 1024 or self.max_request_tokens > 32768):
+            raise ValueError("budgets must be positive and within hard ceilings: 100 calls, 32768 tokens/call, 200000 total tokens, 360 minutes")
 
     def load_mandatory_governance(self) -> tuple[list[str], list[dict[str, str]]]:
         context: list[str] = []
@@ -145,10 +173,21 @@ class Worker:
             digest = hashlib.sha256(raw).hexdigest()
             body = raw.decode("utf-8")
             records.append({"path": rel, "sha256": digest, "bytes": str(len(raw))})
-            context.append(f"\n--- MANDATORY GOVERNANCE: {rel} | sha256={digest} ---\n{body}")
+            if rel == "docs/workforce/AGENT-RUNTIME-GOVERNANCE-BRIEF.md":
+                context.append(f"\n--- MANDATORY RUNTIME GOVERNANCE BRIEF: {rel} | sha256={digest} ---\n{body}")
+            else:
+                context.append(f"\n--- FRESH-READ GOVERNANCE SOURCE: {rel} | sha256={digest} | bytes={len(raw)} ---")
         return context, records
 
+    def remaining_seconds(self) -> float:
+        deadline = getattr(self, "deadline_monotonic", None)
+        if deadline is None:
+            return 120.0
+        return max(0.0, deadline - time.monotonic())
+
     def invoke_tool(self, name: str, args: dict[str, Any]) -> str:
+        if getattr(self, "deadline_monotonic", None) is not None and self.remaining_seconds() <= 0:
+            raise TimeoutError("task duration budget exhausted before tool execution")
         if name == "list_files":
             directory = safe_path(self.workspace, args["directory"])
             if not directory.exists() or not directory.is_dir():
@@ -157,16 +196,27 @@ class Worker:
             for p in sorted(directory.rglob("*")):
                 if p.is_file() and not any(x in {".git", ".venv", "__pycache__"} for x in p.parts) and not is_sensitive_path(p) and not any(x == ".env" or x.startswith(".env.") for x in p.parts):
                     found.append(str(p.relative_to(self.workspace)))
-                if len(found) >= 300:
+                if len(found) >= 120:
                     break
             return json.dumps(found)
         if name == "read_file":
             path = safe_path(self.workspace, args["path"])
             if not path.is_file():
                 return "File not found."
-            if path.stat().st_size > 250_000:
-                return "File exceeds the 250 KB read limit."
-            return path.read_text(encoding="utf-8")
+            lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+            start = args.get("start_line", 1)
+            end = args.get("end_line", len(lines))
+            if (not isinstance(start, int) or isinstance(start, bool)
+                    or not isinstance(end, int) or isinstance(end, bool)
+                    or start < 1 or end < start):
+                return "TOOL ERROR: start_line/end_line must be valid positive line numbers."
+            if start > len(lines):
+                return "Requested start_line is beyond end of file."
+            selected = "".join(lines[start - 1:min(end, len(lines))])
+            encoded = selected.encode("utf-8")
+            if len(encoded) > 6_000:
+                return f"Requested range is {len(encoded)} bytes; maximum is 6000. Narrow the line range."
+            return f"[{path.relative_to(self.workspace).as_posix()} lines {start}-{min(end, len(lines))} of {len(lines)}]\n{selected}"
         if name == "write_file":
             if self.role not in {"lead_builder", "specialist_builder"}:
                 return "DENIED: this role is read-only."
@@ -180,36 +230,91 @@ class Worker:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(content, encoding="utf-8")
             return f"WROTE {rel} ({len(content)} characters)"
-        if name == "run_workforce_tests":
-            commands = [
-                [sys.executable, "-m", "compileall", "-q", "engineering/workforce/src", "engineering/workforce/tests"],
-                [sys.executable, "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
-            ]
-            outputs = []
-            env = {**os.environ, "PYTHONPATH": str(self.workspace / "engineering/workforce/src")}
-            for command in commands:
-                result = subprocess.run(command, cwd=self.workspace, env=env, capture_output=True, text=True, timeout=120)
-                outputs.append({"command": command, "returncode": result.returncode, "stdout": result.stdout[-12000:], "stderr": result.stderr[-12000:]})
-                if result.returncode:
-                    break
-            return json.dumps(outputs)
         return "DENIED: unknown tool."
 
+    def renew_durable_lease(self) -> None:
+        if not self.durable_budget_enabled:
+            return
+        url = f"{self.control_plane_url}/v1/tasks/{self.task_id}/heartbeat"
+        response = httpx.post(
+            url,
+            headers={"X-Worker-Token": self.worker_token},
+            json={"lease_token": self.lease_token, "lease_seconds": 900},
+            timeout=max(1, min(20, self.remaining_seconds())),
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"workforce lease renewal failed (HTTP {response.status_code}); worker stopped")
+
+    def reserve_durable_budget(self, requested_tokens: int) -> dict[str, Any] | None:
+        if not self.durable_budget_enabled:
+            return None
+        url = f"{self.control_plane_url}/v1/tasks/{self.task_id}/budget/reserve"
+        response = httpx.post(
+            url,
+            headers={"X-Worker-Token": self.worker_token},
+            json={"lease_token": self.lease_token, "requested_tokens": requested_tokens},
+            timeout=max(1, min(20, self.remaining_seconds())),
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"durable per-agent inference budget refused request (HTTP {response.status_code})")
+        reservation = response.json()
+        if not isinstance(reservation.get("reservation_id"), str) or reservation.get("reserved_tokens") != requested_tokens:
+            raise RuntimeError("control plane returned an invalid inference-budget reservation")
+        return reservation
+
+    def settle_durable_budget(self, reservation: dict[str, Any] | None, actual_tokens: int) -> None:
+        if reservation is None:
+            return
+        url = f"{self.control_plane_url}/v1/tasks/{self.task_id}/budget/settle"
+        response = httpx.post(
+            url,
+            headers={"X-Worker-Token": self.worker_token},
+            json={
+                "lease_token": self.lease_token,
+                "reservation_id": reservation["reservation_id"],
+                "actual_tokens": actual_tokens,
+            },
+            timeout=max(1, min(20, self.remaining_seconds())),
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"durable inference-budget settlement failed (HTTP {response.status_code}); task must stop")
+
     def run(self, task: str, context_files: list[str]) -> dict[str, Any]:
+        self.deadline_monotonic = time.monotonic() + self.max_duration_minutes * 60
         context, governance_records = self.load_mandatory_governance()
         seen = set(MANDATORY_GOVERNANCE_FILES)
+        inline_context_bytes = sum(len(item.encode("utf-8")) for item in context)
+        if inline_context_bytes > MAX_INLINE_CONTEXT_BYTES:
+            raise RuntimeError("mandatory inline governance context exceeds the configured prompt-context ceiling")
         for rel in context_files:
             if rel in seen:
                 continue
             p = safe_path(self.workspace, rel)
             if p.is_file():
                 raw = p.read_bytes()
-                context.append(f"\n--- TASK CONTEXT: {rel} | sha256={hashlib.sha256(raw).hexdigest()} ---\n{raw.decode('utf-8')[:30000]}")
+                digest = hashlib.sha256(raw).hexdigest()
+                header = f"\n--- TASK CONTEXT: {rel} | sha256={digest} | bytes={len(raw)} ---\n"
+                inline_entry = header + raw.decode("utf-8")
+                inline_size = len(inline_entry.encode("utf-8"))
+                if inline_context_bytes + inline_size <= MAX_INLINE_CONTEXT_BYTES:
+                    context.append(inline_entry)
+                    inline_context_bytes += inline_size
+                else:
+                    reference = (
+                        f"\n--- TASK CONTEXT NOT INLINED; use read_file: {rel} "
+                        f"| sha256={digest} | bytes={len(raw)} ---"
+                    )
+                    reference_size = len(reference.encode("utf-8"))
+                    if inline_context_bytes + reference_size > MAX_INLINE_CONTEXT_BYTES:
+                        raise RuntimeError("task context metadata exceeds the configured prompt-context ceiling; reduce context_files")
+                    context.append(reference)
+                    inline_context_bytes += reference_size
                 seen.add(rel)
         system = (
             "You are one specialist in the AURIONS supervised engineering workforce. You have exactly one role; do not stack roles, perform another agent's assignment, or claim another role's gate. "
-            "The mandatory governance files below were freshly read from this run's pinned workspace; "
-            "their SHA-256 hashes are included in the run record. Follow them in full. "
+            "The trusted runtime freshly read and SHA-256 hashed the full mandatory governance source set from this pinned workspace. "
+            "The compact runtime governance brief is injected in full; the other authoritative sources are listed by path and hash and remain available through read_file. Any task context marked NOT INLINED is also available through read_file in bounded ranges. "
+            "Read the relevant source in full before relying on a detailed provision not covered by the brief. "
             "EBT-01 is mandatory: exercise independent professional judgment; own your role's complete "
             "responsibility; preserve scope; distinguish specified/implemented/tested/verified/independently "
             "reviewed/Director-accepted; challenge materially wrong assumptions with evidence; autonomously "
@@ -229,9 +334,31 @@ class Worker:
         if self.provider == "cloudflare":
             headers["Content-Type"] = "application/json"
         while self.calls < self.max_calls and self.total_tokens < self.max_total_tokens:
-            self.calls += 1
+            remaining_seconds = self.remaining_seconds()
+            if remaining_seconds <= 0:
+                raise RuntimeError(f"task duration budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
             remaining = self.max_total_tokens - self.total_tokens
-            output_limit = min(self.max_tokens, remaining)
+            # Use a bounded UTF-8 byte-to-token heuristic plus framing margin for preflight.
+            # This is not a tokenizer guarantee: provider-reported usage is authoritative,
+            # and the durable ledger fails closed if actual usage exceeds the reservation.
+            request_bytes = len(json.dumps(
+                {"messages": messages, "tools": TOOLS}, ensure_ascii=False
+            ).encode("utf-8"))
+            prompt_reserve = (request_bytes + 2) // 3 + 256
+            output_limit = min(
+                self.max_tokens,
+                remaining - prompt_reserve,
+                self.max_request_tokens - prompt_reserve,
+            )
+            if output_limit <= 0:
+                raise RuntimeError(
+                    f"prompt estimate ({prompt_reserve - 256} tokens) leaves no safe completion room "
+                    f"within the {self.max_request_tokens}-token per-request ceiling or remaining role budget; "
+                    "provider request was not sent"
+                )
+            self.renew_durable_lease()
+            reservation = self.reserve_durable_budget(prompt_reserve + output_limit)
+            self.calls += 1
             payload = {
                 "model": self.model,
                 "messages": messages,
@@ -241,13 +368,41 @@ class Worker:
             }
             if self.provider == "groq":
                 payload["max_completion_tokens"] = output_limit
+                if self.model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
+                    # Groq documents GPT-OSS as not supporting parallel tool use.
+                    # The API otherwise defaults parallel_tool_calls to true.
+                    payload["parallel_tool_calls"] = False
             else:
                 payload["max_tokens"] = output_limit
 
-            response = httpx.post(self.api_url, headers=headers, json=payload, timeout=120)
-            if response.status_code == 429 or response.status_code >= 500:
-                raise RuntimeError(f"provider unavailable or rate limited (HTTP {response.status_code}); stopped without paid fallback")
-            response.raise_for_status()
+            response = httpx.post(self.api_url, headers=headers, json=payload, timeout=max(1, min(120, remaining_seconds)))
+            if response.status_code >= 400:
+                if response.status_code == 429 or response.status_code >= 500:
+                    raise RuntimeError(
+                        f"provider unavailable or rate limited (HTTP {response.status_code}); "
+                        "stopped without paid fallback"
+                    )
+                # Preserve the provider's structured validation message. The prior
+                # raise_for_status() discarded this body, making HTTP 400 failures
+                # impossible to diagnose from the immutable run artifact.
+                try:
+                    error_payload = response.json()
+                except ValueError:
+                    error_payload = {}
+                error_object = error_payload.get("error", error_payload) if isinstance(error_payload, dict) else {}
+                safe_fields = {
+                    key: error_object[key]
+                    for key in ("message", "type", "code", "param")
+                    if isinstance(error_object, dict)
+                    and isinstance(error_object.get(key), (str, int, float, bool))
+                }
+                detail = json.dumps(safe_fields, ensure_ascii=True)[:1600] if safe_fields else "no structured provider error detail"
+                for secret in (self.api_key, self.worker_token, self.lease_token):
+                    if secret:
+                        detail = detail.replace(secret, "[REDACTED]")
+                raise RuntimeError(
+                    f"provider rejected request (HTTP {response.status_code}): {detail}"
+                )
             data = response.json()
             usage = data.get("usage")
             if not isinstance(usage, dict):
@@ -255,9 +410,12 @@ class Worker:
             reported_tokens = usage.get("total_tokens")
             if not isinstance(reported_tokens, int) or isinstance(reported_tokens, bool) or reported_tokens <= 0:
                 raise RuntimeError("provider returned missing or invalid total_tokens; fail-closed budget stop")
+            self.settle_durable_budget(reservation, reported_tokens)
             if self.total_tokens + reported_tokens > self.max_total_tokens:
                 raise RuntimeError("provider-reported usage exceeded the configured aggregate token budget; worker stopped")
             self.total_tokens += reported_tokens
+            if self.remaining_seconds() <= 0:
+                raise RuntimeError(f"task duration budget exhausted after provider response; usage recorded as {self.total_tokens} tokens")
             choice = data["choices"][0]["message"]
             messages.append(choice)
             tool_calls = choice.get("tool_calls") or []
@@ -269,6 +427,7 @@ class Worker:
                     "final": choice.get("content", ""),
                 }
             for call in tool_calls:
+                self.renew_durable_lease()
                 try:
                     args = json.loads(call["function"].get("arguments") or "{}")
                     result = self.invoke_tool(call["function"]["name"], args)
@@ -276,6 +435,21 @@ class Worker:
                     result = f"TOOL ERROR: {type(exc).__name__}: {exc}"
                 messages.append({"role": "tool", "tool_call_id": call["id"], "content": result[:30000]})
         raise RuntimeError(f"model-call/token budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
+
+
+def _control_plane_post(url: str, token: str, payload: dict[str, Any]) -> dict[str, Any]:
+    response = httpx.post(
+        url,
+        headers={"X-Worker-Token": token},
+        json=payload,
+        timeout=20,
+    )
+    if response.status_code >= 400:
+        raise RuntimeError(f"workforce control-plane request failed (HTTP {response.status_code})")
+    data = response.json()
+    if not isinstance(data, dict):
+        raise RuntimeError("workforce control plane returned a non-object response")
+    return data
 
 
 def main() -> None:
@@ -288,10 +462,124 @@ def main() -> None:
     parser.add_argument("--max-calls", type=int, default=12)
     parser.add_argument("--max-tokens", type=int, default=4096)
     parser.add_argument("--max-total-tokens", type=int, default=24000)
+    parser.add_argument("--max-duration-minutes", type=int, default=120)
+    parser.add_argument("--report-path")
     args = parser.parse_args()
-    worker = Worker(Path(args.workspace), args.role, args.permitted_path, args.max_calls, args.max_tokens, args.max_total_tokens)
-    result = worker.run(args.task, args.context_file)
-    print(json.dumps(result, indent=2))
+
+    control_plane_url = os.environ.get("WORKFORCE_CONTROL_PLANE_URL", "").rstrip("/")
+    task_id = os.environ.get("WORKFORCE_TASK_ID", "")
+    worker_token = os.environ.get("WORKFORCE_WORKER_TOKEN", "")
+    if not all((control_plane_url, task_id, worker_token)):
+        parser.error("task execution requires WORKFORCE_CONTROL_PLANE_URL, WORKFORCE_TASK_ID and WORKFORCE_WORKER_TOKEN")
+
+    headers = {"X-Worker-Token": worker_token}
+    lease_token = os.environ.get("WORKFORCE_LEASE_TOKEN", "")
+    try:
+        if not lease_token:
+            claimed = _control_plane_post(
+                f"{control_plane_url}/v1/tasks/{task_id}/claim",
+                worker_token,
+                {"lease_seconds": 900},
+            )
+            lease_token = claimed.get("lease_token", "")
+            if not isinstance(lease_token, str) or len(lease_token) < 32:
+                raise RuntimeError("control plane did not issue a valid worker lease token")
+            os.environ["WORKFORCE_LEASE_TOKEN"] = lease_token
+
+        started = _control_plane_post(
+            f"{control_plane_url}/v1/tasks/{task_id}/start",
+            worker_token,
+            {"lease_token": lease_token, "lease_seconds": 900},
+        )
+        if started.get("task_id") != task_id or started.get("state") != "RUNNING":
+            raise RuntimeError("control plane did not confirm the task is RUNNING")
+
+        worker = Worker(
+            Path(args.workspace), args.role, args.permitted_path,
+            args.max_calls, args.max_tokens, args.max_total_tokens,
+            args.max_duration_minutes,
+        )
+        report_path = args.report_path or f".workforce-artifacts/{task_id}-{args.role}.json"
+        report_file = safe_path(Path(args.workspace).resolve(), report_path)
+        report_file.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            result = worker.run(args.task, args.context_file)
+            report = {**result, "task_id": task_id, "status": "CANDIDATE_READY"}
+            report_bytes = json.dumps(report, indent=2, ensure_ascii=False).encode("utf-8")
+            report_file.write_bytes(report_bytes)
+            evidence_sha256 = hashlib.sha256(report_bytes).hexdigest()
+            evidence_ref = report_file.relative_to(Path(args.workspace).resolve()).as_posix()
+            _control_plane_post(
+                f"{control_plane_url}/v1/tasks/{task_id}/worker-transition",
+                worker_token,
+                {
+                    "lease_token": lease_token,
+                    "target": "CANDIDATE_READY",
+                    "reason": "role execution completed; report artifact persisted",
+                    "evidence_sha256": evidence_sha256,
+                    "evidence_ref": evidence_ref,
+                },
+            )
+            print(json.dumps({**report, "evidence_sha256": evidence_sha256, "evidence_ref": evidence_ref}, indent=2))
+        except Exception as exc:
+            # The API may commit CANDIDATE_READY and lose the response. Retry the
+            # identical evidence publication before marking the task failed.
+            try:
+                if report_file.is_file():
+                    saved_report = json.loads(report_file.read_text(encoding="utf-8"))
+                    if saved_report.get("task_id") == task_id and saved_report.get("status") == "CANDIDATE_READY":
+                        saved_bytes = report_file.read_bytes()
+                        saved_sha = hashlib.sha256(saved_bytes).hexdigest()
+                        saved_ref = report_file.relative_to(Path(args.workspace).resolve()).as_posix()
+                        _control_plane_post(
+                            f"{control_plane_url}/v1/tasks/{task_id}/worker-transition",
+                            worker_token,
+                            {
+                                "lease_token": lease_token,
+                                "target": "CANDIDATE_READY",
+                                "reason": "retrying idempotent candidate publication after ambiguous response",
+                                "evidence_sha256": saved_sha,
+                                "evidence_ref": saved_ref,
+                            },
+                        )
+                        print(json.dumps({
+                            **saved_report,
+                            "evidence_sha256": saved_sha,
+                            "evidence_ref": saved_ref,
+                            "idempotent_replay": True,
+                        }, indent=2))
+                        return
+            except Exception:
+                pass
+            failure = {
+                "task_id": task_id,
+                "role": args.role,
+                "status": "FAILED",
+                "error_type": type(exc).__name__,
+                "error": str(exc)[:1000],
+            }
+            report_bytes = json.dumps(failure, indent=2).encode("utf-8")
+            report_file.write_bytes(report_bytes)
+            try:
+                _control_plane_post(
+                    f"{control_plane_url}/v1/tasks/{task_id}/worker-transition",
+                    worker_token,
+                    {
+                        "lease_token": lease_token,
+                        "target": "FAILED",
+                        "reason": f"{type(exc).__name__}: {str(exc)[:900]}",
+                    },
+                )
+            except Exception as stop_exc:
+                failure["stop_transition_error"] = f"{type(stop_exc).__name__}: {str(stop_exc)[:300]}"
+            print(json.dumps(failure, indent=2), file=sys.stderr)
+            raise SystemExit(1) from exc
+    except SystemExit:
+        raise
+    except Exception as exc:
+        print(f"workforce execution stopped: {type(exc).__name__}: {str(exc)[:1000]}", file=sys.stderr)
+        raise SystemExit(1) from exc
 
 
 if __name__ == "__main__":
