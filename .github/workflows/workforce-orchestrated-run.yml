@@ -31,7 +31,7 @@ jobs:
     # workflow_dispatch remains gated by confirm_run=true.
     if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.confirm_run == true) }}
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 60
     services:
       postgres:
         image: postgres:17-alpine@sha256:d3244e8ce3f165ee3c93d9c4a4b1d0fe48b3a89e2287b717fdcbbde92d405065
