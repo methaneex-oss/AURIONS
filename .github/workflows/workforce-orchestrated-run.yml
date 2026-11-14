@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   orchestrated-run:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     services:
       postgres:
@@ -191,17 +191,19 @@ jobs:
           if root not in manifest_path.parents or not manifest_path.is_file():
               raise SystemExit("manifest_path must identify a committed file inside this checkout")
           manifest = validate_manifest(json.loads(manifest_path.read_text(encoding="utf-8")))
-          base_sha = manifest["base_commit_sha"]
+          base_sha = manifest["base_commit_sha"].lower()
           subprocess.run(["git", "cat-file", "-e", f"{base_sha}^{{commit}}"], check=True)
+          parent_sha = subprocess.check_output(
+              ["git", "rev-parse", "HEAD^"], text=True
+          ).strip().lower()
+          if parent_sha != base_sha:
+              raise SystemExit("the manifest commit must be a direct child of the exact clean code baseline")
           manifest_rel = manifest_path.relative_to(root).as_posix()
           changed = subprocess.check_output(
               ["git", "diff", "--name-only", base_sha, "HEAD"], text=True
           ).splitlines()
-          # The workflow itself may be updated in this same reviewed branch.
-          # Candidate source changes must still be limited to the committed manifest.
-          changed = [path for path in changed if path != ".github/workflows/workforce-orchestrated-run.yml"]
           if changed != [manifest_rel]:
-              raise SystemExit("the work-package commit must change only the manifest; base SHA must identify the exact clean code baseline")
+              raise SystemExit("the manifest commit must change only the work-package manifest")
           _worker_tokens()
           workspace = Path(os.environ["WORKSPACE_DIR"])
           subprocess.run(["git", "worktree", "add", "--detach", str(workspace), base_sha], check=True)
@@ -254,22 +256,33 @@ jobs:
           artifact_dir = checkout / "wf03-artifacts"
           if artifact_dir.exists():
               shutil.rmtree(artifact_dir)
-          if not workspace.is_dir():
+          if workspace.is_dir():
+              untracked = subprocess.check_output(
+                  ["git", "-C", str(workspace), "ls-files", "--others", "--exclude-standard", "-z"]
+              ).decode().split(chr(0))
+              untracked = [path for path in untracked if path and ".workforce-artifacts" not in path.split("/")]
+              if untracked:
+                  subprocess.run(["git", "-C", str(workspace), "add", "-N", "--", *untracked], check=True)
+              with patch_path.open("wb") as output:
+                  subprocess.run(["git", "-C", str(workspace), "diff", "--binary", "HEAD"], stdout=output, check=True)
+              source_artifacts = workspace / "engineering/workforce/.workforce-artifacts"
+              if source_artifacts.is_dir():
+                  shutil.copytree(source_artifacts, artifact_dir, dirs_exist_ok=True)
+          else:
               patch_path.write_bytes(b"")
-              raise SystemExit(0)
-          untracked = subprocess.check_output(
-              ["git", "-C", str(workspace), "ls-files", "--others", "--exclude-standard", "-z"]
-          ).decode().split(chr(0))
-          untracked = [path for path in untracked if path and ".workforce-artifacts" not in path.split("/")]
-          if untracked:
-              subprocess.run(["git", "-C", str(workspace), "add", "-N", "--", *untracked], check=True)
-          with patch_path.open("wb") as output:
-              subprocess.run(["git", "-C", str(workspace), "diff", "--binary", "HEAD"], stdout=output, check=True)
-          source_artifacts = workspace / "engineering/workforce/.workforce-artifacts"
-          if source_artifacts.is_dir():
-              shutil.copytree(source_artifacts, artifact_dir)
+
+          # Preserve bounded runtime diagnostics with the candidate and evidence.
+          runtime_dir = artifact_dir / "runtime"
+          runtime_dir.mkdir(parents=True, exist_ok=True)
+          runner_temp = Path(os.environ["RUNNER_TEMP"])
+          for log_name in ("workforce-api.log", "workforce-supervisor.log"):
+              source = runner_temp / log_name
+              if source.is_file():
+                  (runtime_dir / log_name).write_bytes(source.read_bytes()[-1_000_000:])
+
           print(f"Candidate patch captured at {patch_path}")
           print(f"Evidence artifact directory exists: {artifact_dir.is_dir()}")
+          print(f"Runtime diagnostics captured: {runtime_dir.is_dir()}")
           PY
       - name: Upload candidate, reports and Director packet
         if: always()
