@@ -60,7 +60,7 @@ The Cloudflare token should have only the Workers AI inference permissions requi
 8. A model response, onboarding run or policy acknowledgment does not qualify an agent.
 9. Qualification requires repeated role-specific evidence, including a practical failure case, independently scored against the induction rubric.
 10. A model/provider change requires a reviewed registry change and new role-specific regression evaluation.
-11. The current long-run workflow contains a bounded WF-03 Unicode label-normalization qualification task. Dispatch only after every primary endpoint and the free fallback pass preflight.
+11. The current long-run workflow contains a bounded WF-03 Unicode label-normalization qualification task. Dispatch only after every role has a verified primary or approved free-fallback route; preserve and report every primary-provider failure.
 
 ## Current status
 
