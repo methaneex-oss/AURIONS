@@ -368,6 +368,10 @@ class Worker:
             }
             if self.provider == "groq":
                 payload["max_completion_tokens"] = output_limit
+                if self.model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
+                    # Groq documents GPT-OSS as not supporting parallel tool use.
+                    # The API otherwise defaults parallel_tool_calls to true.
+                    payload["parallel_tool_calls"] = False
             else:
                 payload["max_tokens"] = output_limit
 
