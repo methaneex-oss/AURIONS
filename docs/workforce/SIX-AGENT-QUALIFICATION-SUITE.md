@@ -15,6 +15,8 @@ free-model identity, and function-call support.
 4. **Repository tool access** — the model must request `read_file(README.md)`;
    the test runtime reads the actual checked-out file and returns its contents as
    untrusted tool data; the model must then identify the first non-empty line.
+   A tool call without correct use of the returned content is recorded as PARTIAL,
+   not PASS, and blocks a fully passing qualification result.
 
 ## Provider policy
 
@@ -48,5 +50,6 @@ It also runs on pushes to `test/six-agent-qualification-suite`. The JSON report 
 uploaded as a workflow artifact even when one or more checks fail.
 
 A passing result establishes only these four bounded capabilities at the tested
-commit and time. It does not qualify the agents for unsupervised repository changes,
+commit and time. PARTIAL results count as non-passing and must be corrected or
+retested; a successful tool invocation alone does not establish context use. It does not qualify the agents for unsupervised repository changes,
 prove independent review competence, or constitute real training.
