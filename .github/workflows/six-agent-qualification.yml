@@ -2,20 +2,34 @@ name: Six-agent qualification
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - test/six-agent-qualification-suite
-      - feat/workforce-free-fallback
-    paths:
-      - .github/workflows/six-agent-qualification.yml
-      - engineering/workforce/scripts/qualify_six_agents.py
+    inputs:
+      confirm_run:
+        description: "Explicitly authorize bounded provider inference qualification"
+        required: true
+        type: boolean
+        default: false
+      confirm_cloudflare_free_plan:
+        description: "I verified this account is on Workers Free, not Workers Paid"
+        required: true
+        type: boolean
+        default: false
+      confirm_groq_free_plan:
+        description: "I verified this account is on Groq Free, not Developer tier"
+        required: true
+        type: boolean
+        default: false
+      confirm_openrouter_free_only:
+        description: "I confirm OpenRouter fallback is openrouter/free only and no credits or paid routes will be used"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
   group: aurions-six-agent-qualification-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   qualify:
@@ -31,6 +45,18 @@ jobs:
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       QUALIFICATION_REPORT: agent-qualification-report.json
     steps:
+      - name: Enforce free-tier and inference authorization
+        env:
+          CONFIRM_RUN: ${{ inputs.confirm_run }}
+          CONFIRM_CLOUDFLARE_FREE_PLAN: ${{ inputs.confirm_cloudflare_free_plan }}
+          CONFIRM_GROQ_FREE_PLAN: ${{ inputs.confirm_groq_free_plan }}
+          CONFIRM_OPENROUTER_FREE_ONLY: ${{ inputs.confirm_openrouter_free_only }}
+        run: |
+          if [ "$CONFIRM_RUN" != "true" ] || [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ] || [ "$CONFIRM_GROQ_FREE_PLAN" != "true" ] || [ "$CONFIRM_OPENROUTER_FREE_ONLY" != "true" ]; then
+            echo "Refusing provider inference: explicit authorization and verification of both primary Free tiers plus OpenRouter free-only routing are required."
+            exit 1
+          fi
+
       - name: Checkout exact candidate
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
