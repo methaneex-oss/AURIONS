@@ -71,6 +71,9 @@ TOOLS = [
 ]
 
 
+MAX_INLINE_CONTEXT_BYTES = 10_000
+
+
 def is_sensitive_path(path: Path) -> bool:
     """Deny common credential stores and private-key material by path name."""
     parts = [part.lower() for part in path.parts]
@@ -280,18 +283,37 @@ class Worker:
         self.deadline_monotonic = time.monotonic() + self.max_duration_minutes * 60
         context, governance_records = self.load_mandatory_governance()
         seen = set(MANDATORY_GOVERNANCE_FILES)
+        inline_context_bytes = sum(len(item.encode("utf-8")) for item in context)
+        if inline_context_bytes > MAX_INLINE_CONTEXT_BYTES:
+            raise RuntimeError("mandatory inline governance context exceeds the configured prompt-context ceiling")
         for rel in context_files:
             if rel in seen:
                 continue
             p = safe_path(self.workspace, rel)
             if p.is_file():
                 raw = p.read_bytes()
-                context.append(f"\n--- TASK CONTEXT: {rel} | sha256={hashlib.sha256(raw).hexdigest()} ---\n{raw.decode('utf-8')[:30000]}")
+                digest = hashlib.sha256(raw).hexdigest()
+                header = f"\n--- TASK CONTEXT: {rel} | sha256={digest} | bytes={len(raw)} ---\n"
+                inline_entry = header + raw.decode("utf-8")
+                inline_size = len(inline_entry.encode("utf-8"))
+                if inline_context_bytes + inline_size <= MAX_INLINE_CONTEXT_BYTES:
+                    context.append(inline_entry)
+                    inline_context_bytes += inline_size
+                else:
+                    reference = (
+                        f"\n--- TASK CONTEXT NOT INLINED; use read_file: {rel} "
+                        f"| sha256={digest} | bytes={len(raw)} ---"
+                    )
+                    reference_size = len(reference.encode("utf-8"))
+                    if inline_context_bytes + reference_size > MAX_INLINE_CONTEXT_BYTES:
+                        raise RuntimeError("task context metadata exceeds the configured prompt-context ceiling; reduce context_files")
+                    context.append(reference)
+                    inline_context_bytes += reference_size
                 seen.add(rel)
         system = (
             "You are one specialist in the AURIONS supervised engineering workforce. You have exactly one role; do not stack roles, perform another agent's assignment, or claim another role's gate. "
             "The trusted runtime freshly read and SHA-256 hashed the full mandatory governance source set from this pinned workspace. "
-            "The compact runtime governance brief is injected in full; the other authoritative sources are listed by path and hash and remain available through read_file. "
+            "The compact runtime governance brief is injected in full; the other authoritative sources are listed by path and hash and remain available through read_file. Any task context marked NOT INLINED is also available through read_file in bounded ranges. "
             "Read the relevant source in full before relying on a detailed provision not covered by the brief. "
             "EBT-01 is mandatory: exercise independent professional judgment; own your role's complete "
             "responsibility; preserve scope; distinguish specified/implemented/tested/verified/independently "
@@ -316,14 +338,12 @@ class Worker:
             if remaining_seconds <= 0:
                 raise RuntimeError(f"task duration budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
             remaining = self.max_total_tokens - self.total_tokens
-            # UTF-8 request bytes conservatively upper-bound tokenizer input tokens;
-            # reserve framing overhead before allowing any paid/free provider request.
+            # Use a bounded UTF-8 byte-to-token heuristic plus framing margin for preflight.
+            # This is not a tokenizer guarantee: provider-reported usage is authoritative,
+            # and the durable ledger fails closed if actual usage exceeds the reservation.
             request_bytes = len(json.dumps(
                 {"messages": messages, "tools": TOOLS}, ensure_ascii=False
             ).encode("utf-8"))
-            # Provider usage is authoritative after the response. Before sending, estimate
-            # input tokens conservatively from UTF-8 bytes and keep a provider-specific
-            # per-request ceiling. This avoids treating every byte as one token.
             prompt_reserve = (request_bytes + 2) // 3 + 256
             output_limit = min(
                 self.max_tokens,
