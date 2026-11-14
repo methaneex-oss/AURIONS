@@ -19,8 +19,10 @@ free-model identity, and function-call support.
 ## Provider policy
 
 - Pinned Groq and Cloudflare role assignments remain primary.
-- OpenRouter is attempted only after a primary transient failure (network failure,
-  HTTP 429, or HTTP 5xx).
+- OpenRouter is attempted after a primary HTTP 403, HTTP 429, HTTP 5xx, or network
+  failure. HTTP 401 and malformed/invalid requests do not trigger fallback.
+- Every fallback-passed check records the primary provider failure; fallback success
+  does not make the primary endpoint healthy.
 - The only configured OpenRouter model is `openrouter/free`.
 - A separate fallback smoke check verifies OpenRouter connectivity and required
   function calling.
