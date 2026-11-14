@@ -10,7 +10,7 @@ from unittest.mock import patch
 import httpx
 
 from workforce.agents import runner as runner_module
-from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES, TOOLS, Worker, is_sensitive_path, safe_path
+from workforce.agents.runner import MAX_INLINE_CONTEXT_BYTES, MANDATORY_GOVERNANCE_FILES, TOOLS, Worker, is_sensitive_path, safe_path
 
 
 class RunnerBudgetTests(unittest.TestCase):
