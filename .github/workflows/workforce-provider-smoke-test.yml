@@ -100,7 +100,39 @@ jobs:
                   return " provider error body had no recognized message/code fields"
               return " " + json.dumps(parts, ensure_ascii=True)[:700]
 
+          def probe_groq_auth_path(url, payload, label, authorization):
+              """Compare unauthenticated controls with the real-key 403 without exposing secrets."""
+              probe_headers = {"Content-Type": "application/json"}
+              if authorization is not None:
+                  probe_headers["Authorization"] = authorization
+              probe = urllib.request.Request(
+                  url,
+                  data=json.dumps(payload).encode("utf-8"),
+                  headers=probe_headers,
+                  method="POST",
+              )
+              try:
+                  with urllib.request.urlopen(probe, timeout=30) as response:
+                      raw = response.read(1024)
+                      status = response.status
+                      content_type = response.headers.get("Content-Type", "unknown")
+                      server = response.headers.get("Server", "unknown")
+              except urllib.error.HTTPError as error:
+                  raw = error.read(1024)
+                  status = error.code
+                  content_type = error.headers.get("Content-Type", "unknown")
+                  server = error.headers.get("Server", "unknown")
+              except Exception as error:
+                  print(f"GROQ_DIAGNOSTIC {label}: {type(error).__name__}")
+                  return
+              body = " ".join(raw.decode("utf-8", errors="replace").split())[:240]
+              print(
+                  f"GROQ_DIAGNOSTIC {label}: HTTP {status}; "
+                  f"content_type={content_type}; server={server}; body={body!r}"
+              )
+
           failures = []
+          groq_403_diagnostic_done = False
           for role, provider, model, api_url in roles:
               if provider == "groq":
                   token = groq_key
@@ -121,7 +153,7 @@ jobs:
                   payload = {
                       "model": model,
                       "messages": [{"role": "user", "content": "Reply with exactly OK."}],
-                      "max_tokens": 12,
+                      "max_tokens": 128,
                       "temperature": 0,
                   }
                   headers = {
@@ -165,6 +197,11 @@ jobs:
                   )
                   request_ref = f" request_id={request_id}" if request_id else ""
                   print(f"FAIL {role}: HTTP {error.code}{request_ref}{detail}")
+                  if provider == "groq" and error.code == 403 and not groq_403_diagnostic_done:
+                      groq_403_diagnostic_done = True
+                      print("GROQ_DIAGNOSTIC: comparing no-auth and deliberately invalid-key controls")
+                      probe_groq_auth_path(url, payload, "no_auth", None)
+                      probe_groq_auth_path(url, payload, "fake_key", "Bearer deliberately-invalid-diagnostic-key")
                   failures.append(role)
               except Exception as error:
                   print(f"FAIL {role}: {type(error).__name__}: {str(error)[:240]}")
