@@ -97,8 +97,8 @@ class ProviderPreflightTests(unittest.TestCase):
             request=httpx.Request("POST", "https://provider.example/chat/completions"),
         )
         post.side_effect = [limited] + [
-            self.response(profile["model"])
-            for profile in list(ROLE_MODEL_ASSIGNMENTS.values())[1:]
+            *[self.response(profile["model"]) for profile in list(ROLE_MODEL_ASSIGNMENTS.values())[1:]],
+            self.response("openrouter/free", "openai/gpt-oss-20b:free"),
         ]
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
