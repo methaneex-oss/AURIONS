@@ -90,6 +90,23 @@ class ProviderPreflightTests(unittest.TestCase):
         "OPENROUTER_API_KEY": "test-openrouter",
     }, clear=True)
     @patch("workforce.provider_preflight.httpx.post")
+    def test_unexpected_primary_model_identity_blocks_preflight(self, post):
+        profiles = list(ROLE_MODEL_ASSIGNMENTS.values())
+        post.side_effect = [
+            self.response(profiles[0]["model"], "unexpected/model"),
+            *[self.response(profile["model"]) for profile in profiles[1:]],
+            self.response("openrouter/free", "openai/gpt-oss-20b:free"),
+        ]
+        self.assertEqual(main(), 1)
+        self.assertEqual(post.call_count, 7)
+
+    @patch.dict(os.environ, {
+        "GROQ_API_KEY": "test-groq",
+        "CLOUDFLARE_API_TOKEN": "test-cloudflare",
+        "CLOUDFLARE_ACCOUNT_ID": "test-account",
+        "OPENROUTER_API_KEY": "test-openrouter",
+    }, clear=True)
+    @patch("workforce.provider_preflight.httpx.post")
     def test_one_rejected_model_blocks_preflight(self, post):
         post.side_effect = [
             httpx.Response(
