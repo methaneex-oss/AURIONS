@@ -74,5 +74,33 @@ class ProviderPreflightTests(unittest.TestCase):
             post.assert_not_called()
 
 
+    @patch.dict(os.environ, {
+        "GROQ_API_KEY": "test-groq",
+        "CLOUDFLARE_API_TOKEN": "test-cloudflare",
+        "CLOUDFLARE_ACCOUNT_ID": "test-account",
+    }, clear=True)
+    @patch("workforce.provider_preflight.httpx.post")
+    def test_rate_limit_failure_reports_safe_headers_and_still_blocks(self, post):
+        post.return_value = httpx.Response(
+            429,
+            json={"error": {"message": "too many requests", "type": "requests", "code": "rate_limit_exceeded"}},
+            headers={
+                "retry-after": "11",
+                "x-ratelimit-remaining-requests": "0",
+                "x-ratelimit-reset-requests": "4h",
+                "authorization": "must-not-appear",
+            },
+            request=httpx.Request("POST", "https://provider.example/chat/completions"),
+        )
+        with patch("builtins.print") as output:
+            self.assertEqual(main(), 1)
+        rendered = " ".join(str(call.args[0]) for call in output.call_args_list)
+        self.assertIn("retry-after", rendered)
+        self.assertIn("x-ratelimit-remaining-requests", rendered)
+        self.assertIn("rate_limit_exceeded", rendered)
+        self.assertNotIn("must-not-appear", rendered)
+        self.assertEqual(post.call_count, 6)
+
+
 if __name__ == "__main__":
     unittest.main()
