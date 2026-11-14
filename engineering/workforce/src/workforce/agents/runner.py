@@ -241,6 +241,8 @@ class Worker:
             raise RuntimeError(
                 f"{profile['key_env']} is required for the selected {profile['provider']} role endpoint"
             )
+        self.openrouter_api_key = os.environ.get("OPENROUTER_API_KEY", "")
+        self.route_history: list[dict[str, str]] = []
         if profile["cost_class"] not in {"free", "free_daily_allowance"}:
             raise RuntimeError("free-only policy: selected role model is not registered as free")
         if (max_calls <= 0 or max_calls > 100 or max_tokens <= 0 or max_tokens > 32768
@@ -366,6 +368,90 @@ class Worker:
         if response.status_code >= 400:
             raise RuntimeError(f"durable inference-budget settlement failed (HTTP {response.status_code}); task must stop")
 
+    def request_completion(self, payload: dict[str, Any], timeout: float) -> tuple[httpx.Response, str, str]:
+        """Use the pinned provider first; route only transient failures to OpenRouter free."""
+        primary_headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        try:
+            response = httpx.post(self.api_url, headers=primary_headers, json=payload, timeout=timeout)
+        except httpx.HTTPError as exc:
+            if not self.openrouter_api_key:
+                raise RuntimeError(
+                    f"primary provider network failure ({type(exc).__name__}); "
+                    "OPENROUTER_API_KEY is not configured"
+                ) from None
+            return self._request_openrouter_free(
+                payload, timeout, f"primary network failure ({type(exc).__name__})"
+            )
+
+        if response.status_code == 429 or response.status_code >= 500:
+            detail = provider_error_detail(response, (self.api_key, self.worker_token, self.lease_token))
+            if not self.openrouter_api_key:
+                raise RuntimeError(
+                    f"primary provider transient failure (HTTP {response.status_code}): {detail}; "
+                    "OPENROUTER_API_KEY is not configured"
+                )
+            return self._request_openrouter_free(
+                payload, timeout, f"primary HTTP {response.status_code}: {detail}"
+            )
+        if response.status_code >= 400:
+            detail = provider_error_detail(response, (self.api_key, self.worker_token, self.lease_token))
+            if response.status_code == 403:
+                raise RuntimeError(
+                    f"primary provider permission denied (HTTP 403): {detail}; "
+                    "no fallback attempted because this is a configuration/permission failure"
+                )
+            raise RuntimeError(f"primary provider rejected request (HTTP {response.status_code}): {detail}")
+        self.route_history.append({"provider": self.provider, "model": self.model})
+        return response, self.provider, self.model
+
+    def _request_openrouter_free(
+        self, payload: dict[str, Any], timeout: float, primary_failure: str
+    ) -> tuple[httpx.Response, str, str]:
+        fallback_payload = dict(payload)
+        fallback_payload["model"] = "openrouter/free"
+        if "max_completion_tokens" in fallback_payload:
+            fallback_payload["max_tokens"] = fallback_payload.pop("max_completion_tokens")
+        headers = {
+            "Authorization": f"Bearer {self.openrouter_api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "HTTP-Referer": "https://github.com/methaneex-oss/AURIONS",
+            "X-Title": "AURIONS free-only workforce",
+        }
+        try:
+            response = httpx.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=fallback_payload,
+                timeout=timeout,
+            )
+        except httpx.HTTPError as exc:
+            raise RuntimeError(
+                f"primary provider failed ({primary_failure}); OpenRouter free fallback network "
+                f"failure ({type(exc).__name__})"
+            ) from None
+        if response.status_code >= 400:
+            detail = provider_error_detail(response, (self.openrouter_api_key,))
+            raise RuntimeError(
+                f"primary provider failed ({primary_failure}); OpenRouter free fallback rejected "
+                f"request (HTTP {response.status_code}): {detail}"
+            )
+        try:
+            data = response.json()
+        except ValueError:
+            raise RuntimeError("OpenRouter free fallback returned invalid JSON") from None
+        actual_model = data.get("model") if isinstance(data, dict) else None
+        if not isinstance(actual_model, str) or not actual_model.endswith(":free"):
+            raise RuntimeError(
+                "OpenRouter fallback did not identify a :free model; refusing any potentially paid route"
+            )
+        self.route_history.append({"provider": "openrouter-free-fallback", "model": actual_model})
+        return response, "openrouter-free-fallback", actual_model
+
     def run(self, task: str, context_files: list[str]) -> dict[str, Any]:
         self.deadline_monotonic = time.monotonic() + self.max_duration_minutes * 60
         context, governance_records = self.load_mandatory_governance()
@@ -461,24 +547,9 @@ class Worker:
                 # The API otherwise defaults parallel_tool_calls to true.
                 payload["parallel_tool_calls"] = False
 
-            response = httpx.post(self.api_url, headers=headers, json=payload, timeout=max(1, min(120, remaining_seconds)))
-            if response.status_code >= 400:
-                detail = provider_error_detail(
-                    response, (self.api_key, self.worker_token, self.lease_token)
-                )
-                if response.status_code == 429:
-                    raise RuntimeError(
-                        f"provider rate limited request (HTTP 429): {detail}; "
-                        "stopped without retry or paid fallback"
-                    )
-                if response.status_code >= 500:
-                    raise RuntimeError(
-                        f"provider unavailable (HTTP {response.status_code}): {detail}; "
-                        "stopped without paid fallback"
-                    )
-                raise RuntimeError(
-                    f"provider rejected request (HTTP {response.status_code}): {detail}"
-                )
+            response, active_provider, active_model = self.request_completion(
+                payload, max(1, min(120, remaining_seconds))
+            )
             data = response.json()
             usage = data.get("usage")
             if not isinstance(usage, dict):
@@ -497,7 +568,9 @@ class Worker:
             tool_calls = choice.get("tool_calls") or []
             if not tool_calls:
                 return {
-                    "role": self.role, "provider": self.provider, "model": self.model, "calls": self.calls,
+                    "role": self.role, "provider": active_provider, "model": active_model,
+                    "primary_provider": self.provider, "primary_model": self.model,
+                    "route_history": list(self.route_history), "calls": self.calls,
                     "total_tokens": self.total_tokens, "usage": usage,
                     "governance_read": {"status": "READ_FROM_PINNED_WORKSPACE", "sources": governance_records},
                     "final": choice.get("content", ""),
