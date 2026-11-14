@@ -220,6 +220,14 @@ jobs:
           manifest_copy.write_bytes(manifest_path.read_bytes())
           print("Manifest, exact clean base commit, isolated worktree and six role credentials validated.")
           PY
+      - name: Live preflight all six provider models before starting agents
+        env:
+          PYTHONPATH: engineering/workforce/src
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          python -m workforce.provider_preflight
       - name: Start authenticated local control plane
         run: |
           python -m uvicorn workforce.api:app --host 127.0.0.1 --port 8000 > "$RUNNER_TEMP/workforce-api.log" 2>&1 &
