@@ -342,11 +342,17 @@ class Worker:
                 payload, timeout, f"primary network failure ({type(exc).__name__})"
             )
 
-        if response.status_code == 429 or response.status_code >= 500:
+        fallback_eligible = (
+            response.status_code == 429
+            or response.status_code >= 500
+            or (self.provider == "groq" and response.status_code == 403)
+        )
+        if fallback_eligible:
             detail = provider_error_detail(response, (self.api_key, self.worker_token, self.lease_token))
+            failure_kind = "permission-blocked" if response.status_code == 403 else "transient"
             if not self.openrouter_api_key:
                 raise RuntimeError(
-                    f"primary provider transient failure (HTTP {response.status_code}): {detail}; "
+                    f"primary provider {failure_kind} failure (HTTP {response.status_code}): {detail}; "
                     "OPENROUTER_API_KEY is not configured"
                 )
             return self._request_openrouter_free(
@@ -357,7 +363,7 @@ class Worker:
             if response.status_code == 403:
                 raise RuntimeError(
                     f"primary provider permission denied (HTTP 403): {detail}; "
-                    "no fallback attempted because this is a configuration/permission failure"
+                    "fallback is not enabled for this provider"
                 )
             raise RuntimeError(f"primary provider rejected request (HTTP {response.status_code}): {detail}")
         self.route_history.append({"provider": self.provider, "model": self.model})
