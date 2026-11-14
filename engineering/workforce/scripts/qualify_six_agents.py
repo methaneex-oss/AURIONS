@@ -2,7 +2,7 @@
 
 Checks connectivity, plain-text generation, bounded structured reasoning, and a
 real read-only repository tool call. OpenRouter is a free-only fallback for
-transient primary-provider failures; it is never used for auth/contract errors.
+transient primary failures and Groq model-permission HTTP 403; it is never used for HTTP 401 or request-contract errors.
 """
 from __future__ import annotations
 
@@ -37,9 +37,10 @@ READ_FILE_TOOL = [{
 
 
 class ProviderFailure(Exception):
-    def __init__(self, message: str, retryable: bool = False):
+    def __init__(self, message: str, retryable: bool = False, status_code: int | None = None):
         super().__init__(message)
         self.retryable = retryable
+        self.status_code = status_code
 
 
 def _post(url: str, token: str, payload: dict[str, Any], openrouter: bool = False) -> dict[str, Any]:
@@ -83,7 +84,11 @@ def _post(url: str, token: str, payload: dict[str, Any], openrouter: bool = Fals
             if value and (name.endswith("_KEY") or name.endswith("_TOKEN")):
                 rendered = rendered.replace(value, "[REDACTED]")
         retryable = exc.code == 429 or exc.code >= 500
-        raise ProviderFailure(f"HTTP {exc.code}: {rendered or 'no safe provider diagnostics'}", retryable=retryable) from None
+        raise ProviderFailure(
+            f"HTTP {exc.code}: {rendered or 'no safe provider diagnostics'}",
+            retryable=retryable,
+            status_code=exc.code,
+        ) from None
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         raise ProviderFailure(f"network {type(exc).__name__}", retryable=True) from None
     except (UnicodeDecodeError, json.JSONDecodeError):
@@ -116,7 +121,8 @@ def _call(role: str, payload: dict[str, Any], max_tokens: int = 256) -> tuple[di
             raise ProviderFailure(f"primary returned unexpected model identity: {str(returned_model)[:120]}")
         return data, profile["provider"], profile["model"]
     except ProviderFailure as exc:
-        if not exc.retryable:
+        groq_permission_block = profile["provider"] == "groq" and exc.status_code == 403
+        if not exc.retryable and not groq_permission_block:
             raise
         fallback_key = os.environ.get("OPENROUTER_API_KEY", "")
         if not fallback_key:
@@ -404,7 +410,7 @@ def main() -> int:
     summary = {
         "suite": "AURIONS six-agent read-only qualification",
         "training": "simulation only; no model weights or persistent learning changed",
-        "fallback_policy": "OpenRouter openrouter/free only after primary HTTP 429, 5xx, or network failure; 401/403 permission errors and request-contract errors stop; record every primary failure; require returned :free model identity",
+        "fallback_policy": "OpenRouter openrouter/free after primary HTTP 429, 5xx, network failure, or Groq model-permission HTTP 403; HTTP 401, Cloudflare 403, and request-contract errors stop; record every primary failure; require returned :free model identity",
         "provider_diagnostics": {"groq_model_catalog": groq_diagnostic},
         "checks_per_role": ["connectivity", "text_response", "reasoning_training_simulation", "repository_tool_access"],
         "results": results,
