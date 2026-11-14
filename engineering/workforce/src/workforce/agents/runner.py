@@ -198,6 +198,7 @@ class Worker:
             )
         self.openrouter_api_key = os.environ.get("OPENROUTER_API_KEY", "")
         self.openrouter_fallback_model: str | None = None
+        self.openrouter_primary_failure: str | None = None
         self.route_history: list[dict[str, str]] = []
         if profile["cost_class"] not in {"free", "free_daily_allowance"}:
             raise RuntimeError("free-only policy: selected role model is not registered as free")
@@ -325,7 +326,13 @@ class Worker:
             raise RuntimeError(f"durable inference-budget settlement failed (HTTP {response.status_code}); task must stop")
 
     def request_completion(self, payload: dict[str, Any], timeout: float) -> tuple[httpx.Response, str, str]:
-        """Use the pinned provider first; route only transient failures to OpenRouter free."""
+        """Use the pinned provider first, then keep one verified free fallback for this run."""
+        if self.openrouter_fallback_model:
+            return self._request_openrouter_free(
+                payload,
+                timeout,
+                self.openrouter_primary_failure or "continuing pinned free fallback after primary failure",
+            )
         primary_headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -373,6 +380,8 @@ class Worker:
     def _request_openrouter_free(
         self, payload: dict[str, Any], timeout: float, primary_failure: str
     ) -> tuple[httpx.Response, str, str]:
+        if self.openrouter_primary_failure is None:
+            self.openrouter_primary_failure = primary_failure[:400]
         fallback_payload = dict(payload)
         # Resolve the dynamic free router once per worker run, then pin that
         # verified :free model for the remainder of the conversation.
