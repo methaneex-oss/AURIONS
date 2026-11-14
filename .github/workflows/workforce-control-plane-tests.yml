@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - "feat/workforce-control-plane-hardening"
+      - "feat/workforce-free-fallback"
     paths:
       - "engineering/workforce/**"
       - ".github/workflows/workforce-control-plane-tests.yml"
@@ -15,6 +16,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: aurions-workforce-control-plane-tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   workforce-tests:
