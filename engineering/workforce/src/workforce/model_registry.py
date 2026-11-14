@@ -11,6 +11,7 @@ ROLE_MODEL_ASSIGNMENTS = {
     "lead_builder": {
         "provider": "groq",
         "model": "openai/gpt-oss-120b",
+        "completion_tokens_parameter": "max_completion_tokens",
         "api_url": "https://api.groq.com/openai/v1/chat/completions",
         "key_env": "GROQ_API_KEY",
         "account_env": "",
@@ -21,6 +22,7 @@ ROLE_MODEL_ASSIGNMENTS = {
     "specialist_builder": {
         "provider": "cloudflare",
         "model": "@cf/google/gemma-4-26b-a4b-it",
+        "completion_tokens_parameter": "max_completion_tokens",
         "api_url": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions",
         "key_env": "CLOUDFLARE_API_TOKEN",
         "account_env": "CLOUDFLARE_ACCOUNT_ID",
@@ -31,6 +33,7 @@ ROLE_MODEL_ASSIGNMENTS = {
     "architecture_reviewer": {
         "provider": "cloudflare",
         "model": "@cf/zai-org/glm-4.7-flash",
+        "completion_tokens_parameter": "max_completion_tokens",
         "api_url": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions",
         "key_env": "CLOUDFLARE_API_TOKEN",
         "account_env": "CLOUDFLARE_ACCOUNT_ID",
@@ -41,6 +44,7 @@ ROLE_MODEL_ASSIGNMENTS = {
     "code_reviewer": {
         "provider": "groq",
         "model": "qwen/qwen3.8-27b",
+        "completion_tokens_parameter": "max_completion_tokens",
         "api_url": "https://api.groq.com/openai/v1/chat/completions",
         "key_env": "GROQ_API_KEY",
         "account_env": "",
@@ -51,6 +55,7 @@ ROLE_MODEL_ASSIGNMENTS = {
     "negative_tester": {
         "provider": "groq",
         "model": "openai/gpt-oss-20b",
+        "completion_tokens_parameter": "max_completion_tokens",
         "api_url": "https://api.groq.com/openai/v1/chat/completions",
         "key_env": "GROQ_API_KEY",
         "account_env": "",
@@ -61,6 +66,7 @@ ROLE_MODEL_ASSIGNMENTS = {
     "integration_verifier": {
         "provider": "cloudflare",
         "model": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+        "completion_tokens_parameter": "max_tokens",
         "api_url": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions",
         "key_env": "CLOUDFLARE_API_TOKEN",
         "account_env": "CLOUDFLARE_ACCOUNT_ID",
@@ -95,6 +101,8 @@ def validate_registry() -> None:
     for role, entry in ROLE_MODEL_ASSIGNMENTS.items():
         if entry["provider"] not in {"groq", "cloudflare"}:
             raise ValueError(f"unsupported provider for {role}")
+        if entry.get("completion_tokens_parameter") not in {"max_tokens", "max_completion_tokens"}:
+            raise ValueError(f"invalid completion-token parameter for {role}")
         if entry["cost_class"] not in {"free", "free_daily_allowance"}:
             raise ValueError(f"non-free model registered for {role}")
         if not isinstance(entry.get("max_request_tokens"), int) or not 1024 <= entry["max_request_tokens"] <= 32768:
