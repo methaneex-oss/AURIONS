@@ -376,7 +376,7 @@ def _docker_run(
         "--cap-drop=ALL", "--security-opt=no-new-privileges:true",
         "--pids-limit=128", "--memory=4g", "--cpus=2",
         "--user", f"{uid}:{gid}",
-        "--mount", f"type=bind,src={test_root.resolve()},dst=/workspace,rw",
+        "--mount", f"type=bind,src={test_root.resolve()},dst=/workspace",
         "--workdir", "/workspace",
     ]
     for key, value in sorted(environment.items()):
