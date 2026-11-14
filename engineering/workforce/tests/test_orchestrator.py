@@ -273,6 +273,9 @@ class OrchestratorTests(unittest.TestCase):
                     runtime_src = Path(kwargs["env"]["PYTHONPATH"]).resolve()
                     self.assertFalse(runtime_src.is_relative_to(root))
                     self.assertTrue((runtime_src / "workforce/agents/runner.py").is_file())
+                    self.assertEqual(kwargs["env"]["OPENROUTER_API_KEY"], "test-openrouter")
+                    self.assertNotIn("DIRECTOR_APPROVAL_TOKEN", kwargs["env"])
+                    self.assertNotIn("WORKFORCE_ORCHESTRATOR_TOKEN", kwargs["env"])
                     task_id = kwargs["env"]["WORKFORCE_TASK_ID"]
                     report_rel = command[command.index("--report-path") + 1]
                     report = root / report_rel
@@ -309,6 +312,7 @@ class OrchestratorTests(unittest.TestCase):
                 "GROQ_API_KEY": "not-used",
                 "CLOUDFLARE_API_TOKEN": "not-used",
                 "CLOUDFLARE_ACCOUNT_ID": "not-used",
+                "OPENROUTER_API_KEY": "test-openrouter",
                 "WORKFORCE_TEST_DOCKER_IMAGE": "aurions-workforce-test-runner:unit",
             }, clear=True):
                 with patch("workforce.orchestrator._post", side_effect=fake_post):
