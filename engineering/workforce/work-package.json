@@ -1,7 +1,7 @@
 {
   "work_package_id": "WF03-QUAL-20261114-001",
-  "run_id": "WF03-RUN-20261114-005",
-  "authorization_ref": "Explicit Project Director authorization in ChatGPT conversation on 2026-11-14. Six-role WF-03 is capped at 55 minutes with a 60-minute job timeout. Workflow dispatch is registered on default branch; execution guard enforces the authorized feature branch and explicit confirmation for manual dispatch.",
+  "run_id": "WF03-RUN-20261114-006",
+  "authorization_ref": "Explicit Project Director authorization in ChatGPT conversation on 2026-11-14. Six-role WF-03 is capped at 55 minutes of orchestrated work with a 60-minute GitHub Actions job timeout; Director will manually dispatch the workflow with explicit confirmation.",
   "objective": "Qualify the six configured workforce roles on a bounded, isolated Unicode label-normalization task without modifying AURIONS runtime code.",
   "base_commit_sha": "d05674e0bf84e5978c92c1f9bfd4886e2837de7f",
   "max_total_duration_minutes": 55,
@@ -80,7 +80,7 @@
       "max_model_calls": 3,
       "max_tokens": 6000,
       "max_completion_tokens": 2048,
-      "max_duration_minutes": 15
+      "max_duration_minutes": 12
     },
     "specialist_builder": {
       "task": "Independently create engineering/workforce/tests/test_qualification.py for the specified normalize_label contract. Cover normal, empty, whitespace, Unicode NFKC, casefold, combining-form and invalid-type cases. Do not modify implementation or any other file.",
@@ -99,7 +99,7 @@
       "max_model_calls": 3,
       "max_tokens": 4000,
       "max_completion_tokens": 2048,
-      "max_duration_minutes": 10
+      "max_duration_minutes": 8
     },
     "architecture_reviewer": {
       "task": "Read-only. Independently assess whether the implementation and tests meet the contract, whether normalization order is correct, whether the module boundary is appropriate and whether any unnecessary dependency or side effect exists. Report evidence-based findings with exact paths and line references.",
@@ -116,7 +116,7 @@
       "max_model_calls": 2,
       "max_tokens": 2500,
       "max_completion_tokens": 2048,
-      "max_duration_minutes": 10
+      "max_duration_minutes": 8
     },
     "code_reviewer": {
       "task": "Read-only. Independently inspect the exact implementation and test file for correctness, Unicode edge cases, type handling, deterministic behavior, test quality and unauthorized file changes. Report evidence-based findings with exact paths and line references.",
@@ -132,7 +132,7 @@
       "max_model_calls": 2,
       "max_tokens": 2500,
       "max_completion_tokens": 2048,
-      "max_duration_minutes": 10
+      "max_duration_minutes": 7
     },
     "negative_tester": {
       "task": "Read-only. Attempt to falsify normalize_label using adversarial Unicode whitespace, non-breaking/em spaces, full-width forms, combining characters, casefold expansion, empty strings, non-string values and determinism checks. Identify reproducible cases not covered by the specialist tests. Do not write files.",
@@ -148,7 +148,7 @@
       "max_model_calls": 2,
       "max_tokens": 2500,
       "max_completion_tokens": 2048,
-      "max_duration_minutes": 10
+      "max_duration_minutes": 7
     },
     "integration_verifier": {
       "task": "Read-only. Verify the exact base SHA, the two-file candidate manifest, passing isolated test evidence, all four independent reviewer reports and their recorded SHA-256 values. Prepare the Director packet. Do not accept, reject, merge or modify the candidate.",
@@ -164,7 +164,7 @@
       "max_model_calls": 2,
       "max_tokens": 3000,
       "max_completion_tokens": 2048,
-      "max_duration_minutes": 10
+      "max_duration_minutes": 8
     }
   }
 }
