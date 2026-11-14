@@ -88,7 +88,7 @@ def _diagnostic_scalar(value: Any) -> str | int | float | bool | None:
     """Keep only short scalar values from provider-controlled diagnostic payloads."""
     if isinstance(value, str):
         return value[:400]
-    if isinstance(value, (int, float, bool)) and not isinstance(value, complex):
+    if isinstance(value, (int, float, bool)):
         return value
     return None
 
