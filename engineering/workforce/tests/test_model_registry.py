@@ -33,12 +33,21 @@ class ModelRegistryTests(unittest.TestCase):
             self.assertTrue(profile["api_url"].startswith("https://"))
             self.assertTrue(profile["key_env"].endswith(("_API_KEY", "_API_TOKEN")))
             self.assertIn(profile["cost_class"], {"free", "free_daily_allowance"})
+            self.assertIn(profile["completion_tokens_parameter"], {"max_tokens", "max_completion_tokens"})
             self.assertGreaterEqual(profile["max_request_tokens"], 1024)
             self.assertLessEqual(profile["max_request_tokens"], 32768)
             if profile["provider"] == "cloudflare":
                 self.assertEqual(profile["account_env"], "CLOUDFLARE_ACCOUNT_ID")
             else:
                 self.assertEqual(profile["account_env"], "")
+
+    def test_model_specific_completion_limit_parameters_match_provider_docs(self):
+        self.assertEqual(role_assignment("lead_builder")["completion_tokens_parameter"], "max_completion_tokens")
+        self.assertEqual(role_assignment("specialist_builder")["completion_tokens_parameter"], "max_completion_tokens")
+        self.assertEqual(role_assignment("architecture_reviewer")["completion_tokens_parameter"], "max_completion_tokens")
+        self.assertEqual(role_assignment("code_reviewer")["completion_tokens_parameter"], "max_completion_tokens")
+        self.assertEqual(role_assignment("negative_tester")["completion_tokens_parameter"], "max_completion_tokens")
+        self.assertEqual(role_assignment("integration_verifier")["completion_tokens_parameter"], "max_tokens")
 
     def test_groq_role_uses_pinned_model_and_secret(self):
         with patch.dict(os.environ, {"GROQ_API_KEY": "test-secret"}, clear=True):
