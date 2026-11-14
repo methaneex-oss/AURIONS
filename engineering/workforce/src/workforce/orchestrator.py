@@ -736,7 +736,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             max(1, int((remaining_seconds - 15) // 60)),
         )
         command = [
-            sys.executable, "-P", "-m", "workforce.agents.runner",
+            sys.executable, "-s", "-P", "-m", "workforce.agents.runner",
             "--role", role, "--task", spec["task"], "--workspace", str(root),
             "--max-calls", str(spec.get("max_model_calls", 8)),
             "--max-tokens", str(spec.get("max_completion_tokens", 3072)),
