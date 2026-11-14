@@ -47,6 +47,19 @@ Store only as GitHub Actions repository secrets:
 
 The Cloudflare token should have only the Workers AI inference permissions required for the account. Never place credentials in source files, workflow literals, prompts, logs or artifacts. No paid fallback or automatic provider switching is permitted.
 
+## Provider request contracts verified
+
+The worker and preflight use provider-specific authentication but the OpenAI-compatible Chat Completions request shape:
+
+| Provider | Endpoint | Authentication | Completion limit | Tool calling |
+|---|---|---|---|---|
+| Groq | `POST https://api.groq.com/openai/v1/chat/completions` | `Authorization: Bearer GROQ_API_KEY` | `max_completion_tokens` | `tools` with `tool_choice`; Groq documents local function calling |
+| Cloudflare Workers AI | `POST https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions` | `Authorization: Bearer CLOUDFLARE_API_TOKEN`; token requires Account > Workers AI > Read | `max_completion_tokens`; `max_tokens` is deprecated | GLM-4.7-Flash documents function calling and `tool_choice: required` |
+
+Cloudflare's standard API error envelope uses an `errors` array containing `code` and `message`; some Cloudflare-generated errors use RFC 9457 problem details. Diagnostics must parse only bounded, allowlisted fields from these formats, redact credentials, and never dump arbitrary response bodies. Groq uses an OpenAI-style `error` object with `message` and `type`; its documented rate-limit headers distinguish daily request limits from per-minute token limits.
+
+The selected Cloudflare models are not among the models Cloudflare currently marks as requiring Workers Paid. Workers AI's Free allocation is 10,000 Neurons per account per day, shared by all three Cloudflare roles and resetting at 00:00 UTC. This allowance is not a per-agent allowance. Confirm the account is on Workers Free and monitor remaining Neurons before dispatch; never treat a model's published per-million-token unit price as proof that a given account is on a free plan.
+
 ## Operating constraints
 
 1. Each agent receives only its exclusive role contract and one pinned model.
