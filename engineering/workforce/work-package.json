@@ -1,7 +1,7 @@
 {
   "work_package_id": "WF03-QUAL-20261114-001",
-  "run_id": "WF03-RUN-20261114-001",
-  "authorization_ref": "Explicit Project Director authorization in ChatGPT conversation on 2026-11-14; user replied 'Yes' to the WF-03 execution authorization.",
+  "run_id": "WF03-RUN-20261114-002",
+  "authorization_ref": "Explicit Project Director authorization in ChatGPT conversation on 2026-11-14; user replied 'Yes' to the request to execute WF-03 and start supervised six-role training. Retry after GitHub created a failed run with zero jobs.",
   "objective": "Qualify the six configured workforce roles on a bounded, isolated Unicode label-normalization task without modifying AURIONS runtime code.",
   "base_commit_sha": "1a13b2d983dcc1d47821fe5bbdeeebe0aed5d15d",
   "max_total_duration_minutes": 75,
