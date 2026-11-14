@@ -162,6 +162,32 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertEqual(worker.calls, 0)
         self.assertEqual(provider.call_count, 2)
 
+    def test_provider_http_400_preserves_bounded_structured_error_without_secrets(self):
+        worker = self.make_worker(12000)
+        request = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
+        rejected = httpx.Response(
+            400,
+            json={
+                "error": {
+                    "message": "Unsupported parameter temperature for this model",
+                    "type": "invalid_request_error",
+                    "param": "temperature",
+                    "code": "unsupported_parameter",
+                    "debug": "must not be copied",
+                }
+            },
+            request=request,
+        )
+        with patch("workforce.agents.runner.httpx.post", return_value=rejected):
+            with self.assertRaisesRegex(
+                RuntimeError,
+                r"provider rejected request \(HTTP 400\).*unsupported_parameter",
+            ) as raised:
+                worker.run("small task", [])
+        self.assertIn("Unsupported parameter temperature", str(raised.exception))
+        self.assertNotIn("must not be copied", str(raised.exception))
+        self.assertNotIn("test-key-only", str(raised.exception))
+
     def test_provider_reported_usage_over_budget_fails_closed(self):
         worker = self.make_worker(12000)
         with patch("workforce.agents.runner.httpx.post", return_value=self.response(12001)):
