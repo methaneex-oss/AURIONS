@@ -1,9 +1,9 @@
 {
   "work_package_id": "WF03-QUAL-20261114-001",
-  "run_id": "WF03-RUN-20261114-004",
-  "authorization_ref": "Explicit Project Director authorization in ChatGPT conversation on 2026-11-14. WF-03 is bounded to 55 minutes with a 60-minute GitHub job timeout; the workflow is registered on the default branch to expose workflow_dispatch.",
+  "run_id": "WF03-RUN-20261114-005",
+  "authorization_ref": "Explicit Project Director authorization in ChatGPT conversation on 2026-11-14. Six-role WF-03 is capped at 55 minutes with a 60-minute job timeout. Workflow dispatch is registered on default branch; execution guard enforces the authorized feature branch and explicit confirmation for manual dispatch.",
   "objective": "Qualify the six configured workforce roles on a bounded, isolated Unicode label-normalization task without modifying AURIONS runtime code.",
-  "base_commit_sha": "9ff5833b29cd4bfca022e6480f1298eae7c9ba35",
+  "base_commit_sha": "d05674e0bf84e5978c92c1f9bfd4886e2837de7f",
   "max_total_duration_minutes": 55,
   "canonical_sources": [
     "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
