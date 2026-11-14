@@ -2,7 +2,7 @@
 
 **Snapshot:** 13 November 2026  
 **Status:** Selected provisional assignments; not qualification  
-**Policy:** Free inference only; one exclusive role and one unique primary model per agent; OpenRouter `openrouter/free` is permitted only as a transient-failure fallback; paid inference is prohibited
+**Policy:** Free inference only; one exclusive role and one unique primary model per agent; OpenRouter `openrouter/free` is permitted only as a free-only fallback for transient primary failures and Groq model-permission HTTP 403; paid inference is prohibited
 
 ## Selection method
 
@@ -46,7 +46,7 @@ Store only as GitHub Actions repository secrets:
 - `CLOUDFLARE_ACCOUNT_ID` — required with the Cloudflare token.
 - `OPENROUTER_API_KEY` — required for the free-only transient-failure fallback.
 
-The Cloudflare token should have only the Workers AI inference permissions required for the account. Never place credentials in source files, workflow literals, prompts, logs or artifacts. No paid fallback or unapproved model/provider substitution is permitted; the only automatic route change is the explicitly bounded OpenRouter free fallback for transient failures.
+The Cloudflare token should have only the Workers AI inference permissions required for the account. Never place credentials in source files, workflow literals, prompts, logs or artifacts. No paid fallback or unapproved model/provider substitution is permitted; the only automatic route change is the explicitly bounded OpenRouter free fallback for transient failures and Groq model-permission HTTP 403.
 
 ## Operating constraints
 
