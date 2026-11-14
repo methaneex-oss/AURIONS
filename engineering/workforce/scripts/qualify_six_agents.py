@@ -150,7 +150,10 @@ def _fallback_detail(data: dict[str, Any]) -> dict[str, str]:
 def _record(results: list[dict[str, Any]], role: str, check: str, fn) -> None:
     try:
         detail = fn()
-        status = "PASS_WITH_FREE_FALLBACK" if detail.get("primary_failure") else "PASS"
+        if detail.get("followup_context_use") == "not_verified":
+            status = "PARTIAL"
+        else:
+            status = "PASS_WITH_FREE_FALLBACK" if detail.get("primary_failure") else "PASS"
         results.append({"role": role, "check": check, "status": status, **detail})
     except Exception as exc:
         results.append({
@@ -175,7 +178,15 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         })
         content = _choice(data).get("content")
         if not isinstance(content, str) or not content.strip() or "TEXT_RESPONSE_OK" not in content:
-            raise ProviderFailure("assistant returned empty text or omitted TEXT_RESPONSE_OK")
+            choices = data.get("choices") or [{}]
+            message = choices[0].get("message", {}) if choices and isinstance(choices[0], dict) else {}
+            metadata = {
+                "finish_reason": choices[0].get("finish_reason") if choices and isinstance(choices[0], dict) else None,
+                "message_fields": sorted(message.keys()) if isinstance(message, dict) else [],
+                "content_type": type(message.get("content")).__name__ if isinstance(message, dict) else "missing",
+                "reasoning_present": bool(message.get("reasoning")) if isinstance(message, dict) else False,
+            }
+            raise ProviderFailure("assistant returned empty text or omitted TEXT_RESPONSE_OK; response metadata=" + json.dumps(metadata))
         return {"provider": provider, "model": model, "evidence": content.strip()[:240], **_fallback_detail(data)}
 
     def reasoning_simulation():
@@ -353,7 +364,7 @@ def main() -> int:
         "checks_per_role": ["connectivity", "text_response", "reasoning_training_simulation", "repository_tool_access"],
         "results": results,
         "passed": sum(item["status"] in {"PASS", "PASS_WITH_FREE_FALLBACK"} for item in results),
-        "failed": sum(item["status"] == "FAIL" for item in results),
+        "failed": sum(item["status"] not in {"PASS", "PASS_WITH_FREE_FALLBACK"} for item in results),
         "total": len(results),
     }
     output = json.dumps(summary, indent=2, ensure_ascii=False)
