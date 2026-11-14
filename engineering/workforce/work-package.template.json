@@ -29,7 +29,7 @@
   ],
   "stop_conditions": [
     "Any authorization conflict or protected-path request",
-    "Any primary provider authentication/permission failure (HTTP 401/403) or invalid request",
+    "Any primary authentication failure (HTTP 401), Cloudflare permission denial (HTTP 403), or invalid request. Groq model-permission HTTP 403 is eligible only for the verified OpenRouter free fallback",
     "Any transient primary provider failure not recovered by the explicitly configured free-only fallback, or any fallback quota/rate-limit, model-identity or usage-accounting failure",
     "Budget or task deadline exhausted",
     "A critical defect cannot be corrected and verified within scope"
