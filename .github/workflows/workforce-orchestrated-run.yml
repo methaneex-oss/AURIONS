@@ -1,17 +1,8 @@
 name: Manually approved six-role workforce run
 
 on:
-  push:
-    branches:
-      - feat/workforce-control-plane-hardening
-    paths:
-      - engineering/workforce/work-package.json
   workflow_dispatch:
     inputs:
-      manifest_path:
-        description: "Committed Director-approved work-package JSON manifest"
-        required: true
-        type: string
       confirm_run:
         description: "Explicitly authorize provider inference for this work package"
         required: true
@@ -22,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: aurions-workforce-${{ github.ref }}-${{ github.event_name == 'push' && 'engineering/workforce/work-package.json' || inputs.manifest_path }}
+  group: aurions-wf03-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -47,7 +38,7 @@ jobs:
       DATABASE_URL: postgresql://workforce:workforce-ephemeral-password@localhost:5432/workforce
       PYTHONPATH: engineering/workforce/src
       WORKFORCE_CONTROL_PLANE_URL: http://127.0.0.1:8000
-      MANIFEST_PATH: ${{ github.event_name == 'push' && 'engineering/workforce/work-package.json' || inputs.manifest_path }}
+      MANIFEST_PATH: engineering/workforce/work-package.json
       WORKSPACE_DIR: ${{ runner.temp }}/aurions-workspace
       WORKFORCE_MANIFEST_COPY: ${{ runner.temp }}/work-package.json
       WORKFORCE_TEST_DOCKER_IMAGE: aurions-workforce-test-runner:ci
@@ -205,7 +196,7 @@ jobs:
           os.chdir(workspace)
           untracked = subprocess.check_output(
               ["git", "ls-files", "--others", "--exclude-standard", "-z"]
-          ).decode().split("\\0")
+          ).decode().split(chr(0))
           untracked = [path for path in untracked if path and ".workforce-artifacts" not in path.split("/")]
           if untracked:
               subprocess.run(["git", "add", "-N", "--", *untracked], check=True)
