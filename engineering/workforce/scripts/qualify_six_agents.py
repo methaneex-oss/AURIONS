@@ -351,16 +351,62 @@ def openrouter_free_probe(results: list[dict[str, Any]]) -> None:
         })
 
 
+def groq_model_catalog_diagnostic() -> dict[str, Any]:
+    """Non-inference diagnostic to distinguish key access from model allowlist issues."""
+    token = os.environ.get("GROQ_API_KEY", "")
+    if not token:
+        return {"status": "BLOCKED", "reason": "GROQ_API_KEY is missing"}
+    request = urllib.request.Request(
+        "https://api.groq.com/openai/v1/models",
+        headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            data = json.loads(response.read(1_000_000).decode("utf-8"))
+        available = {
+            item.get("id") for item in data.get("data", [])
+            if isinstance(item, dict) and isinstance(item.get("id"), str)
+        } if isinstance(data, dict) else set()
+        selected = {
+            role: profile["model"]
+            for role, profile in ROLE_MODEL_ASSIGNMENTS.items()
+            if profile["provider"] == "groq"
+        }
+        return {
+            "status": "OK",
+            "catalog_count": len(available),
+            "selected_models": {
+                role: {"model": model, "listed_in_catalog": model in available}
+                for role, model in selected.items()
+            },
+            "interpretation": (
+                "A listed model can still be blocked by organization/project model permissions."
+            ),
+        }
+    except urllib.error.HTTPError as exc:
+        return {
+            "status": "HTTP_ERROR",
+            "http_status": exc.code,
+            "interpretation": (
+                "403 indicates an account/project permission restriction; 401 indicates invalid authentication."
+            ),
+        }
+    except (urllib.error.URLError, TimeoutError, OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return {"status": "NETWORK_OR_RESPONSE_ERROR", "error_type": type(exc).__name__}
+
+
 def main() -> int:
     repo_root = Path(os.environ.get("GITHUB_WORKSPACE", Path.cwd())).resolve()
     results: list[dict[str, Any]] = []
     for role in ROLE_MODEL_ASSIGNMENTS:
         qualify_role(role, repo_root, results)
     openrouter_free_probe(results)
+    groq_diagnostic = groq_model_catalog_diagnostic()
     summary = {
         "suite": "AURIONS six-agent read-only qualification",
         "training": "simulation only; no model weights or persistent learning changed",
         "fallback_policy": "OpenRouter openrouter/free only after primary HTTP 429, 5xx, or network failure; 401/403 permission errors and request-contract errors stop; record every primary failure; require returned :free model identity",
+        "provider_diagnostics": {"groq_model_catalog": groq_diagnostic},
         "checks_per_role": ["connectivity", "text_response", "reasoning_training_simulation", "repository_tool_access"],
         "results": results,
         "passed": sum(item["status"] in {"PASS", "PASS_WITH_FREE_FALLBACK"} for item in results),
