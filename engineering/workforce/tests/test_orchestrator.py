@@ -45,6 +45,16 @@ def valid_manifest():
 
 
 class OrchestratorTests(unittest.TestCase):
+    def test_orchestrator_refuses_candidate_workspace_containing_trusted_source(self):
+        repository_root = Path(__file__).resolve().parents[3]
+        manifest = valid_manifest()
+        with self.assertRaisesRegex(OrchestrationError, "trusted orchestrator source"):
+            run_work_package(
+                manifest,
+                repository_root,
+                repository_root / "engineering/workforce/.workforce-artifacts",
+            )
+
     def test_manifest_requires_exactly_six_roles(self):
         value = valid_manifest()
         del value["roles"]["negative_tester"]
@@ -255,6 +265,9 @@ class OrchestratorTests(unittest.TestCase):
                     return real_run(command, **kwargs)
                 if "workforce.agents.runner" in command:
                     role = command[command.index("--role") + 1]
+                    runtime_src = Path(kwargs["env"]["PYTHONPATH"]).resolve()
+                    self.assertFalse(runtime_src.is_relative_to(root))
+                    self.assertTrue((runtime_src / "workforce/agents/runner.py").is_file())
                     task_id = kwargs["env"]["WORKFORCE_TASK_ID"]
                     report_rel = command[command.index("--report-path") + 1]
                     report = root / report_rel
