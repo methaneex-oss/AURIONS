@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - "feat/workforce-control-plane-hardening"
+      - "test/six-agent-qualification-suite"
     paths:
       - "engineering/workforce/**"
       - ".github/workflows/workforce-control-plane-tests.yml"
