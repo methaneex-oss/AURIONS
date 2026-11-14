@@ -5,13 +5,16 @@ on:
   push:
     branches:
       - test/six-agent-qualification-suite
+    paths:
+      - .github/workflows/six-agent-qualification.yml
+      - engineering/workforce/scripts/qualify_six_agents.py
 
 permissions:
   contents: read
 
 concurrency:
   group: aurions-six-agent-qualification-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   qualify:
@@ -36,6 +39,9 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
+
+      - name: Validate qualification script syntax
+        run: python -m py_compile engineering/workforce/scripts/qualify_six_agents.py
 
       - name: Run six-agent qualification
         run: python engineering/workforce/scripts/qualify_six_agents.py
