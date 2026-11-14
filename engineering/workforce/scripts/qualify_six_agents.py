@@ -43,7 +43,10 @@ class ProviderFailure(Exception):
         self.status_code = status_code
 
 
-def _post(url: str, token: str, payload: dict[str, Any], openrouter: bool = False) -> dict[str, Any]:
+def _post(
+    url: str, token: str, payload: dict[str, Any], openrouter: bool = False,
+    groq_primary: bool = False,
+) -> dict[str, Any]:
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
@@ -83,7 +86,7 @@ def _post(url: str, token: str, payload: dict[str, Any], openrouter: bool = Fals
         for name, value in os.environ.items():
             if value and (name.endswith("_KEY") or name.endswith("_TOKEN")):
                 rendered = rendered.replace(value, "[REDACTED]")
-        retryable = exc.code == 429 or exc.code >= 500
+        retryable = exc.code == 429 or exc.code >= 500 or (groq_primary and exc.code == 403)
         raise ProviderFailure(
             f"HTTP {exc.code}: {rendered or 'no safe provider diagnostics'}",
             retryable=retryable,
@@ -115,7 +118,7 @@ def _call(role: str, payload: dict[str, Any], max_tokens: int = 256) -> tuple[di
     if profile["provider"] == "groq" and profile["model"] in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
         primary_payload["parallel_tool_calls"] = False
     try:
-        data = _post(url, primary_key, primary_payload)
+        data = _post(url, primary_key, primary_payload, groq_primary=profile["provider"] == "groq")
         returned_model = data.get("model", profile["model"])
         if returned_model != profile["model"]:
             raise ProviderFailure(f"primary returned unexpected model identity: {str(returned_model)[:120]}")
