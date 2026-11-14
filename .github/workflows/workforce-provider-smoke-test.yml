@@ -13,6 +13,14 @@ on:
         required: true
         default: false
         type: boolean
+      confirm_groq_free_plan:
+        description: "I verified this Groq account is on Free tier, not Developer tier. Developer tier charges per token."
+        required: true
+        default: false
+        type: boolean
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -30,9 +38,10 @@ jobs:
         env:
           CONFIRM_RUN: ${{ inputs.confirm_run }}
           CONFIRM_CLOUDFLARE_FREE_PLAN: ${{ inputs.confirm_cloudflare_free_plan }}
+          CONFIRM_GROQ_FREE_PLAN: ${{ inputs.confirm_groq_free_plan }}
         run: |
-          if [ "$CONFIRM_RUN" != "true" ] || [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ]; then
-            echo "Both explicit inference authorization and Cloudflare Workers Free-plan confirmation are required."
+          if [ "$CONFIRM_RUN" != "true" ] || [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ] || [ "$CONFIRM_GROQ_FREE_PLAN" != "true" ]; then
+            echo "Explicit inference authorization and confirmation of both provider Free tiers are required."
             exit 1
           fi
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
