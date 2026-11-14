@@ -70,11 +70,6 @@ def main() -> int:
             continue
 
         if response.status_code >= 400:
-            try:
-                body = response.json()
-            except ValueError:
-                body = {}
-            error = body.get("error", body) if isinstance(body, dict) else {}
             detail = provider_error_detail(response, (token,))
             print(f"FAIL {role}: HTTP {response.status_code} {detail}")
             failures.append(role)
