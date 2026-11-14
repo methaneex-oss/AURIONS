@@ -311,7 +311,12 @@ def _verify_candidate_files(root: Path, records: list[dict[str, Any]]) -> list[d
 
 
 def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) -> None:
-    selected = list(dict.fromkeys(["engineering/workforce/src", "engineering/workforce/tests", *test_paths]))
+    selected = list(dict.fromkeys([
+        "engineering/workforce/src",
+        "engineering/workforce/tests",
+        "engineering/workforce/migrations",
+        *test_paths,
+    ]))
     excluded_dirs = {".git", ".venv", "node_modules", "__pycache__", ".pytest_cache", ".workforce-artifacts", ".aws", ".ssh", ".gnupg"}
     for relative in selected:
         original = root / relative
