@@ -6,11 +6,13 @@
   "base_commit_sha": "0000000000000000000000000000000000000000",
   "max_total_duration_minutes": 75,
   "canonical_sources": [
-    "engineering/workforce/README.md",
-    "engineering/workforce/QUALIFICATION-PLAN.md",
+    "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+    "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
     "docs/workforce/WORKFORCE-CONSTITUTION.md",
     "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
-    "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md"
+    "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
+    "engineering/workforce/README.md",
+    "engineering/workforce/QUALIFICATION-PLAN.md"
   ],
   "acceptance_criteria": [
     "Only engineering/workforce/src/workforce/qualification.py and engineering/workforce/tests/test_qualification.py may be created or modified by builders.",
@@ -67,9 +69,13 @@
         "engineering/workforce/src/workforce/qualification.py"
       ],
       "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
         "engineering/workforce/README.md",
-        "engineering/workforce/QUALIFICATION-PLAN.md",
-        "docs/workforce/WORKFORCE-CONSTITUTION.md"
+        "engineering/workforce/QUALIFICATION-PLAN.md"
       ],
       "max_model_calls": 3,
       "max_tokens": 6000,
@@ -82,6 +88,11 @@
         "engineering/workforce/tests/test_qualification.py"
       ],
       "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
         "engineering/workforce/README.md",
         "engineering/workforce/QUALIFICATION-PLAN.md"
       ],
@@ -94,9 +105,13 @@
       "task": "Read-only. Independently assess whether the implementation and tests meet the contract, whether normalization order is correct, whether the module boundary is appropriate and whether any unnecessary dependency or side effect exists. Report evidence-based findings with exact paths and line references.",
       "permitted_paths": [],
       "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
         "engineering/workforce/README.md",
-        "engineering/workforce/QUALIFICATION-PLAN.md",
-        "docs/workforce/WORKFORCE-CONSTITUTION.md"
+        "engineering/workforce/QUALIFICATION-PLAN.md"
       ],
       "max_model_calls": 2,
       "max_tokens": 2500,
@@ -107,6 +122,11 @@
       "task": "Read-only. Independently inspect the exact implementation and test file for correctness, Unicode edge cases, type handling, deterministic behavior, test quality and unauthorized file changes. Report evidence-based findings with exact paths and line references.",
       "permitted_paths": [],
       "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
         "engineering/workforce/QUALIFICATION-PLAN.md"
       ],
       "max_model_calls": 2,
@@ -118,6 +138,11 @@
       "task": "Read-only. Attempt to falsify normalize_label using adversarial Unicode whitespace, non-breaking/em spaces, full-width forms, combining characters, casefold expansion, empty strings, non-string values and determinism checks. Identify reproducible cases not covered by the specialist tests. Do not write files.",
       "permitted_paths": [],
       "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
         "engineering/workforce/QUALIFICATION-PLAN.md"
       ],
       "max_model_calls": 2,
@@ -129,6 +154,11 @@
       "task": "Read-only. Verify the exact base SHA, the two-file candidate manifest, passing isolated test evidence, all four independent reviewer reports and their recorded SHA-256 values. Prepare the Director packet. Do not accept, reject, merge or modify the candidate.",
       "permitted_paths": [],
       "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
         "engineering/workforce/QUALIFICATION-PLAN.md"
       ],
       "max_model_calls": 2,
