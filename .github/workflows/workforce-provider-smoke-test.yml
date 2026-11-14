@@ -62,6 +62,44 @@ jobs:
               print("FAIL: missing GitHub Actions secrets: " + ", ".join(missing))
               sys.exit(1)
 
+          def safe_error_detail(raw):
+              """Extract provider error metadata without printing arbitrary response bodies."""
+              try:
+                  body = json.loads(raw.decode("utf-8", errors="replace"))
+              except Exception:
+                  return " provider returned a non-JSON error body"
+
+              parts = []
+              if isinstance(body, dict):
+                  error = body.get("error")
+                  if isinstance(error, dict):
+                      fields = {
+                          key: error[key]
+                          for key in ("code", "type", "message")
+                          if isinstance(error.get(key), (str, int))
+                      }
+                      if fields:
+                          parts.append(fields)
+
+                  errors = body.get("errors")
+                  if isinstance(errors, list):
+                      for item in errors[:2]:
+                          if isinstance(item, dict):
+                              fields = {
+                                  key: item[key]
+                                  for key in ("code", "message")
+                                  if isinstance(item.get(key), (str, int))
+                              }
+                              if fields:
+                                  parts.append(fields)
+
+                  if not parts and isinstance(body.get("message"), str):
+                      parts.append({"message": body["message"]})
+
+              if not parts:
+                  return " provider error body had no recognized message/code fields"
+              return " " + json.dumps(parts, ensure_ascii=True)[:700]
+
           failures = []
           for role, provider, model, api_url in roles:
               if provider == "groq":
@@ -73,14 +111,24 @@ jobs:
                       "max_completion_tokens": 12,
                       "temperature": 0,
                   }
+                  headers = {
+                      "Authorization": f"Bearer {token}",
+                      "Content-Type": "application/json",
+                  }
               elif provider == "cloudflare":
                   token = cf_token
                   url = api_url.format(account_id=cf_account)
                   payload = {
                       "model": model,
                       "messages": [{"role": "user", "content": "Reply with exactly OK."}],
-                      "max_completion_tokens": 12,
+                      "max_tokens": 12,
                       "temperature": 0,
+                  }
+                  headers = {
+                      "Authorization": f"Bearer {token}",
+                      "Content-Type": "application/json",
+                      # Required by Cloudflare for Workers AI (@cf/) model requests.
+                      "cf-aig-gateway-id": "default",
                   }
               else:
                   print(f"FAIL {role}: unsupported provider {provider!r}")
@@ -90,10 +138,7 @@ jobs:
               request = urllib.request.Request(
                   url,
                   data=json.dumps(payload).encode("utf-8"),
-                  headers={
-                      "Authorization": f"Bearer {token}",
-                      "Content-Type": "application/json",
-                  },
+                  headers=headers,
                   method="POST",
               )
               try:
@@ -105,21 +150,14 @@ jobs:
                       returned_model = data.get("model", model)
                       print(f"PASS {role}: {provider} responded (model={returned_model})")
               except urllib.error.HTTPError as error:
-                  # Emit bounded structured error fields only; never headers, tokens or raw bodies.
-                  detail = ""
-                  try:
-                      body = json.loads(error.read(4096).decode("utf-8", errors="replace"))
-                      candidate = body.get("error", body)
-                      if isinstance(candidate, dict):
-                          fields = {
-                              key: candidate.get(key)
-                              for key in ("message", "type", "code")
-                              if isinstance(candidate.get(key), (str, int))
-                          }
-                          detail = " " + json.dumps(fields)[:360] if fields else ""
-                  except Exception:
-                      pass
-                  print(f"FAIL {role}: HTTP {error.code}{detail}")
+                  raw = error.read(8192)
+                  detail = safe_error_detail(raw)
+                  request_id = (
+                      error.headers.get("x-request-id")
+                      or error.headers.get("cf-ray")
+                  )
+                  request_ref = f" request_id={request_id}" if request_id else ""
+                  print(f"FAIL {role}: HTTP {error.code}{request_ref}{detail}")
                   failures.append(role)
               except Exception as error:
                   print(f"FAIL {role}: {type(error).__name__}: {str(error)[:240]}")
