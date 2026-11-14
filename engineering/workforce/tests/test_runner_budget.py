@@ -339,5 +339,57 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertTrue(calls[1].endswith("/worker-transition"))
 
 
+    def test_provider_429_preserves_allowlisted_rate_limit_evidence_and_redacts_secrets(self):
+        worker = self.make_worker(12000)
+        response = httpx.Response(
+            429,
+            json={"error": {
+                "message": "Rate limit reached for key test-key-only",
+                "type": "tokens",
+                "code": "rate_limit_exceeded",
+                "param": None,
+                "debug": "must not be copied",
+            }},
+            headers={
+                "retry-after": "7",
+                "x-ratelimit-limit-requests": "1000",
+                "x-ratelimit-remaining-requests": "812",
+                "x-ratelimit-limit-tokens": "8000",
+                "x-ratelimit-remaining-tokens": "0",
+                "x-ratelimit-reset-tokens": "6.5s",
+                "authorization": "must-not-be-copied",
+                "set-cookie": "must-not-be-copied",
+            },
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        with patch("workforce.agents.runner.httpx.post", return_value=response):
+            with self.assertRaisesRegex(RuntimeError, r"HTTP 429.*rate_limit_exceeded") as raised:
+                worker.run("small task", [])
+        detail = str(raised.exception)
+        self.assertIn('"retry-after":"7"', detail)
+        self.assertIn('"x-ratelimit-remaining-tokens":"0"', detail)
+        self.assertIn('"x-ratelimit-remaining-requests":"812"', detail)
+        self.assertIn("[REDACTED]", detail)
+        self.assertNotIn("test-key-only", detail)
+        self.assertNotIn("must not be copied", detail)
+        self.assertNotIn("authorization", detail)
+        self.assertNotIn("set-cookie", detail)
+        self.assertIn("stopped without paid fallback", detail)
+        self.assertEqual(worker.calls, 1)
+
+    def test_provider_error_diagnostics_are_bounded_and_header_allowlisted(self):
+        from workforce.agents.runner import provider_error_detail
+        response = httpx.Response(
+            503,
+            json={"error": {"message": "x" * 3000, "type": "server_error"}},
+            headers={"retry-after": "3", "x-secret-internal": "do-not-copy"},
+            request=httpx.Request("POST", "https://provider.example"),
+        )
+        detail = provider_error_detail(response, ())
+        self.assertLessEqual(len(detail), 1600)
+        self.assertIn('"retry-after":"3"', detail)
+        self.assertNotIn("x-secret-internal", detail)
+
+
 if __name__ == "__main__":
     unittest.main()
