@@ -779,11 +779,30 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         report = json.loads(report_path.read_text(encoding="utf-8"))
         if report.get("task_id") != task_ids[role] or report.get("status") != "CANDIDATE_READY":
             raise OrchestrationError(f"{role} report identity/status mismatch")
+        report_ref = report_path.relative_to(root).as_posix()
+        report_sha = hashlib.sha256(report_path.read_bytes()).hexdigest()
+        persisted_task = _get(task_url, headers={"X-Orchestrator-Token": orchestrator})
+        evidence = _get(
+            f"{control}/v1/tasks/{task_ids[role]}/evidence",
+            headers={"X-Orchestrator-Token": orchestrator},
+        )
+        if (not isinstance(persisted_task, dict)
+                or persisted_task.get("state") != "CANDIDATE_READY"
+                or not isinstance(evidence, list)
+                or not any(
+                    item.get("stage") == "WORKER_OUTPUT"
+                    and item.get("actor") == worker_id
+                    and item.get("attempt_count") == persisted_task.get("attempt_count")
+                    and str(item.get("sha256", "")).strip() == report_sha
+                    and item.get("evidence_ref") == report_ref
+                    for item in evidence if isinstance(item, dict)
+                )):
+            raise OrchestrationError(f"{role} report was not committed as matching append-only control-plane evidence")
         reports[role] = {
             "task_id": task_ids[role],
             "worker_id": worker_id,
-            "report_ref": report_path.relative_to(root).as_posix(),
-            "report_sha256": hashlib.sha256(report_path.read_bytes()).hexdigest(),
+            "report_ref": report_ref,
+            "report_sha256": report_sha,
             "status": "CANDIDATE_READY",
         }
         completed.add(role)
