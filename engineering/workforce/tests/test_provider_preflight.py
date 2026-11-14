@@ -1,3 +1,5 @@
+import contextlib
+import io
 import json
 import os
 import unittest
@@ -66,6 +68,37 @@ class ProviderPreflightTests(unittest.TestCase):
             for profile in list(ROLE_MODEL_ASSIGNMENTS.values())[1:]
         ]
         self.assertEqual(main(), 1)
+
+    @patch.dict(os.environ, {
+        "GROQ_API_KEY": "test-groq-secret",
+        "CLOUDFLARE_API_TOKEN": "test-cloudflare-secret",
+        "CLOUDFLARE_ACCOUNT_ID": "test-account",
+    }, clear=True)
+    @patch("workforce.provider_preflight.httpx.post")
+    def test_rate_limited_preflight_preserves_safe_headers_and_redacts_credentials(self, post):
+        limited = httpx.Response(
+            429,
+            json={"error": {"message": "quota limited", "type": "rate_limit_error",
+                            "code": "requests_per_day", "private": "do not copy"}},
+            headers={"retry-after": "3600", "x-ratelimit-remaining-requests": "0",
+                     "authorization": "Bearer test-groq-secret", "x-private": "hidden"},
+            request=httpx.Request("POST", "https://provider.example/chat/completions"),
+        )
+        post.side_effect = [limited] + [
+            self.response(profile["model"])
+            for profile in list(ROLE_MODEL_ASSIGNMENTS.values())[1:]
+        ]
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(main(), 1)
+        # First role is lead_builder (Groq); safe limit evidence is retained, credentials are not.
+        self.assertEqual(post.call_count, 6)
+        self.assertIn('"retry-after": "3600"', output.getvalue())
+        self.assertIn('"x-ratelimit-remaining-requests": "0"', output.getvalue())
+        self.assertIn("requests_per_day", output.getvalue())
+        self.assertNotIn("test-groq-secret", output.getvalue())
+        self.assertNotIn("do not copy", output.getvalue())
+        self.assertNotIn("hidden", output.getvalue())
 
     @patch.dict(os.environ, {}, clear=True)
     def test_missing_credentials_blocks_without_provider_calls(self):
