@@ -49,8 +49,14 @@ class ProviderPreflightTests(unittest.TestCase):
             self.assertEqual(payload["tool_choice"], "required")
             self.assertIn("tools", payload)
             self.assertIn(payload["model"], {p["model"] for p in ROLE_MODEL_ASSIGNMENTS.values()})
-            self.assertEqual(payload["max_completion_tokens"], 384)
-            self.assertNotIn("max_tokens", payload)
+            profile = next(
+                item for item in ROLE_MODEL_ASSIGNMENTS.values()
+                if item["model"] == payload["model"]
+            )
+            expected_key = profile["completion_tokens_parameter"]
+            alternate_key = "max_tokens" if expected_key == "max_completion_tokens" else "max_completion_tokens"
+            self.assertEqual(payload[expected_key], 384)
+            self.assertNotIn(alternate_key, payload)
             self.assertEqual(call.kwargs["headers"]["Accept"], "application/json")
 
     @patch.dict(os.environ, {
