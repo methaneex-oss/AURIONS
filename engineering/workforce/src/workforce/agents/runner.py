@@ -129,14 +129,16 @@ def provider_error_detail(response: httpx.Response, secrets: tuple[str, ...] = (
     except (ValueError, json.JSONDecodeError):
         payload = {}
     error = payload.get("error", payload) if isinstance(payload, dict) else {}
-    safe_fields = {
-        key: error[key]
-        for key in ("message", "type", "code", "param")
-        if isinstance(error, dict)
-        and isinstance(error.get(key), (str, int, float, bool))
-    }
+    safe_fields = {}
+    if isinstance(error, dict):
+        for key in ("message", "type", "code", "param"):
+            value = error.get(key)
+            if isinstance(value, str):
+                safe_fields[key] = value[:400]
+            elif isinstance(value, (int, float, bool)):
+                safe_fields[key] = value
     safe_headers = {
-        key: response.headers[key]
+        key: response.headers[key][:120]
         for key in PROVIDER_DIAGNOSTIC_HEADERS
         if key in response.headers
     }
