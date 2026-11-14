@@ -62,12 +62,14 @@ jobs:
             exit 1
           fi
       - name: Checkout selected branch
-        uses: actions/checkout@v5
+        # actions/checkout v5.1.0
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Set up Python
-        uses: actions/setup-python@v6
+        # actions/setup-python v6.3.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: "3.12"
           cache: pip
@@ -208,7 +210,8 @@ jobs:
           PY
       - name: Upload candidate, reports and Director packet
         if: always()
-        uses: actions/upload-artifact@v4
+        # actions/upload-artifact v4.6.1
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1
         with:
           name: aurions-workforce-${{ github.run_id }}
           path: |
