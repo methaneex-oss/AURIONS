@@ -11,7 +11,7 @@ import sys
 
 import httpx
 
-from workforce.agents.runner import TOOLS
+from workforce.agents.runner import TOOLS, provider_error_detail
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
 
 
@@ -75,13 +75,8 @@ def main() -> int:
             except ValueError:
                 body = {}
             error = body.get("error", body) if isinstance(body, dict) else {}
-            safe = {
-                key: error[key]
-                for key in ("message", "type", "code", "param")
-                if isinstance(error, dict) and isinstance(error.get(key), (str, int, float, bool))
-            }
-            print(f"FAIL {role}: HTTP {response.status_code} " +
-                  (json.dumps(safe, ensure_ascii=True)[:600] if safe else "provider returned no structured error"))
+            detail = provider_error_detail(response, (token,))
+            print(f"FAIL {role}: HTTP {response.status_code} {detail}")
             failures.append(role)
             continue
 
