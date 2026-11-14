@@ -516,6 +516,11 @@ class Worker:
                 payload, max(1, min(120, remaining_seconds))
             )
             data = response.json()
+            if not isinstance(data, dict) or data.get("model") != active_model:
+                returned = data.get("model") if isinstance(data, dict) else None
+                raise RuntimeError(
+                    f"provider returned unexpected model identity {returned!r}; expected {active_model!r}"
+                )
             usage = data.get("usage")
             if not isinstance(usage, dict):
                 raise RuntimeError("provider response omitted token usage; fail-closed budget stop")
