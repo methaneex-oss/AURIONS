@@ -12,11 +12,11 @@ from workforce.provider_preflight import main
 
 
 class ProviderPreflightTests(unittest.TestCase):
-    def response(self, model):
+    def response(self, model, returned_model=None):
         return httpx.Response(
             200,
             json={
-                "model": model,
+                "model": returned_model or model,
                 "choices": [{
                     "message": {
                         "tool_calls": [{
@@ -35,16 +35,17 @@ class ProviderPreflightTests(unittest.TestCase):
         "GROQ_API_KEY": "test-groq",
         "CLOUDFLARE_API_TOKEN": "test-cloudflare",
         "CLOUDFLARE_ACCOUNT_ID": "test-account",
+        "OPENROUTER_API_KEY": "test-openrouter",
     }, clear=True)
     @patch("workforce.provider_preflight.httpx.post")
     def test_all_six_models_must_complete_tool_call_and_usage_contract(self, post):
         post.side_effect = [
-            self.response(profile["model"])
-            for profile in ROLE_MODEL_ASSIGNMENTS.values()
+            *[self.response(profile["model"]) for profile in ROLE_MODEL_ASSIGNMENTS.values()],
+            self.response("openrouter/free", "openai/gpt-oss-20b:free"),
         ]
         self.assertEqual(main(), 0)
-        self.assertEqual(post.call_count, 6)
-        for call in post.call_args_list:
+        self.assertEqual(post.call_count, 7)
+        for call in post.call_args_list[:6]:
             payload = call.kwargs["json"]
             self.assertEqual(payload["tool_choice"], "required")
             self.assertIn("tools", payload)
@@ -73,8 +74,8 @@ class ProviderPreflightTests(unittest.TestCase):
                 request=httpx.Request("POST", "https://provider.example/chat/completions"),
             )
         ] + [
-            self.response(profile["model"])
-            for profile in list(ROLE_MODEL_ASSIGNMENTS.values())[1:]
+            *[self.response(profile["model"]) for profile in list(ROLE_MODEL_ASSIGNMENTS.values())[1:]],
+            self.response("openrouter/free", "openai/gpt-oss-20b:free"),
         ]
         self.assertEqual(main(), 1)
 
@@ -101,7 +102,7 @@ class ProviderPreflightTests(unittest.TestCase):
         with contextlib.redirect_stdout(output):
             self.assertEqual(main(), 1)
         # First role is lead_builder (Groq); safe limit evidence is retained, credentials are not.
-        self.assertEqual(post.call_count, 6)
+        self.assertEqual(post.call_count, 7)
         self.assertIn('"retry-after": "3600"', output.getvalue())
         self.assertIn('"x-ratelimit-remaining-requests": "0"', output.getvalue())
         self.assertIn("requests_per_day", output.getvalue())
@@ -132,6 +133,7 @@ class ProviderPreflightTests(unittest.TestCase):
             self.response(profiles[1]["model"]),
             cloudflare_error,
             *[self.response(profile["model"]) for profile in profiles[3:]],
+            self.response("openrouter/free", "openai/gpt-oss-20b:free"),
         ]
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
