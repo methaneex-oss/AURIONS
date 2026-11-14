@@ -268,13 +268,13 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertTrue((self.root / "README.md").write_text("AURIONS README FIRST LINE\\n", encoding="utf-8"))
         with patch(
             "workforce.agents.runner.httpx.post",
-            side_effect=[primary_failure, tool_response, primary_failure, final_response],
+            side_effect=[primary_failure, tool_response, final_response],
         ) as provider:
             result = worker.run("small task", [])
         self.assertEqual(result["final"], "bounded result")
-        self.assertEqual(provider.call_count, 4)
+        self.assertEqual(provider.call_count, 3)
         first_fallback = provider.call_args_list[1].kwargs["json"]
-        second_fallback = provider.call_args_list[3].kwargs["json"]
+        second_fallback = provider.call_args_list[2].kwargs["json"]
         self.assertEqual(first_fallback["model"], "openrouter/free")
         self.assertEqual(second_fallback["model"], "openai/gpt-oss-20b:free")
         self.assertEqual(worker.openrouter_fallback_model, "openai/gpt-oss-20b:free")
