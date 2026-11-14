@@ -30,7 +30,7 @@ jobs:
     timeout-minutes: 360
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:17-alpine@sha256:d3244e8ce3f165ee3c93d9c4a4b1d0fe48b3a89e2287b717fdcbbde92d405065
         env:
           POSTGRES_DB: workforce
           POSTGRES_USER: workforce
@@ -66,7 +66,7 @@ jobs:
         run: python -m pip install -r engineering/workforce/requirements.txt
       - name: Prepare isolated candidate test runtime
         run: |
-          docker pull postgres:17-alpine
+          docker pull postgres:17-alpine@sha256:d3244e8ce3f165ee3c93d9c4a4b1d0fe48b3a89e2287b717fdcbbde92d405065
           docker build --pull --file engineering/workforce/Dockerfile.test-runner --tag "$WORKFORCE_TEST_DOCKER_IMAGE" .
       - name: Generate ephemeral Director, orchestrator and six worker credentials
         run: |
