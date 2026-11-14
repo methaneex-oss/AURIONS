@@ -103,6 +103,16 @@ def validate_registry() -> None:
             raise ValueError(f"unsupported provider for {role}")
         if entry.get("completion_tokens_parameter") not in {"max_tokens", "max_completion_tokens"}:
             raise ValueError(f"invalid completion-token parameter for {role}")
+        expected_parameter = (
+            "max_completion_tokens"
+            if entry["provider"] == "groq" or entry["model"] in {
+                "@cf/google/gemma-4-26b-a4b-it",
+                "@cf/zai-org/glm-4.7-flash",
+            }
+            else "max_tokens"
+        )
+        if entry["completion_tokens_parameter"] != expected_parameter:
+            raise ValueError(f"provider completion-token contract mismatch for {role}")
         if entry["cost_class"] not in {"free", "free_daily_allowance"}:
             raise ValueError(f"non-free model registered for {role}")
         if not isinstance(entry.get("max_request_tokens"), int) or not 1024 <= entry["max_request_tokens"] <= 32768:
