@@ -94,6 +94,7 @@ class RunnerBudgetTests(unittest.TestCase):
         with patch("workforce.agents.runner.httpx.post", return_value=self.response(100)) as provider:
             result = worker.run("small task", [])
         payload = provider.call_args.kwargs["json"]
+        self.assertIs(payload["parallel_tool_calls"], False)
         prompt_bytes = len(json.dumps(
             {"messages": payload["messages"], "tools": TOOLS}, ensure_ascii=False
         ).encode("utf-8"))
