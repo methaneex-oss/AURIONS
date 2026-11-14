@@ -3,7 +3,9 @@
 The `six-agent-qualification.yml` workflow runs a read-only, bounded qualification
 of all six pinned workforce roles.
 
-Each role is checked independently for:
+Each role is checked independently for four capabilities (24 role checks total).
+A separate OpenRouter free-router smoke check verifies the fallback credential,
+free-model identity, and function-call support.
 
 1. **Connectivity** — successful provider response and valid Chat Completions envelope.
 2. **Text response** — non-empty assistant text containing a test marker.
@@ -20,6 +22,8 @@ Each role is checked independently for:
 - OpenRouter is attempted only after a primary transient failure (network failure,
   HTTP 429, or HTTP 5xx).
 - The only configured OpenRouter model is `openrouter/free`.
+- A separate fallback smoke check verifies OpenRouter connectivity and required
+  function calling.
 - The fallback response must report a model identifier ending in `:free`; otherwise
   the fallback is rejected.
 - No paid model, paid credit, automatic paid upgrade, or non-free router is allowed.
