@@ -223,6 +223,8 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertEqual(result["provider"], "openrouter-free-fallback")
         self.assertEqual(result["model"], "openai/gpt-oss-20b:free")
         self.assertEqual(result["primary_provider"], "groq")
+        self.assertEqual(result["route_history"][-1]["provider"], "openrouter-free-fallback")
+        self.assertIn("primary HTTP 429", result["route_history"][-1]["primary_failure"])
         self.assertEqual(result["total_tokens"], 100)
 
     def test_primary_403_never_triggers_openrouter_fallback(self):
