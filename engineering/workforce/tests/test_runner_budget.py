@@ -190,7 +190,70 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertIn('"x-ratelimit-remaining-requests": "0"', detail)
         self.assertNotIn("do not copy", detail)
         self.assertNotIn("must-not-appear", detail)
-        self.assertIn("stopped without retry or paid fallback", detail)
+        self.assertIn("OPENROUTER_API_KEY is not configured", detail)
+
+    def test_transient_primary_failure_uses_only_verified_openrouter_free_route(self):
+        env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        primary = httpx.Response(
+            429,
+            json={"error": {"message": "rate limited", "type": "rate_limit_error"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        fallback = httpx.Response(
+            200,
+            json={
+                "model": "openai/gpt-oss-20b:free",
+                "usage": {"prompt_tokens": 80, "completion_tokens": 20, "total_tokens": 100},
+                "choices": [{"message": {"role": "assistant", "content": "bounded result"}, "finish_reason": "stop"}],
+            },
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        with patch("workforce.agents.runner.httpx.post", side_effect=[primary, fallback]) as provider:
+            result = worker.run("small task", [])
+        self.assertEqual(provider.call_count, 2)
+        self.assertIn("api.groq.com", provider.call_args_list[0].args[0])
+        fallback_call = provider.call_args_list[1]
+        self.assertEqual(fallback_call.args[0], "https://openrouter.ai/api/v1/chat/completions")
+        self.assertEqual(fallback_call.kwargs["json"]["model"], "openrouter/free")
+        self.assertIn("max_tokens", fallback_call.kwargs["json"])
+        self.assertNotIn("max_completion_tokens", fallback_call.kwargs["json"])
+        self.assertEqual(fallback_call.kwargs["headers"]["Authorization"], "Bearer test-openrouter-key")
+        self.assertEqual(result["provider"], "openrouter-free-fallback")
+        self.assertEqual(result["model"], "openai/gpt-oss-20b:free")
+        self.assertEqual(result["primary_provider"], "groq")
+        self.assertEqual(result["total_tokens"], 100)
+
+    def test_primary_403_never_triggers_openrouter_fallback(self):
+        env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        denied = httpx.Response(
+            403,
+            json={"error": {"message": "permission denied", "type": "forbidden"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        with patch("workforce.agents.runner.httpx.post", return_value=denied) as provider:
+            with self.assertRaisesRegex(RuntimeError, "no fallback attempted"):
+                worker.run("small task", [])
+        provider.assert_called_once()
+
+    def test_openrouter_response_without_free_model_identity_is_rejected(self):
+        env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        primary = httpx.Response(
+            503, json={"error": {"message": "unavailable"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        fallback = httpx.Response(
+            200, json={"model": "openai/gpt-oss-20b"},
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        with patch("workforce.agents.runner.httpx.post", side_effect=[primary, fallback]):
+            with self.assertRaisesRegex(RuntimeError, "refusing any potentially paid route"):
+                worker.run("small task", [])
 
     def test_provider_http_400_preserves_bounded_structured_error_without_secrets(self):
         worker = self.make_worker(12000)
