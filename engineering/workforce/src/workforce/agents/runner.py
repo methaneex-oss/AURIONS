@@ -67,7 +67,6 @@ TOOLS = [
     {"type": "function", "function": {"name": "list_files", "description": "List repository files under a relative directory. Excludes .git, secrets and virtual environments.", "parameters": {"type": "object", "properties": {"directory": {"type": "string"}}, "required": ["directory"], "additionalProperties": False}}},
     {"type": "function", "function": {"name": "read_file", "description": "Read a UTF-8 text file from the repository. Secret files are denied.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"], "additionalProperties": False}}},
     {"type": "function", "function": {"name": "write_file", "description": "Create or replace a UTF-8 file only within task-permitted paths. Builders only.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}, "content": {"type": "string"}}, "required": ["path", "content"], "additionalProperties": False}}},
-    {"type": "function", "function": {"name": "run_workforce_tests", "description": "Run only the fixed workforce unit-test and compile checks. No arbitrary shell execution.", "parameters": {"type": "object", "properties": {}, "additionalProperties": False}}},
 ]
 
 
@@ -209,40 +208,6 @@ class Worker:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(content, encoding="utf-8")
             return f"WROTE {rel} ({len(content)} characters)"
-        if name == "run_workforce_tests":
-            commands = [
-                [sys.executable, "-m", "compileall", "-q", "engineering/workforce/src", "engineering/workforce/tests"],
-                [sys.executable, "-m", "unittest", "discover", "-s", "engineering/workforce/tests", "-v"],
-            ]
-            outputs = []
-            # Execute repository tests from an isolated copy. They receive no provider,
-            # control-plane, database, cloud, or Director credentials and cannot mutate
-            # the builder's candidate workspace through their working directory.
-            with tempfile.TemporaryDirectory(prefix="workforce-tests-") as temp_dir:
-                test_root = Path(temp_dir)
-                for relative in ("engineering/workforce/src", "engineering/workforce/tests"):
-                    source = self.workspace / relative
-                    destination = test_root / relative
-                    destination.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copytree(source, destination)
-                env = {
-                    "PATH": os.environ.get("PATH", ""),
-                    "PYTHONPATH": str(test_root / "engineering/workforce/src"),
-                    "PYTHONDONTWRITEBYTECODE": "1",
-                    "CI": "1",
-                }
-                for command in commands:
-                    remaining = self.remaining_seconds()
-                    if remaining <= 0:
-                        raise TimeoutError("task duration budget exhausted before test execution")
-                    result = subprocess.run(
-                        command, cwd=test_root, env=env, capture_output=True, text=True,
-                        timeout=max(1, min(120, remaining)),
-                    )
-                    outputs.append({"command": command, "returncode": result.returncode, "stdout": result.stdout[-12000:], "stderr": result.stderr[-12000:]})
-                    if result.returncode:
-                        break
-            return json.dumps(outputs)
         return "DENIED: unknown tool."
 
     def renew_durable_lease(self) -> None:
