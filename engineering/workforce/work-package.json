@@ -3,7 +3,7 @@
   "run_id": "WF03-RUN-20261114-007",
   "authorization_ref": "Explicit Project Director authorization in the ChatGPT conversation on 2026-11-14 for the same bounded WF-03 six-role qualification task. Maximum 55 minutes of orchestrated work; GitHub Actions job timeout remains 60 minutes. Provider inference requires explicit workflow dispatch confirmation and separate confirmation that the Cloudflare account is on Workers Free.",
   "objective": "Qualify the six configured workforce roles on a bounded, isolated Unicode label-normalization task without modifying AURIONS runtime code.",
-  "base_commit_sha": "d0930d58949a0360e7290c4f98a265f1e65dcc2b",
+  "base_commit_sha": "ca615672e0d60ccd7a7ff94d8a4c8e5cbd194419",
   "max_total_duration_minutes": 55,
   "canonical_sources": [
     "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
@@ -60,7 +60,8 @@
   ],
   "stop_conditions": [
     "Any authorization conflict or attempt to modify a path outside the two exact builder files.",
-    "Provider authentication, quota, rate-limit or missing usage-accounting failure.",
+    "Any primary provider authentication/permission failure (HTTP 401/403) or invalid request.",
+    "Any transient primary provider failure not recovered by the explicitly configured OpenRouter free-only fallback, or any OpenRouter quota/rate-limit, non-:free model identity, invalid response or missing usage-accounting failure.",
     "Any test failure, critical/high review finding or evidence hash mismatch.",
     "Any budget or task deadline exhausted.",
     "Any attempt by a reviewer or Integration Verifier to write, accept, merge or bypass Director authority."
