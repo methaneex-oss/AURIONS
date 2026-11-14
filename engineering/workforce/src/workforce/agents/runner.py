@@ -225,6 +225,7 @@ class Worker:
         self.provider = profile["provider"]
         self.model = profile["model"]
         self.max_request_tokens = profile["max_request_tokens"]
+        self.completion_tokens_parameter = profile["completion_tokens_parameter"]
         self.api_url = profile["api_url"]
         if self.provider == "cloudflare":
             account_id = os.environ.get(profile["account_env"], "")
@@ -454,14 +455,11 @@ class Worker:
                 "tool_choice": "auto",
                 "temperature": 0.2,
             }
-            if self.provider == "groq":
-                payload["max_completion_tokens"] = output_limit
-                if self.model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
-                    # Groq documents GPT-OSS as not supporting parallel tool use.
-                    # The API otherwise defaults parallel_tool_calls to true.
-                    payload["parallel_tool_calls"] = False
-            else:
-                payload["max_completion_tokens"] = output_limit
+            payload[self.completion_tokens_parameter] = output_limit
+            if self.provider == "groq" and self.model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
+                # Groq documents GPT-OSS as not supporting parallel tool use.
+                # The API otherwise defaults parallel_tool_calls to true.
+                payload["parallel_tool_calls"] = False
 
             response = httpx.post(self.api_url, headers=headers, json=payload, timeout=max(1, min(120, remaining_seconds)))
             if response.status_code >= 400:
