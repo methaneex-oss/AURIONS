@@ -37,11 +37,13 @@ def main() -> int:
         if provider == "groq":
             url = profile["api_url"]
             token = groq_key
-            output_key = "max_completion_tokens"
         else:
             url = profile["api_url"].format(account_id=cf_account)
             token = cf_token
-            output_key = "max_tokens"
+        # The registry is the source of truth: Cloudflare models do not all
+        # share one completion-limit parameter (Gemma/GLM use
+        # max_completion_tokens; Mistral Small 3.1 uses max_tokens).
+        output_key = profile["completion_tokens_parameter"]
 
         payload = {
             "model": model,
@@ -60,7 +62,11 @@ def main() -> int:
         try:
             response = httpx.post(
                 url,
-                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
                 json=payload,
                 timeout=45,
             )
