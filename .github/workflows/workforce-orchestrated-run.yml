@@ -76,6 +76,48 @@ jobs:
           cache-dependency-path: engineering/workforce/requirements.txt
       - name: Install workforce dependencies
         run: python -m pip install -r engineering/workforce/requirements.txt
+      - name: Apply workforce database migrations
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import psycopg
+          import os
+
+          migration_dir = Path("engineering/workforce/migrations")
+          migrations = sorted(migration_dir.glob("*.sql"))
+          expected = [
+              "001_initial.sql",
+              "002_recovery_and_idempotency.sql",
+              "003_immutable_evidence.sql",
+              "004_agent_budget_ledger.sql",
+              "005_absolute_task_deadlines.sql",
+              "006_start_deadline_on_first_claim.sql",
+          ]
+          actual = [path.name for path in migrations]
+          if actual != expected:
+              raise SystemExit(f"unexpected workforce migration set/order: {actual!r}")
+          with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+              for path in migrations:
+                  with conn.cursor() as cur:
+                      cur.execute(path.read_text(encoding="utf-8"), prepare=False)
+                  conn.commit()
+                  print(f"Applied {path.name}")
+              with conn.cursor() as cur:
+                  cur.execute("""
+                      SELECT to_regclass('public.wf_tasks') AS tasks,
+                             to_regclass('public.wf_checkpoints') AS checkpoints,
+                             to_regclass('public.wf_audit_events') AS audit,
+                             to_regclass('public.wf_task_evidence') AS evidence,
+                             to_regclass('public.wf_agent_budgets') AS budgets,
+                             to_regclass('public.wf_budget_reservations') AS reservations,
+                             to_regprocedure('public.wf_task_deadline(timestamp with time zone,jsonb)') AS deadline_fn,
+                             to_regprocedure('public.wf_task_absolute_deadline(jsonb)') AS absolute_deadline_fn
+                  """)
+                  schema = cur.fetchone()
+                  if any(value is None for value in schema):
+                      raise SystemExit(f"workforce schema verification failed: {schema!r}")
+                  print("Verified all required workforce tables and deadline functions.")
+          PY
       - name: Prepare isolated candidate test runtime
         run: |
           docker pull postgres:17-alpine@sha256:d3244e8ce3f165ee3c93d9c4a4b1d0fe48b3a89e2287b717fdcbbde92d405065
@@ -187,26 +229,37 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           python -m workforce.orchestrator --manifest "$WORKFORCE_MANIFEST_COPY" --workspace "$WORKSPACE_DIR"
-      - name: Capture candidate patch without committing
+      - name: Capture candidate patch and reports without committing
         if: always()
         run: |
           python - <<'PY'
           import os
+          import shutil
           import subprocess
           from pathlib import Path
-          workspace = Path(os.environ["WORKSPACE_DIR"])
+
+          checkout = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
+          workspace = Path(os.environ["WORKSPACE_DIR"]).resolve()
+          patch_path = checkout / "candidate.patch"
+          artifact_dir = checkout / "wf03-artifacts"
+          if artifact_dir.exists():
+              shutil.rmtree(artifact_dir)
           if not workspace.is_dir():
-              Path("candidate.patch").write_bytes(b"")
+              patch_path.write_bytes(b"")
               raise SystemExit(0)
-          os.chdir(workspace)
           untracked = subprocess.check_output(
-              ["git", "ls-files", "--others", "--exclude-standard", "-z"]
+              ["git", "-C", str(workspace), "ls-files", "--others", "--exclude-standard", "-z"]
           ).decode().split(chr(0))
           untracked = [path for path in untracked if path and ".workforce-artifacts" not in path.split("/")]
           if untracked:
-              subprocess.run(["git", "add", "-N", "--", *untracked], check=True)
-          with Path("candidate.patch").open("wb") as output:
-              subprocess.run(["git", "diff", "--binary", "HEAD"], stdout=output, check=True)
+              subprocess.run(["git", "-C", str(workspace), "add", "-N", "--", *untracked], check=True)
+          with patch_path.open("wb") as output:
+              subprocess.run(["git", "-C", str(workspace), "diff", "--binary", "HEAD"], stdout=output, check=True)
+          source_artifacts = workspace / "engineering/workforce/.workforce-artifacts"
+          if source_artifacts.is_dir():
+              shutil.copytree(source_artifacts, artifact_dir)
+          print(f"Candidate patch captured at {patch_path}")
+          print(f"Evidence artifact directory exists: {artifact_dir.is_dir()}")
           PY
       - name: Upload candidate, reports and Director packet
         if: always()
@@ -215,8 +268,8 @@ jobs:
         with:
           name: aurions-workforce-${{ github.run_id }}
           path: |
-            ${{ env.WORKSPACE_DIR }}/candidate.patch
-            ${{ env.WORKSPACE_DIR }}/engineering/workforce/.workforce-artifacts/
+            candidate.patch
+            wf03-artifacts/
           if-no-files-found: warn
           retention-days: 14
       - name: Stop local control plane and supervisor
