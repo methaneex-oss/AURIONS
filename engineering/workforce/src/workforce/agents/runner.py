@@ -197,6 +197,7 @@ class Worker:
                 f"{profile['key_env']} is required for the selected {profile['provider']} role endpoint"
             )
         self.openrouter_api_key = os.environ.get("OPENROUTER_API_KEY", "")
+        self.openrouter_fallback_model: str | None = None
         self.route_history: list[dict[str, str]] = []
         if profile["cost_class"] not in {"free", "free_daily_allowance"}:
             raise RuntimeError("free-only policy: selected role model is not registered as free")
@@ -373,7 +374,9 @@ class Worker:
         self, payload: dict[str, Any], timeout: float, primary_failure: str
     ) -> tuple[httpx.Response, str, str]:
         fallback_payload = dict(payload)
-        fallback_payload["model"] = "openrouter/free"
+        # Resolve the dynamic free router once per worker run, then pin that
+        # verified :free model for the remainder of the conversation.
+        fallback_payload["model"] = self.openrouter_fallback_model or "openrouter/free"
         if "max_completion_tokens" in fallback_payload:
             fallback_payload["max_tokens"] = fallback_payload.pop("max_completion_tokens")
         headers = {
@@ -410,6 +413,11 @@ class Worker:
             raise RuntimeError(
                 "OpenRouter fallback did not identify a :free model; refusing any potentially paid route"
             )
+        if self.openrouter_fallback_model and actual_model != self.openrouter_fallback_model:
+            raise RuntimeError(
+                f"OpenRouter fallback changed model mid-run: {self.openrouter_fallback_model!r} -> {actual_model!r}"
+            )
+        self.openrouter_fallback_model = actual_model
         self.route_history.append({
             "provider": "openrouter-free-fallback",
             "model": actual_model,
