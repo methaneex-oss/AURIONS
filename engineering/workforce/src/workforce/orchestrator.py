@@ -534,6 +534,9 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
     if root not in report_dir.parents:
         raise OrchestrationError("report directory must be inside the workspace")
     report_rel = report_dir.relative_to(root).as_posix()
+    trusted_package_dir = Path(__file__).resolve().parent
+    if root == trusted_package_dir or root in trusted_package_dir.parents:
+        raise OrchestrationError("trusted orchestrator source must be outside the candidate workspace")
     if Path(report_rel).parts[:3] != ("engineering", "workforce", ".workforce-artifacts"):
         raise OrchestrationError("report directory must be under engineering/workforce/.workforce-artifacts")
     control = os.environ.get("WORKFORCE_CONTROL_PLANE_URL", "").rstrip("/")
@@ -625,6 +628,21 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         os.replace(temporary, state_path)
 
     save_journal("RESUMING" if state_path.exists() else "RUNNING")
+    trusted_runtime = tempfile.TemporaryDirectory(prefix="aurions-workforce-runtime-")
+    trusted_src = Path(trusted_runtime.name) / "src"
+    trusted_src.mkdir(parents=True, exist_ok=True)
+    try:
+        shutil.copytree(
+            trusted_package_dir,
+            trusted_src / "workforce",
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+        )
+    except Exception:
+        trusted_runtime.cleanup()
+        raise
+    if root == trusted_src or root in trusted_src.parents:
+        trusted_runtime.cleanup()
+        raise OrchestrationError("trusted worker runtime snapshot must be outside the candidate workspace")
     headers = {"X-Orchestrator-Token": orchestrator, "X-Director-Approval-Token": director}
     task_ids = {role: f"wf-{manifest['run_id']}-{role}" for role in ROLES}
     created: set[str] = set()
@@ -695,7 +713,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         env = {
             "PATH": os.environ.get("PATH", ""),
             "HOME": os.environ.get("HOME", str(root)),
-            "PYTHONPATH": str(root / "engineering/workforce/src"),
+            "PYTHONPATH": str(trusted_src),
             "PYTHONUNBUFFERED": "1",
             "PYTHONDONTWRITEBYTECODE": "1",
             "CI": os.environ.get("CI", "0"),
@@ -910,6 +928,8 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         # worker leases; a later invocation with the same run_id resumes safely.
         save_journal("INTERRUPTED")
         raise
+    finally:
+        trusted_runtime.cleanup()
 
 
 def main() -> None:
