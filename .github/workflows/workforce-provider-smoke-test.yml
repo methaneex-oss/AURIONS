@@ -108,7 +108,7 @@ jobs:
                   payload = {
                       "model": model,
                       "messages": [{"role": "user", "content": "Reply with exactly OK."}],
-                      "max_completion_tokens": 12,
+                      "max_completion_tokens": 128,
                       "temperature": 0,
                   }
                   headers = {
@@ -147,8 +147,15 @@ jobs:
                       choices = data.get("choices") or []
                       if response.status != 200 or not choices:
                           raise RuntimeError("response did not contain a chat completion")
+                      message = choices[0].get("message") or {}
+                      content = message.get("content")
+                      if not isinstance(content, str) or not content.strip():
+                          finish_reason = choices[0].get("finish_reason", "unknown")
+                          raise RuntimeError(
+                              f"completion contained no visible text (finish_reason={finish_reason})"
+                          )
                       returned_model = data.get("model", model)
-                      print(f"PASS {role}: {provider} responded (model={returned_model})")
+                      print(f"PASS {role}: {provider} responded with visible text (model={returned_model})")
               except urllib.error.HTTPError as error:
                   raw = error.read(8192)
                   detail = safe_error_detail(raw)
