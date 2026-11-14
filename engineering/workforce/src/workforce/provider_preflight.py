@@ -19,11 +19,13 @@ def main() -> int:
     groq_key = os.environ.get("GROQ_API_KEY", "")
     cf_token = os.environ.get("CLOUDFLARE_API_TOKEN", "")
     cf_account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+    openrouter_key = os.environ.get("OPENROUTER_API_KEY", "")
     missing = [
         name for name, value in (
             ("GROQ_API_KEY", groq_key),
             ("CLOUDFLARE_API_TOKEN", cf_token),
             ("CLOUDFLARE_ACCOUNT_ID", cf_account),
+            ("OPENROUTER_API_KEY", openrouter_key),
         ) if not value
     ]
     if missing:
@@ -108,7 +110,57 @@ def main() -> int:
 
         print(f"PASS {role}: {provider}/{model}; function call valid; usage={total} tokens")
 
-    print(f"PROVIDER PREFLIGHT: {len(ROLE_MODEL_ASSIGNMENTS) - len(failures)}/{len(ROLE_MODEL_ASSIGNMENTS)} passed.")
+    # Verify the production fallback independently, including free-model identity,
+    # required tool calling and usage accounting. Never accept a paid model response.
+    fallback_payload = {
+        "model": "openrouter/free",
+        "messages": [{
+            "role": "user",
+            "content": "Call the read_file function exactly once with path README.md. Do not answer without calling the function.",
+        }],
+        "tools": TOOLS,
+        "tool_choice": "required",
+        "temperature": 0.2,
+        "max_tokens": 384,
+    }
+    try:
+        response = httpx.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {openrouter_key}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "HTTP-Referer": "https://github.com/methaneex-oss/AURIONS",
+                "X-Title": "AURIONS free-only workforce preflight",
+            },
+            json=fallback_payload,
+            timeout=45,
+        )
+        if response.status_code >= 400:
+            detail = provider_error_detail(response, (openrouter_key,))
+            raise ValueError(f"HTTP {response.status_code}: {detail}")
+        data = response.json()
+        actual_model = data.get("model")
+        if not isinstance(actual_model, str) or not actual_model.endswith(":free"):
+            raise ValueError("router did not identify a verified :free model")
+        choices = data.get("choices") or []
+        message = choices[0].get("message", {}) if choices else {}
+        calls = message.get("tool_calls") or []
+        usage = data.get("usage") or {}
+        total = usage.get("total_tokens")
+        if not isinstance(total, int) or isinstance(total, bool) or total <= 0:
+            raise ValueError("router omitted valid usage.total_tokens")
+        if not calls or calls[0].get("function", {}).get("name") != "read_file":
+            raise ValueError("router did not return the required read_file function call")
+        args = json.loads(calls[0]["function"].get("arguments") or "{}")
+        if args.get("path") != "README.md":
+            raise ValueError("router returned invalid read_file arguments")
+        print(f"PASS openrouter_free_fallback: {actual_model}; function call valid; usage={total} tokens")
+    except Exception as exc:
+        print(f"FAIL openrouter_free_fallback: {type(exc).__name__}: {str(exc)[:400]}")
+        failures.append("openrouter_free_fallback")
+
+    print(f"PROVIDER PREFLIGHT: {len(ROLE_MODEL_ASSIGNMENTS) + 1 - len(failures)}/{len(ROLE_MODEL_ASSIGNMENTS) + 1} checks passed.")
     if failures:
         print("BLOCKED ROLES: " + ", ".join(failures))
         return 1
