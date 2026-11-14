@@ -13,6 +13,14 @@ on:
         required: true
         default: false
         type: boolean
+      confirm_groq_free_plan:
+        description: "I verified this Groq account is on Free tier, not Developer tier. Developer tier charges per token."
+        required: true
+        default: false
+        type: boolean
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -54,6 +62,7 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           CONFIRM_RUN: ${{ inputs.confirm_run }}
           CONFIRM_CLOUDFLARE_FREE_PLAN: ${{ inputs.confirm_cloudflare_free_plan }}
+          CONFIRM_GROQ_FREE_PLAN: ${{ inputs.confirm_groq_free_plan }}
         run: |
           if [ "$REF_NAME" != "feat/workforce-control-plane-hardening" ]; then
             echo "Refusing to execute workforce providers outside the authorized feature branch."
@@ -63,8 +72,8 @@ jobs:
             echo "Explicit workflow_dispatch confirmation is required."
             exit 1
           fi
-          if [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ]; then
-            echo "Refusing provider inference: Director must verify and explicitly confirm the Cloudflare Workers Free plan."
+          if [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ] || [ "$CONFIRM_GROQ_FREE_PLAN" != "true" ]; then
+            echo "Refusing provider inference: Director must verify and explicitly confirm both Cloudflare Workers Free and Groq Free tiers."
             exit 1
           fi
           if [ "$EVENT_NAME" != "workflow_dispatch" ]; then
