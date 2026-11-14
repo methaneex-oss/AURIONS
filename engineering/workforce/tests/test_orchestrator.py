@@ -203,7 +203,7 @@ class OrchestratorTests(unittest.TestCase):
             (root / "engineering/workforce/src/workforce").mkdir(parents=True)
             (root / "engineering/workforce/tests").mkdir(parents=True)
             (root / "engineering/workforce/migrations").mkdir(parents=True)
-            (root / "engineering/workforce/migrations/001_initial.sql").write_text("SELECT 1;\\n", encoding="utf-8")
+            (root / "engineering/workforce/migrations/001_initial.sql").write_text("SELECT 1;\n", encoding="utf-8")
             (root / "engineering/workforce/src/workforce/__init__.py").write_text("", encoding="utf-8")
             (root / "engineering/workforce/tests/__init__.py").write_text("", encoding="utf-8")
             subprocess.run(["git", "init", "-q"], cwd=root, check=True)
