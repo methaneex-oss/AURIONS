@@ -167,11 +167,11 @@ def main() -> int:
             calls = message.get("tool_calls") or []
             usage = data.get("usage") or {}
             total = usage.get("total_tokens")
-            returned_model = data.get("model", model)
+            returned_model = data.get("model")
             if returned_model != model:
                 raise ValueError(f"provider returned unexpected model identity {returned_model!r}")
-            if not calls:
-                raise ValueError("model did not produce the required function call")
+            if len(calls) != 1:
+                raise ValueError("model did not produce exactly one required function call")
             if not isinstance(total, int) or isinstance(total, bool) or total <= 0:
                 raise ValueError("provider omitted valid usage.total_tokens required by durable budget accounting")
             call = calls[0]
@@ -227,8 +227,8 @@ def main() -> int:
         total = usage.get("total_tokens")
         if not isinstance(total, int) or isinstance(total, bool) or total <= 0:
             raise ValueError("router omitted valid usage.total_tokens")
-        if not calls or calls[0].get("function", {}).get("name") != "read_file":
-            raise ValueError("router did not return the required read_file function call")
+        if len(calls) != 1 or calls[0].get("function", {}).get("name") != "read_file":
+            raise ValueError("router did not return exactly one required read_file function call")
         args = json.loads(calls[0]["function"].get("arguments") or "{}")
         if args.get("path") != "README.md":
             raise ValueError("router returned invalid read_file arguments")
