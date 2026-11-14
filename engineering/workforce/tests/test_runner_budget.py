@@ -233,6 +233,7 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertLessEqual(payload["max_completion_tokens"], 512)
         self.assertNotIn("max_tokens", payload)
         self.assertEqual(payload["tool_choice"], "auto")
+        self.assertEqual(provider.call_args.kwargs["headers"]["Accept"], "application/json")
 
     def test_cloudflare_error_envelope_is_bounded_and_secret_safe(self):
         response = httpx.Response(
