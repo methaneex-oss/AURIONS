@@ -18,6 +18,11 @@ on:
         required: true
         default: false
         type: boolean
+      confirm_openrouter_free_plan:
+        description: "I confirm fallback uses only openrouter/free, accepts only returned :free models, and no credits or paid routes will be used."
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -60,17 +65,18 @@ jobs:
           CONFIRM_RUN: ${{ inputs.confirm_run }}
           CONFIRM_CLOUDFLARE_FREE_PLAN: ${{ inputs.confirm_cloudflare_free_plan }}
           CONFIRM_GROQ_FREE_PLAN: ${{ inputs.confirm_groq_free_plan }}
+          CONFIRM_OPENROUTER_FREE_PLAN: ${{ inputs.confirm_openrouter_free_plan }}
         run: |
-          if [ "$REF_NAME" != "feat/workforce-control-plane-hardening" ]; then
-            echo "Refusing to execute workforce providers outside the authorized feature branch."
+          if [ "$REF_NAME" != "feat/workforce-control-plane-hardening" ] && [ "$REF_NAME" != "feat/workforce-free-fallback" ]; then
+            echo "Refusing to execute workforce providers outside the authorized feature branches."
             exit 1
           fi
           if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$CONFIRM_RUN" != "true" ]; then
             echo "Explicit workflow_dispatch confirmation is required."
             exit 1
           fi
-          if [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ] || [ "$CONFIRM_GROQ_FREE_PLAN" != "true" ]; then
-            echo "Refusing provider inference: Director must verify and explicitly confirm both Cloudflare Workers Free and Groq Free tiers."
+          if [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ] || [ "$CONFIRM_GROQ_FREE_PLAN" != "true" ] || [ "$CONFIRM_OPENROUTER_FREE_PLAN" != "true" ]; then
+            echo "Refusing provider inference: Director must confirm Cloudflare Workers Free, Groq Free and OpenRouter free-only routing."
             exit 1
           fi
           if [ "$EVENT_NAME" != "workflow_dispatch" ]; then
