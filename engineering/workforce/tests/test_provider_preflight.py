@@ -51,6 +51,7 @@ class ProviderPreflightTests(unittest.TestCase):
             self.assertIn(payload["model"], {p["model"] for p in ROLE_MODEL_ASSIGNMENTS.values()})
             self.assertEqual(payload["max_completion_tokens"], 384)
             self.assertNotIn("max_tokens", payload)
+            self.assertEqual(call.kwargs["headers"]["Accept"], "application/json")
 
     @patch.dict(os.environ, {
         "GROQ_API_KEY": "test-groq",
