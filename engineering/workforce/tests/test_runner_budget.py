@@ -33,6 +33,7 @@ class RunnerBudgetTests(unittest.TestCase):
         return httpx.Response(
             200,
             json={
+                "model": "openai/gpt-oss-120b",
                 "usage": {"prompt_tokens": 80, "completion_tokens": total_tokens - 80, "total_tokens": total_tokens},
                 "choices": [{"message": {"role": "assistant", "content": "bounded result"}, "finish_reason": "stop"}],
             },
