@@ -37,11 +37,10 @@ def main() -> int:
         if provider == "groq":
             url = profile["api_url"]
             token = groq_key
-            output_key = "max_completion_tokens"
         else:
             url = profile["api_url"].format(account_id=cf_account)
             token = cf_token
-            output_key = "max_completion_tokens"
+        output_key = profile["completion_tokens_parameter"]
 
         payload = {
             "model": model,
