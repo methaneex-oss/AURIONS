@@ -519,7 +519,11 @@ with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
                 }
             results.append(result_record)
             if result_record["returncode"]:
-                raise OrchestrationError("candidate test suite failed; no reviewer or integration task will proceed")
+                raise OrchestrationError(
+                    "candidate test suite failed; no reviewer or integration task will proceed. "
+                    f"Command={command!r}; stdout={result_record['stdout'][-3000:]}; "
+                    f"stderr={result_record['stderr'][-3000:]}"
+                )
         return results
     finally:
         subprocess.run(
