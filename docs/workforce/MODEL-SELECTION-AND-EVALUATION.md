@@ -1,3 +1,5 @@
+> **Superseded draft (14 November 2026):** This document is retained as historical selection research and is not the active workforce roster. The operative role assignments, provider endpoints, free-only policy and fallback rules are defined by [WORKFORCE-MODEL-SELECTION.md](WORKFORCE-MODEL-SELECTION.md) and enforced by `engineering/workforce/src/workforce/model_registry.py`. Do not configure agents from the alternative assignments below.
+
 # AURIONS Workforce Model Selection and Evaluation
 
 **Selection date:** 13 November 2026  
