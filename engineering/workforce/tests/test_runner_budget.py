@@ -228,6 +228,61 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertIn("primary HTTP 429", result["route_history"][-1]["primary_failure"])
         self.assertEqual(result["total_tokens"], 100)
 
+    def test_openrouter_free_model_is_pinned_for_the_worker_conversation(self):
+        env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 3, 512, 12000)
+        primary_failure = httpx.Response(
+            503, json={"error": {"message": "temporarily unavailable"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        tool_response = httpx.Response(
+            200,
+            json={
+                "model": "openai/gpt-oss-20b:free",
+                "usage": {"prompt_tokens": 80, "completion_tokens": 20, "total_tokens": 100},
+                "choices": [{
+                    "message": {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [{
+                            "id": "call-1",
+                            "type": "function",
+                            "function": {"name": "read_file", "arguments": json.dumps({"path": "README.md"})},
+                        }],
+                    },
+                    "finish_reason": "tool_calls",
+                }],
+            },
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        final_response = httpx.Response(
+            200,
+            json={
+                "model": "openai/gpt-oss-20b:free",
+                "usage": {"prompt_tokens": 90, "completion_tokens": 10, "total_tokens": 100},
+                "choices": [{"message": {"role": "assistant", "content": "bounded result"}, "finish_reason": "stop"}],
+            },
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        self.assertTrue((self.root / "README.md").write_text("AURIONS README FIRST LINE\\n", encoding="utf-8"))
+        with patch(
+            "workforce.agents.runner.httpx.post",
+            side_effect=[primary_failure, tool_response, primary_failure, final_response],
+        ) as provider:
+            result = worker.run("small task", [])
+        self.assertEqual(result["final"], "bounded result")
+        self.assertEqual(provider.call_count, 4)
+        first_fallback = provider.call_args_list[1].kwargs["json"]
+        second_fallback = provider.call_args_list[3].kwargs["json"]
+        self.assertEqual(first_fallback["model"], "openrouter/free")
+        self.assertEqual(second_fallback["model"], "openai/gpt-oss-20b:free")
+        self.assertEqual(worker.openrouter_fallback_model, "openai/gpt-oss-20b:free")
+        self.assertEqual(
+            [entry["model"] for entry in result["route_history"]],
+            ["openai/gpt-oss-20b:free", "openai/gpt-oss-20b:free"],
+        )
+
     def test_groq_model_permission_403_uses_only_verified_free_fallback(self):
         env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
         with patch.dict("os.environ", env, clear=True):
