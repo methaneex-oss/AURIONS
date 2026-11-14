@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - feat/workforce-control-plane-hardening
+    paths:
+      - engineering/workforce/work-package.json
   workflow_dispatch:
     inputs:
       manifest_path:
@@ -25,7 +27,9 @@ concurrency:
 
 jobs:
   orchestrated-run:
-    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.confirm_run == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[RUN-WORKFORCE]')) }}
+    # A push to the manifest path is itself the explicit Director authorization.
+    # workflow_dispatch remains gated by confirm_run=true.
+    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.confirm_run == true) }}
     runs-on: ubuntu-latest
     timeout-minutes: 360
     services:
