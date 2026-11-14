@@ -41,7 +41,7 @@ def main() -> int:
         else:
             url = profile["api_url"].format(account_id=cf_account)
             token = cf_token
-            output_key = "max_tokens"
+            output_key = "max_completion_tokens"
 
         payload = {
             "model": model,
