@@ -101,7 +101,12 @@ def _post(
     return data
 
 
-def _call(role: str, payload: dict[str, Any], max_tokens: int = 256) -> tuple[dict[str, Any], str, str]:
+def _call(
+    role: str,
+    payload: dict[str, Any],
+    max_tokens: int = 256,
+    fallback_model: str | None = None,
+) -> tuple[dict[str, Any], str, str]:
     profile = ROLE_MODEL_ASSIGNMENTS[role]
     primary_key = os.environ.get(profile["key_env"], "")
     if not primary_key:
@@ -131,12 +136,14 @@ def _call(role: str, payload: dict[str, Any], max_tokens: int = 256) -> tuple[di
         if not fallback_key:
             raise ProviderFailure(f"primary {exc}; OpenRouter fallback key unavailable") from None
         fallback_payload = dict(payload)
-        fallback_payload["model"] = OPENROUTER_MODEL
+        fallback_payload["model"] = fallback_model or OPENROUTER_MODEL
         fallback_payload["max_tokens"] = max_tokens
         fallback_data = _post(OPENROUTER_URL, fallback_key, fallback_payload, openrouter=True)
         actual_model = fallback_data.get("model")
         if not isinstance(actual_model, str) or not actual_model.endswith(":free"):
             raise ProviderFailure("OpenRouter fallback did not identify a verified :free model")
+        if fallback_model and actual_model != fallback_model:
+            raise ProviderFailure("OpenRouter fallback changed model during the repository tool round-trip")
         fallback_data["_qualification_primary_failure"] = f"{profile['provider']} primary request failed: {exc}"
         return fallback_data, "openrouter-free-fallback", actual_model
 
@@ -287,10 +294,15 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
                 ),
             },
         ]
-        second_data, second_provider, second_model = _call(role, {
-            "messages": conversation,
-            "temperature": 0,
-        }, max_tokens=1024)
+        second_data, second_provider, second_model = _call(
+            role,
+            {
+                "messages": conversation,
+                "temperature": 0,
+            },
+            max_tokens=1024,
+            fallback_model=first_model if first_provider == "openrouter-free-fallback" else None,
+        )
         second_message = _choice(second_data)
         final_text = second_message.get("content")
         cleaned = final_text.strip() if isinstance(final_text, str) else ""
