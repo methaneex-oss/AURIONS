@@ -49,6 +49,15 @@ class ProviderPreflightTests(unittest.TestCase):
             self.assertEqual(payload["tool_choice"], "required")
             self.assertIn("tools", payload)
             self.assertIn(payload["model"], {p["model"] for p in ROLE_MODEL_ASSIGNMENTS.values()})
+            profile = next(
+                item for item in ROLE_MODEL_ASSIGNMENTS.values()
+                if item["model"] == payload["model"]
+            )
+            expected_key = profile["completion_tokens_parameter"]
+            alternate_key = "max_tokens" if expected_key == "max_completion_tokens" else "max_completion_tokens"
+            self.assertEqual(payload[expected_key], 384)
+            self.assertNotIn(alternate_key, payload)
+            self.assertEqual(call.kwargs["headers"]["Accept"], "application/json")
 
     @patch.dict(os.environ, {
         "GROQ_API_KEY": "test-groq",
@@ -99,6 +108,40 @@ class ProviderPreflightTests(unittest.TestCase):
         self.assertNotIn("test-groq-secret", output.getvalue())
         self.assertNotIn("do not copy", output.getvalue())
         self.assertNotIn("hidden", output.getvalue())
+
+    @patch.dict(os.environ, {
+        "GROQ_API_KEY": "test-groq",
+        "CLOUDFLARE_API_TOKEN": "test-cloudflare-secret",
+        "CLOUDFLARE_ACCOUNT_ID": "test-account",
+    }, clear=True)
+    @patch("workforce.provider_preflight.httpx.post")
+    def test_cloudflare_errors_envelope_is_reported_without_copying_untrusted_fields(self, post):
+        cloudflare_error = httpx.Response(
+            400,
+            json={
+                "success": False,
+                "errors": [{"code": 10001, "message": "Unsupported parameter max_tokens"}],
+                "messages": [{"code": 99999, "message": "must not be copied"}],
+                "debug": "must not be copied",
+            },
+            request=httpx.Request("POST", "https://api.cloudflare.com/client/v4/accounts/test-account/ai/v1/chat/completions"),
+        )
+        profiles = list(ROLE_MODEL_ASSIGNMENTS.values())
+        post.side_effect = [
+            self.response(profiles[0]["model"]),
+            self.response(profiles[1]["model"]),
+            cloudflare_error,
+            *[self.response(profile["model"]) for profile in profiles[3:]],
+        ]
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(main(), 1)
+        rendered = output.getvalue()
+        self.assertIn("HTTP 400", rendered)
+        self.assertIn("Unsupported parameter max_tokens", rendered)
+        self.assertIn("10001", rendered)
+        self.assertNotIn("must not be copied", rendered)
+        self.assertNotIn("test-cloudflare-secret", rendered)
 
     @patch.dict(os.environ, {}, clear=True)
     def test_missing_credentials_blocks_without_provider_calls(self):

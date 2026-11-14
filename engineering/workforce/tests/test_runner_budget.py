@@ -10,7 +10,7 @@ from unittest.mock import patch
 import httpx
 
 from workforce.agents import runner as runner_module
-from workforce.agents.runner import MAX_INLINE_CONTEXT_BYTES, MANDATORY_GOVERNANCE_FILES, TOOLS, Worker, is_sensitive_path, safe_path
+from workforce.agents.runner import MAX_INLINE_CONTEXT_BYTES, MANDATORY_GOVERNANCE_FILES, TOOLS, Worker, is_sensitive_path, provider_error_detail, safe_path
 
 
 class RunnerBudgetTests(unittest.TestCase):
@@ -217,6 +217,82 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertIn("Unsupported parameter temperature", str(raised.exception))
         self.assertNotIn("must not be copied", str(raised.exception))
         self.assertNotIn("test-key-only", str(raised.exception))
+
+    def test_cloudflare_worker_uses_documented_completion_limit_field(self):
+        env = {
+            "CLOUDFLARE_API_TOKEN": "test-cloudflare",
+            "CLOUDFLARE_ACCOUNT_ID": "account-123",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "specialist_builder", [], 2, 512, 12000)
+        with patch("workforce.agents.runner.httpx.post", return_value=self.response(100)) as provider:
+            worker.run("small task", [])
+        self.assertIn("/accounts/account-123/ai/v1/chat/completions", provider.call_args.args[0])
+        payload = provider.call_args.kwargs["json"]
+        self.assertGreater(payload["max_completion_tokens"], 0)
+        self.assertLessEqual(payload["max_completion_tokens"], 512)
+        self.assertNotIn("max_tokens", payload)
+        self.assertEqual(payload["tool_choice"], "auto")
+        self.assertEqual(provider.call_args.kwargs["headers"]["Accept"], "application/json")
+
+    def test_mistral_worker_uses_its_documented_max_tokens_parameter(self):
+        env = {
+            "CLOUDFLARE_API_TOKEN": "test-cloudflare",
+            "CLOUDFLARE_ACCOUNT_ID": "account-123",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "integration_verifier", [], 2, 512, 12000)
+        with patch("workforce.agents.runner.httpx.post", return_value=self.response(100)) as provider:
+            worker.run("small task", [])
+        payload = provider.call_args.kwargs["json"]
+        self.assertIn("max_tokens", payload)
+        self.assertGreater(payload["max_tokens"], 0)
+        self.assertLessEqual(payload["max_tokens"], 512)
+        self.assertNotIn("max_completion_tokens", payload)
+        self.assertIn("/accounts/account-123/ai/v1/chat/completions", provider.call_args.args[0])
+
+    def test_cloudflare_error_envelope_is_bounded_and_secret_safe(self):
+        response = httpx.Response(
+            400,
+            json={
+                "success": False,
+                "errors": [
+                    {"code": 10001, "message": "Invalid request for test-cloudflare-secret"},
+                    {"code": 10002, "message": "second safe error"},
+                    {"code": 10003, "message": "third safe error"},
+                    {"code": 10004, "message": "fourth error must be omitted"},
+                ],
+                "messages": [{"code": 20000, "message": "untrusted message must be omitted"}],
+                "debug": "untrusted debug must be omitted",
+            },
+            request=httpx.Request("POST", "https://api.cloudflare.com/client/v4/accounts/account/ai/v1/chat/completions"),
+        )
+        detail = provider_error_detail(response, ("test-cloudflare-secret",))
+        self.assertIn("Invalid request for [REDACTED]", detail)
+        self.assertIn("10001", detail)
+        self.assertIn("second safe error", detail)
+        self.assertNotIn("fourth error must be omitted", detail)
+        self.assertNotIn("untrusted message", detail)
+        self.assertNotIn("untrusted debug", detail)
+        self.assertNotIn("test-cloudflare-secret", detail)
+
+    def test_rfc9457_problem_details_and_bearer_redaction_are_supported(self):
+        response = httpx.Response(
+            400,
+            json={
+                "type": "https://developers.cloudflare.com/errors/10001",
+                "title": "Invalid request",
+                "status": 400,
+                "detail": "Authorization Bearer abc.def-secret was rejected",
+                "instance": "ray-id-must-not-be-copied",
+            },
+            request=httpx.Request("POST", "https://api.cloudflare.com/client/v4/accounts/account/ai/v1/chat/completions"),
+        )
+        detail = provider_error_detail(response)
+        self.assertIn("Invalid request", detail)
+        self.assertIn("Authorization Bearer [REDACTED]", detail)
+        self.assertNotIn("abc.def-secret", detail)
+        self.assertNotIn("ray-id-must-not-be-copied", detail)
 
     def test_provider_reported_usage_over_budget_fails_closed(self):
         worker = self.make_worker(12000)

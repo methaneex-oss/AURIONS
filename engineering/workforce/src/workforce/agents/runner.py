@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -83,33 +84,76 @@ PROVIDER_DIAGNOSTIC_HEADERS = (
 )
 
 
+def _diagnostic_scalar(value: Any) -> str | int | float | bool | None:
+    """Keep only short scalar values from provider-controlled diagnostic payloads."""
+    if isinstance(value, str):
+        return value[:400]
+    if isinstance(value, (int, float, bool)):
+        return value
+    return None
+
+
 def provider_error_detail(response: httpx.Response, secrets: tuple[str, ...] = ()) -> str:
-    """Return bounded, allowlisted provider error fields without copying arbitrary data."""
+    """Return bounded diagnostics for OpenAI-compatible and Cloudflare API errors."""
     try:
         payload = response.json()
     except ValueError:
         payload = {}
-    error = payload.get("error", payload) if isinstance(payload, dict) else {}
-    safe_fields = {
-        key: error[key]
-        for key in ("message", "type", "code", "param")
-        if isinstance(error, dict)
-        and isinstance(error.get(key), (str, int, float, bool))
-    }
+
+    detail: dict[str, Any] = {}
+    if isinstance(payload, dict):
+        error = payload.get("error")
+        if isinstance(error, dict):
+            safe_fields = {
+                key: value
+                for key in ("message", "type", "code", "param")
+                if (value := _diagnostic_scalar(error.get(key))) is not None
+            }
+            if safe_fields:
+                detail["error"] = safe_fields
+        elif isinstance(error, str):
+            detail["error"] = {"message": error[:400]}
+
+        # Cloudflare's standard API envelope reports errors as an array of
+        # {code, message} objects, not the OpenAI {error: {...}} object.
+        provider_errors = payload.get("errors")
+        if isinstance(provider_errors, list):
+            safe_errors = []
+            for item in provider_errors[:3]:
+                if not isinstance(item, dict):
+                    continue
+                safe_item = {
+                    key: value
+                    for key in ("code", "message")
+                    if (value := _diagnostic_scalar(item.get(key))) is not None
+                }
+                if safe_item:
+                    safe_errors.append(safe_item)
+            if safe_errors:
+                detail["provider_errors"] = safe_errors
+
+        # Also support Cloudflare's RFC 9457 problem-details error shape.
+        problem_fields = {
+            key: value
+            for key in ("type", "title", "detail", "status")
+            if (value := _diagnostic_scalar(payload.get(key))) is not None
+        }
+        if problem_fields:
+            detail["problem"] = problem_fields
+
     safe_headers = {
         key: response.headers[key]
         for key in PROVIDER_DIAGNOSTIC_HEADERS
         if key in response.headers
     }
-    detail: dict[str, Any] = {}
-    if safe_fields:
-        detail["error"] = safe_fields
     if safe_headers:
         detail["rate_limit_headers"] = safe_headers
+
     rendered = json.dumps(detail, ensure_ascii=True)[:1600] if detail else "no structured provider diagnostics"
     for secret in secrets:
         if secret:
             rendered = rendered.replace(secret, "[REDACTED]")
+    rendered = re.sub(r"(?i)(bearer\s+)[A-Za-z0-9._~+/=-]+", r"\1[REDACTED]", rendered)
     return rendered[:1600]
 
 
@@ -181,6 +225,7 @@ class Worker:
         self.provider = profile["provider"]
         self.model = profile["model"]
         self.max_request_tokens = profile["max_request_tokens"]
+        self.completion_tokens_parameter = profile["completion_tokens_parameter"]
         self.api_url = profile["api_url"]
         if self.provider == "cloudflare":
             account_id = os.environ.get(profile["account_env"], "")
@@ -372,9 +417,11 @@ class Worker:
             "Challenge the task itself if it conflicts with authoritative governance."
         )
         messages = [{"role": "system", "content": system + "\n\nAUTHORITATIVE CONTEXT:\n" + "\n".join(context)}, {"role": "user", "content": task}]
-        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
-        if self.provider == "cloudflare":
-            headers["Content-Type"] = "application/json"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
         while self.calls < self.max_calls and self.total_tokens < self.max_total_tokens:
             remaining_seconds = self.remaining_seconds()
             if remaining_seconds <= 0:
@@ -408,14 +455,11 @@ class Worker:
                 "tool_choice": "auto",
                 "temperature": 0.2,
             }
-            if self.provider == "groq":
-                payload["max_completion_tokens"] = output_limit
-                if self.model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
-                    # Groq documents GPT-OSS as not supporting parallel tool use.
-                    # The API otherwise defaults parallel_tool_calls to true.
-                    payload["parallel_tool_calls"] = False
-            else:
-                payload["max_tokens"] = output_limit
+            payload[self.completion_tokens_parameter] = output_limit
+            if self.provider == "groq" and self.model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
+                # Groq documents GPT-OSS as not supporting parallel tool use.
+                # The API otherwise defaults parallel_tool_calls to true.
+                payload["parallel_tool_calls"] = False
 
             response = httpx.post(self.api_url, headers=headers, json=payload, timeout=max(1, min(120, remaining_seconds)))
             if response.status_code >= 400:

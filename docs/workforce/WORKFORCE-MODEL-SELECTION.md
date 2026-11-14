@@ -47,6 +47,20 @@ Store only as GitHub Actions repository secrets:
 
 The Cloudflare token should have only the Workers AI inference permissions required for the account. Never place credentials in source files, workflow literals, prompts, logs or artifacts. No paid fallback or automatic provider switching is permitted.
 
+## Provider request contracts verified
+
+The worker and preflight use provider-specific authentication but the OpenAI-compatible Chat Completions request shape. Both send `Content-Type: application/json` and `Accept: application/json` so Cloudflare returns structured JSON errors where supported:
+
+| Model assignment | Endpoint | Authentication | Completion limit | Tool calling |
+|---|---|---|---|---|
+| Groq — all three pinned models | `POST https://api.groq.com/openai/v1/chat/completions` | `Authorization: Bearer GROQ_API_KEY` | `max_completion_tokens` | `tools` with `tool_choice`; all three pinned models document local function calling |
+| Cloudflare — Gemma 4 26B and GLM-4.7-Flash | `POST https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions` | `Authorization: Bearer CLOUDFLARE_API_TOKEN`; token requires Account > Workers AI > Read | `max_completion_tokens`; model pages mark `max_tokens` deprecated | Both model pages document function calling; GLM explicitly documents `tool_choice: required` |
+| Cloudflare — Mistral Small 3.1 24B | Same account-scoped endpoint | Same token permission | `max_tokens` as listed by its current model page | Model page documents function calling and tool-call output |
+
+Cloudflare's standard API error envelope uses an `errors` array containing `code` and `message`; some Cloudflare-generated errors use RFC 9457 problem details. Diagnostics must parse only bounded, allowlisted fields from these formats, redact credentials, and never dump arbitrary response bodies. Groq uses an OpenAI-style `error` object with `message` and `type`; its documented rate-limit headers distinguish daily request limits from per-minute token limits.
+
+The selected Cloudflare models are not among the models Cloudflare currently marks as requiring Workers Paid. Workers AI's Free allocation is 10,000 Neurons per account per day, shared by all three Cloudflare roles and resetting at 00:00 UTC. This allowance is not a per-agent allowance. Confirm the account is on Workers Free and monitor remaining Neurons before dispatch; never treat a model's published per-million-token unit price as proof that a given account is on a free plan.
+
 ## Operating constraints
 
 1. Each agent receives only its exclusive role contract and one pinned model.
@@ -70,7 +84,7 @@ The Cloudflare token should have only the Workers AI inference permissions requi
 
 ## Provider documentation reviewed
 
-- Groq [Free-tier billing FAQ](https://console.groq.com/docs/billing-faqs), [rate limits](https://console.groq.com/docs/rate-limits), [data retention controls](https://console.groq.com/docs/your-data), [GPT-OSS 120B](https://console.groq.com/docs/model/openai/gpt-oss-120b), [Qwen 3.8 27B](https://console.groq.com/docs/model/qwen/qwen3.8-27b).
-- Cloudflare [Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/), [data usage commitments](https://developers.cloudflare.com/workers-ai/platform/data-usage/), [OpenAI-compatible endpoint](https://developers.cloudflare.com/workers-ai/configuration/open-ai-compatibility/), [Gemma 4 26B](https://developers.cloudflare.com/workers-ai/models/gemma-4-26b-a4b-it/), [GLM 4.7 Flash](https://developers.cloudflare.com/workers-ai/models/glm-4.7-flash/), [Mistral Small 3.1 24B](https://developers.cloudflare.com/workers-ai/models/mistral-small-3.1-24b-instruct/).
+- Groq [Free-tier billing FAQ](https://console.groq.com/docs/billing-faqs), [rate limits and response headers](https://console.groq.com/docs/rate-limits), [API errors](https://console.groq.com/docs/errors), [local tool calling](https://console.groq.com/docs/tool-use/overview), [Chat Completions API reference](https://console.groq.com/docs/api-reference), [data retention controls](https://console.groq.com/docs/your-data), [GPT-OSS 120B](https://console.groq.com/docs/model/openai/gpt-oss-120b), [GPT-OSS 20B](https://console.groq.com/docs/model/openai/gpt-oss-20b), [Qwen 3.8 27B](https://console.groq.com/docs/model/qwen/qwen3.8-27b).
+- Cloudflare [Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/), [model rate limits](https://developers.cloudflare.com/workers-ai/platform/limits/), [data usage commitments](https://developers.cloudflare.com/workers-ai/platform/data-usage/), [OpenAI-compatible endpoint](https://developers.cloudflare.com/workers-ai/configuration/open-ai-compatibility/), [AI REST API and authentication](https://developers.cloudflare.com/ai-gateway/usage/rest-api/), [Cloudflare API error formats](https://developers.cloudflare.com/fundamentals/reference/error-responses/), [Gemma 4 26B](https://developers.cloudflare.com/workers-ai/models/gemma-4-26b-a4b-it/), [GLM 4.7 Flash](https://developers.cloudflare.com/workers-ai/models/glm-4.7-flash/), [Mistral Small 3.1 24B](https://developers.cloudflare.com/workers-ai/models/mistral-small-3.1-24b-instruct/).
 - OpenRouter [Free model limits and pricing](https://openrouter.ai/collections/free-models), [plan comparison and routing limits](https://openrouter.ai/pricing), [NVIDIA Nemotron free endpoint data notice](https://openrouter.ai/nvidia/nemotron-3-ultra-550b-a55b:free).
 - Google [Gemini API pricing and data-use distinctions](https://ai.google.dev/gemini-api/docs/pricing).
