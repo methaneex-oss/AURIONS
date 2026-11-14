@@ -449,7 +449,11 @@ class Worker:
             raise RuntimeError(
                 "OpenRouter fallback did not identify a :free model; refusing any potentially paid route"
             )
-        self.route_history.append({"provider": "openrouter-free-fallback", "model": actual_model})
+        self.route_history.append({
+            "provider": "openrouter-free-fallback",
+            "model": actual_model,
+            "primary_failure": primary_failure[:400],
+        })
         return response, "openrouter-free-fallback", actual_model
 
     def run(self, task: str, context_files: list[str]) -> dict[str, Any]:
