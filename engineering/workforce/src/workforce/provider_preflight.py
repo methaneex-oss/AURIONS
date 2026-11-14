@@ -114,21 +114,44 @@ def main() -> int:
                 timeout=45,
             )
         except httpx.HTTPError as exc:
-            print(f"FAIL {role}: {type(exc).__name__}: {str(exc)[:240]}")
-            failures.append(role)
-            continue
-
-        if response.status_code == 403 and provider == "groq":
-            detail = provider_error_detail(response, (token,))
             try:
                 fallback_model, fallback_tokens = _verify_free_fallback(payload, openrouter_key)
                 print(
-                    f"PASS_WITH_FREE_FALLBACK {role}: Groq HTTP 403 permission block; "
+                    f"PASS_WITH_FREE_FALLBACK {role}: primary network failure "
+                    f"({type(exc).__name__}); OpenRouter/{fallback_model}; "
+                    f"function call valid; usage={fallback_tokens} tokens"
+                )
+            except Exception as fallback_exc:
+                print(
+                    f"FAIL {role}: primary network failure ({type(exc).__name__}); "
+                    f"free fallback failed: {type(fallback_exc).__name__}: {str(fallback_exc)[:300]}"
+                )
+                failures.append(role)
+            continue
+
+        fallback_eligible = (
+            response.status_code == 429
+            or response.status_code >= 500
+            or (provider == "groq" and response.status_code == 403)
+        )
+        if fallback_eligible:
+            detail = provider_error_detail(response, (token,))
+            failure_kind = (
+                "Groq model-permission block" if provider == "groq" and response.status_code == 403
+                else f"HTTP {response.status_code}"
+            )
+            try:
+                fallback_model, fallback_tokens = _verify_free_fallback(payload, openrouter_key)
+                print(
+                    f"PASS_WITH_FREE_FALLBACK {role}: primary {failure_kind}; "
                     f"OpenRouter/{fallback_model}; function call valid; usage={fallback_tokens} tokens; "
                     f"primary diagnostic={detail}"
                 )
-            except Exception as exc:
-                print(f"FAIL {role}: Groq HTTP 403: {detail}; free fallback failed: {type(exc).__name__}: {str(exc)[:300]}")
+            except Exception as fallback_exc:
+                print(
+                    f"FAIL {role}: primary {failure_kind}: {detail}; free fallback failed: "
+                    f"{type(fallback_exc).__name__}: {str(fallback_exc)[:300]}"
+                )
                 failures.append(role)
             continue
         if response.status_code >= 400:
@@ -218,7 +241,7 @@ def main() -> int:
     if failures:
         print("BLOCKED ROLES: " + ", ".join(failures))
         return 1
-    print("All six pinned model endpoints passed. Orchestrated agent execution may proceed.")
+    print("All six roles have a verified primary or OpenRouter free-only fallback route. Orchestrated agent execution may proceed.")
     return 0
 
 
