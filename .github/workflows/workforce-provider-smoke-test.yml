@@ -102,7 +102,10 @@ jobs:
 
           def probe_groq_auth_path(url, payload, label, authorization):
               """Compare unauthenticated controls with the real-key 403 without exposing secrets."""
-              probe_headers = {"Content-Type": "application/json"}
+              probe_headers = {
+                  "Content-Type": "application/json",
+                  "User-Agent": "AURIONS-Provider-Smoke-Test/1.0 (+https://github.com/methaneex-oss/AURIONS)",
+              }
               if authorization is not None:
                   probe_headers["Authorization"] = authorization
               probe = urllib.request.Request(
@@ -146,6 +149,8 @@ jobs:
                   headers = {
                       "Authorization": f"Bearer {token}",
                       "Content-Type": "application/json",
+                      # Cloudflare Error 1010 rejects Python urllib default User-Agent.
+                      "User-Agent": "AURIONS-Provider-Smoke-Test/1.0 (+https://github.com/methaneex-oss/AURIONS)",
                   }
               elif provider == "cloudflare":
                   token = cf_token
