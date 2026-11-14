@@ -1,4 +1,4 @@
-name: Manually approved six-role workforce run
+ibgbukname: Manually approved six-role workforce run
 
 on:
   workflow_dispatch:
