@@ -67,6 +67,25 @@ class ProviderPreflightTests(unittest.TestCase):
         ]
         self.assertEqual(main(), 1)
 
+    @patch.dict(os.environ, {
+        "GROQ_API_KEY": "test-groq-secret",
+        "CLOUDFLARE_API_TOKEN": "test-cloudflare-secret",
+        "CLOUDFLARE_ACCOUNT_ID": "test-account",
+    }, clear=True)
+    @patch("workforce.provider_preflight.httpx.post")
+    def test_rate_limited_preflight_preserves_safe_headers_and_redacts_credentials(self, post):
+        post.return_value = httpx.Response(
+            429,
+            json={"error": {"message": "quota limited", "type": "rate_limit_error",
+                            "code": "requests_per_day", "private": "do not copy"}},
+            headers={"retry-after": "3600", "x-ratelimit-remaining-requests": "0",
+                     "authorization": "Bearer test-groq-secret", "x-private": "hidden"},
+            request=httpx.Request("POST", "https://provider.example/chat/completions"),
+        )
+        self.assertEqual(main(), 1)
+        # First role is lead_builder (Groq); its diagnostic is printed, never the credential.
+        self.assertEqual(post.call_count, 1)
+
     @patch.dict(os.environ, {}, clear=True)
     def test_missing_credentials_blocks_without_provider_calls(self):
         with patch("workforce.provider_preflight.httpx.post") as post:
