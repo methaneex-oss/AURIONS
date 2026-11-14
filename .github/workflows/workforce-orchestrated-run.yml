@@ -202,17 +202,28 @@ jobs:
           manifest = validate_manifest(json.loads(manifest_path.read_text(encoding="utf-8")))
           base_sha = manifest["base_commit_sha"].lower()
           subprocess.run(["git", "cat-file", "-e", f"{base_sha}^{{commit}}"], check=True)
+          manifest_rel = manifest_path.relative_to(root).as_posix()
+          manifest_commit = subprocess.check_output(
+              ["git", "log", "-1", "--format=%H", "HEAD", "--", manifest_rel],
+              text=True,
+          ).strip().lower()
+          if not manifest_commit:
+              raise SystemExit("the authorized work-package manifest has no introducing commit")
           parent_sha = subprocess.check_output(
-              ["git", "rev-parse", "HEAD^"], text=True
+              ["git", "rev-parse", f"{manifest_commit}^"], text=True
           ).strip().lower()
           if parent_sha != base_sha:
-              raise SystemExit("the manifest commit must be a direct child of the exact clean code baseline")
-          manifest_rel = manifest_path.relative_to(root).as_posix()
+              raise SystemExit("the manifest-introducing commit must be a direct child of the exact clean code baseline")
           changed = subprocess.check_output(
-              ["git", "diff", "--name-only", base_sha, "HEAD"], text=True
+              ["git", "diff", "--name-only", base_sha, manifest_commit], text=True
           ).splitlines()
           if changed != [manifest_rel]:
-              raise SystemExit("the manifest commit must change only the work-package manifest")
+              raise SystemExit("the manifest-introducing commit must change only the work-package manifest")
+          if subprocess.run(
+              ["git", "diff", "--quiet", manifest_commit, "HEAD", "--", manifest_rel],
+              check=False,
+          ).returncode != 0:
+              raise SystemExit("the authorized work-package manifest was modified after its authorization commit")
           _worker_tokens()
           workspace = Path(os.environ["WORKSPACE_DIR"])
           subprocess.run(["git", "worktree", "add", "--detach", str(workspace), base_sha], check=True)
