@@ -182,7 +182,7 @@ class RunnerBudgetTests(unittest.TestCase):
             request=request,
         )
         with patch("workforce.agents.runner.httpx.post", return_value=rejected):
-            with self.assertRaisesRegex(RuntimeError, r"provider rate limited request \(HTTP 429\)") as raised:
+            with self.assertRaisesRegex(RuntimeError, r"primary provider transient failure \(HTTP 429\)") as raised:
                 worker.run("small task", [])
         detail = str(raised.exception)
         self.assertIn("tokens_per_minute", detail)
@@ -274,7 +274,7 @@ class RunnerBudgetTests(unittest.TestCase):
         with patch("workforce.agents.runner.httpx.post", return_value=rejected):
             with self.assertRaisesRegex(
                 RuntimeError,
-                r"provider rejected request \(HTTP 400\).*unsupported_parameter",
+                r"primary provider rejected request \(HTTP 400\).*unsupported_parameter",
             ) as raised:
                 worker.run("small task", [])
         self.assertIn("Unsupported parameter temperature", str(raised.exception))
