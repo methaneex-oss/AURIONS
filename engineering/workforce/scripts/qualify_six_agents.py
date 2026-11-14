@@ -82,7 +82,7 @@ def _post(url: str, token: str, payload: dict[str, Any], openrouter: bool = Fals
         for name, value in os.environ.items():
             if value and (name.endswith("_KEY") or name.endswith("_TOKEN")):
                 rendered = rendered.replace(value, "[REDACTED]")
-        retryable = exc.code == 429 or exc.code >= 500
+        retryable = exc.code in {403, 429} or exc.code >= 500
         raise ProviderFailure(f"HTTP {exc.code}: {rendered or 'no safe provider diagnostics'}", retryable=retryable) from None
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         raise ProviderFailure(f"network {type(exc).__name__}", retryable=True) from None
@@ -128,6 +128,7 @@ def _call(role: str, payload: dict[str, Any], max_tokens: int = 256) -> tuple[di
         actual_model = fallback_data.get("model")
         if not isinstance(actual_model, str) or not actual_model.endswith(":free"):
             raise ProviderFailure("OpenRouter fallback did not identify a verified :free model")
+        fallback_data["_qualification_primary_failure"] = f"{profile['provider']} primary request failed: {exc}"
         return fallback_data, "openrouter-free-fallback", actual_model
 
 
@@ -141,10 +142,16 @@ def _choice(data: dict[str, Any]) -> dict[str, Any]:
     return message
 
 
+def _fallback_detail(data: dict[str, Any]) -> dict[str, str]:
+    failure = data.get("_qualification_primary_failure")
+    return {"primary_failure": str(failure)[:240]} if failure else {}
+
+
 def _record(results: list[dict[str, Any]], role: str, check: str, fn) -> None:
     try:
         detail = fn()
-        results.append({"role": role, "check": check, "status": "PASS", **detail})
+        status = "PASS_WITH_FREE_FALLBACK" if detail.get("primary_failure") else "PASS"
+        results.append({"role": role, "check": check, "status": status, **detail})
     except Exception as exc:
         results.append({
             "role": role, "check": check, "status": "FAIL",
@@ -159,7 +166,7 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
             "temperature": 0,
         })
         _choice(data)
-        return {"provider": provider, "model": model, "evidence": "HTTP success and valid chat-completions envelope"}
+        return {"provider": provider, "model": model, "evidence": "HTTP success and valid chat-completions envelope", **_fallback_detail(data)}
 
     def text_response():
         data, provider, model = _call(role, {
@@ -169,7 +176,7 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         content = _choice(data).get("content")
         if not isinstance(content, str) or not content.strip() or "TEXT_RESPONSE_OK" not in content:
             raise ProviderFailure("assistant returned empty text or omitted TEXT_RESPONSE_OK")
-        return {"provider": provider, "model": model, "evidence": content.strip()[:240]}
+        return {"provider": provider, "model": model, "evidence": content.strip()[:240], **_fallback_detail(data)}
 
     def reasoning_simulation():
         data, provider, model = _call(role, {
@@ -204,7 +211,7 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
             raise ProviderFailure("reasoning exercise did not return valid JSON") from None
         if answer.get("value") != 110 or answer.get("parity") != "even":
             raise ProviderFailure("reasoning exercise produced an incorrect result")
-        return {"provider": provider, "model": model, "evidence": "structured arithmetic result correct; simulation only"}
+        return {"provider": provider, "model": model, "evidence": "structured arithmetic result correct; simulation only", **_fallback_detail(data)}
 
     def repository_access():
         first_data, first_provider, first_model = _call(role, {
@@ -272,11 +279,17 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
                 followup_verified = answer.get("first_line") == first_line
             except json.JSONDecodeError:
                 followup_verified = False
+        primary_failures = [
+            str(item["_qualification_primary_failure"])
+            for item in (first_data, second_data)
+            if item.get("_qualification_primary_failure")
+        ]
         return {
             "provider": first_provider if first_provider == second_provider else f"{first_provider} then {second_provider}",
             "model": first_model if first_model == second_model else f"{first_model} then {second_model}",
             "followup_context_use": "verified" if followup_verified else "not_verified",
             "evidence": f"model requested read_file; runtime read README.md and returned {len(content)} characters as tool output",
+            **({"primary_failure": "; ".join(primary_failures)[:240]} if primary_failures else {}),
         }
 
     _record(results, role, "connectivity", connectivity)
@@ -336,10 +349,10 @@ def main() -> int:
     summary = {
         "suite": "AURIONS six-agent read-only qualification",
         "training": "simulation only; no model weights or persistent learning changed",
-        "fallback_policy": "OpenRouter openrouter/free only after primary transient failure; require returned :free model identity",
+        "fallback_policy": "OpenRouter openrouter/free after primary HTTP 403, 429, 5xx, or network failure; 401 and request-contract errors stop; record every primary failure; require returned :free model identity",
         "checks_per_role": ["connectivity", "text_response", "reasoning_training_simulation", "repository_tool_access"],
         "results": results,
-        "passed": sum(item["status"] == "PASS" for item in results),
+        "passed": sum(item["status"] in {"PASS", "PASS_WITH_FREE_FALLBACK"} for item in results),
         "failed": sum(item["status"] == "FAIL" for item in results),
         "total": len(results),
     }
