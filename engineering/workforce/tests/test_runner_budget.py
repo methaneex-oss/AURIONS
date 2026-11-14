@@ -163,6 +163,35 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertEqual(worker.calls, 0)
         self.assertEqual(provider.call_count, 2)
 
+    def test_provider_http_429_preserves_allowlisted_rate_limit_diagnostics_and_redacts_secrets(self):
+        worker = self.make_worker(12000)
+        request = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
+        rejected = httpx.Response(
+            429,
+            json={"error": {"message": "rate limit reached", "type": "rate_limit_error",
+                            "code": "tokens_per_minute", "debug": "do not copy"}},
+            headers={
+                "retry-after": "17",
+                "x-ratelimit-limit-requests": "30",
+                "x-ratelimit-remaining-requests": "0",
+                "x-ratelimit-reset-requests": "1m",
+                "x-ratelimit-remaining-tokens": "0",
+                "authorization": "Bearer must-not-appear",
+                "x-private-debug": "must-not-appear",
+            },
+            request=request,
+        )
+        with patch("workforce.agents.runner.httpx.post", return_value=rejected):
+            with self.assertRaisesRegex(RuntimeError, r"provider rate limited request \(HTTP 429\)") as raised:
+                worker.run("small task", [])
+        detail = str(raised.exception)
+        self.assertIn("tokens_per_minute", detail)
+        self.assertIn('"retry-after": "17"', detail)
+        self.assertIn('"x-ratelimit-remaining-requests": "0"', detail)
+        self.assertNotIn("do not copy", detail)
+        self.assertNotIn("must-not-appear", detail)
+        self.assertIn("stopped without retry or paid fallback", detail)
+
     def test_provider_http_400_preserves_bounded_structured_error_without_secrets(self):
         worker = self.make_worker(12000)
         request = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
