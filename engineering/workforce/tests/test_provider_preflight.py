@@ -64,6 +64,7 @@ class ProviderPreflightTests(unittest.TestCase):
         "GROQ_API_KEY": "test-groq",
         "CLOUDFLARE_API_TOKEN": "test-cloudflare",
         "CLOUDFLARE_ACCOUNT_ID": "test-account",
+        "OPENROUTER_API_KEY": "test-openrouter",
     }, clear=True)
     @patch("workforce.provider_preflight.httpx.post")
     def test_one_rejected_model_blocks_preflight(self, post):
