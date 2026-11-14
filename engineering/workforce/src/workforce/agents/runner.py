@@ -25,6 +25,7 @@ MANDATORY_GOVERNANCE_FILES = (
     "docs/workforce/WORKFORCE-CONSTITUTION.md",
     "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
     "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
+    "docs/workforce/AGENT-RUNTIME-GOVERNANCE-BRIEF.md",
 )
 
 ROLE_INSTRUCTIONS = {
@@ -65,7 +66,7 @@ ROLE_INSTRUCTIONS = {
 
 TOOLS = [
     {"type": "function", "function": {"name": "list_files", "description": "List repository files under a relative directory. Excludes .git, secrets and virtual environments.", "parameters": {"type": "object", "properties": {"directory": {"type": "string"}}, "required": ["directory"], "additionalProperties": False}}},
-    {"type": "function", "function": {"name": "read_file", "description": "Read a UTF-8 text file from the repository. Secret files are denied.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"], "additionalProperties": False}}},
+    {"type": "function", "function": {"name": "read_file", "description": "Read a bounded UTF-8 text file or line range from the repository. Secret files are denied; responses are capped at 6 KB.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}, "start_line": {"type": "integer", "minimum": 1}, "end_line": {"type": "integer", "minimum": 1}}, "required": ["path"], "additionalProperties": False}}},
     {"type": "function", "function": {"name": "write_file", "description": "Create or replace a UTF-8 file only within task-permitted paths. Builders only.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}, "content": {"type": "string"}}, "required": ["path", "content"], "additionalProperties": False}}},
 ]
 
@@ -134,6 +135,7 @@ class Worker:
         profile = role_assignment(role)
         self.provider = profile["provider"]
         self.model = profile["model"]
+        self.max_request_tokens = profile["max_request_tokens"]
         self.api_url = profile["api_url"]
         if self.provider == "cloudflare":
             account_id = os.environ.get(profile["account_env"], "")
@@ -151,7 +153,10 @@ class Worker:
             )
         if profile["cost_class"] not in {"free", "free_daily_allowance"}:
             raise RuntimeError("free-only policy: selected role model is not registered as free")
-        if max_calls <= 0 or max_calls > 100 or max_tokens <= 0 or max_tokens > 32768 or max_total_tokens <= 0 or max_total_tokens > 200000 or max_duration_minutes <= 0 or max_duration_minutes > 360:
+        if (max_calls <= 0 or max_calls > 100 or max_tokens <= 0 or max_tokens > 32768
+                or max_total_tokens <= 0 or max_total_tokens > 200000
+                or max_duration_minutes <= 0 or max_duration_minutes > 360
+                or not isinstance(self.max_request_tokens, int) or self.max_request_tokens < 1024 or self.max_request_tokens > 32768):
             raise ValueError("budgets must be positive and within hard ceilings: 100 calls, 32768 tokens/call, 200000 total tokens, 360 minutes")
 
     def load_mandatory_governance(self) -> tuple[list[str], list[dict[str, str]]]:
@@ -165,7 +170,10 @@ class Worker:
             digest = hashlib.sha256(raw).hexdigest()
             body = raw.decode("utf-8")
             records.append({"path": rel, "sha256": digest, "bytes": str(len(raw))})
-            context.append(f"\n--- MANDATORY GOVERNANCE: {rel} | sha256={digest} ---\n{body}")
+            if rel == "docs/workforce/AGENT-RUNTIME-GOVERNANCE-BRIEF.md":
+                context.append(f"\n--- MANDATORY RUNTIME GOVERNANCE BRIEF: {rel} | sha256={digest} ---\n{body}")
+            else:
+                context.append(f"\n--- FRESH-READ GOVERNANCE SOURCE: {rel} | sha256={digest} | bytes={len(raw)} ---")
         return context, records
 
     def remaining_seconds(self) -> float:
@@ -185,16 +193,27 @@ class Worker:
             for p in sorted(directory.rglob("*")):
                 if p.is_file() and not any(x in {".git", ".venv", "__pycache__"} for x in p.parts) and not is_sensitive_path(p) and not any(x == ".env" or x.startswith(".env.") for x in p.parts):
                     found.append(str(p.relative_to(self.workspace)))
-                if len(found) >= 300:
+                if len(found) >= 120:
                     break
             return json.dumps(found)
         if name == "read_file":
             path = safe_path(self.workspace, args["path"])
             if not path.is_file():
                 return "File not found."
-            if path.stat().st_size > 250_000:
-                return "File exceeds the 250 KB read limit."
-            return path.read_text(encoding="utf-8")
+            lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+            start = args.get("start_line", 1)
+            end = args.get("end_line", len(lines))
+            if (not isinstance(start, int) or isinstance(start, bool)
+                    or not isinstance(end, int) or isinstance(end, bool)
+                    or start < 1 or end < start):
+                return "TOOL ERROR: start_line/end_line must be valid positive line numbers."
+            if start > len(lines):
+                return "Requested start_line is beyond end of file."
+            selected = "".join(lines[start - 1:min(end, len(lines))])
+            encoded = selected.encode("utf-8")
+            if len(encoded) > 6_000:
+                return f"Requested range is {len(encoded)} bytes; maximum is 6000. Narrow the line range."
+            return f"[{path.relative_to(self.workspace).as_posix()} lines {start}-{min(end, len(lines))} of {len(lines)}]\n{selected}"
         if name == "write_file":
             if self.role not in {"lead_builder", "specialist_builder"}:
                 return "DENIED: this role is read-only."
@@ -271,8 +290,9 @@ class Worker:
                 seen.add(rel)
         system = (
             "You are one specialist in the AURIONS supervised engineering workforce. You have exactly one role; do not stack roles, perform another agent's assignment, or claim another role's gate. "
-            "The mandatory governance files below were freshly read from this run's pinned workspace; "
-            "their SHA-256 hashes are included in the run record. Follow them in full. "
+            "The trusted runtime freshly read and SHA-256 hashed the full mandatory governance source set from this pinned workspace. "
+            "The compact runtime governance brief is injected in full; the other authoritative sources are listed by path and hash and remain available through read_file. "
+            "Read the relevant source in full before relying on a detailed provision not covered by the brief. "
             "EBT-01 is mandatory: exercise independent professional judgment; own your role's complete "
             "responsibility; preserve scope; distinguish specified/implemented/tested/verified/independently "
             "reviewed/Director-accepted; challenge materially wrong assumptions with evidence; autonomously "
@@ -301,11 +321,19 @@ class Worker:
             request_bytes = len(json.dumps(
                 {"messages": messages, "tools": TOOLS}, ensure_ascii=False
             ).encode("utf-8"))
-            prompt_reserve = request_bytes + 256
-            output_limit = min(self.max_tokens, remaining - prompt_reserve)
+            # Provider usage is authoritative after the response. Before sending, estimate
+            # input tokens conservatively from UTF-8 bytes and keep a provider-specific
+            # per-request ceiling. This avoids treating every byte as one token.
+            prompt_reserve = (request_bytes + 2) // 3 + 256
+            output_limit = min(
+                self.max_tokens,
+                remaining - prompt_reserve,
+                self.max_request_tokens - prompt_reserve,
+            )
             if output_limit <= 0:
                 raise RuntimeError(
-                    "prompt and protocol overhead exhaust the remaining token budget; "
+                    f"prompt estimate ({prompt_reserve - 256} tokens) leaves no safe completion room "
+                    f"within the {self.max_request_tokens}-token per-request ceiling or remaining role budget; "
                     "provider request was not sent"
                 )
             self.renew_durable_lease()

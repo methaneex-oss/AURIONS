@@ -8,6 +8,11 @@ on:
         required: true
         default: false
         type: boolean
+      confirm_cloudflare_free_plan:
+        description: "I verified this Cloudflare account is on Workers Free, not Workers Paid. Workers Paid can bill above 10,000 Neurons/day."
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -48,6 +53,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           REF_NAME: ${{ github.ref_name }}
           CONFIRM_RUN: ${{ inputs.confirm_run }}
+          CONFIRM_CLOUDFLARE_FREE_PLAN: ${{ inputs.confirm_cloudflare_free_plan }}
         run: |
           if [ "$REF_NAME" != "feat/workforce-control-plane-hardening" ]; then
             echo "Refusing to execute workforce providers outside the authorized feature branch."
@@ -57,8 +63,12 @@ jobs:
             echo "Explicit workflow_dispatch confirmation is required."
             exit 1
           fi
-          if [ "$EVENT_NAME" != "push" ] && [ "$EVENT_NAME" != "workflow_dispatch" ]; then
-            echo "Unsupported event: $EVENT_NAME"
+          if [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ]; then
+            echo "Refusing provider inference: Director must verify and explicitly confirm the Cloudflare Workers Free plan."
+            exit 1
+          fi
+          if [ "$EVENT_NAME" != "workflow_dispatch" ]; then
+            echo "Only explicitly confirmed workflow_dispatch runs are supported."
             exit 1
           fi
       - name: Checkout selected branch

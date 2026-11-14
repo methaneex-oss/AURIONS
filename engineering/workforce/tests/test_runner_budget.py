@@ -44,6 +44,12 @@ class RunnerBudgetTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 Worker(self.root, "lead_builder", [], 101, 512, 12000)
 
+    def test_prompt_estimator_uses_a_conservative_byte_ratio(self):
+        sample = ("word " * 1000).encode("utf-8")
+        estimate = (len(sample) + 2) // 3
+        self.assertGreater(estimate, 1000)
+        self.assertLess(estimate, len(sample))
+
     def test_prompt_budget_is_reserved_before_provider_call(self):
         worker = self.make_worker(64)
         with patch("workforce.agents.runner.httpx.post") as provider:
@@ -60,7 +66,9 @@ class RunnerBudgetTests(unittest.TestCase):
         prompt_bytes = len(json.dumps(
             {"messages": payload["messages"], "tools": TOOLS}, ensure_ascii=False
         ).encode("utf-8"))
-        self.assertLessEqual(payload["max_completion_tokens"], 12000 - prompt_bytes - 256)
+        prompt_estimate = (prompt_bytes + 2) // 3 + 256
+        self.assertLessEqual(payload["max_completion_tokens"], 7000 - prompt_estimate)
+        self.assertLessEqual(prompt_estimate + payload["max_completion_tokens"], 7000)
         self.assertEqual(result["total_tokens"], 100)
         self.assertEqual(result["calls"], 1)
 

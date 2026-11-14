@@ -33,6 +33,8 @@ class ModelRegistryTests(unittest.TestCase):
             self.assertTrue(profile["api_url"].startswith("https://"))
             self.assertTrue(profile["key_env"].endswith(("_API_KEY", "_API_TOKEN")))
             self.assertIn(profile["cost_class"], {"free", "free_daily_allowance"})
+            self.assertGreaterEqual(profile["max_request_tokens"], 1024)
+            self.assertLessEqual(profile["max_request_tokens"], 32768)
             if profile["provider"] == "cloudflare":
                 self.assertEqual(profile["account_env"], "CLOUDFLARE_ACCOUNT_ID")
             else:
