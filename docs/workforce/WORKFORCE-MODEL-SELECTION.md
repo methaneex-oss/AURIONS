@@ -54,7 +54,7 @@ The Cloudflare token should have only the Workers AI inference permissions requi
 2. All six receive the same mandatory, freshly read governance and induction sources from the pinned repository revision.
 3. Role/model/endpoint overrides are rejected by the runner; assignments are pinned in `engineering/workforce/src/workforce/model_registry.py`.
 4. Cloudflare's daily Neuron allowance is shared; per-role and global consumption must be measured and bounded.
-5. OpenRouter fallback is limited to transient failures only; HTTP 401/403 and request-contract failures remain hard stops. Its 20 RPM / 50 RPD free cap is shared and failed attempts count toward it.
+5. OpenRouter fallback is limited to transient failures and Groq model-permission HTTP 403; HTTP 401, Cloudflare 403 and request-contract failures remain hard stops. Its 20 RPM / 50 RPD free cap is shared and failed attempts count toward it.
 6. Fallback responses must identify an actual `:free` model, and the report must record the primary provider failure and actual fallback model.
 7. Model availability, free quota and endpoint compatibility must be checked at run time. Published quotas are not guarantees of available capacity.
 8. A model response, onboarding run or policy acknowledgment does not qualify an agent.
