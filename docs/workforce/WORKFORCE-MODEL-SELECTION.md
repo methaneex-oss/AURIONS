@@ -49,7 +49,7 @@ The Cloudflare token should have only the Workers AI inference permissions requi
 
 ## Provider request contracts verified
 
-The worker and preflight use provider-specific authentication but the OpenAI-compatible Chat Completions request shape:
+The worker and preflight use provider-specific authentication but the OpenAI-compatible Chat Completions request shape. Both send `Content-Type: application/json` and `Accept: application/json` so Cloudflare returns structured JSON errors where supported:
 
 | Provider | Endpoint | Authentication | Completion limit | Tool calling |
 |---|---|---|---|---|
