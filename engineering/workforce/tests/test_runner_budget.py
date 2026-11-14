@@ -245,7 +245,7 @@ class RunnerBudgetTests(unittest.TestCase):
         with patch("workforce.agents.runner.httpx.post", return_value=self.response(100)) as provider:
             worker.run("small task", [])
         payload = provider.call_args.kwargs["json"]
-        self.assertEqual(payload["max_tokens"], payload.get("max_tokens"))
+        self.assertIn("max_tokens", payload)
         self.assertGreater(payload["max_tokens"], 0)
         self.assertLessEqual(payload["max_tokens"], 512)
         self.assertNotIn("max_completion_tokens", payload)
