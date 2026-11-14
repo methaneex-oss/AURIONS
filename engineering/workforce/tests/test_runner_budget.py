@@ -268,6 +268,39 @@ class RunnerBudgetTests(unittest.TestCase):
                 worker.run("small task", [])
         provider.assert_called_once()
 
+    def test_cloudflare_403_does_not_trigger_openrouter_fallback(self):
+        env = {
+            "CLOUDFLARE_API_TOKEN": "test-cloudflare-key",
+            "CLOUDFLARE_ACCOUNT_ID": "test-account",
+            "OPENROUTER_API_KEY": "test-openrouter-key",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "architecture_reviewer", [], 2, 512, 12000)
+        denied = httpx.Response(
+            403,
+            json={"errors": [{"code": 10000, "message": "permission denied"}]},
+            request=httpx.Request("POST", worker.api_url),
+        )
+        with patch("workforce.agents.runner.httpx.post", return_value=denied) as provider:
+            with self.assertRaisesRegex(RuntimeError, "fallback is not enabled for this provider"):
+                worker.run("small task", [])
+        provider.assert_called_once()
+
+    def test_primary_response_model_identity_mismatch_is_rejected(self):
+        worker = self.make_worker(12000)
+        invalid = httpx.Response(
+            200,
+            json={
+                "model": "unexpected/model",
+                "usage": {"prompt_tokens": 80, "completion_tokens": 20, "total_tokens": 100},
+                "choices": [{"message": {"role": "assistant", "content": "wrong model"}}],
+            },
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        with patch("workforce.agents.runner.httpx.post", return_value=invalid):
+            with self.assertRaisesRegex(RuntimeError, "unexpected model identity"):
+                worker.run("small task", [])
+
     def test_openrouter_response_without_free_model_identity_is_rejected(self):
         env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
         with patch.dict("os.environ", env, clear=True):
