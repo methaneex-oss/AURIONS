@@ -227,17 +227,43 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertIn("primary HTTP 429", result["route_history"][-1]["primary_failure"])
         self.assertEqual(result["total_tokens"], 100)
 
-    def test_primary_403_never_triggers_openrouter_fallback(self):
+    def test_groq_model_permission_403_uses_only_verified_free_fallback(self):
         env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
         with patch.dict("os.environ", env, clear=True):
             worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
         denied = httpx.Response(
             403,
-            json={"error": {"message": "permission denied", "type": "forbidden"}},
+            json={"error": {"message": "model permission blocked", "type": "permissions_error",
+                            "code": "model_permission_blocked_project"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        fallback = httpx.Response(
+            200,
+            json={
+                "model": "openai/gpt-oss-20b:free",
+                "usage": {"prompt_tokens": 80, "completion_tokens": 20, "total_tokens": 100},
+                "choices": [{"message": {"role": "assistant", "content": "bounded result"}, "finish_reason": "stop"}],
+            },
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        with patch("workforce.agents.runner.httpx.post", side_effect=[denied, fallback]) as provider:
+            result = worker.run("small task", [])
+        self.assertEqual(provider.call_count, 2)
+        self.assertEqual(result["provider"], "openrouter-free-fallback")
+        self.assertEqual(result["model"], "openai/gpt-oss-20b:free")
+        self.assertIn("primary HTTP 403", result["route_history"][-1]["primary_failure"])
+
+    def test_primary_401_never_triggers_openrouter_fallback(self):
+        env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        denied = httpx.Response(
+            401,
+            json={"error": {"message": "invalid API key", "type": "authentication_error"}},
             request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
         )
         with patch("workforce.agents.runner.httpx.post", return_value=denied) as provider:
-            with self.assertRaisesRegex(RuntimeError, "no fallback attempted"):
+            with self.assertRaisesRegex(RuntimeError, "provider rejected request"):
                 worker.run("small task", [])
         provider.assert_called_once()
 
