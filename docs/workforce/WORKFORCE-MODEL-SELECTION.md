@@ -46,7 +46,7 @@ Store only as GitHub Actions repository secrets:
 - `CLOUDFLARE_ACCOUNT_ID` — required with the Cloudflare token.
 - `OPENROUTER_API_KEY` — required for the free-only transient-failure fallback.
 
-The Cloudflare token should have only the Workers AI inference permissions required for the account. Never place credentials in source files, workflow literals, prompts, logs or artifacts. No paid fallback or automatic provider switching is permitted.
+The Cloudflare token should have only the Workers AI inference permissions required for the account. Never place credentials in source files, workflow literals, prompts, logs or artifacts. No paid fallback or unapproved model/provider substitution is permitted; the only automatic route change is the explicitly bounded OpenRouter free fallback for transient failures.
 
 ## Provider request contracts verified
 
