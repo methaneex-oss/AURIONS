@@ -15,6 +15,47 @@ from workforce.agents.runner import TOOLS, provider_error_detail
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
 
 
+def _verify_free_fallback(payload: dict, openrouter_key: str) -> tuple[str, int]:
+    fallback_payload = dict(payload)
+    fallback_payload["model"] = "openrouter/free"
+    if "max_completion_tokens" in fallback_payload:
+        fallback_payload["max_tokens"] = fallback_payload.pop("max_completion_tokens")
+    response = httpx.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {openrouter_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "HTTP-Referer": "https://github.com/methaneex-oss/AURIONS",
+            "X-Title": "AURIONS free-only workforce preflight",
+        },
+        json=fallback_payload,
+        timeout=45,
+    )
+    if response.status_code >= 400:
+        raise ValueError(
+            f"OpenRouter fallback HTTP {response.status_code}: "
+            + provider_error_detail(response, (openrouter_key,))
+        )
+    data = response.json()
+    actual_model = data.get("model") if isinstance(data, dict) else None
+    if not isinstance(actual_model, str) or not actual_model.endswith(":free"):
+        raise ValueError("fallback did not identify a verified :free model")
+    choices = data.get("choices") or []
+    message = choices[0].get("message", {}) if choices else {}
+    calls = message.get("tool_calls") or []
+    usage = data.get("usage") or {}
+    total = usage.get("total_tokens")
+    if len(calls) != 1 or calls[0].get("function", {}).get("name") != "read_file":
+        raise ValueError("fallback did not return exactly one required read_file tool call")
+    args = json.loads(calls[0]["function"].get("arguments") or "{}")
+    if args.get("path") != "README.md":
+        raise ValueError("fallback returned invalid read_file arguments")
+    if not isinstance(total, int) or isinstance(total, bool) or total <= 0:
+        raise ValueError("fallback omitted valid usage.total_tokens")
+    return actual_model, total
+
+
 def main() -> int:
     groq_key = os.environ.get("GROQ_API_KEY", "")
     cf_token = os.environ.get("CLOUDFLARE_API_TOKEN", "")
@@ -77,6 +118,19 @@ def main() -> int:
             failures.append(role)
             continue
 
+        if response.status_code == 403 and provider == "groq":
+            detail = provider_error_detail(response, (token,))
+            try:
+                fallback_model, fallback_tokens = _verify_free_fallback(payload, openrouter_key)
+                print(
+                    f"PASS_WITH_FREE_FALLBACK {role}: Groq HTTP 403 permission block; "
+                    f"OpenRouter/{fallback_model}; function call valid; usage={fallback_tokens} tokens; "
+                    f"primary diagnostic={detail}"
+                )
+            except Exception as exc:
+                print(f"FAIL {role}: Groq HTTP 403: {detail}; free fallback failed: {type(exc).__name__}: {str(exc)[:300]}")
+                failures.append(role)
+            continue
         if response.status_code >= 400:
             detail = provider_error_detail(response, (token,))
             print(f"FAIL {role}: HTTP {response.status_code}: {detail}")
