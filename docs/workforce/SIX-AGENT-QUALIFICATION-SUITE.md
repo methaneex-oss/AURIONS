@@ -35,7 +35,7 @@ free-model identity, and function-call support.
   requests/day without a qualifying credit purchase); failed attempts count toward
   the daily cap. Treat the quota as a hard ceiling and never purchase credits to raise it.
 - No paid model, paid credit, automatic paid upgrade, or non-free router is allowed.
-- Authentication/permission and request-contract errors do not trigger fallback.
+- HTTP 401, Cloudflare HTTP 403 and request-contract errors do not trigger fallback; Groq model-permission HTTP 403 is the explicit exception.
 - The workflow does not print provider response bodies or credentials.
 
 ## Required GitHub Actions secrets
