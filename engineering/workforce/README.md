@@ -2,56 +2,66 @@
 
 This directory contains engineering-workforce infrastructure only. It is not part of the AURIONS cognitive/runtime architecture.
 
-## Implemented foundation
+## Implemented components
 
-- FastAPI control-plane service and PostgreSQL task/checkpoint/audit schema.
-- Mandatory task-contract validation and deterministic task-state transition rules.
-- Expiring worker leases, checkpoint writes and append-only audit events.
-- Six exclusive role identities with one pinned, unique model per role.
-- Mandatory fresh-read governance, EBT-01 and role-induction context on every worker run.
-- Read-only reviewer/tester roles and builder path allowlists.
-- No arbitrary shell tool; the only execution tool runs the fixed workforce test suite.
-- Free-only model registry, provider-specific credentials and per-agent call/token ceilings.
-- Docker Compose deployment definition with a non-root, read-only API container.
+- PostgreSQL task, checkpoint and append-only audit storage.
+- Strict task contracts and deterministic lifecycle transitions.
+- Separate Director, orchestrator and role-scoped worker credentials.
+- Worker identity and role derived from credentials, never caller-supplied IDs.
+- Atomic role-matched task claims, lease generations and expiry fencing.
+- Idempotent checkpoint writes tied to the current live lease, with authorized restoration after recovery.
+- Append-only evidence digests and artifact references bound to each lifecycle gate; Director acceptance must reference the exact integrated evidence record.
+- A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces the contract's absolute deadline while queued, then the earlier of that deadline or the maximum task lifetime measured from first claim.
+- Separate API and supervisor containers with non-root, read-only filesystems.
+- Six distinct pinned model assignments; runner hard ceilings of 100 calls, 32,768 completion tokens/call, 200,000 total tokens and 360 minutes. Every CLI task execution requires a live control-plane lease and atomically reserves/settles per-work-package/per-role token and call budgets in PostgreSQL. Reservations left by a crashed or fenced worker are conservatively charged at their full reserved amount.
+- Paid inference fallback remains disabled.
 
-## Selected model roster
+## Required deployment secrets
 
-See [WORKFORCE-MODEL-SELECTION.md](../../docs/workforce/WORKFORCE-MODEL-SELECTION.md) for rationale and current free-tier limits.
+Provide these values through a protected secret manager or deployment environment; never commit them:
 
-| Role | Provider | Model |
-|---|---|---|
-| Lead builder | Groq direct | `openai/gpt-oss-120b` |
-| Specialist builder | Cloudflare Workers AI | `@cf/google/gemma-4-26b-a4b-it` |
-| Architecture reviewer | Cloudflare Workers AI | `@cf/zai-org/glm-4.7-flash` |
-| Code reviewer | Groq direct | `qwen/qwen3.8-27b` |
-| Negative tester | Groq direct | `openai/gpt-oss-20b` |
-| Integration verifier | Cloudflare Workers AI | `@cf/mistralai/mistral-small-3.1-24b-instruct` |
+- `WORKFORCE_DB_PASSWORD`
+- `DIRECTOR_APPROVAL_TOKEN`
+- `WORKFORCE_ORCHESTRATOR_TOKEN`
+- `WORKFORCE_WORKER_CREDENTIALS_JSON` — JSON mapping worker IDs to an individual token and exactly one role, for example:
+  `{"builder-01":{"token":"...","role":"lead_builder"},"reviewer-01":{"token":"...","role":"code_reviewer"}}`
 
-Each role has a unique model assignment. These assignments are provisional selections, not agent qualifications.
+The API rejects missing credentials. Rotate credentials if exposed. Use distinct random tokens for every actor. The Director token is required to authorize task creation and accept a completed task; the orchestrator token cannot accept work. Worker tokens are role-scoped.
 
-## Required GitHub Actions secrets
+The worker CLI requires `WORKFORCE_CONTROL_PLANE_URL`, `WORKFORCE_TASK_ID` and `WORKFORCE_WORKER_TOKEN`. It claims a role-matched task and starts it under a 15-minute lease; an optional `WORKFORCE_LEASE_TOKEN` resumes an existing lease. Each provider request renews the lease, reserves its token ceiling before sending, and settles reported usage afterward. On success, the CLI writes a report artifact, hashes it and publishes the evidence reference through the control plane. On execution failure it attempts a fail-closed task transition; any unsettled reservation is charged by supervisor recovery.
 
-- `GROQ_API_KEY` for lead builder, code reviewer and negative tester.
-- `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for specialist builder, architecture reviewer and integration verifier.
+Provider secrets remain separate:
+- `GROQ_API_KEY` for the three Groq roles.
+- `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for the three Cloudflare roles.
 
-Set them under repository Settings → Secrets and variables → Actions. Never put keys in source files, workflow YAML, prompts, artifacts or chat. Paid fallback is disabled. Cloudflare's daily free Neuron allowance is shared across the three Cloudflare roles.
+## Deployment
 
-## First supervised run
+Install the workforce Python dependencies on the orchestrator host, build the isolated test image with `docker build -f engineering/workforce/Dockerfile.test-runner -t aurions-workforce-test-runner:local .`, then run `docker compose -f engineering/workforce/compose.yaml up --build` from the repository root after setting the protected environment variables. Set `WORKFORCE_TEST_DOCKER_IMAGE=aurions-workforce-test-runner:local` in the orchestrator environment. The API binds to loopback port 8000. PostgreSQL data is persisted in the named volume. The supervisor runs independently and polls every five seconds. Run the orchestrator from a trusted checkout against `http://127.0.0.1:8000`, and use a separate detached Git worktree at the manifest's exact base SHA as `--workspace`. Never use the same checkout as both the trusted workforce source and candidate workspace. The orchestrator freezes its worker runtime outside the candidate workspace before dispatch and starts candidate-test containers on a private internal Docker network.
 
-The existing `.github/workflows/workforce-first-long-run.yml` still contains a prewritten WF-01 workforce-infrastructure task. It is manually gated and must not be dispatched as the user's first task. Replace its task instructions with the Director-approved task contract before execution. Its current pipeline is finite and is not a persistent overnight supervisor.
+Apply new SQL files in `migrations/` to an existing database in lexical order (including `003_immutable_evidence.sql`, `004_agent_budget_ledger.sql`, `005_absolute_task_deadlines.sql` and `006_start_deadline_on_first_claim.sql`). The initial Postgres image initialization applies migrations only on an empty data volume; existing deployments must apply newly added migrations explicitly.
 
-## Local deployment
+## Six-role orchestration
 
-Set WORKFORCE_DB_PASSWORD and DIRECTOR_APPROVAL_TOKEN through a protected environment. Do not commit .env files or credentials.
+The CLI coordinates all six roles in one pinned workspace, sequentially: lead builder, specialist builder, candidate snapshot/tests, three independent read-only reviews, then integration verification. Builder write scopes must be disjoint. Reviewers receive the frozen candidate manifest and test evidence. The integration verifier receives all review reports. The orchestrator never commits, pushes, merges or accepts the work.
 
-Run: `docker compose -f compose.yaml up --build`
+1. Start the API and supervisor with the Compose deployment above.
+2. Create a Director-approved JSON work-package manifest from `work-package.template.json`. Replace every placeholder, set the exact base commit SHA, provide all six role task instructions, and define disjoint builder path allowlists.
+3. Configure `WORKFORCE_CONTROL_PLANE_URL`, `DIRECTOR_APPROVAL_TOKEN`, `WORKFORCE_ORCHESTRATOR_TOKEN`, `WORKFORCE_WORKER_CREDENTIALS_JSON`, and the provider credentials in the orchestrator's protected environment.
+4. Run `PYTHONPATH=engineering/workforce/src python -m workforce.orchestrator --manifest /secure/path/work-package.json --workspace .`.
+5. Inspect the candidate files and `engineering/workforce/.workforce-artifacts/`. The final task stops at `AWAITING_DIRECTOR`; it is not accepted automatically.
 
-The API listens on 127.0.0.1:8000; health check: GET /health.
+The worker process receives only its own role token and its pinned provider credential. It has no test-execution tool: candidate-controlled tests run only after both builders finish, in the isolated Docker test environment. Candidate tests run in a read-only-root Docker container with a writable snapshot mount, no Linux capabilities, resource limits, and an internal-only network connected only to a disposable PostgreSQL container. The test container receives ephemeral test-only actor/database credentials; provider, worker, Director, orchestrator and production database credentials are never passed into it. The trusted test image is built from `engineering/workforce/Dockerfile.test-runner` before provider inference; its Python base is pinned by digest and its installed toolchain is limited to Python/pytest and C/C++ build tools (CMake, CTest and Ninja). Do not add an unreviewed test executable or mount the Docker socket into candidate containers.
 
-## Explicit limitations
+The orchestrator is a bounded sequential dispatcher, not a distributed queue or parallel scheduler. Queued tasks do not consume their execution-duration budget until first claim; the absolute contract deadline still applies while queued. An unclaimed task is also failed after a 10-minute dispatch TTL so an orchestrator crash cannot leave an orphaned task indefinitely. The manifest's `test_paths` declares the source/test inputs copied into an isolated test snapshot. Optional `test_commands` are explicit argument arrays (never shell strings) and are limited to Python unittest/pytest/compileall, CMake configure/build, CTest and Ninja. Candidate-controlled test code runs in a read-only-root Docker container with a writable snapshot mount, no Linux capabilities, resource limits, and an internal-only network connected solely to a disposable PostgreSQL container. It receives ephemeral test-only actor/database credentials; provider, worker, Director, orchestrator and production database credentials are never passed into the test container. The image is built from `engineering/workforce/Dockerfile.test-runner` before any provider inference step. The control plane persists tasks, leases, checkpoints, evidence and per-work-package/per-role budgets. A new run ID creates new task records but consumes the same work-package budget when the same persistent database is used. If an orchestration process is interrupted, the independent supervisor recovers expired worker leases. Re-run the exact same manifest with the same `run_id`, workspace and persistent PostgreSQL database. The durable journal under `.workforce-artifacts` reconciles role tasks and append-only evidence, skips completed agents, reuses the previously passing test report, and safely replays lifecycle gates only when the original evidence hashes match. If a worker lease is still active, wait for the supervisor to recover it before restarting. Any missing or mismatched journal, report or evidence causes a fail-closed stop. This restart recovery requires the persistent Compose deployment; the GitHub workflow uses ephemeral storage and cannot resume after its hosted runner is destroyed. Preserve the evidence folder and journal.
 
-This is an initial implementation candidate, not a production-ready autonomous workforce. The runner operates within GitHub Actions job isolation and returns candidate artifacts; it does not yet provide a persistent cloud worker supervisor, GitHub write broker, full API authentication, deployment/backup hardening, or production-grade lease recovery. Do not connect repository write credentials or launch AURIONS runtime implementation until those controls are independently tested and authorized.
+For a supervised GitHub test run, use the **Manually approved six-role workforce run** workflow. First commit the code baseline. Then create a separate commit containing only the filled work-package manifest; set its `base_commit_sha` to the exact code-baseline commit immediately before the manifest-only commit. Select the branch containing that manifest commit, provide its committed manifest path, and set `confirm_run=true`. Before this PR is merged, the same workflow can be triggered on `feat/workforce-control-plane-hardening` by committing only `engineering/workforce/work-package.json` with a commit message containing the exact marker `[RUN-WORKFORCE]`. That marker is an explicit authorization to make provider inference calls; ordinary pushes do not run the job. The workflow creates an isolated Git worktree at the baseline SHA, so the manifest never needs to contain its own commit hash. The workflow generates ephemeral Director, orchestrator and six worker credentials inside the job; the orchestrator creates a separate internal-network PostgreSQL test database and ephemeral test-only actors. The workflow requires only the provider secrets `GROQ_API_KEY`, `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. It starts an isolated PostgreSQL control plane and a separate disposable integration-test database, runs all six roles, and uploads the candidate patch and Director evidence packet. It has read-only repository permissions and does not commit or merge. **This GitHub workflow's database is ephemeral**: its ledger is for one supervised run and is destroyed afterward. Use the Compose deployment with its persistent PostgreSQL volume for persistent local operation.
 
-## Status
+## Verification
 
-WF-01/WF-02 foundation code is present. The model roster is selected but not yet executed or qualified. No AURIONS runtime implementation or merge is authorized.
+The workforce test workflow starts a disposable PostgreSQL 17 service, applies every migration, compiles the source and runs the full unittest suite. No provider calls are made by this CI workflow.
+
+## Explicit status and limitations
+
+The control-plane security, evidence, recovery and self-claiming worker CLI are implementation candidates until the PostgreSQL integration suite and independent review pass. Evidence references record hashes and locations; an independent verifier must still retrieve each artifact and confirm its bytes match the recorded digest. Provider connectivity and role qualification are separate gates: configured model assignments do not prove that credentials work or that agents are competent. The PostgreSQL ledger enforces cumulative per-role budgets across tasks and retries in a work package; local process ceilings are an additional guard. Provider-side quota reconciliation remains separate because providers expose different accounting and shared daily limits. No persistent multi-agent run, GitHub write broker or AURIONS runtime implementation is authorized by this infrastructure work.
+
+The first-run workflow remains dormant. No merge to `main`, paid fallback, production activation or AURIONS runtime implementation is authorized.

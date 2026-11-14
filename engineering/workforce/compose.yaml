@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17-alpine
+    image: postgres:17-alpine@sha256:d3244e8ce3f165ee3c93d9c4a4b1d0fe48b3a89e2287b717fdcbbde92d405065
     environment:
       POSTGRES_DB: workforce
       POSTGRES_USER: workforce
@@ -19,8 +19,26 @@ services:
     environment:
       DATABASE_URL: postgresql://workforce:${WORKFORCE_DB_PASSWORD}@db:5432/workforce
       DIRECTOR_APPROVAL_TOKEN: ${DIRECTOR_APPROVAL_TOKEN:?Set DIRECTOR_APPROVAL_TOKEN in the deployment secret store}
+      WORKFORCE_ORCHESTRATOR_TOKEN: ${WORKFORCE_ORCHESTRATOR_TOKEN:?Set WORKFORCE_ORCHESTRATOR_TOKEN in the deployment secret store}
+      WORKFORCE_WORKER_CREDENTIALS_JSON: ${WORKFORCE_WORKER_CREDENTIALS_JSON:?Set role-scoped worker credentials in the deployment secret store}
     ports:
       - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    restart: unless-stopped
+  supervisor:
+    build: .
+    command: ["python", "-m", "workforce.supervisor"]
+    environment:
+      DATABASE_URL: postgresql://workforce:${WORKFORCE_DB_PASSWORD}@db:5432/workforce
+      WORKFORCE_SUPERVISOR_INTERVAL_SECONDS: "5"
     depends_on:
       db:
         condition: service_healthy
