@@ -51,10 +51,11 @@ The Cloudflare token should have only the Workers AI inference permissions requi
 
 The worker and preflight use provider-specific authentication but the OpenAI-compatible Chat Completions request shape. Both send `Content-Type: application/json` and `Accept: application/json` so Cloudflare returns structured JSON errors where supported:
 
-| Provider | Endpoint | Authentication | Completion limit | Tool calling |
+| Model assignment | Endpoint | Authentication | Completion limit | Tool calling |
 |---|---|---|---|---|
-| Groq | `POST https://api.groq.com/openai/v1/chat/completions` | `Authorization: Bearer GROQ_API_KEY` | `max_completion_tokens` | `tools` with `tool_choice`; Groq documents local function calling |
-| Cloudflare Workers AI | `POST https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions` | `Authorization: Bearer CLOUDFLARE_API_TOKEN`; token requires Account > Workers AI > Read | `max_completion_tokens`; `max_tokens` is deprecated | GLM-4.7-Flash documents function calling and `tool_choice: required` |
+| Groq — all three pinned models | `POST https://api.groq.com/openai/v1/chat/completions` | `Authorization: Bearer GROQ_API_KEY` | `max_completion_tokens` | `tools` with `tool_choice`; all three pinned models document local function calling |
+| Cloudflare — Gemma 4 26B and GLM-4.7-Flash | `POST https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions` | `Authorization: Bearer CLOUDFLARE_API_TOKEN`; token requires Account > Workers AI > Read | `max_completion_tokens`; model pages mark `max_tokens` deprecated | Both model pages document function calling; GLM explicitly documents `tool_choice: required` |
+| Cloudflare — Mistral Small 3.1 24B | Same account-scoped endpoint | Same token permission | `max_tokens` as listed by its current model page | Model page documents function calling and tool-call output |
 
 Cloudflare's standard API error envelope uses an `errors` array containing `code` and `message`; some Cloudflare-generated errors use RFC 9457 problem details. Diagnostics must parse only bounded, allowlisted fields from these formats, redact credentials, and never dump arbitrary response bodies. Groq uses an OpenAI-style `error` object with `message` and `type`; its documented rate-limit headers distinguish daily request limits from per-minute token limits.
 
