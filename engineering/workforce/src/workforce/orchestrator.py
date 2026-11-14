@@ -452,7 +452,7 @@ def _run_candidate_tests(
             "--env", "POSTGRES_USER=workforce",
             "--env", f"POSTGRES_PASSWORD={password}",
             "--env", "POSTGRES_DB=workforce_test",
-            "postgres:17-alpine",
+            "postgres:17-alpine@sha256:d3244e8ce3f165ee3c93d9c4a4b1d0fe48b3a89e2287b717fdcbbde92d405065",
         ])
         ready = False
         deadline = time.monotonic() + min(60, max(5, remaining_seconds() - 5))
