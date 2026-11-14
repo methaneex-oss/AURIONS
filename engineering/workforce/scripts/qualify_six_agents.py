@@ -82,7 +82,7 @@ def _post(url: str, token: str, payload: dict[str, Any], openrouter: bool = Fals
         for name, value in os.environ.items():
             if value and (name.endswith("_KEY") or name.endswith("_TOKEN")):
                 rendered = rendered.replace(value, "[REDACTED]")
-        retryable = exc.code in {403, 429} or exc.code >= 500
+        retryable = exc.code == 429 or exc.code >= 500
         raise ProviderFailure(f"HTTP {exc.code}: {rendered or 'no safe provider diagnostics'}", retryable=retryable) from None
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         raise ProviderFailure(f"network {type(exc).__name__}", retryable=True) from None
