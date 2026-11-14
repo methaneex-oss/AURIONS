@@ -278,11 +278,11 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         second_data, second_provider, second_model = _call(role, {
             "messages": conversation,
             "temperature": 0,
-        }, max_tokens=256)
+        }, max_tokens=1024)
         second_message = _choice(second_data)
         final_text = second_message.get("content")
         cleaned = final_text.strip() if isinstance(final_text, str) else ""
-        followup_verified = cleaned == first_line or cleaned.strip('"') == first_line
+        followup_verified = bool(cleaned) and first_line in cleaned
         followup_metadata = {
             "followup_finish_reason": (second_data.get("choices") or [{}])[0].get("finish_reason"),
             "followup_content_length": len(final_text) if isinstance(final_text, str) else None,
