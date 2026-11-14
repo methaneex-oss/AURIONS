@@ -143,6 +143,9 @@ jobs:
           changed = subprocess.check_output(
               ["git", "diff", "--name-only", base_sha, "HEAD"], text=True
           ).splitlines()
+          # The workflow itself may be updated in this same reviewed branch.
+          # Candidate source changes must still be limited to the committed manifest.
+          changed = [path for path in changed if path != ".github/workflows/workforce-orchestrated-run.yml"]
           if changed != [manifest_rel]:
               raise SystemExit("the work-package commit must change only the manifest; base SHA must identify the exact clean code baseline")
           _worker_tokens()
