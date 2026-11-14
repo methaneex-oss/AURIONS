@@ -84,6 +84,7 @@ class ProviderPreflightTests(unittest.TestCase):
         "GROQ_API_KEY": "test-groq-secret",
         "CLOUDFLARE_API_TOKEN": "test-cloudflare-secret",
         "CLOUDFLARE_ACCOUNT_ID": "test-account",
+        "OPENROUTER_API_KEY": "test-openrouter",
     }, clear=True)
     @patch("workforce.provider_preflight.httpx.post")
     def test_rate_limited_preflight_preserves_safe_headers_and_redacts_credentials(self, post):
@@ -115,6 +116,7 @@ class ProviderPreflightTests(unittest.TestCase):
         "GROQ_API_KEY": "test-groq",
         "CLOUDFLARE_API_TOKEN": "test-cloudflare-secret",
         "CLOUDFLARE_ACCOUNT_ID": "test-account",
+        "OPENROUTER_API_KEY": "test-openrouter",
     }, clear=True)
     @patch("workforce.provider_preflight.httpx.post")
     def test_cloudflare_errors_envelope_is_reported_without_copying_untrusted_fields(self, post):
