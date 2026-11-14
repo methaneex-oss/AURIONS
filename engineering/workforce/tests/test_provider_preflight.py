@@ -58,6 +58,38 @@ class ProviderPreflightTests(unittest.TestCase):
         "OPENROUTER_API_KEY": "test-openrouter",
     }, clear=True)
     @patch("workforce.provider_preflight.httpx.post")
+    def test_groq_permission_403_uses_verified_free_fallback(self, post):
+        denied = httpx.Response(
+            403,
+            json={"error": {"message": "model blocked", "type": "permissions_error",
+                            "code": "model_permission_blocked_project"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        free_response = self.response("openrouter/free", "openai/gpt-oss-20b:free")
+        post.side_effect = [
+            denied,
+            free_response,
+            *[self.response(profile["model"]) for profile in list(ROLE_MODEL_ASSIGNMENTS.values())[1:]],
+            self.response("openrouter/free", "openai/gpt-oss-20b:free"),
+        ]
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(main(), 0)
+        self.assertEqual(post.call_count, 8)
+        fallback_payload = post.call_args_list[1].kwargs["json"]
+        self.assertEqual(fallback_payload["model"], "openrouter/free")
+        self.assertIn("max_tokens", fallback_payload)
+        self.assertNotIn("max_completion_tokens", fallback_payload)
+        self.assertIn("PASS_WITH_FREE_FALLBACK lead_builder", output.getvalue())
+        self.assertIn("model_permission_blocked_project", output.getvalue())
+
+    @patch.dict(os.environ, {
+        "GROQ_API_KEY": "test-groq",
+        "CLOUDFLARE_API_TOKEN": "test-cloudflare",
+        "CLOUDFLARE_ACCOUNT_ID": "test-account",
+        "OPENROUTER_API_KEY": "test-openrouter",
+    }, clear=True)
+    @patch("workforce.provider_preflight.httpx.post")
     def test_one_rejected_model_blocks_preflight(self, post):
         post.side_effect = [
             httpx.Response(
