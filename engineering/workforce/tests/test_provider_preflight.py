@@ -110,30 +110,60 @@ class ProviderPreflightTests(unittest.TestCase):
         "OPENROUTER_API_KEY": "test-openrouter",
     }, clear=True)
     @patch("workforce.provider_preflight.httpx.post")
-    def test_rate_limited_preflight_preserves_safe_headers_and_redacts_credentials(self, post):
+    def test_rate_limited_preflight_uses_free_fallback_and_preserves_safe_diagnostics(self, post):
         limited = httpx.Response(
             429,
             json={"error": {"message": "quota limited", "type": "rate_limit_error",
                             "code": "requests_per_day", "private": "do not copy"}},
             headers={"retry-after": "3600", "x-ratelimit-remaining-requests": "0",
                      "authorization": "Bearer test-groq-secret", "x-private": "hidden"},
-            request=httpx.Request("POST", "https://provider.example/chat/completions"),
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
         )
-        post.side_effect = [limited] + [
+        post.side_effect = [
+            limited,
+            self.response("openrouter/free", "openai/gpt-oss-20b:free"),
             *[self.response(profile["model"]) for profile in list(ROLE_MODEL_ASSIGNMENTS.values())[1:]],
             self.response("openrouter/free", "openai/gpt-oss-20b:free"),
         ]
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
-            self.assertEqual(main(), 1)
+            self.assertEqual(main(), 0)
         # First role is lead_builder (Groq); safe limit evidence is retained, credentials are not.
-        self.assertEqual(post.call_count, 7)
+        self.assertEqual(post.call_count, 8)
+        self.assertIn("PASS_WITH_FREE_FALLBACK lead_builder", output.getvalue())
         self.assertIn('"retry-after": "3600"', output.getvalue())
         self.assertIn('"x-ratelimit-remaining-requests": "0"', output.getvalue())
         self.assertIn("requests_per_day", output.getvalue())
         self.assertNotIn("test-groq-secret", output.getvalue())
         self.assertNotIn("do not copy", output.getvalue())
         self.assertNotIn("hidden", output.getvalue())
+
+    @patch.dict(os.environ, {
+        "GROQ_API_KEY": "test-groq",
+        "CLOUDFLARE_API_TOKEN": "test-cloudflare",
+        "CLOUDFLARE_ACCOUNT_ID": "test-account",
+        "OPENROUTER_API_KEY": "test-openrouter",
+    }, clear=True)
+    @patch("workforce.provider_preflight.httpx.post")
+    def test_cloudflare_403_does_not_trigger_free_fallback(self, post):
+        denied = httpx.Response(
+            403,
+            json={"error": {"message": "permission denied", "type": "forbidden"}},
+            request=httpx.Request("POST", "https://api.cloudflare.com/client/v4/accounts/test-account/ai/v1/chat/completions"),
+        )
+        profiles = list(ROLE_MODEL_ASSIGNMENTS.values())
+        post.side_effect = [
+            self.response(profiles[0]["model"]),
+            denied,
+            *[self.response(profile["model"]) for profile in profiles[2:]],
+            self.response("openrouter/free", "openai/gpt-oss-20b:free"),
+        ]
+        self.assertEqual(main(), 1)
+        self.assertEqual(post.call_count, 7)
+        self.assertNotEqual(
+            post.call_args_list[2].args[0],
+            "https://openrouter.ai/api/v1/chat/completions",
+        )
 
     @patch.dict(os.environ, {}, clear=True)
     def test_missing_credentials_blocks_without_provider_calls(self):
