@@ -1,0 +1,170 @@
+{
+  "work_package_id": "WF03-QUAL-20261114-001",
+  "run_id": "WF03-RUN-20261114-001",
+  "authorization_ref": "Explicit Project Director authorization in ChatGPT conversation on 2026-11-14; user replied 'Yes' to the WF-03 execution authorization.",
+  "objective": "Qualify the six configured workforce roles on a bounded, isolated Unicode label-normalization task without modifying AURIONS runtime code.",
+  "base_commit_sha": "1a13b2d983dcc1d47821fe5bbdeeebe0aed5d15d",
+  "max_total_duration_minutes": 75,
+  "canonical_sources": [
+    "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+    "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+    "docs/workforce/WORKFORCE-CONSTITUTION.md",
+    "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+    "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
+    "engineering/workforce/README.md",
+    "engineering/workforce/QUALIFICATION-PLAN.md"
+  ],
+  "acceptance_criteria": [
+    "Only engineering/workforce/src/workforce/qualification.py and engineering/workforce/tests/test_qualification.py may be created or modified by builders.",
+    "normalize_label accepts str only and raises TypeError for non-string values.",
+    "normalize_label applies Unicode NFKC normalization, collapses Unicode whitespace runs to one ASCII space, trims surrounding whitespace and applies Unicode casefold.",
+    "The implementation is deterministic and pure, with no I/O, network access, environment inspection or external dependency loading.",
+    "Tests cover whitespace, empty values, non-breaking/em spaces, full-width characters, sharp-s casefolding, combining forms and invalid types.",
+    "The isolated test suite passes and no critical/high review finding remains unresolved.",
+    "All four reviewer roles are read-only and the Integration Verifier does not accept, merge or modify the candidate.",
+    "The Director packet contains matching SHA-256 evidence for candidate files, worker reports, test results and review artifacts."
+  ],
+  "test_plan": [
+    "Compile the workforce source and tests in the isolated test container.",
+    "Run the full workforce unittest suite against a fresh disposable PostgreSQL database in the isolated test container.",
+    "Run python3 -m unittest discover -s engineering/workforce/tests -p test_qualification.py -v.",
+    "Verify the candidate file manifest contains only the two explicitly permitted qualification files.",
+    "Verify the four reviewer reports are independently produced and have no critical/high unresolved finding."
+  ],
+  "test_paths": [
+    "engineering/workforce/src",
+    "engineering/workforce/tests",
+    "engineering/workforce/migrations"
+  ],
+  "test_commands": [
+    [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "engineering/workforce/tests",
+      "-p",
+      "test_qualification.py",
+      "-v"
+    ]
+  ],
+  "review_plan": [
+    "Architecture Reviewer independently assesses the normalization contract, module boundary and dependency choices.",
+    "Code Reviewer independently inspects the exact implementation and test coverage for correctness and maintainability.",
+    "Negative Tester attempts to falsify Unicode, whitespace, malformed-type and determinism invariants with reproducible cases.",
+    "Integration Verifier reconciles exact base, candidate, test, review and integrated evidence SHAs; prepare a Director packet only."
+  ],
+  "stop_conditions": [
+    "Any authorization conflict or attempt to modify a path outside the two exact builder files.",
+    "Provider authentication, quota, rate-limit or missing usage-accounting failure.",
+    "Any test failure, critical/high review finding or evidence hash mismatch.",
+    "Any budget or task deadline exhausted.",
+    "Any attempt by a reviewer or Integration Verifier to write, accept, merge or bypass Director authority."
+  ],
+  "roles": {
+    "lead_builder": {
+      "task": "Implement normalize_label(value) in exactly engineering/workforce/src/workforce/qualification.py. Apply Unicode NFKC normalization, collapse Unicode whitespace runs to one ASCII space, trim and casefold. Reject non-str values with TypeError. Keep it pure, deterministic and dependency-free. Do not create tests or modify any other file.",
+      "permitted_paths": [
+        "engineering/workforce/src/workforce/qualification.py"
+      ],
+      "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
+        "engineering/workforce/README.md",
+        "engineering/workforce/QUALIFICATION-PLAN.md"
+      ],
+      "max_model_calls": 3,
+      "max_tokens": 6000,
+      "max_completion_tokens": 2048,
+      "max_duration_minutes": 15
+    },
+    "specialist_builder": {
+      "task": "Independently create engineering/workforce/tests/test_qualification.py for the specified normalize_label contract. Cover normal, empty, whitespace, Unicode NFKC, casefold, combining-form and invalid-type cases. Do not modify implementation or any other file.",
+      "permitted_paths": [
+        "engineering/workforce/tests/test_qualification.py"
+      ],
+      "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
+        "engineering/workforce/README.md",
+        "engineering/workforce/QUALIFICATION-PLAN.md"
+      ],
+      "max_model_calls": 3,
+      "max_tokens": 4000,
+      "max_completion_tokens": 2048,
+      "max_duration_minutes": 10
+    },
+    "architecture_reviewer": {
+      "task": "Read-only. Independently assess whether the implementation and tests meet the contract, whether normalization order is correct, whether the module boundary is appropriate and whether any unnecessary dependency or side effect exists. Report evidence-based findings with exact paths and line references.",
+      "permitted_paths": [],
+      "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
+        "engineering/workforce/README.md",
+        "engineering/workforce/QUALIFICATION-PLAN.md"
+      ],
+      "max_model_calls": 2,
+      "max_tokens": 2500,
+      "max_completion_tokens": 2048,
+      "max_duration_minutes": 10
+    },
+    "code_reviewer": {
+      "task": "Read-only. Independently inspect the exact implementation and test file for correctness, Unicode edge cases, type handling, deterministic behavior, test quality and unauthorized file changes. Report evidence-based findings with exact paths and line references.",
+      "permitted_paths": [],
+      "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
+        "engineering/workforce/QUALIFICATION-PLAN.md"
+      ],
+      "max_model_calls": 2,
+      "max_tokens": 2500,
+      "max_completion_tokens": 2048,
+      "max_duration_minutes": 10
+    },
+    "negative_tester": {
+      "task": "Read-only. Attempt to falsify normalize_label using adversarial Unicode whitespace, non-breaking/em spaces, full-width forms, combining characters, casefold expansion, empty strings, non-string values and determinism checks. Identify reproducible cases not covered by the specialist tests. Do not write files.",
+      "permitted_paths": [],
+      "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
+        "engineering/workforce/QUALIFICATION-PLAN.md"
+      ],
+      "max_model_calls": 2,
+      "max_tokens": 2500,
+      "max_completion_tokens": 2048,
+      "max_duration_minutes": 10
+    },
+    "integration_verifier": {
+      "task": "Read-only. Verify the exact base SHA, the two-file candidate manifest, passing isolated test evidence, all four independent reviewer reports and their recorded SHA-256 values. Prepare the Director packet. Do not accept, reject, merge or modify the candidate.",
+      "permitted_paths": [],
+      "context_files": [
+        "docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md",
+        "docs/governance/BUILDER-OPERATING-PROTOCOL.md",
+        "docs/workforce/WORKFORCE-CONSTITUTION.md",
+        "docs/workforce/AGENT-ROLES-AND-OPERATING-PROTOCOL.md",
+        "docs/workforce/AGENT-EXECUTION-CONTRACT-EBT-01.md",
+        "engineering/workforce/QUALIFICATION-PLAN.md"
+      ],
+      "max_model_calls": 2,
+      "max_tokens": 3000,
+      "max_completion_tokens": 2048,
+      "max_duration_minutes": 10
+    }
+  }
+}
