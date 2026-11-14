@@ -18,9 +18,6 @@ on:
         required: true
         default: false
         type: boolean
-        required: true
-        default: false
-        type: boolean
 
 permissions:
   contents: read
