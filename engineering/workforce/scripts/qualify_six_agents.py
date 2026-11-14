@@ -349,7 +349,7 @@ def main() -> int:
     summary = {
         "suite": "AURIONS six-agent read-only qualification",
         "training": "simulation only; no model weights or persistent learning changed",
-        "fallback_policy": "OpenRouter openrouter/free after primary HTTP 403, 429, 5xx, or network failure; 401 and request-contract errors stop; record every primary failure; require returned :free model identity",
+        "fallback_policy": "OpenRouter openrouter/free only after primary HTTP 429, 5xx, or network failure; 401/403 permission errors and request-contract errors stop; record every primary failure; require returned :free model identity",
         "checks_per_role": ["connectivity", "text_response", "reasoning_training_simulation", "repository_tool_access"],
         "results": results,
         "passed": sum(item["status"] in {"PASS", "PASS_WITH_FREE_FALLBACK"} for item in results),
