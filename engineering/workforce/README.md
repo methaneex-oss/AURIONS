@@ -14,7 +14,7 @@ This directory contains engineering-workforce infrastructure only. It is not par
 - A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces the contract's absolute deadline while queued, then the earlier of that deadline or the maximum task lifetime measured from first claim.
 - Separate API and supervisor containers with non-root, read-only filesystems.
 - Six distinct pinned model assignments; runner hard ceilings of 100 calls, 32,768 completion tokens/call, 200,000 total tokens and 360 minutes. Every CLI task execution requires a live control-plane lease and atomically reserves/settles per-work-package/per-role token and call budgets in PostgreSQL. Reservations left by a crashed or fenced worker are conservatively charged at their full reserved amount.
-- Paid inference fallback remains disabled.
+- Paid inference fallback remains disabled. OpenRouter `openrouter/free` is the only permitted free fallback, and only for primary HTTP 429, HTTP 5xx or network failures. HTTP 401/403 and request-contract failures stop without fallback. The runtime verifies the returned model ID ends in `:free`, records the actual route and primary failure, and requires valid usage accounting. Free routing is dynamic and capped (currently 20 RPM / 50 RPD); send public repository context only and never secrets or confidential material.
 
 ## Required deployment secrets
 
@@ -33,6 +33,7 @@ The worker CLI requires `WORKFORCE_CONTROL_PLANE_URL`, `WORKFORCE_TASK_ID` and `
 Provider secrets remain separate:
 - `GROQ_API_KEY` for the three Groq roles.
 - `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for the three Cloudflare roles.
+- `OPENROUTER_API_KEY` for transient-failure free-only fallback.
 
 ## Deployment
 
