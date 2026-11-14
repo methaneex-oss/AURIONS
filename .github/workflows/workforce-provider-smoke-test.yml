@@ -54,6 +54,7 @@ jobs:
           import urllib.request
 
           from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
+          from workforce.agents.runner import TOOLS
 
           roles = [
               (role, profile["provider"], profile["model"])
@@ -81,7 +82,12 @@ jobs:
                       "model": model,
                       "messages": [{"role": "user", "content": "Reply with exactly OK."}],
                       "max_completion_tokens": 12,
-                      "temperature": 0,
+                      "temperature": 0.2,
+                      "tools": TOOLS,
+                      "tool_choice": "auto",
+                  }
+                  if model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
+                      payload["parallel_tool_calls"] = False
                   }
               else:
                   url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account}/ai/v1/chat/completions"
@@ -90,7 +96,9 @@ jobs:
                       "model": model,
                       "messages": [{"role": "user", "content": "Reply with exactly OK."}],
                       "max_tokens": 12,
-                      "temperature": 0,
+                      "temperature": 0.2,
+                      "tools": TOOLS,
+                      "tool_choice": "auto",
                   }
 
               request = urllib.request.Request(
