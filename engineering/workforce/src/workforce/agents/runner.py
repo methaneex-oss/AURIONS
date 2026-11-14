@@ -111,6 +111,46 @@ def safe_path(root: Path, relative: str) -> Path:
     return candidate
 
 
+PROVIDER_DIAGNOSTIC_HEADERS = (
+    "retry-after",
+    "x-ratelimit-limit-requests",
+    "x-ratelimit-limit-tokens",
+    "x-ratelimit-remaining-requests",
+    "x-ratelimit-remaining-tokens",
+    "x-ratelimit-reset-requests",
+    "x-ratelimit-reset-tokens",
+)
+
+
+def provider_error_detail(response: httpx.Response, secrets: tuple[str, ...] = ()) -> str:
+    """Return bounded, allowlisted provider diagnostics without request credentials."""
+    try:
+        payload = response.json()
+    except (ValueError, json.JSONDecodeError):
+        payload = {}
+    error = payload.get("error", payload) if isinstance(payload, dict) else {}
+    safe_fields = {
+        key: error[key]
+        for key in ("message", "type", "code", "param")
+        if isinstance(error, dict)
+        and isinstance(error.get(key), (str, int, float, bool))
+    }
+    safe_headers = {
+        key: response.headers[key]
+        for key in PROVIDER_DIAGNOSTIC_HEADERS
+        if key in response.headers
+    }
+    detail = {
+        "error": safe_fields,
+        "rate_limit_headers": safe_headers,
+    }
+    rendered = json.dumps(detail, ensure_ascii=True, separators=(",", ":"))
+    for secret in secrets:
+        if secret:
+            rendered = rendered.replace(secret, "[REDACTED]")
+    return rendered[:1600] if safe_fields or safe_headers else "no structured provider error detail"
+
+
 class Worker:
     def __init__(self, workspace: Path, role: str, permitted_paths: list[str], max_calls: int, max_tokens: int, max_total_tokens: int, max_duration_minutes: int = 120):
         self.workspace = workspace.resolve()
@@ -377,29 +417,15 @@ class Worker:
 
             response = httpx.post(self.api_url, headers=headers, json=payload, timeout=max(1, min(120, remaining_seconds)))
             if response.status_code >= 400:
+                detail = provider_error_detail(
+                    response,
+                    (self.api_key, self.worker_token, self.lease_token),
+                )
                 if response.status_code == 429 or response.status_code >= 500:
                     raise RuntimeError(
-                        f"provider unavailable or rate limited (HTTP {response.status_code}); "
+                        f"provider unavailable or rate limited (HTTP {response.status_code}): {detail}; "
                         "stopped without paid fallback"
                     )
-                # Preserve the provider's structured validation message. The prior
-                # raise_for_status() discarded this body, making HTTP 400 failures
-                # impossible to diagnose from the immutable run artifact.
-                try:
-                    error_payload = response.json()
-                except ValueError:
-                    error_payload = {}
-                error_object = error_payload.get("error", error_payload) if isinstance(error_payload, dict) else {}
-                safe_fields = {
-                    key: error_object[key]
-                    for key in ("message", "type", "code", "param")
-                    if isinstance(error_object, dict)
-                    and isinstance(error_object.get(key), (str, int, float, bool))
-                }
-                detail = json.dumps(safe_fields, ensure_ascii=True)[:1600] if safe_fields else "no structured provider error detail"
-                for secret in (self.api_key, self.worker_token, self.lease_token):
-                    if secret:
-                        detail = detail.replace(secret, "[REDACTED]")
                 raise RuntimeError(
                     f"provider rejected request (HTTP {response.status_code}): {detail}"
                 )
