@@ -50,107 +50,11 @@ jobs:
           python-version: "3.12"
       - name: Install workforce dependencies
         run: python -m pip install -r engineering/workforce/requirements.txt
-      - name: Validate all six pinned model endpoints
+      - name: Live preflight all six pinned model endpoints
         env:
           PYTHONPATH: engineering/workforce/src
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          python - <<'PY'
-          import json
-          import os
-          import sys
-          import urllib.error
-          import urllib.request
-
-          from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
-          from workforce.agents.runner import TOOLS
-
-          roles = [
-              (role, profile["provider"], profile["model"])
-              for role, profile in ROLE_MODEL_ASSIGNMENTS.items()
-          ]
-
-          groq_key = os.environ.get("GROQ_API_KEY", "")
-          cf_token = os.environ.get("CLOUDFLARE_API_TOKEN", "")
-          cf_account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
-          missing = [name for name, value in (
-              ("GROQ_API_KEY", groq_key),
-              ("CLOUDFLARE_API_TOKEN", cf_token),
-              ("CLOUDFLARE_ACCOUNT_ID", cf_account),
-          ) if not value]
-          if missing:
-              print("FAIL: missing GitHub Actions secrets: " + ", ".join(missing))
-              sys.exit(1)
-
-          failures = []
-          for role, provider, model in roles:
-              if provider == "groq":
-                  url = "https://api.groq.com/openai/v1/chat/completions"
-                  token = groq_key
-                  payload = {
-                      "model": model,
-                      "messages": [{"role": "user", "content": "Reply with exactly OK."}],
-                      "max_completion_tokens": 12,
-                      "temperature": 0.2,
-                      "tools": TOOLS,
-                      "tool_choice": "auto",
-                  }
-                  if model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
-                      payload["parallel_tool_calls"] = False
-              else:
-                  url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account}/ai/v1/chat/completions"
-                  token = cf_token
-                  payload = {
-                      "model": model,
-                      "messages": [{"role": "user", "content": "Reply with exactly OK."}],
-                      "max_tokens": 12,
-                      "temperature": 0.2,
-                      "tools": TOOLS,
-                      "tool_choice": "auto",
-                  }
-
-              request = urllib.request.Request(
-                  url,
-                  data=json.dumps(payload).encode("utf-8"),
-                  headers={
-                      "Authorization": f"Bearer {token}",
-                      "Content-Type": "application/json",
-                  },
-                  method="POST",
-              )
-              try:
-                  with urllib.request.urlopen(request, timeout=60) as response:
-                      data = json.loads(response.read().decode("utf-8"))
-                      choices = data.get("choices") or []
-                      if response.status != 200 or not choices:
-                          raise RuntimeError("response did not contain a chat completion")
-                      returned_model = data.get("model", model)
-                      print(f"PASS {role}: {provider} responded (model={returned_model})")
-              except urllib.error.HTTPError as error:
-                  # Emit only bounded structured error fields; never headers, tokens or raw bodies.
-                  detail = ""
-                  try:
-                      body = json.loads(error.read(4096).decode("utf-8", errors="replace"))
-                      candidate = body.get("error", body)
-                      if isinstance(candidate, dict):
-                          fields = {
-                              key: candidate.get(key)
-                              for key in ("message", "type", "code")
-                              if isinstance(candidate.get(key), (str, int))
-                          }
-                          detail = " " + json.dumps(fields)[:360] if fields else ""
-                  except Exception:
-                      pass
-                  print(f"FAIL {role}: HTTP {error.code}{detail}")
-                  failures.append(role)
-              except Exception as error:
-                  print(f"FAIL {role}: {type(error).__name__}: {str(error)[:240]}")
-                  failures.append(role)
-
-          print(f"RESULT: {len(roles) - len(failures)}/{len(roles)} model endpoints passed.")
-          if failures:
-              print("FAILED ROLES: " + ", ".join(failures))
-              sys.exit(1)
-          PY
+          python -m workforce.provider_preflight
