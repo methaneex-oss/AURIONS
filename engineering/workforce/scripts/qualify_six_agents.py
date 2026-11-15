@@ -235,7 +235,7 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         return {"provider": provider, "model": model, "evidence": "HTTP success and valid chat-completions envelope", **_fallback_detail(data)}
 
     def text_response():
-        data, provider, model = _call(role, {
+        data, provider, model = role_call({
             "messages": [{"role": "user", "content": "Write one short sentence confirming you can generate text. Include the exact token TEXT_RESPONSE_OK."}],
             "temperature": 0,
         })
@@ -253,7 +253,7 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         return {"provider": provider, "model": model, "evidence": content.strip()[:240], **_fallback_detail(data)}
 
     def reasoning_simulation():
-        data, provider, model = _call(role, {
+        data, provider, model = role_call({
             "messages": [{
                 "role": "user",
                 "content": (
@@ -288,7 +288,7 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         return {"provider": provider, "model": model, "evidence": "structured arithmetic result correct; simulation only", **_fallback_detail(data)}
 
     def repository_access():
-        first_data, first_provider, first_model = _call(role, {
+        first_data, first_provider, first_model = role_call({
             "messages": [{
                 "role": "user",
                 "content": (
