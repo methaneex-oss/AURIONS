@@ -1,0 +1,91 @@
+name: Six-agent qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_run:
+        description: "Explicitly authorize bounded provider inference qualification"
+        required: true
+        type: boolean
+        default: false
+      confirm_cloudflare_free_plan:
+        description: "I verified this account is on Workers Free, not Workers Paid"
+        required: true
+        type: boolean
+        default: false
+      confirm_groq_free_plan:
+        description: "I verified this account is on Groq Free, not Developer tier"
+        required: true
+        type: boolean
+        default: false
+      confirm_openrouter_free_only:
+        description: "I confirm OpenRouter fallback is openrouter/free only and no credits or paid routes will be used"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aurions-six-agent-qualification-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    name: Qualify all six agent roles
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: engineering/workforce/src
+      GITHUB_WORKSPACE: ${{ github.workspace }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      QUALIFICATION_REPORT: agent-qualification-report.json
+    steps:
+      - name: Enforce candidate ref and free-tier authorization
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          CONFIRM_RUN: ${{ inputs.confirm_run }}
+          CONFIRM_CLOUDFLARE_FREE_PLAN: ${{ inputs.confirm_cloudflare_free_plan }}
+          CONFIRM_GROQ_FREE_PLAN: ${{ inputs.confirm_groq_free_plan }}
+          CONFIRM_OPENROUTER_FREE_ONLY: ${{ inputs.confirm_openrouter_free_only }}
+        run: |
+          if [ "$REF_NAME" != "feat/workforce-free-fallback" ]; then
+            echo "Refusing to qualify an unreviewed branch. Select feat/workforce-free-fallback."
+            exit 1
+          fi
+          if [ "$CONFIRM_RUN" != "true" ] || [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ] || [ "$CONFIRM_GROQ_FREE_PLAN" != "true" ] || [ "$CONFIRM_OPENROUTER_FREE_ONLY" != "true" ]; then
+            echo "Refusing provider inference: explicit authorization and verification of both primary Free tiers plus OpenRouter free-only routing are required."
+            exit 1
+          fi
+
+      - name: Checkout selected candidate ref
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Install workforce dependencies
+        run: python -m pip install -r engineering/workforce/requirements.txt
+
+      - name: Validate qualification script syntax
+        run: python -m py_compile engineering/workforce/scripts/qualify_six_agents.py
+
+      - name: Run six-agent qualification
+        run: python engineering/workforce/scripts/qualify_six_agents.py
+
+      - name: Preserve qualification report
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: six-agent-qualification-report
+          path: agent-qualification-report.json
+          if-no-files-found: warn
+          retention-days: 7
