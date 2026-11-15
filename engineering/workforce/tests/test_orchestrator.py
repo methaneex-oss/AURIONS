@@ -108,6 +108,10 @@ class OrchestratorTests(unittest.TestCase):
             (source / "engineering/workforce/tests/test_module.py").write_text("assert True\n", encoding="utf-8")
             (source / "engineering/workforce/migrations/001_initial.sql").write_text("SELECT 1;\n", encoding="utf-8")
             (source / "engineering/workforce/work-package.json").write_text('{"roles": {}}', encoding="utf-8")
+            for relative in MANDATORY_GOVERNANCE_FILES:
+                governance_file = source / relative
+                governance_file.parent.mkdir(parents=True, exist_ok=True)
+                governance_file.write_text("governance fixture\n", encoding="utf-8")
             (source / "core/cpp/main.cpp").write_text("int main() {}\n", encoding="utf-8")
             (source / "core/cpp/api_key.json").write_text("must not copy", encoding="utf-8")
             (source / "core/cpp/.env.production").write_text("must not copy", encoding="utf-8")
@@ -116,6 +120,8 @@ class OrchestratorTests(unittest.TestCase):
             self.assertTrue((target / "engineering/workforce/src/module.py").is_file())
             self.assertTrue((target / "engineering/workforce/migrations/001_initial.sql").is_file())
             self.assertTrue((target / "engineering/workforce/work-package.json").is_file())
+            for relative in MANDATORY_GOVERNANCE_FILES:
+                self.assertTrue((target / relative).is_file())
             self.assertTrue((target / "engineering/workforce/scripts/qualify_six_agents.py").is_file())
             self.assertFalse((target / "core/cpp/api_key.json").exists())
             self.assertFalse((target / "core/cpp/.env.production").exists())

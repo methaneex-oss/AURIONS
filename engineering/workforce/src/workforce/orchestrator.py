@@ -21,7 +21,7 @@ from typing import Any
 
 import httpx
 
-from workforce.agents.runner import ROLE_INSTRUCTIONS, is_sensitive_path, safe_path, preflight_role_prompt
+from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES, ROLE_INSTRUCTIONS, is_sensitive_path, safe_path, preflight_role_prompt
 from workforce.domain import path_is_permitted
 
 ROLES = tuple(ROLE_INSTRUCTIONS)
@@ -315,6 +315,12 @@ def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) ->
         "engineering/workforce/src",
         "engineering/workforce/tests",
         "engineering/workforce/migrations",
+        # Workers and the real-manifest preflight test both require the canonical
+        # governance sources. Include them when present in full repository snapshots.
+        *[
+            relative for relative in MANDATORY_GOVERNANCE_FILES
+            if (root / relative).is_file()
+        ],
         # The committed manifest is required by the real six-role prompt-preflight
         # regression test; minimal temporary repositories may omit it.
         *(
