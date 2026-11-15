@@ -586,7 +586,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         prompt_preflight[f"{role}:initial"] = evidence
         print(
             f"Prompt preflight {role}: {evidence['prompt_estimate_tokens']} estimated prompt tokens; "
-            f"{evidence['minimum_completion_tokens']} minimum completion tokens; "
+            f"{evidence['completion_reserve_tokens']} completion reserve tokens; "
             f"{evidence['per_request_limit']} request ceiling; PASS."
         )
     for test_path in manifest["test_paths"]:

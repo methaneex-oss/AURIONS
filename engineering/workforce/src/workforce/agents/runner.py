@@ -634,10 +634,12 @@ class Worker:
             # Reserve a minimum completion allowance, then discard older complete
             # tool exchanges before shrinking the newest exchange. This prevents
             # accumulated read/list output from exhausting later requests.
-            minimum_completion = min(MIN_COMPLETION_RESERVE, self.max_tokens)
+            # Preserve the full configured completion allowance on every turn;
+            # context compaction, not silent output-budget reduction, makes room.
+            completion_reserve = self.max_tokens
             prompt_budget = min(
-                self.max_request_tokens - minimum_completion,
-                remaining - minimum_completion,
+                self.max_request_tokens - completion_reserve,
+                remaining - completion_reserve,
             )
             messages = _compact_conversation(messages, prompt_budget)
             prompt_reserve = _prompt_token_estimate(messages)
@@ -646,10 +648,10 @@ class Worker:
                 remaining - prompt_reserve,
                 self.max_request_tokens - prompt_reserve,
             )
-            if output_limit < minimum_completion:
+            if output_limit < completion_reserve:
                 raise RuntimeError(
                     f"prompt estimate ({prompt_reserve} tokens) leaves less than the "
-                    f"{minimum_completion}-token minimum completion allowance within the "
+                    f"{completion_reserve}-token configured completion allowance within the "
                     f"{self.max_request_tokens}-token per-request ceiling or remaining role budget; "
                     "provider request was not sent"
                 )
@@ -705,7 +707,7 @@ class Worker:
                     "final": choice.get("content", ""),
                 }
             tool_output_bytes = 0
-            for call in tool_calls:
+            for call_index, call in enumerate(tool_calls):
                 self.renew_durable_lease()
                 try:
                     args = json.loads(call["function"].get("arguments") or "{}")
@@ -713,10 +715,9 @@ class Worker:
                 except Exception as exc:
                     result = f"TOOL ERROR: {type(exc).__name__}: {exc}"
                 remaining_output_bytes = MAX_TOOL_OUTPUT_BYTES_PER_TURN - tool_output_bytes
-                if remaining_output_bytes <= 0:
-                    result = ""
-                else:
-                    result = _truncate_utf8(result, remaining_output_bytes)
+                remaining_tool_calls = len(tool_calls) - call_index
+                per_tool_budget = remaining_output_bytes // remaining_tool_calls
+                result = _truncate_utf8(result, per_tool_budget)
                 tool_output_bytes += len(result.encode("utf-8"))
                 messages.append({"role": "tool", "tool_call_id": call["id"], "content": result})
         raise RuntimeError(f"model-call/token budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
@@ -746,24 +747,24 @@ def preflight_role_prompt(
     worker.role = role
     messages, governance_records = worker.build_messages(task, context_files)
     prompt_tokens = _prompt_token_estimate(messages)
-    minimum_completion = min(MIN_COMPLETION_RESERVE, max_completion_tokens)
+    completion_reserve = max_completion_tokens
     request_limit = role_assignment(role)["max_request_tokens"]
-    if prompt_tokens + minimum_completion > request_limit:
+    if prompt_tokens + completion_reserve > request_limit:
         raise RuntimeError(
             f"{role} prompt preflight failed: {prompt_tokens}-token prompt plus "
-            f"{minimum_completion}-token minimum completion exceeds the "
+            f"{completion_reserve}-token configured completion allowance exceeds the "
             f"{request_limit}-token per-request ceiling"
         )
-    if prompt_tokens + minimum_completion > max_total_tokens:
+    if prompt_tokens + completion_reserve > max_total_tokens:
         raise RuntimeError(
             f"{role} prompt preflight failed: {prompt_tokens}-token prompt plus "
-            f"{minimum_completion}-token minimum completion exceeds the "
+            f"{completion_reserve}-token configured completion allowance exceeds the "
             f"{max_total_tokens}-token aggregate role budget"
         )
     return {
         "role": role,
         "prompt_estimate_tokens": prompt_tokens,
-        "minimum_completion_tokens": minimum_completion,
+        "completion_reserve_tokens": completion_reserve,
         "per_request_limit": request_limit,
         "aggregate_role_budget": max_total_tokens,
         "context_file_count": len(context_files),

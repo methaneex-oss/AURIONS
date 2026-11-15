@@ -52,7 +52,7 @@ class RunnerBudgetTests(unittest.TestCase):
                 self.assertEqual(result["role"], role)
                 self.assertEqual(result["governance_source_count"], len(MANDATORY_GOVERNANCE_FILES))
                 self.assertLessEqual(
-                    result["prompt_estimate_tokens"] + result["minimum_completion_tokens"],
+                    result["prompt_estimate_tokens"] + result["completion_reserve_tokens"],
                     result["per_request_limit"],
                 )
 
@@ -62,6 +62,43 @@ class RunnerBudgetTests(unittest.TestCase):
                 self.root, "specialist_builder", "x" * 50000, [],
                 max_total_tokens=24000, max_completion_tokens=1024,
             )
+
+    def test_tool_results_share_a_strict_per_turn_output_byte_budget(self):
+        worker = self.make_worker(12000)
+        for name in ("large-a.txt", "large-b.txt"):
+            (self.root / name).write_text("x" * 10000, encoding="utf-8")
+        first = httpx.Response(
+            200,
+            json={
+                "model": "openai/gpt-oss-120b",
+                "usage": {"prompt_tokens": 80, "completion_tokens": 20, "total_tokens": 100},
+                "choices": [{
+                    "message": {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [
+                            {"id": "call-a", "type": "function", "function": {
+                                "name": "read_file", "arguments": json.dumps({"path": "large-a.txt"})
+                            }},
+                            {"id": "call-b", "type": "function", "function": {
+                                "name": "read_file", "arguments": json.dumps({"path": "large-b.txt"})
+                            }},
+                        ],
+                    },
+                    "finish_reason": "tool_calls",
+                }],
+            },
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        final = self.response(100)
+        with patch("workforce.agents.runner.httpx.post", side_effect=[first, final]) as provider:
+            worker.run("read both files", [])
+        messages = provider.call_args_list[1].kwargs["json"]["messages"]
+        tool_results = [item["content"] for item in messages if item.get("role") == "tool"]
+        self.assertEqual(len(tool_results), 2)
+        self.assertLessEqual(sum(len(item.encode("utf-8")) for item in tool_results), 6000)
+        self.assertIn("[tool output truncated", tool_results[0])
+        self.assertIn("[tool output truncated", tool_results[1])
 
     def test_conversation_compaction_drops_old_tool_exchanges_and_keeps_latest_pair(self):
         system = {"role": "system", "content": "system"}
