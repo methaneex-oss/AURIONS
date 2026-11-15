@@ -564,8 +564,6 @@ class Worker:
         })
         return response, "openrouter-free-fallback", actual_model
 
-    def run(self, task: str, context_files: list[str]) -> dict[str, Any]:
-        self.deadline_monotonic = time.monotonic() + self.max_duration_minutes * 60
     def build_messages(self, task: str, context_files: list[str]) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
         context, governance_records = self.load_mandatory_governance()
         seen = set(MANDATORY_GOVERNANCE_FILES)
