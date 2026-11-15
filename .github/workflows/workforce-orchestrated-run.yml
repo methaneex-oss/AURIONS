@@ -9,17 +9,17 @@ on:
         default: false
         type: boolean
       confirm_cloudflare_free_plan:
-        description: "I verified this Cloudflare account is on Workers Free, not Workers Paid. Workers Paid can bill above 10,000 Neurons/day."
+        description: "I verified this account is on Workers Free and checked that enough of today's 10,000-Neuron free allowance remains for the three Cloudflare roles. Workers Paid can bill above the free allocation."
         required: true
         default: false
         type: boolean
       confirm_groq_free_plan:
-        description: "I verified this Groq account is on Free tier, not Developer tier. Developer tier charges per token."
+        description: "I verified this account is on Groq Free, not Developer tier, and checked its current model rate limits. Developer tier charges per token."
         required: true
         default: false
         type: boolean
       confirm_openrouter_free_plan:
-        description: "I confirm fallback uses only openrouter/free, accepts only returned :free models, and no credits or paid routes will be used."
+        description: "I confirm fallback uses only openrouter/free, accepts only returned :free models, has sufficient free daily quota for the enforced reserve, and no credits or paid routes will be used."
         required: true
         default: false
         type: boolean
