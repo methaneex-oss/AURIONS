@@ -236,31 +236,6 @@ jobs:
           manifest_copy.write_bytes(manifest_path.read_bytes())
           print("Manifest, exact clean base commit, isolated worktree and six role credentials validated.")
           PY
-      - name: Reserve free-model quota for fresh qualification and WF-03
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: |
-          python - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-          from workforce.openrouter_limits import require_free_model_quota
-
-          manifest = json.loads(Path(os.environ["WORKFORCE_MANIFEST_COPY"]).read_text(encoding="utf-8"))
-          runtime_calls = sum(role["max_model_calls"] for role in manifest["roles"].values())
-          safety_margin = 2
-          minimum_required = runtime_calls + safety_margin
-          quota = require_free_model_quota(
-              os.environ["OPENROUTER_API_KEY"],
-              minimum_remaining=minimum_required,
-              purpose="the full WF-03 free-fallback reserve plus a two-request safety margin; qualification is primary-only",
-          )
-          print(
-              f"Verified OpenRouter free quota: {quota['remaining']} remaining; "
-              f"reserved {runtime_calls} WF-03 fallback requests plus {safety_margin} safety requests. "
-              "Six-agent qualification will use primary providers only."
-          )
-          PY
       - name: Run fresh six-agent primary-only qualification on the exact candidate HEAD
         env:
           AURIONS_QUALIFICATION_PRIMARY_ONLY: "true"
