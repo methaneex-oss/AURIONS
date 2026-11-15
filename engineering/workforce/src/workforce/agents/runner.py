@@ -17,6 +17,7 @@ import httpx
 
 from workforce.domain import path_is_permitted
 from workforce.provider_http import chat_completion_headers
+from workforce.openrouter_limits import wait_for_free_model_request_slot
 
 MANDATORY_GOVERNANCE_FILES = (
     "docs/workforce/AGENT-INDUCTION-AND-ROLE-TRAINING.md",
@@ -526,7 +527,13 @@ class Worker:
         )
         response = None
         last_network_error = None
+        retry_after = None
         for fallback_attempt in range(1, 3):
+            wait_for_free_model_request_slot(
+                retry_after,
+                remaining_seconds=self.remaining_seconds(),
+            )
+            retry_after = None
             try:
                 candidate_response = httpx.post(
                     "https://openrouter.ai/api/v1/chat/completions",
@@ -546,6 +553,7 @@ class Worker:
                 detail = provider_error_detail(candidate_response, (self.openrouter_api_key,))
                 retryable = candidate_response.status_code == 429 or candidate_response.status_code >= 500
                 if retryable and fallback_attempt < 2:
+                    retry_after = candidate_response.headers.get("retry-after")
                     continue
                 raise RuntimeError(
                     f"primary provider failed ({primary_failure}); OpenRouter free fallback rejected "
