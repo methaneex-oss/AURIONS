@@ -156,7 +156,6 @@ def is_groq_model_permission_block(response: httpx.Response) -> bool:
 
 
 MAX_INLINE_CONTEXT_BYTES = 10_000
-MIN_COMPLETION_RESERVE = 1024
 MAX_TOOL_OUTPUT_BYTES_PER_TURN = 6_000
 
 
