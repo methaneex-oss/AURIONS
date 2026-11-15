@@ -27,7 +27,7 @@ def valid_manifest():
             "permitted_paths": paths,
             "context_files": [],
             "max_model_calls": 2,
-            "max_tokens": 4000,
+            "max_tokens": 6000,
             "max_completion_tokens": 1024,
             "max_duration_minutes": 30,
         }
@@ -180,7 +180,7 @@ class OrchestratorTests(unittest.TestCase):
         value = validate_manifest(valid_manifest())
         contract = _task_contract(value, "code_reviewer")
         self.assertEqual(contract["permitted_paths"], [])
-        self.assertEqual(contract["max_tokens"], 4000)
+        self.assertEqual(contract["max_tokens"], 6000)
 
     def test_worker_registry_requires_one_strong_token_per_role(self):
         registry = {
