@@ -6,8 +6,10 @@ of all six pinned workforce roles.
 Each role is checked independently for four capabilities (24 role checks total)
 using one bounded two-request conversation: the first request must call the read-only
 repository tool, and the second must use the returned tool data while producing
-machine-checkable text and reasoning results. A separate OpenRouter free-router smoke
-check verifies the fallback credential, free-model identity, and function-call support.
+machine-checkable text and reasoning results. This workflow is deliberately primary-only:
+it receives no OpenRouter credential and does not test or consume fallback quota. The
+separate provider preflight is run by the supervised WF-03 workflow (and can also be
+run through the provider-smoke workflow) before any workforce task is dispatched.
 
 1. **Connectivity** — successful provider response and valid Chat Completions envelope.
 2. **Text response** — non-empty assistant text containing a test marker.
@@ -32,17 +34,21 @@ check verifies the fallback credential, free-model identity, and function-call s
 - Every fallback-passed check records the primary provider failure; fallback success
   does not make the primary endpoint healthy.
 - The only configured OpenRouter model is `openrouter/free`.
-- A separate fallback smoke check verifies OpenRouter connectivity and required
-  function calling.
+- The supervised WF-03 workflow runs a live provider preflight after primary-only
+  qualification. It checks all six pinned primary endpoints and makes one explicit
+  OpenRouter `openrouter/free` tool-call probe. A primary failure may cause one
+  additional OpenRouter probe for that role.
 - The fallback response must report a model identifier ending in `:free`; otherwise
   the fallback is rejected.
 - OpenRouter free variants are rate-limited (currently 20 requests/minute and 50
-  requests/day without a qualifying credit purchase); failed attempts count toward
-  the daily cap. Qualification uses at most 12 role fallback requests plus one
-  fallback probe. Its 40-request preflight reserve covers those 13 requests, up to
-  seven provider-preflight fallback/probe requests, and the 20-call WF-03 ceiling.
-  Provider preflight and the orchestrated workflow recheck the remaining quota before
-  proceeding. Treat the quota as a hard ceiling and never purchase credits to raise it.
+  requests/day); failed attempts count toward the daily cap. The committed WF-03
+  manifest currently permits 37 role model calls. Provider preflight can consume at
+  most seven OpenRouter requests (one fallback per primary role probe plus one explicit
+  free-router probe). The gate therefore requires 46 requests before preflight
+  (37 + 7 + 2 safety) and at least 39 after preflight (37 + 2 safety). The orchestrated
+  workflow checks the 39-request reserve again immediately before worker execution.
+  These values are calculated from the committed manifest, not copied as fixed
+  assumptions. Treat the quota as a hard ceiling and never purchase credits to raise it.
 - Once a role falls back, qualification pins the actual returned `:free` model for
   the remainder of its two-request conversation, matching the production worker's per-conversation pinning.
 - No paid model, paid credit, automatic paid upgrade, or non-free router is allowed.
@@ -56,11 +62,12 @@ check verifies the fallback credential, free-model identity, and function-call s
 - `CLOUDFLARE_ACCOUNT_ID`
 - `OPENROUTER_API_KEY`
 
-The workflow is available through **Actions → Six-agent qualification → Run workflow**.
-It is manual-only and requires explicit confirmation of the run, Groq Free tier,
-Cloudflare Workers Free plan, and OpenRouter free-only routing. It does not run on
-pushes. The JSON report is uploaded as a workflow artifact even when one or more
-checks fail.
+The primary-only workflow is available through **Actions → Six-agent qualification → Run workflow**.
+It is manual-only and requires explicit confirmation of the run, Groq Free tier and
+Cloudflare Workers Free plan. It does not run on pushes. The JSON report is uploaded
+as a workflow artifact even when one or more checks fail. OpenRouter credentials and
+free-only confirmation are required separately by the provider preflight and WF-03
+orchestration workflows, not by this isolated qualification workflow.
 
 A passing result establishes only these four bounded capabilities at the tested
 commit and time. PARTIAL results count as non-passing and must be corrected or
