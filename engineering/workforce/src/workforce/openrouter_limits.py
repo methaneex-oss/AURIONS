@@ -1,6 +1,10 @@
 """Fail-closed checks for the OpenRouter free-model daily request allowance."""
 from __future__ import annotations
 
+from datetime import timezone
+from email.utils import parsedate_to_datetime
+import threading
+import time
 from typing import Any
 
 import httpx
@@ -8,6 +12,61 @@ import httpx
 from workforce.provider_http import authorization_headers
 
 OPENROUTER_KEY_INFO_URL = "https://openrouter.ai/api/v1/key"
+
+# OpenRouter free variants are limited to 20 requests per minute across the
+# account. A process-wide gate spaces requests even when multiple workers share
+# one orchestrator process.
+FREE_MODEL_MIN_REQUEST_INTERVAL_SECONDS = 3.05
+_free_model_request_lock = threading.Lock()
+_last_free_model_request_at = 0.0
+
+
+def parse_retry_after_seconds(value: str | None) -> float:
+    """Parse Retry-After as seconds or an HTTP date; invalid values mean no hint."""
+    if not isinstance(value, str) or not value.strip():
+        return 0.0
+    try:
+        return max(0.0, float(value.strip()))
+    except ValueError:
+        try:
+            retry_at = parsedate_to_datetime(value)
+            if retry_at.tzinfo is None:
+                retry_at = retry_at.replace(tzinfo=timezone.utc)
+            return max(0.0, retry_at.timestamp() - time.time())
+        except (TypeError, ValueError, OverflowError):
+            return 0.0
+
+
+def free_model_request_delay(
+    last_request_at: float,
+    now: float,
+    retry_after_seconds: float = 0.0,
+) -> float:
+    """Return the greater of account-wide pacing and the provider retry hint."""
+    spacing = max(0.0, FREE_MODEL_MIN_REQUEST_INTERVAL_SECONDS - max(0.0, now - last_request_at))
+    return max(spacing, max(0.0, retry_after_seconds))
+
+
+def wait_for_free_model_request_slot(
+    retry_after: str | None = None,
+    *,
+    remaining_seconds: float | None = None,
+) -> float:
+    """Pace free-router requests and honor Retry-After without exceeding role deadlines."""
+    global _last_free_model_request_at
+    retry_delay = parse_retry_after_seconds(retry_after)
+    with _free_model_request_lock:
+        now = time.monotonic()
+        delay = free_model_request_delay(_last_free_model_request_at, now, retry_delay)
+        if remaining_seconds is not None:
+            if remaining_seconds <= 0 or delay >= remaining_seconds:
+                raise RuntimeError(
+                    f"OpenRouter retry/pacing delay ({delay:.2f}s) exceeds remaining role time"
+                )
+        if delay:
+            time.sleep(delay)
+        _last_free_model_request_at = time.monotonic()
+        return delay
 
 
 def get_free_model_quota(api_key: str) -> dict[str, int]:
