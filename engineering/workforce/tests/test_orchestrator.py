@@ -126,6 +126,35 @@ class OrchestratorTests(unittest.TestCase):
             self.assertFalse((target / "core/cpp/api_key.json").exists())
             self.assertFalse((target / "core/cpp/.env.production").exists())
 
+    def test_candidate_test_snapshot_receives_authorized_manifest_when_base_omits_it(self):
+        from workforce.orchestrator import _copy_test_snapshot
+        manifest = valid_manifest()
+        with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
+            source = Path(source_dir)
+            target = Path(target_dir)
+            for relative in (
+                "engineering/workforce/src",
+                "engineering/workforce/tests",
+                "engineering/workforce/migrations",
+            ):
+                (source / relative).mkdir(parents=True, exist_ok=True)
+            for relative in MANDATORY_GOVERNANCE_FILES:
+                path = source / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("governance fixture\n", encoding="utf-8")
+            self.assertFalse((source / "engineering/workforce/work-package.json").exists())
+            _copy_test_snapshot(
+                source,
+                target,
+                ["engineering/workforce/src", "engineering/workforce/tests"],
+                supplemental_manifest=manifest,
+            )
+            copied = json.loads(
+                (target / "engineering/workforce/work-package.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(copied["work_package_id"], manifest["work_package_id"])
+            self.assertEqual(copied["roles"], manifest["roles"])
+
     def test_manifest_rejects_non_string_base_sha(self):
         value = valid_manifest()
         value["base_commit_sha"] = ["a" * 40]
