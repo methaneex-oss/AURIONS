@@ -13,6 +13,9 @@ from workforce.provider_http import USER_AGENT
 
 class ProviderRequestContractTests(unittest.TestCase):
     def setUp(self):
+        self._free_wait_patch = patch("workforce.agents.runner.wait_for_free_model_request_slot")
+        self._free_wait_patch.start()
+        self.addCleanup(self._free_wait_patch.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         for relative in MANDATORY_GOVERNANCE_FILES:
