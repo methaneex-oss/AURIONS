@@ -12,6 +12,14 @@ from workforce.provider_preflight import main
 
 
 class ProviderPreflightTests(unittest.TestCase):
+    def setUp(self):
+        quota = patch(
+            "workforce.provider_preflight.require_free_model_quota",
+            return_value={"used": 0, "limit": 50, "remaining": 50},
+        )
+        quota.start()
+        self.addCleanup(quota.stop)
+
     def response(self, model, returned_model=None):
         return httpx.Response(
             200,
