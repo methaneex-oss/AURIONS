@@ -8,7 +8,7 @@ from unittest.mock import patch
 import httpx
 
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
-from workforce.provider_preflight import main
+from workforce.provider_preflight import _quota_requirements, main
 from workforce.provider_http import USER_AGENT
 
 
@@ -20,6 +20,30 @@ class ProviderPreflightTests(unittest.TestCase):
         )
         quota.start()
         self.addCleanup(quota.stop)
+
+    def test_quota_reserve_covers_manifest_calls_preflight_and_safety_margin(self):
+        from pathlib import Path
+
+        manifest = json.loads(
+            Path("engineering/workforce/work-package.json").read_text(encoding="utf-8")
+        )
+        requirements = _quota_requirements(manifest)
+        self.assertEqual(requirements["work_package_calls"], 37)
+        self.assertEqual(requirements["preflight_max_requests"], 7)
+        self.assertEqual(requirements["safety_margin"], 2)
+        self.assertEqual(requirements["before_preflight"], 46)
+        self.assertEqual(requirements["after_preflight"], 39)
+
+    def test_quota_reserve_rejects_incomplete_or_invalid_role_budgets(self):
+        with self.assertRaisesRegex(ValueError, "exactly the six"):
+            _quota_requirements({"roles": {}})
+        roles = {
+            role: {"max_model_calls": 1}
+            for role in ROLE_MODEL_ASSIGNMENTS
+        }
+        roles["lead_builder"]["max_model_calls"] = True
+        with self.assertRaisesRegex(ValueError, "positive integer"):
+            _quota_requirements({"roles": roles})
 
     def response(self, model, returned_model=None):
         return httpx.Response(
