@@ -190,10 +190,16 @@ def _call(
     if profile["provider"] == "groq" and profile["model"] in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
         primary_payload["parallel_tool_calls"] = False
     try:
-        data = _primary_post_with_two_attempts(
-            url, primary_key, primary_payload,
-            groq_primary=profile["provider"] == "groq",
-        )
+        if os.environ.get("AURIONS_QUALIFICATION_PRIMARY_ONLY", "").lower() == "true":
+            data = _primary_post_with_two_attempts(
+                url, primary_key, primary_payload,
+                groq_primary=profile["provider"] == "groq",
+            )
+        else:
+            data = _post(
+                url, primary_key, primary_payload,
+                groq_primary=profile["provider"] == "groq",
+            )
         returned_model = data.get("model")
         if returned_model != profile["model"]:
             raise ProviderFailure(f"primary returned unexpected model identity: {str(returned_model)[:120]}")
