@@ -17,8 +17,7 @@ from workforce.provider_http import authorization_headers
 OPENROUTER_KEY_INFO_URL = "https://openrouter.ai/api/v1/key"
 
 # OpenRouter free variants are limited to 20 requests per minute across the
-# account. A process-wide gate spaces requests even when multiple workers share
-# one orchestrator process.
+# account. A locked state file coordinates pacing across separate worker processes.
 FREE_MODEL_MIN_REQUEST_INTERVAL_SECONDS = 3.05
 
 
