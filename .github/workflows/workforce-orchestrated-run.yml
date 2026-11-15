@@ -290,7 +290,7 @@ jobs:
           )
           print(
               f"Reused 25/25 qualification checks from run {report['source_run_id']}; "
-              "verified that only the work-package manifest changed since the tested SHA."
+              "verified that only the work-package manifest and this workflow changed since the tested SHA."
           )
           PY
       - name: Reserve free-model quota for the complete WF-03 run
