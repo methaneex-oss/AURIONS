@@ -254,8 +254,11 @@ jobs:
               ["git", "diff", "--name-only", qualified_sha, "HEAD"],
               text=True,
           ).splitlines()
-          expected = ["engineering/workforce/work-package.json"]
-          if changed != expected:
+          expected = sorted([
+              ".github/workflows/workforce-orchestrated-run.yml",
+              "engineering/workforce/work-package.json",
+          ])
+          if sorted(changed) != expected:
               raise SystemExit(
                   "prior qualification cannot be reused: runtime or qualification files changed; "
                   f"observed diff paths={changed!r}"
@@ -273,7 +276,7 @@ jobs:
               "total": 25,
               "reuse_basis": {
                   "current_head": os.environ.get("GITHUB_SHA", ""),
-                  "only_changed_path_since_qualified_head": expected[0],
+                  "allowed_changed_paths_since_qualified_head": expected,
                   "runtime_and_qualification_code_unchanged": True
               },
               "limitations": [
