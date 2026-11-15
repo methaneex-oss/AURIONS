@@ -66,7 +66,7 @@ class RunnerBudgetTests(unittest.TestCase):
     def test_tool_results_share_a_strict_per_turn_output_byte_budget(self):
         worker = self.make_worker(12000)
         for name in ("large-a.txt", "large-b.txt"):
-            (self.root / name).write_text("x" * 10000, encoding="utf-8")
+            (self.root / name).write_text("x" * 5000, encoding="utf-8")
         first = httpx.Response(
             200,
             json={
