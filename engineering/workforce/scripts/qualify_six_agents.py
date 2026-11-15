@@ -37,10 +37,15 @@ READ_FILE_TOOL = [{
 
 
 class ProviderFailure(Exception):
-    def __init__(self, message: str, retryable: bool = False, status_code: int | None = None):
+    def __init__(
+        self, message: str, retryable: bool = False, status_code: int | None = None,
+        provider_error_type: str | None = None, provider_error_code: str | int | None = None,
+    ):
         super().__init__(message)
         self.retryable = retryable
         self.status_code = status_code
+        self.provider_error_type = provider_error_type
+        self.provider_error_code = provider_error_code
 
 
 def _post(
@@ -92,11 +97,22 @@ def _post(
         for name, value in os.environ.items():
             if value and (name.endswith("_KEY") or name.endswith("_TOKEN")):
                 rendered = rendered.replace(value, "[REDACTED]")
-        retryable = exc.code == 429 or exc.code >= 500 or (groq_primary and exc.code == 403)
+        error_object = body.get("error") if isinstance(body, dict) else None
+        error_type = error_object.get("type") if isinstance(error_object, dict) else None
+        error_code = error_object.get("code") if isinstance(error_object, dict) else None
+        groq_model_permission = (
+            groq_primary
+            and exc.code == 403
+            and error_type == "permissions_error"
+            and error_code in {"model_permission_blocked_org", "model_permission_blocked_project"}
+        )
+        retryable = exc.code == 429 or exc.code >= 500 or groq_model_permission
         raise ProviderFailure(
             f"HTTP {exc.code}: {rendered or 'no safe provider diagnostics'}",
             retryable=retryable,
             status_code=exc.code,
+            provider_error_type=error_type if isinstance(error_type, str) else None,
+            provider_error_code=error_code if isinstance(error_code, (str, int)) else None,
         ) from None
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         raise ProviderFailure(f"network {type(exc).__name__}", retryable=True) from None
@@ -135,8 +151,7 @@ def _call(
             raise ProviderFailure(f"primary returned unexpected model identity: {str(returned_model)[:120]}")
         return data, profile["provider"], profile["model"]
     except ProviderFailure as exc:
-        groq_permission_block = profile["provider"] == "groq" and exc.status_code == 403
-        if not exc.retryable and not groq_permission_block:
+        if not exc.retryable:
             raise
         fallback_key = os.environ.get("OPENROUTER_API_KEY", "")
         if not fallback_key:
