@@ -74,8 +74,12 @@ def _post(
         raise ProviderFailure("provider response exceeded 1 MB")
     if response.status_code >= 400:
         rendered = provider_error_detail(response, (token,))
+        # Groq also uses HTTP 429 for requests whose requested output budget
+        # exceeds the remaining output-token rate limit. Retrying the same
+        # oversized request cannot help; treat that contract as non-retryable.
+        request_too_large = "request too large" in rendered.lower()
         retryable = (
-            response.status_code == 429
+            (response.status_code == 429 and not request_too_large)
             or response.status_code >= 500
             or (groq_primary and is_groq_model_permission_block(response))
         )
@@ -100,6 +104,36 @@ def _post(
     if not isinstance(data, dict):
         raise ProviderFailure("provider response was not a JSON object")
     return data
+
+def _primary_post_with_two_attempts(
+    url: str, token: str, payload: dict[str, Any], groq_primary: bool = False,
+) -> dict[str, Any]:
+    """Retry one transient primary-provider failure, never switching providers."""
+    for attempt in range(1, 3):
+        try:
+            return _post(url, token, payload, groq_primary=groq_primary)
+        except ProviderFailure as exc:
+            if not exc.retryable:
+                raise
+            if attempt == 2:
+                raise ProviderFailure(
+                    f"primary request failed after 2 primary attempts: {exc}",
+                    retryable=True,
+                    status_code=exc.status_code,
+                    provider_error_type=exc.provider_error_type,
+                    provider_error_code=exc.provider_error_code,
+                ) from None
+    raise ProviderFailure("primary request failed after 2 primary attempts", retryable=True)
+
+
+def _followup_completion_budget(role: str) -> int:
+    """Keep the qualification response compact enough for constrained free tiers."""
+    if role == "specialist_builder":
+        return 4096
+    if role == "code_reviewer":
+        return 256
+    return 1024
+
 
 def _openrouter_post_with_two_attempts(payload: dict[str, Any], token: str) -> dict[str, Any]:
     for attempt in range(1, 3):
@@ -156,7 +190,10 @@ def _call(
     if profile["provider"] == "groq" and profile["model"] in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
         primary_payload["parallel_tool_calls"] = False
     try:
-        data = _post(url, primary_key, primary_payload, groq_primary=profile["provider"] == "groq")
+        data = _primary_post_with_two_attempts(
+            url, primary_key, primary_payload,
+            groq_primary=profile["provider"] == "groq",
+        )
         returned_model = data.get("model")
         if returned_model != profile["model"]:
             raise ProviderFailure(f"primary returned unexpected model identity: {str(returned_model)[:120]}")
@@ -285,7 +322,7 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         }, max_tokens=512)
         first_message = _choice(first_data)
     except Exception as exc:
-        error = f"{type(exc).__name__}: {str(exc)[:240]}"
+        error = f"{type(exc).__name__}: {str(exc)[:800]}"
         for check in checks:
             results.append({"role": role, "check": check, "status": "FAIL", "error": error})
         return
@@ -401,7 +438,7 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         # Gemma's live response ended with finish_reason=length at 1,024
         # completion tokens. Give that role sufficient output headroom without
         # increasing request count or changing the free-tier quota reservation.
-        followup_budget = 4096 if role == "specialist_builder" else 1024
+        followup_budget = _followup_completion_budget(role)
         second_data, second_provider, second_model = role_call(
             {"messages": conversation, "temperature": 0},
             max_tokens=followup_budget,
