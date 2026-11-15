@@ -257,6 +257,31 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           python -m workforce.provider_preflight
+      - name: Reserve free-model quota for the complete WF-03 run
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from workforce.openrouter_limits import require_free_model_quota
+
+          manifest = json.loads(Path(os.environ["WORKFORCE_MANIFEST_COPY"]).read_text(encoding="utf-8"))
+          required = sum(
+              role["max_model_calls"]
+              for role in manifest["roles"].values()
+          )
+          quota = require_free_model_quota(
+              os.environ["OPENROUTER_API_KEY"],
+              minimum_remaining=required,
+              purpose="the full WF-03 model-call budget",
+          )
+          print(
+              f"Verified OpenRouter free quota: {quota['remaining']} remaining; "
+              f"reserved {required} possible fallback calls for WF-03."
+          )
+          PY
       - name: Start authenticated local control plane
         run: |
           python -m uvicorn workforce.api:app --host 127.0.0.1 --port 8000 > "$RUNNER_TEMP/workforce-api.log" 2>&1 &
