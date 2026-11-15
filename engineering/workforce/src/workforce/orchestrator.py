@@ -310,7 +310,12 @@ def _verify_candidate_files(root: Path, records: list[dict[str, Any]]) -> list[d
     return verified
 
 
-def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) -> None:
+def _copy_test_snapshot(
+    root: Path,
+    destination: Path,
+    test_paths: list[str],
+    supplemental_manifest: dict[str, Any] | None = None,
+) -> None:
     selected = list(dict.fromkeys([
         "engineering/workforce/src",
         "engineering/workforce/tests",
@@ -370,6 +375,20 @@ def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) ->
                 target_file = target_dir / name
                 target_file.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source_file, target_file)
+
+    # WF-03's authorized manifest is committed after its clean code baseline and
+    # therefore is intentionally absent from the candidate worktree. Inject the
+    # validated manifest into the disposable test snapshot, not the candidate tree.
+    manifest_relative = "engineering/workforce/work-package.json"
+    if supplemental_manifest is not None and not (root / manifest_relative).is_file():
+        manifest_target = safe_path(destination, manifest_relative)
+        if manifest_target.exists() or manifest_target.is_symlink():
+            raise OrchestrationError("supplemental work-package manifest would overwrite test input")
+        manifest_target.parent.mkdir(parents=True, exist_ok=True)
+        manifest_target.write_text(
+            json.dumps(supplemental_manifest, indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
 
 
 def _docker_run(
@@ -905,7 +924,12 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             persist_test_results("RUNNING")
             with tempfile.TemporaryDirectory(prefix="workforce-package-tests-") as test_dir:
                 test_root = Path(test_dir)
-                _copy_test_snapshot(root, test_root, manifest["test_paths"])
+                _copy_test_snapshot(
+                    root,
+                    test_root,
+                    manifest["test_paths"],
+                    supplemental_manifest=manifest,
+                )
                 test_image = os.environ.get("WORKFORCE_TEST_DOCKER_IMAGE", "")
                 if not test_image or not re.fullmatch(r"[A-Za-z0-9._:/@-]{1,200}", test_image):
                     raise OrchestrationError("WORKFORCE_TEST_DOCKER_IMAGE must identify the prebuilt trusted test image")
