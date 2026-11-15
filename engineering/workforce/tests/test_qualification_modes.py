@@ -65,8 +65,6 @@ class QualificationModeTests(unittest.TestCase):
             }
 
             def fake_qualify_role(role, repo_root, results):
-                for check in qualification.qualify_role.__defaults__ or ():
-                    pass
                 results.extend(
                     {
                         "role": role,
