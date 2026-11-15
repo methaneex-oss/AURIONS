@@ -82,6 +82,12 @@ def _post(
                         for item in body["errors"][:2] if isinstance(item, dict)
                     ]
                 }
+            problem = {
+                k: body[k] for k in ("type", "title", "detail", "status")
+                if isinstance(body.get(k), (str, int))
+            }
+            if problem:
+                detail["problem"] = problem
         rendered = json.dumps(detail, ensure_ascii=True)[:500]
         for name, value in os.environ.items():
             if value and (name.endswith("_KEY") or name.endswith("_TOKEN")):
@@ -407,9 +413,30 @@ def groq_model_catalog_diagnostic() -> dict[str, Any]:
             ),
         }
     except urllib.error.HTTPError as exc:
+        try:
+            body = json.loads(exc.read(4096).decode("utf-8"))
+        except Exception:
+            body = {}
+        detail = {}
+        if isinstance(body, dict):
+            error = body.get("error")
+            if isinstance(error, dict):
+                detail["error"] = {
+                    key: error[key] for key in ("message", "type", "code")
+                    if isinstance(error.get(key), (str, int))
+                }
+            if isinstance(body.get("errors"), list):
+                detail["errors"] = [
+                    {key: item[key] for key in ("code", "message") if isinstance(item.get(key), (str, int))}
+                    for item in body["errors"][:2] if isinstance(item, dict)
+                ]
+        rendered = json.dumps(detail, ensure_ascii=True)[:500]
+        if token:
+            rendered = rendered.replace(token, "[REDACTED]")
         return {
             "status": "HTTP_ERROR",
             "http_status": exc.code,
+            "diagnostic": rendered or "no safe error details returned",
             "interpretation": (
                 "403 indicates an account/project permission restriction; 401 indicates invalid authentication."
             ),
