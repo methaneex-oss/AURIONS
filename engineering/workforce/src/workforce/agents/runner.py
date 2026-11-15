@@ -135,6 +135,25 @@ def provider_error_detail(response: httpx.Response, secrets: tuple[str, ...] = (
     return rendered[:1600]
 
 
+def is_groq_model_permission_block(response: httpx.Response) -> bool:
+    """Only the documented Groq org/project model-permission 403 may use fallback."""
+    if response.status_code != 403:
+        return False
+    try:
+        payload = response.json()
+    except ValueError:
+        return False
+    error = payload.get("error") if isinstance(payload, dict) else None
+    return (
+        isinstance(error, dict)
+        and error.get("type") == "permissions_error"
+        and error.get("code") in {
+            "model_permission_blocked_org",
+            "model_permission_blocked_project",
+        }
+    )
+
+
 MAX_INLINE_CONTEXT_BYTES = 10_000
 
 
@@ -375,7 +394,7 @@ class Worker:
         fallback_eligible = (
             response.status_code == 429
             or response.status_code >= 500
-            or (self.provider == "groq" and response.status_code == 403)
+            or (self.provider == "groq" and is_groq_model_permission_block(response))
         )
         if fallback_eligible:
             detail = provider_error_detail(response, (self.api_key, self.worker_token, self.lease_token))
