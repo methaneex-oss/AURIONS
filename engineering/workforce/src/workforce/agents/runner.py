@@ -96,6 +96,24 @@ def provider_error_detail(response: httpx.Response, secrets: tuple[str, ...] = (
         if isinstance(error, dict)
         and isinstance(error.get(key), (str, int, float, bool))
     }
+    safe_cloudflare_errors = []
+    if isinstance(payload, dict) and isinstance(payload.get("errors"), list):
+        for item in payload["errors"][:3]:
+            if isinstance(item, dict):
+                entry = {
+                    key: item[key]
+                    for key in ("code", "message")
+                    if isinstance(item.get(key), (str, int, float, bool))
+                }
+                if entry:
+                    safe_cloudflare_errors.append(entry)
+    safe_problem = {}
+    if isinstance(payload, dict):
+        safe_problem = {
+            key: payload[key]
+            for key in ("type", "title", "detail", "status")
+            if isinstance(payload.get(key), (str, int, float, bool))
+        }
     safe_headers = {
         key: response.headers[key]
         for key in PROVIDER_DIAGNOSTIC_HEADERS
@@ -104,6 +122,10 @@ def provider_error_detail(response: httpx.Response, secrets: tuple[str, ...] = (
     detail: dict[str, Any] = {}
     if safe_fields:
         detail["error"] = safe_fields
+    if safe_cloudflare_errors:
+        detail["cloudflare_errors"] = safe_cloudflare_errors
+    if safe_problem:
+        detail["problem"] = safe_problem
     if safe_headers:
         detail["rate_limit_headers"] = safe_headers
     rendered = json.dumps(detail, ensure_ascii=True)[:1600] if detail else "no structured provider diagnostics"
