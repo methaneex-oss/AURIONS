@@ -553,36 +553,31 @@ def main() -> int:
     repo_root = Path(os.environ.get("GITHUB_WORKSPACE", Path.cwd())).resolve()
     results: list[dict[str, Any]] = []
     primary_only = os.environ.get("AURIONS_QUALIFICATION_PRIMARY_ONLY", "").lower() == "true"
-    qualification_quota = 39 if primary_only else 40
-    try:
-        quota = require_free_model_quota(
-            os.environ.get("OPENROUTER_API_KEY", ""),
-            minimum_remaining=qualification_quota,
-            purpose=(
-                "the full WF-03 free-fallback reserve plus a two-request safety margin"
-                if primary_only else
-                "qualification fallback, free-router probe, and WF-03 free-fallback reserve"
-            ),
-        )
-        print(
-            "OpenRouter free quota verified before qualification: "
-            f"{quota['remaining']}/{quota['limit']} daily requests remain."
-        )
-    except Exception as exc:
-        print(f"PREFLIGHT BLOCKED: {type(exc).__name__}: {str(exc)[:300]}")
-        return 2
+    if not primary_only:
+        try:
+            quota = require_free_model_quota(
+                os.environ.get("OPENROUTER_API_KEY", ""),
+                minimum_remaining=40,
+                purpose="qualification fallback, free-router probe, and WF-03 free-fallback reserve",
+            )
+            print(
+                "OpenRouter free quota verified before qualification: "
+                f"{quota['remaining']}/{quota['limit']} daily requests remain."
+            )
+        except Exception as exc:
+            print(f"PREFLIGHT BLOCKED: {type(exc).__name__}: {str(exc)[:300]}")
+            return 2
+    else:
+        print("Primary-only qualification: OpenRouter credentials and quota are not required or accessed.")
     for role in ROLE_MODEL_ASSIGNMENTS:
         qualify_role(role, repo_root, results)
     if primary_only:
         results.append({
             "role": "openrouter_fallback",
             "check": "free_router_connectivity_and_tool_call",
-            "status": "REUSED_PRIOR_VERIFIED_EVIDENCE",
+            "status": "NOT_RUN_PRIMARY_ONLY_MODE",
             "provider": "openrouter",
-            "model": "recursive/flint-v1.0:free",
-            "evidence": "fallback route implementation unchanged; prior live qualification verified free-model identity and required repository tool call",
-            "source_run_id": "43725222751",
-            "source_head_sha": "6646e2edae837ab1f9863a817ce9662274935dae",
+            "evidence": "intentionally not contacted; this qualification isolates the six primary-provider agents",
             "fresh_execution": False,
         })
     else:
@@ -595,18 +590,17 @@ def main() -> int:
         "qualification_mode": "primary_only" if primary_only else "primary_with_free_fallback",
         "fallback_qualification_evidence": (
             {
-                "status": "REUSED_PRIOR_VERIFIED_EVIDENCE",
-                "source_run_id": "43725222751",
-                "source_head_sha": "6646e2edae837ab1f9863a817ce9662274935dae",
+                "status": "NOT_RUN_PRIMARY_ONLY_MODE",
                 "fresh_execution": False,
-                "scope": "OpenRouter free-route connectivity, returned :free identity, and required repository tool call only",
+                "scope": "No OpenRouter request was made during primary-provider qualification.",
             } if primary_only else {"status": "FRESHLY_TESTED"}
         ),
         "provider_diagnostics": {"groq_model_catalog": groq_diagnostic},
         "checks_per_role": ["connectivity", "text_response", "reasoning_training_simulation", "repository_tool_access"],
         "results": results,
-        "passed": sum(item["status"] in {"PASS", "PASS_WITH_FREE_FALLBACK", "REUSED_PRIOR_VERIFIED_EVIDENCE"} for item in results),
-        "failed": sum(item["status"] not in {"PASS", "PASS_WITH_FREE_FALLBACK", "REUSED_PRIOR_VERIFIED_EVIDENCE"} for item in results),
+        "passed": sum(item["status"] in {"PASS", "PASS_WITH_FREE_FALLBACK"} for item in results),
+        "failed": sum(item["status"] not in {"PASS", "PASS_WITH_FREE_FALLBACK", "NOT_RUN_PRIMARY_ONLY_MODE"} for item in results),
+        "not_run": sum(item["status"] == "NOT_RUN_PRIMARY_ONLY_MODE" for item in results),
         "total": len(results),
     }
     output = json.dumps(summary, indent=2, ensure_ascii=False)
