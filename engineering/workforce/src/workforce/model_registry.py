@@ -61,7 +61,7 @@ ROLE_MODEL_ASSIGNMENTS = {
         "account_env": "",
         "cost_class": "free",
         "max_request_tokens": 7000,
-        "selection_basis": "Tool-capable reasoning model for generating and executing bounded adversarial test hypotheses.",
+        "selection_basis": "Tool-capable reasoning model for generating bounded adversarial test hypotheses and identifying failure cases from candidate/test evidence.",
     },
     "integration_verifier": {
         "provider": "cloudflare",
