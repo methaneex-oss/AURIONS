@@ -56,6 +56,10 @@ jobs:
             echo "Refusing provider inference: explicit authorization and verification of both primary Free tiers plus OpenRouter free-only routing are required."
             exit 1
           fi
+          if [ "$GITHUB_REF_NAME" != "feat/workforce-free-fallback" ]; then
+            echo "Refusing qualification: only feat/workforce-free-fallback is an authorized candidate ref."
+            exit 1
+          fi
 
       - name: Checkout exact candidate
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
@@ -66,6 +70,9 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
+
+      - name: Install workforce dependencies
+        run: python -m pip install --disable-pip-version-check -r engineering/workforce/requirements.txt
 
       - name: Validate qualification script syntax
         run: python -m py_compile engineering/workforce/scripts/qualify_six_agents.py
