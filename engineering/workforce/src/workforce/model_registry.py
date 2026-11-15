@@ -101,8 +101,6 @@ def validate_registry() -> None:
     for role, entry in ROLE_MODEL_ASSIGNMENTS.items():
         if entry["provider"] not in {"groq", "cloudflare"}:
             raise ValueError(f"unsupported provider for {role}")
-        if entry.get("completion_tokens_parameter") not in {"max_tokens", "max_completion_tokens"}:
-            raise ValueError(f"invalid completion-token parameter for {role}")
         expected_parameter = (
             "max_completion_tokens"
             if entry["provider"] == "groq" or entry["model"] in {
@@ -111,7 +109,7 @@ def validate_registry() -> None:
             }
             else "max_tokens"
         )
-        if entry["completion_tokens_parameter"] != expected_parameter:
+        if entry.get("completion_tokens_parameter") != expected_parameter:
             raise ValueError(f"provider completion-token contract mismatch for {role}")
         if entry["cost_class"] not in {"free", "free_daily_allowance"}:
             raise ValueError(f"non-free model registered for {role}")

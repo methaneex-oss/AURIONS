@@ -28,7 +28,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: aurions-wf03-${{ github.ref }}
+  group: aurions-provider-inference
   cancel-in-progress: false
 
 jobs:

@@ -40,6 +40,15 @@ class ModelRegistryTests(unittest.TestCase):
             expected,
         )
 
+    def test_registry_rejects_provider_completion_parameter_mismatch(self):
+        original = ROLE_MODEL_ASSIGNMENTS["lead_builder"]["completion_tokens_parameter"]
+        try:
+            ROLE_MODEL_ASSIGNMENTS["lead_builder"]["completion_tokens_parameter"] = "max_tokens"
+            with self.assertRaisesRegex(ValueError, "completion-token contract mismatch"):
+                validate_registry()
+        finally:
+            ROLE_MODEL_ASSIGNMENTS["lead_builder"]["completion_tokens_parameter"] = original
+
     def test_roles_have_one_provider_profile_and_secret(self):
         for role in ROLE_MODEL_ASSIGNMENTS:
             profile = role_assignment(role)

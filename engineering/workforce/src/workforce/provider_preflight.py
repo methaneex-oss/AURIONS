@@ -14,6 +14,7 @@ import httpx
 from workforce.agents.runner import TOOLS, is_groq_model_permission_block, provider_error_detail
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
 from workforce.openrouter_limits import require_free_model_quota
+from workforce.provider_http import chat_completion_headers
 
 
 def _verify_free_fallback(payload: dict, openrouter_key: str) -> tuple[str, int]:
@@ -23,13 +24,11 @@ def _verify_free_fallback(payload: dict, openrouter_key: str) -> tuple[str, int]
         fallback_payload["max_tokens"] = fallback_payload.pop("max_completion_tokens")
     response = httpx.post(
         "https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {openrouter_key}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "HTTP-Referer": "https://github.com/methaneex-oss/AURIONS",
-            "X-Title": "AURIONS free-only workforce preflight",
-        },
+        headers=chat_completion_headers(
+            openrouter_key,
+            openrouter=True,
+            title="AURIONS free-only workforce preflight",
+        ),
         json=fallback_payload,
         timeout=45,
     )
@@ -120,11 +119,7 @@ def main() -> int:
         try:
             response = httpx.post(
                 url,
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                },
+                headers=chat_completion_headers(token),
                 json=payload,
                 timeout=45,
             )
@@ -218,13 +213,11 @@ def main() -> int:
     try:
         response = httpx.post(
             "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {openrouter_key}",
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "HTTP-Referer": "https://github.com/methaneex-oss/AURIONS",
-                "X-Title": "AURIONS free-only workforce preflight",
-            },
+            headers=chat_completion_headers(
+                openrouter_key,
+                openrouter=True,
+                title="AURIONS free-only workforce preflight",
+            ),
             json=fallback_payload,
             timeout=45,
         )

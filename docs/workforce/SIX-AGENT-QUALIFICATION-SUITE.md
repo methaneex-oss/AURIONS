@@ -3,9 +3,11 @@
 The `six-agent-qualification.yml` workflow runs a read-only, bounded qualification
 of all six pinned workforce roles.
 
-Each role is checked independently for four capabilities (24 role checks total).
-A separate OpenRouter free-router smoke check verifies the fallback credential,
-free-model identity, and function-call support.
+Each role is checked independently for four capabilities (24 role checks total)
+using one bounded two-request conversation: the first request must call the read-only
+repository tool, and the second must use the returned tool data while producing
+machine-checkable text and reasoning results. A separate OpenRouter free-router smoke
+check verifies the fallback credential, free-model identity, and function-call support.
 
 1. **Connectivity** — successful provider response and valid Chat Completions envelope.
 2. **Text response** — non-empty assistant text containing a test marker.
@@ -14,9 +16,10 @@ free-model identity, and function-call support.
    weights, or establish persistent learning.
 4. **Repository tool access** — the model must request `read_file(README.md)`;
    the test runtime reads the actual checked-out file and returns its contents as
-   untrusted tool data; the model must then identify the first non-empty line.
-   A tool call without correct use of the returned content is recorded as PARTIAL,
-   not PASS, and blocks a fully passing qualification result.
+   untrusted tool data together with a fresh, unpredictable challenge token. The
+   model must reproduce both the first non-empty README line and that token in its
+   structured response. A tool call without verified use of the returned content
+   is recorded as PARTIAL, not PASS, and blocks a fully passing qualification result.
 
 ## Provider policy
 
@@ -35,12 +38,13 @@ free-model identity, and function-call support.
   the fallback is rejected.
 - OpenRouter free variants are rate-limited (currently 20 requests/minute and 50
   requests/day without a qualifying credit purchase); failed attempts count toward
-  the daily cap. The qualification checks the live daily counter before inference,
-  provider preflight reserves enough quota for the remaining WF-03 model-call budget,
-  and the orchestrated workflow checks that reserve again immediately before work.
-  Treat the quota as a hard ceiling and never purchase credits to raise it.
+  the daily cap. Qualification uses at most 12 role fallback requests plus one
+  fallback probe. Its 40-request preflight reserve covers those 13 requests, up to
+  seven provider-preflight fallback/probe requests, and the 20-call WF-03 ceiling.
+  Provider preflight and the orchestrated workflow recheck the remaining quota before
+  proceeding. Treat the quota as a hard ceiling and never purchase credits to raise it.
 - Once a role falls back, qualification pins the actual returned `:free` model for
-  the rest of that role's checks, matching the production worker's per-conversation pinning.
+  the remainder of its two-request conversation, matching the production worker's per-conversation pinning.
 - No paid model, paid credit, automatic paid upgrade, or non-free router is allowed.
 - HTTP 401, Cloudflare HTTP 403 and request-contract errors do not trigger fallback; Groq model-permission HTTP 403 is the explicit exception.
 - The workflow does not print provider response bodies or credentials.

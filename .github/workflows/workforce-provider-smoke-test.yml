@@ -18,12 +18,17 @@ on:
         required: true
         default: false
         type: boolean
+      confirm_openrouter_free_only:
+        description: "I confirm OpenRouter fallback is openrouter/free only, only returned :free models are accepted, and no credits or paid routes will be used."
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
-  group: aurions-workforce-provider-smoke
+  group: aurions-provider-inference
   cancel-in-progress: false
 
 jobs:
@@ -36,9 +41,10 @@ jobs:
           CONFIRM_RUN: ${{ inputs.confirm_run }}
           CONFIRM_CLOUDFLARE_FREE_PLAN: ${{ inputs.confirm_cloudflare_free_plan }}
           CONFIRM_GROQ_FREE_PLAN: ${{ inputs.confirm_groq_free_plan }}
+          CONFIRM_OPENROUTER_FREE_ONLY: ${{ inputs.confirm_openrouter_free_only }}
         run: |
-          if [ "$CONFIRM_RUN" != "true" ] || [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ] || [ "$CONFIRM_GROQ_FREE_PLAN" != "true" ]; then
-            echo "Explicit inference authorization and confirmation of both provider Free tiers are required."
+          if [ "$CONFIRM_RUN" != "true" ] || [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ] || [ "$CONFIRM_GROQ_FREE_PLAN" != "true" ] || [ "$CONFIRM_OPENROUTER_FREE_ONLY" != "true" ]; then
+            echo "Explicit inference authorization and confirmation of Cloudflare Free, Groq Free and OpenRouter free-only routing are required."
             exit 1
           fi
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09

@@ -8,6 +8,7 @@ import httpx
 
 from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES, Worker, provider_error_detail
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
+from workforce.provider_http import USER_AGENT
 
 
 class ProviderRequestContractTests(unittest.TestCase):
@@ -56,8 +57,33 @@ class ProviderRequestContractTests(unittest.TestCase):
                 other = "max_tokens" if expected[role] == "max_completion_tokens" else "max_completion_tokens"
                 self.assertNotIn(other, payload)
                 self.assertEqual(payload["model"], profile["model"])
+                self.assertEqual(post.call_args.kwargs["headers"]["User-Agent"], USER_AGENT)
                 self.assertEqual(result["final"], "contract-ok")
 
+
+    def test_worker_uses_shared_user_agent_for_primary_and_free_fallback(self):
+        env = {"GROQ_API_KEY": "test-groq", "OPENROUTER_API_KEY": "test-openrouter"}
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 1, 512, 12000)
+        primary = httpx.Response(
+            429,
+            json={"error": {"message": "rate limited", "type": "rate_limit_error"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        fallback = httpx.Response(
+            200,
+            json={
+                "model": "openai/gpt-oss-20b:free",
+                "usage": {"prompt_tokens": 8, "completion_tokens": 2, "total_tokens": 10},
+                "choices": [{"message": {"role": "assistant", "content": "fallback-ok"}, "finish_reason": "stop"}],
+            },
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        with patch("workforce.agents.runner.httpx.post", side_effect=[primary, fallback]) as post:
+            result = worker.run("bounded test", [])
+        self.assertEqual(result["provider"], "openrouter-free-fallback")
+        self.assertEqual(post.call_args_list[0].kwargs["headers"]["User-Agent"], USER_AGENT)
+        self.assertEqual(post.call_args_list[1].kwargs["headers"]["User-Agent"], USER_AGENT)
 
     def test_cloudflare_errors_array_is_extracted_without_copying_untrusted_fields(self):
         response = httpx.Response(

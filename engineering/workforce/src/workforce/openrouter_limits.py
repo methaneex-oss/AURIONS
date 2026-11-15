@@ -5,6 +5,8 @@ from typing import Any
 
 import httpx
 
+from workforce.provider_http import authorization_headers
+
 OPENROUTER_KEY_INFO_URL = "https://openrouter.ai/api/v1/key"
 
 
@@ -14,7 +16,7 @@ def get_free_model_quota(api_key: str) -> dict[str, int]:
     try:
         response = httpx.get(
             OPENROUTER_KEY_INFO_URL,
-            headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
+            headers=authorization_headers(api_key),
             timeout=15,
         )
     except httpx.HTTPError as exc:

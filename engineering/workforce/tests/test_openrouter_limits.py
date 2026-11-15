@@ -4,6 +4,7 @@ from unittest.mock import patch
 import httpx
 
 from workforce.openrouter_limits import get_free_model_quota, require_free_model_quota
+from workforce.provider_http import USER_AGENT
 
 
 class OpenRouterFreeQuotaTests(unittest.TestCase):
@@ -23,11 +24,12 @@ class OpenRouterFreeQuotaTests(unittest.TestCase):
                     "limit_remaining": None,
                 }
             }),
-        ):
+        ) as get_quota:
             self.assertEqual(
                 get_free_model_quota("test-key"),
                 {"used": 12, "limit": 50, "remaining": 38},
             )
+            self.assertEqual(get_quota.call_args.kwargs["headers"]["User-Agent"], USER_AGENT)
 
     def test_stops_before_inference_when_reserved_quota_is_insufficient(self):
         with patch(

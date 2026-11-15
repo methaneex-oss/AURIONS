@@ -16,6 +16,7 @@ from typing import Any
 import httpx
 
 from workforce.domain import path_is_permitted
+from workforce.provider_http import chat_completion_headers
 
 MANDATORY_GOVERNANCE_FILES = (
     "docs/workforce/AGENT-INDUCTION-AND-ROLE-TRAINING.md",
@@ -374,11 +375,7 @@ class Worker:
                 timeout,
                 self.openrouter_primary_failure or "continuing pinned free fallback after primary failure",
             )
-        primary_headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
+        primary_headers = chat_completion_headers(self.api_key)
         try:
             response = httpx.post(self.api_url, headers=primary_headers, json=payload, timeout=timeout)
         except httpx.HTTPError as exc:
@@ -429,13 +426,11 @@ class Worker:
         fallback_payload["model"] = self.openrouter_fallback_model or "openrouter/free"
         if "max_completion_tokens" in fallback_payload:
             fallback_payload["max_tokens"] = fallback_payload.pop("max_completion_tokens")
-        headers = {
-            "Authorization": f"Bearer {self.openrouter_api_key}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "HTTP-Referer": "https://github.com/methaneex-oss/AURIONS",
-            "X-Title": "AURIONS free-only workforce",
-        }
+        headers = chat_completion_headers(
+            self.openrouter_api_key,
+            openrouter=True,
+            title="AURIONS free-only workforce",
+        )
         try:
             response = httpx.post(
                 "https://openrouter.ai/api/v1/chat/completions",

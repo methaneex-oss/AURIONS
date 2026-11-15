@@ -9,6 +9,7 @@ import httpx
 
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
 from workforce.provider_preflight import main
+from workforce.provider_http import USER_AGENT
 
 
 class ProviderPreflightTests(unittest.TestCase):
@@ -54,10 +55,12 @@ class ProviderPreflightTests(unittest.TestCase):
         self.assertEqual(main(), 0)
         self.assertEqual(post.call_count, 7)
         for call in post.call_args_list[:6]:
+            self.assertEqual(call.kwargs["headers"]["User-Agent"], USER_AGENT)
             payload = call.kwargs["json"]
             self.assertEqual(payload["tool_choice"], "required")
             self.assertIn("tools", payload)
             self.assertIn(payload["model"], {p["model"] for p in ROLE_MODEL_ASSIGNMENTS.values()})
+        self.assertEqual(post.call_args_list[6].kwargs["headers"]["User-Agent"], USER_AGENT)
 
     @patch.dict(os.environ, {
         "GROQ_API_KEY": "test-groq",
