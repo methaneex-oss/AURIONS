@@ -21,7 +21,7 @@ class ProviderPreflightTests(unittest.TestCase):
             "workforce.provider_preflight.require_free_model_quota",
             return_value={"used": 0, "limit": 50, "remaining": 50},
         )
-        quota.start()
+        self.quota_mock = quota.start()
         self.addCleanup(quota.stop)
 
     def test_quota_reserve_covers_manifest_calls_preflight_and_safety_margin(self):
@@ -88,6 +88,38 @@ class ProviderPreflightTests(unittest.TestCase):
             self.assertIn("tools", payload)
             self.assertIn(payload["model"], {p["model"] for p in ROLE_MODEL_ASSIGNMENTS.values()})
         self.assertEqual(post.call_args_list[6].kwargs["headers"]["User-Agent"], USER_AGENT)
+
+    @patch.dict(os.environ, {
+        "GROQ_API_KEY": "test-groq",
+        "CLOUDFLARE_API_TOKEN": "test-cloudflare",
+        "CLOUDFLARE_ACCOUNT_ID": "test-account",
+        "OPENROUTER_API_KEY": "test-openrouter",
+    }, clear=True)
+    @patch("workforce.provider_preflight.httpx.post")
+    def test_worst_case_preflight_uses_at_most_seven_free_router_requests(self, post):
+        profiles = list(ROLE_MODEL_ASSIGNMENTS.values())
+        side_effects = []
+        for profile in profiles:
+            side_effects.append(httpx.Response(
+                503,
+                json={"error": {"message": "primary unavailable"}},
+                request=httpx.Request("POST", profile["api_url"].replace("{account_id}", "test-account")),
+            ))
+            side_effects.append(self.response("openrouter/free", "openai/gpt-oss-20b:free"))
+        side_effects.append(self.response("openrouter/free", "openai/gpt-oss-20b:free"))
+        post.side_effect = side_effects
+
+        self.assertEqual(main(), 0)
+        free_router_calls = [
+            call for call in post.call_args_list
+            if call.args[0] == "https://openrouter.ai/api/v1/chat/completions"
+        ]
+        self.assertEqual(len(free_router_calls), 7)
+        self.assertEqual(post.call_count, 13)
+        self.assertEqual(
+            [call.kwargs["minimum_remaining"] for call in self.quota_mock.call_args_list],
+            [46, 39],
+        )
 
     @patch.dict(os.environ, {
         "GROQ_API_KEY": "test-groq",
