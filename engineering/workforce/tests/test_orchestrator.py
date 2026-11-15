@@ -8,6 +8,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES
+
 from workforce.orchestrator import (
     BUILDERS, ROLES, OrchestrationError, _task_brief, _task_contract, _worker_tokens,
     validate_manifest, workspace_manifest, run_work_package,
@@ -209,6 +211,10 @@ class OrchestratorTests(unittest.TestCase):
             (root / "engineering/workforce/migrations/001_initial.sql").write_text("SELECT 1;\n", encoding="utf-8")
             (root / "engineering/workforce/src/workforce/__init__.py").write_text("", encoding="utf-8")
             (root / "engineering/workforce/tests/__init__.py").write_text("", encoding="utf-8")
+            for relative in MANDATORY_GOVERNANCE_FILES:
+                governance_file = root / relative
+                governance_file.parent.mkdir(parents=True, exist_ok=True)
+                governance_file.write_text("bounded governance fixture\n", encoding="utf-8")
             subprocess.run(["git", "init", "-q"], cwd=root, check=True)
             subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
             subprocess.run(["git", "config", "user.name", "Workforce Test"], cwd=root, check=True)

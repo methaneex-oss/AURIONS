@@ -21,7 +21,7 @@ from typing import Any
 
 import httpx
 
-from workforce.agents.runner import ROLE_INSTRUCTIONS, is_sensitive_path, safe_path
+from workforce.agents.runner import ROLE_INSTRUCTIONS, is_sensitive_path, safe_path, preflight_role_prompt
 from workforce.domain import path_is_permitted
 
 ROLES = tuple(ROLE_INSTRUCTIONS)
@@ -574,6 +574,21 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         for context_file in manifest["roles"][role]["context_files"]:
             if not safe_path(root, context_file).is_file():
                 raise OrchestrationError(f"required {role} context file does not exist: {context_file}")
+    # Preflight every role's exact base prompt before creating or dispatching
+    # any worker task. No provider credentials are used by this check.
+    prompt_preflight: dict[str, Any] = {}
+    for role in ROLES:
+        spec = manifest["roles"][role]
+        evidence = preflight_role_prompt(
+            root, role, spec["task"], spec["context_files"],
+            spec["max_tokens"], spec["max_completion_tokens"],
+        )
+        prompt_preflight[f"{role}:initial"] = evidence
+        print(
+            f"Prompt preflight {role}: {evidence['prompt_estimate_tokens']} estimated prompt tokens; "
+            f"{evidence['minimum_completion_tokens']} minimum completion tokens; "
+            f"{evidence['per_request_limit']} request ceiling; PASS."
+        )
     for test_path in manifest["test_paths"]:
         if not safe_path(root, test_path).exists():
             raise OrchestrationError(f"declared test input does not exist: {test_path}")
@@ -633,12 +648,14 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         "role_reports": reports,
         "test_results_ref": saved_test_results_ref,
         "test_results_sha256": saved_test_results_sha256,
+        "prompt_preflight": prompt_preflight,
         "status": "RUNNING",
     }
 
     def save_journal(status: str = "RUNNING") -> None:
         journal["status"] = status
         journal["role_reports"] = reports
+        journal["prompt_preflight"] = prompt_preflight
         temporary = state_path.with_suffix(".tmp")
         temporary.write_text(json.dumps(journal, indent=2), encoding="utf-8")
         os.replace(temporary, state_path)
@@ -764,7 +781,14 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         for path in spec["permitted_paths"]:
             command.extend(["--permitted-path", path])
         from workforce.agents.runner import safe_path
-        for path in spec["context_files"] + (extra_context or []):
+        actual_context_files = spec["context_files"] + (extra_context or [])
+        preflight = preflight_role_prompt(
+            root, role, spec["task"], actual_context_files,
+            spec["max_tokens"], spec["max_completion_tokens"],
+        )
+        prompt_preflight[f"{role}:dispatch"] = preflight
+        save_journal()
+        for path in actual_context_files:
             context_path = safe_path(root, path)
             if not context_path.is_file():
                 raise OrchestrationError(f"{role} context file does not exist: {path}")
@@ -893,10 +917,32 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             candidate_path.relative_to(root).as_posix(),
             test_report.relative_to(root).as_posix(),
         ]
+        # Reviewers share the same frozen candidate/test context. Check all
+        # three complete prompts before allowing the first reviewer to run.
+        for role in REVIEWERS:
+            spec = manifest["roles"][role]
+            evidence = preflight_role_prompt(
+                root, role, spec["task"], spec["context_files"] + shared_context,
+                spec["max_tokens"], spec["max_completion_tokens"],
+            )
+            prompt_preflight[f"{role}:review-context"] = evidence
+            print(
+                f"Prompt preflight {role} with frozen candidate/test evidence: "
+                f"{evidence['prompt_estimate_tokens']} estimated prompt tokens; PASS."
+            )
+        save_journal()
         for role in REVIEWERS:
             run_role(role, shared_context)
 
         integration_context = shared_context + [reports[r]["report_ref"] for r in REVIEWERS]
+        integration_spec = manifest["roles"]["integration_verifier"]
+        integration_preflight = preflight_role_prompt(
+            root, "integration_verifier",
+            integration_spec["task"], integration_spec["context_files"] + integration_context,
+            integration_spec["max_tokens"], integration_spec["max_completion_tokens"],
+        )
+        prompt_preflight["integration_verifier:integrated-context"] = integration_preflight
+        save_journal()
         run_role("integration_verifier", integration_context)
 
         review_records = [reports[r] for r in REVIEWERS]
@@ -927,6 +973,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             "review_bundle_sha256": review_sha,
             "review_reports": review_records,
             "integration_verifier_report": reports["integration_verifier"],
+            "prompt_preflight": prompt_preflight,
             "verified_reports": verified_reports,
             "verified_artifacts": verified_artifacts,
             "status": "AWAITING_DIRECTOR_REVIEW",
@@ -957,6 +1004,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             "test_results": test_report.relative_to(root).as_posix(),
             "director_packet": integrated_path.relative_to(root).as_posix(),
             "director_packet_sha256": integrated_sha,
+            "prompt_preflight": prompt_preflight,
             "status": "AWAITING_DIRECTOR_REVIEW",
         }
     except Exception:

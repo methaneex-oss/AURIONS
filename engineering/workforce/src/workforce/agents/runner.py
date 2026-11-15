@@ -156,6 +156,8 @@ def is_groq_model_permission_block(response: httpx.Response) -> bool:
 
 
 MAX_INLINE_CONTEXT_BYTES = 10_000
+MIN_COMPLETION_RESERVE = 1024
+MAX_TOOL_OUTPUT_BYTES_PER_TURN = 6_000
 
 
 def is_sensitive_path(path: Path) -> bool:
@@ -193,6 +195,98 @@ def safe_path(root: Path, relative: str) -> Path:
     if is_sensitive_path(candidate):
         raise ValueError("credential or private-key material is not accessible")
     return candidate
+
+
+def _prompt_token_estimate(messages: list[dict[str, Any]]) -> int:
+    request_bytes = len(json.dumps(
+        {"messages": messages, "tools": TOOLS}, ensure_ascii=False
+    ).encode("utf-8"))
+    return (request_bytes + 2) // 3 + 256
+
+
+def _truncate_utf8(value: str, max_bytes: int) -> str:
+    if max_bytes <= 0:
+        return ""
+    encoded = value.encode("utf-8")
+    if len(encoded) <= max_bytes:
+        return value
+    marker = "\n[tool output truncated; request a narrower range to continue]"
+    marker_bytes = marker.encode("utf-8")
+    if max_bytes <= len(marker_bytes):
+        return marker_bytes[:max_bytes].decode("utf-8", "ignore")
+    return encoded[:max_bytes - len(marker_bytes)].decode("utf-8", "ignore") + marker
+
+
+def _conversation_groups(messages: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+    groups: list[list[dict[str, Any]]] = []
+    tail = messages[2:]
+    index = 0
+    while index < len(tail):
+        message = tail[index]
+        group = [message]
+        index += 1
+        if message.get("role") == "assistant":
+            pending = {
+                call.get("id")
+                for call in (message.get("tool_calls") or [])
+                if isinstance(call, dict) and isinstance(call.get("id"), str)
+            }
+            while pending and index < len(tail):
+                following = tail[index]
+                if following.get("role") != "tool" or following.get("tool_call_id") not in pending:
+                    break
+                group.append(following)
+                pending.discard(following.get("tool_call_id"))
+                index += 1
+        groups.append(group)
+    return groups
+
+
+def _compact_conversation(
+    messages: list[dict[str, Any]], max_prompt_tokens: int
+) -> list[dict[str, Any]]:
+    """Keep the system/task and newest complete tool exchanges within the request budget."""
+    if len(messages) < 2:
+        raise RuntimeError("worker prompt is missing its system or task message")
+    base = messages[:2]
+    if _prompt_token_estimate(base) > max_prompt_tokens:
+        raise RuntimeError(
+            f"base prompt estimate ({_prompt_token_estimate(base)} tokens) exceeds the "
+            f"available {max_prompt_tokens}-token prompt budget; provider request was not sent"
+        )
+    groups = _conversation_groups(messages)
+    while groups:
+        candidate = base + [message for group in groups for message in group]
+        if _prompt_token_estimate(candidate) <= max_prompt_tokens:
+            return candidate
+        if len(groups) > 1:
+            groups.pop(0)
+            continue
+
+        # Preserve the newest tool exchange, but shrink its returned file/list
+        # content if that single exchange cannot fit beside the system and task.
+        latest = groups[0]
+        candidate = base + latest
+        while _prompt_token_estimate(candidate) > max_prompt_tokens:
+            tool_messages = [
+                message for message in latest
+                if message.get("role") == "tool" and isinstance(message.get("content"), str)
+            ]
+            if not tool_messages:
+                break
+            largest = max(tool_messages, key=lambda message: len(message["content"].encode("utf-8")))
+            current_bytes = len(largest["content"].encode("utf-8"))
+            if current_bytes <= 256:
+                break
+            largest["content"] = _truncate_utf8(largest["content"], max(128, int(current_bytes * 0.7)))
+            candidate = base + latest
+        if _prompt_token_estimate(candidate) <= max_prompt_tokens:
+            return candidate
+        raise RuntimeError(
+            "latest tool exchange cannot fit the available prompt budget after bounded "
+            "truncation; narrow the tool request; provider request was not sent"
+        )
+    return base
 
 
 class Worker:
@@ -472,6 +566,7 @@ class Worker:
 
     def run(self, task: str, context_files: list[str]) -> dict[str, Any]:
         self.deadline_monotonic = time.monotonic() + self.max_duration_minutes * 60
+    def build_messages(self, task: str, context_files: list[str]) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
         context, governance_records = self.load_mandatory_governance()
         seen = set(MANDATORY_GOVERNANCE_FILES)
         inline_context_bytes = sum(len(item.encode("utf-8")) for item in context)
@@ -481,26 +576,27 @@ class Worker:
             if rel in seen:
                 continue
             p = safe_path(self.workspace, rel)
-            if p.is_file():
-                raw = p.read_bytes()
-                digest = hashlib.sha256(raw).hexdigest()
-                header = f"\n--- TASK CONTEXT: {rel} | sha256={digest} | bytes={len(raw)} ---\n"
-                inline_entry = header + raw.decode("utf-8")
-                inline_size = len(inline_entry.encode("utf-8"))
-                if inline_context_bytes + inline_size <= MAX_INLINE_CONTEXT_BYTES:
-                    context.append(inline_entry)
-                    inline_context_bytes += inline_size
-                else:
-                    reference = (
-                        f"\n--- TASK CONTEXT NOT INLINED; use read_file: {rel} "
-                        f"| sha256={digest} | bytes={len(raw)} ---"
-                    )
-                    reference_size = len(reference.encode("utf-8"))
-                    if inline_context_bytes + reference_size > MAX_INLINE_CONTEXT_BYTES:
-                        raise RuntimeError("task context metadata exceeds the configured prompt-context ceiling; reduce context_files")
-                    context.append(reference)
-                    inline_context_bytes += reference_size
-                seen.add(rel)
+            if not p.is_file():
+                raise RuntimeError(f"task context file does not exist: {rel}")
+            raw = p.read_bytes()
+            digest = hashlib.sha256(raw).hexdigest()
+            header = f"\n--- TASK CONTEXT: {rel} | sha256={digest} | bytes={len(raw)} ---\n"
+            inline_entry = header + raw.decode("utf-8")
+            inline_size = len(inline_entry.encode("utf-8"))
+            if inline_context_bytes + inline_size <= MAX_INLINE_CONTEXT_BYTES:
+                context.append(inline_entry)
+                inline_context_bytes += inline_size
+            else:
+                reference = (
+                    f"\n--- TASK CONTEXT NOT INLINED; use read_file: {rel} "
+                    f"| sha256={digest} | bytes={len(raw)} ---"
+                )
+                reference_size = len(reference.encode("utf-8"))
+                if inline_context_bytes + reference_size > MAX_INLINE_CONTEXT_BYTES:
+                    raise RuntimeError("task context metadata exceeds the configured prompt-context ceiling; reduce context_files")
+                context.append(reference)
+                inline_context_bytes += reference_size
+            seen.add(rel)
         system = (
             "You are one specialist in the AURIONS supervised engineering workforce. You have exactly one role; do not stack roles, perform another agent's assignment, or claim another role's gate. "
             "The trusted runtime freshly read and SHA-256 hashed the full mandatory governance source set from this pinned workspace. "
@@ -520,7 +616,15 @@ class Worker:
             "Report exact work, changed files, actual tests, evidence, unresolved risks and next steps. "
             "Challenge the task itself if it conflicts with authoritative governance."
         )
-        messages = [{"role": "system", "content": system + "\n\nAUTHORITATIVE CONTEXT:\n" + "\n".join(context)}, {"role": "user", "content": task}]
+        messages = [
+            {"role": "system", "content": system + "\n\nAUTHORITATIVE CONTEXT:\n" + "\n".join(context)},
+            {"role": "user", "content": task},
+        ]
+        return messages, governance_records
+
+    def run(self, task: str, context_files: list[str]) -> dict[str, Any]:
+        self.deadline_monotonic = time.monotonic() + self.max_duration_minutes * 60
+        messages, governance_records = self.build_messages(task, context_files)
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
         if self.provider == "cloudflare":
             headers["Content-Type"] = "application/json"
@@ -529,22 +633,26 @@ class Worker:
             if remaining_seconds <= 0:
                 raise RuntimeError(f"task duration budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
             remaining = self.max_total_tokens - self.total_tokens
-            # Use a bounded UTF-8 byte-to-token heuristic plus framing margin for preflight.
-            # This is not a tokenizer guarantee: provider-reported usage is authoritative,
-            # and the durable ledger fails closed if actual usage exceeds the reservation.
-            request_bytes = len(json.dumps(
-                {"messages": messages, "tools": TOOLS}, ensure_ascii=False
-            ).encode("utf-8"))
-            prompt_reserve = (request_bytes + 2) // 3 + 256
+            # Reserve a minimum completion allowance, then discard older complete
+            # tool exchanges before shrinking the newest exchange. This prevents
+            # accumulated read/list output from exhausting later requests.
+            minimum_completion = min(MIN_COMPLETION_RESERVE, self.max_tokens)
+            prompt_budget = min(
+                self.max_request_tokens - minimum_completion,
+                remaining - minimum_completion,
+            )
+            messages = _compact_conversation(messages, prompt_budget)
+            prompt_reserve = _prompt_token_estimate(messages)
             output_limit = min(
                 self.max_tokens,
                 remaining - prompt_reserve,
                 self.max_request_tokens - prompt_reserve,
             )
-            if output_limit <= 0:
+            if output_limit < minimum_completion:
                 raise RuntimeError(
-                    f"prompt estimate ({prompt_reserve - 256} tokens) leaves no safe completion room "
-                    f"within the {self.max_request_tokens}-token per-request ceiling or remaining role budget; "
+                    f"prompt estimate ({prompt_reserve} tokens) leaves less than the "
+                    f"{minimum_completion}-token minimum completion allowance within the "
+                    f"{self.max_request_tokens}-token per-request ceiling or remaining role budget; "
                     "provider request was not sent"
                 )
             self.renew_durable_lease()
@@ -598,6 +706,7 @@ class Worker:
                     "governance_read": {"status": "READ_FROM_PINNED_WORKSPACE", "sources": governance_records},
                     "final": choice.get("content", ""),
                 }
+            tool_output_bytes = 0
             for call in tool_calls:
                 self.renew_durable_lease()
                 try:
@@ -605,8 +714,64 @@ class Worker:
                     result = self.invoke_tool(call["function"]["name"], args)
                 except Exception as exc:
                     result = f"TOOL ERROR: {type(exc).__name__}: {exc}"
-                messages.append({"role": "tool", "tool_call_id": call["id"], "content": result[:30000]})
+                remaining_output_bytes = MAX_TOOL_OUTPUT_BYTES_PER_TURN - tool_output_bytes
+                if remaining_output_bytes <= 0:
+                    result = ""
+                else:
+                    result = _truncate_utf8(result, remaining_output_bytes)
+                tool_output_bytes += len(result.encode("utf-8"))
+                messages.append({"role": "tool", "tool_call_id": call["id"], "content": result})
         raise RuntimeError(f"model-call/token budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
+
+
+
+def preflight_role_prompt(
+    workspace: Path,
+    role: str,
+    task: str,
+    context_files: list[str],
+    max_total_tokens: int,
+    max_completion_tokens: int,
+) -> dict[str, Any]:
+    """Build the exact initial role prompt without credentials or provider inference."""
+    from workforce.model_registry import role_assignment
+
+    if role not in ROLE_INSTRUCTIONS:
+        raise ValueError(f"unsupported role for prompt preflight: {role}")
+    if (not isinstance(max_total_tokens, int) or isinstance(max_total_tokens, bool)
+            or max_total_tokens < 1
+            or not isinstance(max_completion_tokens, int) or isinstance(max_completion_tokens, bool)
+            or max_completion_tokens < 1):
+        raise ValueError("prompt preflight requires positive integer role budgets")
+    worker = Worker.__new__(Worker)
+    worker.workspace = Path(workspace).resolve()
+    worker.role = role
+    messages, governance_records = worker.build_messages(task, context_files)
+    prompt_tokens = _prompt_token_estimate(messages)
+    minimum_completion = min(MIN_COMPLETION_RESERVE, max_completion_tokens)
+    request_limit = role_assignment(role)["max_request_tokens"]
+    if prompt_tokens + minimum_completion > request_limit:
+        raise RuntimeError(
+            f"{role} prompt preflight failed: {prompt_tokens}-token prompt plus "
+            f"{minimum_completion}-token minimum completion exceeds the "
+            f"{request_limit}-token per-request ceiling"
+        )
+    if prompt_tokens + minimum_completion > max_total_tokens:
+        raise RuntimeError(
+            f"{role} prompt preflight failed: {prompt_tokens}-token prompt plus "
+            f"{minimum_completion}-token minimum completion exceeds the "
+            f"{max_total_tokens}-token aggregate role budget"
+        )
+    return {
+        "role": role,
+        "prompt_estimate_tokens": prompt_tokens,
+        "minimum_completion_tokens": minimum_completion,
+        "per_request_limit": request_limit,
+        "aggregate_role_budget": max_total_tokens,
+        "context_file_count": len(context_files),
+        "governance_source_count": len(governance_records),
+        "fits": True,
+    }
 
 
 def _control_plane_post(url: str, token: str, payload: dict[str, Any]) -> dict[str, Any]:

@@ -10,7 +10,7 @@ from unittest.mock import patch
 import httpx
 
 from workforce.agents import runner as runner_module
-from workforce.agents.runner import MAX_INLINE_CONTEXT_BYTES, MANDATORY_GOVERNANCE_FILES, TOOLS, Worker, is_sensitive_path, safe_path
+from workforce.agents.runner import MAX_INLINE_CONTEXT_BYTES, MANDATORY_GOVERNANCE_FILES, TOOLS, Worker, is_sensitive_path, safe_path, _compact_conversation, _prompt_token_estimate, preflight_role_prompt
 
 
 class RunnerBudgetTests(unittest.TestCase):
@@ -39,6 +39,64 @@ class RunnerBudgetTests(unittest.TestCase):
             },
             request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
         )
+
+    def test_preflight_checks_initial_prompts_for_all_six_roles_without_credentials(self):
+        from workforce.agents.runner import ROLE_INSTRUCTIONS
+        with patch.dict("os.environ", {}, clear=True):
+            for role in ROLE_INSTRUCTIONS:
+                result = preflight_role_prompt(
+                    self.root, role, "bounded role assignment", [],
+                    max_total_tokens=12000, max_completion_tokens=1024,
+                )
+                self.assertTrue(result["fits"])
+                self.assertEqual(result["role"], role)
+                self.assertEqual(result["governance_source_count"], len(MANDATORY_GOVERNANCE_FILES))
+                self.assertLessEqual(
+                    result["prompt_estimate_tokens"] + result["minimum_completion_tokens"],
+                    result["per_request_limit"],
+                )
+
+    def test_preflight_rejects_oversized_role_prompt_before_inference(self):
+        with self.assertRaisesRegex(RuntimeError, "prompt preflight failed"):
+            preflight_role_prompt(
+                self.root, "specialist_builder", "x" * 50000, [],
+                max_total_tokens=24000, max_completion_tokens=1024,
+            )
+
+    def test_conversation_compaction_drops_old_tool_exchanges_and_keeps_latest_pair(self):
+        system = {"role": "system", "content": "system"}
+        user = {"role": "user", "content": "task"}
+        old_call = {"role": "assistant", "content": None, "tool_calls": [
+            {"id": "old-call", "type": "function", "function": {"name": "read_file", "arguments": "{}"}}
+        ]}
+        old_result = {"role": "tool", "tool_call_id": "old-call", "content": "OLD_CONTEXT " * 2000}
+        new_call = {"role": "assistant", "content": None, "tool_calls": [
+            {"id": "new-call", "type": "function", "function": {"name": "read_file", "arguments": "{}"}}
+        ]}
+        new_result = {"role": "tool", "tool_call_id": "new-call", "content": "LATEST_CONTEXT"}
+        messages = [system, user, old_call, old_result, new_call, new_result]
+        budget = _prompt_token_estimate([system, user, new_call, new_result])
+        compacted = _compact_conversation(messages, budget)
+        rendered = json.dumps(compacted)
+        self.assertNotIn("OLD_CONTEXT", rendered)
+        self.assertIn("LATEST_CONTEXT", rendered)
+        self.assertEqual(compacted[-2]["tool_calls"][0]["id"], "new-call")
+        self.assertEqual(compacted[-1]["tool_call_id"], "new-call")
+        self.assertLessEqual(_prompt_token_estimate(compacted), budget)
+
+    def test_conversation_compaction_truncates_an_oversized_latest_tool_result(self):
+        system = {"role": "system", "content": "system"}
+        user = {"role": "user", "content": "task"}
+        call = {"role": "assistant", "content": None, "tool_calls": [
+            {"id": "large-call", "type": "function", "function": {"name": "read_file", "arguments": "{}"}}
+        ]}
+        small = {"role": "tool", "tool_call_id": "large-call", "content": "x" * 1200}
+        budget = _prompt_token_estimate([system, user, call, small])
+        large = {"role": "tool", "tool_call_id": "large-call", "content": "x" * 30000}
+        compacted = _compact_conversation([system, user, call, large], budget)
+        self.assertIn("[tool output truncated", compacted[-1]["content"])
+        self.assertLessEqual(_prompt_token_estimate(compacted), budget)
+        self.assertEqual(compacted[-1]["tool_call_id"], "large-call")
 
     def test_constructor_rejects_budget_above_hard_ceiling(self):
         with patch.dict("os.environ", {"GROQ_API_KEY": "test-key-only"}, clear=True):
