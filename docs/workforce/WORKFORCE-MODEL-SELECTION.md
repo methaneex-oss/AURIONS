@@ -67,7 +67,7 @@ The Cloudflare token should have only the Workers AI inference permissions requi
 - **Model assignments:** selected and pinned in code.
 - **Role separation:** six exclusive roles; six distinct model IDs.
 - **Training context:** mandatory induction, role curricula, governance and EBT-01 are freshly injected by the runner.
-- **Model execution:** latest live diagnostic returned HTTP 403 for the Groq model-catalog endpoint and the three Groq role assignments. Groq documents 403 as an organization/project model-permission restriction; exact account policy still requires owner verification. Cloudflare assignments connected in the last recorded provider checks; role qualification remains incomplete. The OpenRouter free fallback passes its independent smoke test.
+- **Model execution:** the latest recorded live diagnostic returned HTTP 403 for Groq, but the response body was not preserved, so the exact cause was not established. Groq documents distinct organization/project model-permission error codes; the runtime now permits fallback only for those exact codes and stops on unrelated 403 responses. A fresh live diagnostic is still required. Cloudflare assignments connected in earlier provider checks; role qualification remains incomplete. The OpenRouter free fallback passed an earlier independent smoke test; the new daily-quota guard has not yet been exercised against live credentials.
 - **Agent qualification:** not established.
 - **Overnight supervision:** not established; the current workflow is a finite GitHub Actions pipeline, not a persistent worker supervisor.
 
