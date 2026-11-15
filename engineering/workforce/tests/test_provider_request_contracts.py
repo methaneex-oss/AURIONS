@@ -113,7 +113,7 @@ class ProviderRequestContractTests(unittest.TestCase):
             request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
         )
         with patch("workforce.agents.runner.httpx.post", return_value=denied) as post:
-            with self.assertRaisesRegex(RuntimeError, r"primary provider rejected request \(HTTP 403\)"):
+            with self.assertRaisesRegex(RuntimeError, r"primary provider permission denied \(HTTP 403\)"):
                 worker.run("bounded test", [])
         self.assertEqual(post.call_count, 1)
         self.assertEqual(post.call_args.args[0], "https://api.groq.com/openai/v1/chat/completions")
