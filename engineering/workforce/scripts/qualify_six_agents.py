@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
+from workforce.openrouter_limits import require_free_model_quota
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_MODEL = "openrouter/free"
@@ -128,8 +129,23 @@ def _call(
     payload: dict[str, Any],
     max_tokens: int = 256,
     fallback_model: str | None = None,
+    fallback_primary_failure: str | None = None,
 ) -> tuple[dict[str, Any], str, str]:
     profile = ROLE_MODEL_ASSIGNMENTS[role]
+    if fallback_model:
+        fallback_key = os.environ.get("OPENROUTER_API_KEY", "")
+        if not fallback_key:
+            raise ProviderFailure("pinned OpenRouter fallback key is unavailable")
+        fallback_payload = dict(payload)
+        fallback_payload["model"] = fallback_model
+        fallback_payload["max_tokens"] = max_tokens
+        data = _post(OPENROUTER_URL, fallback_key, fallback_payload, openrouter=True)
+        actual_model = data.get("model")
+        if actual_model != fallback_model or not isinstance(actual_model, str) or not actual_model.endswith(":free"):
+            raise ProviderFailure("pinned OpenRouter fallback changed model identity")
+        data["_qualification_primary_failure"] = fallback_primary_failure or "primary route failed earlier in this role's qualification"
+        return data, "openrouter-free-fallback", actual_model
+
     primary_key = os.environ.get(profile["key_env"], "")
     if not primary_key:
         raise ProviderFailure(f"missing {profile['key_env']}")
@@ -157,14 +173,12 @@ def _call(
         if not fallback_key:
             raise ProviderFailure(f"primary {exc}; OpenRouter fallback key unavailable") from None
         fallback_payload = dict(payload)
-        fallback_payload["model"] = fallback_model or OPENROUTER_MODEL
+        fallback_payload["model"] = OPENROUTER_MODEL
         fallback_payload["max_tokens"] = max_tokens
         fallback_data = _post(OPENROUTER_URL, fallback_key, fallback_payload, openrouter=True)
         actual_model = fallback_data.get("model")
         if not isinstance(actual_model, str) or not actual_model.endswith(":free"):
             raise ProviderFailure("OpenRouter fallback did not identify a verified :free model")
-        if fallback_model and actual_model != fallback_model:
-            raise ProviderFailure("OpenRouter fallback changed model during the repository tool round-trip")
         fallback_data["_qualification_primary_failure"] = f"{profile['provider']} primary request failed: {exc}"
         return fallback_data, "openrouter-free-fallback", actual_model
 
@@ -200,8 +214,20 @@ def _record(results: list[dict[str, Any]], role: str, check: str, fn) -> None:
 
 
 def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> None:
+    fallback_model: str | None = None
+    fallback_primary_failure: str | None = None
+
+    def role_call(payload: dict[str, Any], max_tokens: int = 256):
+        nonlocal fallback_model, fallback_primary_failure
+        data, provider, model = _call(
+            role, payload, max_tokens, fallback_model, fallback_primary_failure
+        )
+        if provider == "openrouter-free-fallback" and fallback_model is None:
+            fallback_model = model
+            fallback_primary_failure = str(data.get("_qualification_primary_failure", "primary route failed"))
+        return data, provider, model
     def connectivity():
-        data, provider, model = _call(role, {
+        data, provider, model = role_call({
             "messages": [{"role": "user", "content": "Reply with exactly: AURIONS_CONNECTIVITY_OK"}],
             "temperature": 0,
         })
@@ -315,14 +341,12 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
                 ),
             },
         ]
-        second_data, second_provider, second_model = _call(
-            role,
+        second_data, second_provider, second_model = role_call(
             {
                 "messages": conversation,
                 "temperature": 0,
             },
             max_tokens=1024,
-            fallback_model=first_model if first_provider == "openrouter-free-fallback" else None,
         )
         second_message = _choice(second_data)
         final_text = second_message.get("content")
@@ -463,6 +487,19 @@ def groq_model_catalog_diagnostic() -> dict[str, Any]:
 def main() -> int:
     repo_root = Path(os.environ.get("GITHUB_WORKSPACE", Path.cwd())).resolve()
     results: list[dict[str, Any]] = []
+    try:
+        quota = require_free_model_quota(
+            os.environ.get("OPENROUTER_API_KEY", ""),
+            minimum_remaining=31,
+            purpose="six-agent qualification (up to 30 role calls plus one fallback probe)",
+        )
+        print(
+            "OpenRouter free quota verified before qualification: "
+            f"{quota['remaining']}/{quota['limit']} daily requests remain."
+        )
+    except Exception as exc:
+        print(f"PREFLIGHT BLOCKED: {type(exc).__name__}: {str(exc)[:300]}")
+        return 2
     for role in ROLE_MODEL_ASSIGNMENTS:
         qualify_role(role, repo_root, results)
     openrouter_free_probe(results)
