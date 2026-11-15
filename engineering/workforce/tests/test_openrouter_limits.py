@@ -3,7 +3,13 @@ from unittest.mock import patch
 
 import httpx
 
-from workforce.openrouter_limits import get_free_model_quota, require_free_model_quota
+from workforce.openrouter_limits import (
+    free_model_request_delay,
+    get_free_model_quota,
+    parse_retry_after_seconds,
+    require_free_model_quota,
+    wait_for_free_model_request_slot,
+)
 from workforce.provider_http import USER_AGENT
 
 
@@ -14,6 +20,21 @@ class OpenRouterFreeQuotaTests(unittest.TestCase):
             json=payload,
             request=httpx.Request("GET", "https://openrouter.ai/api/v1/key"),
         )
+
+    def test_free_request_pacing_enforces_twenty_requests_per_minute(self):
+        self.assertAlmostEqual(free_model_request_delay(100.0, 101.0), 2.05)
+        self.assertEqual(free_model_request_delay(100.0, 104.0), 0.0)
+        self.assertEqual(free_model_request_delay(100.0, 101.0, retry_after_seconds=9.0), 9.0)
+
+    def test_retry_after_header_supports_seconds_and_rejects_invalid_values(self):
+        self.assertEqual(parse_retry_after_seconds("5"), 5.0)
+        self.assertEqual(parse_retry_after_seconds("not-a-delay"), 0.0)
+
+    def test_retry_after_beyond_role_deadline_fails_without_sleeping(self):
+        with patch("workforce.openrouter_limits.time.sleep") as sleep:
+            with self.assertRaisesRegex(RuntimeError, "Retry-After exceeds remaining role time"):
+                wait_for_free_model_request_slot("3600", remaining_seconds=5.0)
+        sleep.assert_not_called()
 
     def test_reads_daily_free_request_allowance(self):
         with patch(
