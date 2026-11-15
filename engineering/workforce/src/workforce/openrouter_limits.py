@@ -87,7 +87,7 @@ def wait_for_free_model_request_slot(
             time.sleep(delay)
         state.seek(0)
         state.truncate()
-        state.write(f"{time.monotonic():.9f}\\n")
+        state.write(f"{time.monotonic():.9f}\n")
         state.flush()
         os.fsync(state.fileno())
         fcntl.flock(state.fileno(), fcntl.LOCK_UN)
