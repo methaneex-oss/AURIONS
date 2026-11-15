@@ -451,7 +451,7 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         )
         second_message = _choice(second_data)
     except Exception as exc:
-        error = f"{type(exc).__name__}: {str(exc)[:240]}"
+        error = f"{type(exc).__name__}: {str(exc)[:800]}"
         results.append({"role": role, "check": "text_response", "status": "FAIL", "error": error})
         results.append({"role": role, "check": "reasoning_training_simulation", "status": "FAIL", "error": error})
         results.append({
