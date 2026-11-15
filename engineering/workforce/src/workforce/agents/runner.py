@@ -524,23 +524,38 @@ class Worker:
             openrouter=True,
             title="AURIONS free-only workforce",
         )
-        try:
-            response = httpx.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers=headers,
-                json=fallback_payload,
-                timeout=timeout,
-            )
-        except httpx.HTTPError as exc:
+        response = None
+        last_network_error = None
+        for fallback_attempt in range(1, 3):
+            try:
+                candidate_response = httpx.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers=headers,
+                    json=fallback_payload,
+                    timeout=timeout,
+                )
+            except httpx.HTTPError as exc:
+                last_network_error = type(exc).__name__
+                if fallback_attempt < 2:
+                    continue
+                raise RuntimeError(
+                    f"primary provider failed ({primary_failure}); OpenRouter free fallback "
+                    f"network failure after 2 attempts ({last_network_error})"
+                ) from None
+            if candidate_response.status_code >= 400:
+                detail = provider_error_detail(candidate_response, (self.openrouter_api_key,))
+                retryable = candidate_response.status_code == 429 or candidate_response.status_code >= 500
+                if retryable and fallback_attempt < 2:
+                    continue
+                raise RuntimeError(
+                    f"primary provider failed ({primary_failure}); OpenRouter free fallback rejected "
+                    f"request after {fallback_attempt} attempt(s) (HTTP {candidate_response.status_code}): {detail}"
+                )
+            response = candidate_response
+            break
+        if response is None:
             raise RuntimeError(
-                f"primary provider failed ({primary_failure}); OpenRouter free fallback network "
-                f"failure ({type(exc).__name__})"
-            ) from None
-        if response.status_code >= 400:
-            detail = provider_error_detail(response, (self.openrouter_api_key,))
-            raise RuntimeError(
-                f"primary provider failed ({primary_failure}); OpenRouter free fallback rejected "
-                f"request (HTTP {response.status_code}): {detail}"
+                f"primary provider failed ({primary_failure}); OpenRouter free fallback failed after 2 attempts"
             )
         try:
             data = response.json()
