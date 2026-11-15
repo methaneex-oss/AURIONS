@@ -315,6 +315,13 @@ def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) ->
         "engineering/workforce/src",
         "engineering/workforce/tests",
         "engineering/workforce/migrations",
+        # The committed manifest is required by the real six-role prompt-preflight
+        # regression test; minimal temporary repositories may omit it.
+        *(
+            ["engineering/workforce/work-package.json"]
+            if (root / "engineering/workforce/work-package.json").is_file()
+            else []
+        ),
         # Include the production qualification script when present so its tests work
         # in the isolated snapshot without burdening minimal temporary repositories.
         *(
