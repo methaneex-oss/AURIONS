@@ -248,21 +248,26 @@ jobs:
 
           manifest = json.loads(Path(os.environ["WORKFORCE_MANIFEST_COPY"]).read_text(encoding="utf-8"))
           runtime_calls = sum(role["max_model_calls"] for role in manifest["roles"].values())
-          qualification_fallback_calls = 13  # two calls per six roles, plus one OpenRouter free-route probe
           safety_margin = 2
-          minimum_required = runtime_calls + qualification_fallback_calls + safety_margin
+          minimum_required = runtime_calls + safety_margin
           quota = require_free_model_quota(
               os.environ["OPENROUTER_API_KEY"],
               minimum_remaining=minimum_required,
-              purpose="fresh six-agent qualification (up to 13 free fallback requests), full WF-03 fallback reserve, and safety margin",
+              purpose="the full WF-03 free-fallback reserve plus a two-request safety margin; qualification is primary-only",
           )
           print(
               f"Verified OpenRouter free quota: {quota['remaining']} remaining; "
-              f"reserved {qualification_fallback_calls} qualification, {runtime_calls} WF-03, "
-              f"and {safety_margin} safety requests."
+              f"reserved {runtime_calls} WF-03 fallback requests plus {safety_margin} safety requests. "
+              "Six-agent qualification will use primary providers only."
           )
           PY
-      - name: Run fresh six-agent qualification on the exact candidate HEAD
+      - name: Run fresh six-agent primary-only qualification on the exact candidate HEAD
+        env:
+          AURIONS_QUALIFICATION_PRIMARY_ONLY: "true"
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           python -m py_compile engineering/workforce/scripts/qualify_six_agents.py
           python engineering/workforce/scripts/qualify_six_agents.py
