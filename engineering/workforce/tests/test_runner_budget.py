@@ -40,6 +40,27 @@ class RunnerBudgetTests(unittest.TestCase):
             request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
         )
 
+    def test_committed_wf03_manifest_preflights_all_six_real_role_prompts(self):
+        repository_root = Path(__file__).resolve().parents[3]
+        manifest_path = repository_root / "engineering/workforce/work-package.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        with patch.dict("os.environ", {}, clear=True):
+            for role, spec in manifest["roles"].items():
+                with self.subTest(role=role):
+                    result = preflight_role_prompt(
+                        repository_root, role, spec["task"], spec["context_files"],
+                        spec["max_tokens"], spec["max_completion_tokens"],
+                    )
+                    self.assertTrue(result["fits"])
+                    self.assertLessEqual(
+                        result["prompt_estimate_tokens"] + result["completion_reserve_tokens"],
+                        result["per_request_limit"],
+                    )
+                    self.assertLessEqual(
+                        result["prompt_estimate_tokens"] + result["completion_reserve_tokens"],
+                        result["aggregate_role_budget"],
+                    )
+
     def test_preflight_checks_initial_prompts_for_all_six_roles_without_credentials(self):
         from workforce.agents.runner import ROLE_INSTRUCTIONS
         with patch.dict("os.environ", {}, clear=True):
