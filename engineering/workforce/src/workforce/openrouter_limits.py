@@ -3,7 +3,10 @@ from __future__ import annotations
 
 from datetime import timezone
 from email.utils import parsedate_to_datetime
-import threading
+import fcntl
+import hashlib
+import os
+import tempfile
 import time
 from typing import Any
 
@@ -17,8 +20,6 @@ OPENROUTER_KEY_INFO_URL = "https://openrouter.ai/api/v1/key"
 # account. A process-wide gate spaces requests even when multiple workers share
 # one orchestrator process.
 FREE_MODEL_MIN_REQUEST_INTERVAL_SECONDS = 3.05
-_free_model_request_lock = threading.Lock()
-_last_free_model_request_at = 0.0
 
 
 def parse_retry_after_seconds(value: str | None) -> float:
@@ -51,13 +52,33 @@ def wait_for_free_model_request_slot(
     retry_after: str | None = None,
     *,
     remaining_seconds: float | None = None,
+    account_key: str | None = None,
 ) -> float:
-    """Pace free-router requests and honor Retry-After without exceeding role deadlines."""
-    global _last_free_model_request_at
+    """Pace free-router requests across worker subprocesses and honor Retry-After.
+
+    A locked, account-key-scoped state file in the runner's shared temporary
+    directory coordinates the six independently spawned worker processes.
+    Only a one-way digest of the API key is used in the filename.
+    """
+    key_fingerprint = hashlib.sha256((account_key or "default").encode("utf-8")).hexdigest()[:20]
+    state_path = os.path.join(
+        tempfile.gettempdir(),
+        f"aurions-openrouter-free-rate-{key_fingerprint}.lock",
+    )
+    flags = os.O_CREAT | os.O_RDWR
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(state_path, flags, 0o600)
     retry_delay = parse_retry_after_seconds(retry_after)
-    with _free_model_request_lock:
+    with os.fdopen(descriptor, "r+", encoding="ascii") as state:
+        fcntl.flock(state.fileno(), fcntl.LOCK_EX)
+        raw_last = state.read().strip()
+        try:
+            last_request_at = float(raw_last) if raw_last else 0.0
+        except ValueError:
+            raise RuntimeError("shared OpenRouter rate-limit state is corrupt; refusing an unpaced request") from None
         now = time.monotonic()
-        delay = free_model_request_delay(_last_free_model_request_at, now, retry_delay)
+        delay = free_model_request_delay(last_request_at, now, retry_delay)
         if remaining_seconds is not None:
             if remaining_seconds <= 0 or delay >= remaining_seconds:
                 raise RuntimeError(
@@ -65,7 +86,12 @@ def wait_for_free_model_request_slot(
                 )
         if delay:
             time.sleep(delay)
-        _last_free_model_request_at = time.monotonic()
+        state.seek(0)
+        state.truncate()
+        state.write(f"{time.monotonic():.9f}\\n")
+        state.flush()
+        os.fsync(state.fileno())
+        fcntl.flock(state.fileno(), fcntl.LOCK_UN)
         return delay
 
 
