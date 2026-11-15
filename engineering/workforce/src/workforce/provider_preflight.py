@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from pathlib import Path
 
 import httpx
 
@@ -15,6 +16,29 @@ from workforce.agents.runner import TOOLS, is_groq_model_permission_block, provi
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
 from workforce.openrouter_limits import require_free_model_quota
 from workforce.provider_http import chat_completion_headers
+
+
+def _quota_requirements(manifest: dict) -> dict[str, int]:
+    """Calculate the free-router reserve from the committed WF-03 role budgets."""
+    roles = manifest.get("roles") if isinstance(manifest, dict) else None
+    if not isinstance(roles, dict) or set(roles) != set(ROLE_MODEL_ASSIGNMENTS):
+        raise ValueError("work-package manifest must define exactly the six configured workforce roles")
+    calls = []
+    for role, spec in roles.items():
+        value = spec.get("max_model_calls") if isinstance(spec, dict) else None
+        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+            raise ValueError(f"{role}.max_model_calls must be a positive integer")
+        calls.append(value)
+    work_package_calls = sum(calls)
+    preflight_max_requests = len(ROLE_MODEL_ASSIGNMENTS) + 1  # one fallback per role plus router probe
+    safety_margin = 2
+    return {
+        "work_package_calls": work_package_calls,
+        "preflight_max_requests": preflight_max_requests,
+        "safety_margin": safety_margin,
+        "before_preflight": work_package_calls + preflight_max_requests + safety_margin,
+        "after_preflight": work_package_calls + safety_margin,
+    }
 
 
 def _verify_free_fallback(payload: dict, openrouter_key: str) -> tuple[str, int]:
@@ -74,14 +98,26 @@ def main() -> int:
         return 2
 
     try:
+        manifest_path = Path(
+            os.environ.get("MANIFEST_PATH", "engineering/workforce/work-package.json")
+        ).resolve()
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        quota_requirements = _quota_requirements(manifest)
         quota = require_free_model_quota(
             openrouter_key,
-            minimum_remaining=27,
-            purpose="provider preflight plus the 20-request WF-03 fallback reserve",
+            minimum_remaining=quota_requirements["before_preflight"],
+            purpose=(
+                "all WF-03 role-call ceilings, the maximum seven-request provider "
+                "preflight exposure, and a two-request safety margin"
+            ),
         )
         print(
             "OpenRouter free quota verified before provider preflight: "
-            f"{quota['remaining']}/{quota['limit']} daily requests remain."
+            f"{quota['remaining']}/{quota['limit']} daily requests remain; "
+            f"reserve={quota_requirements['before_preflight']} "
+            f"({quota_requirements['work_package_calls']} WF-03 + "
+            f"{quota_requirements['preflight_max_requests']} preflight + "
+            f"{quota_requirements['safety_margin']} safety)."
         )
     except Exception as exc:
         print(f"PREFLIGHT BLOCKED: {type(exc).__name__}: {str(exc)[:300]}")
@@ -244,6 +280,21 @@ def main() -> int:
     except Exception as exc:
         print(f"FAIL openrouter_free_fallback: {type(exc).__name__}: {str(exc)[:400]}")
         failures.append("openrouter_free_fallback")
+
+    try:
+        remaining_quota = require_free_model_quota(
+            openrouter_key,
+            minimum_remaining=quota_requirements["after_preflight"],
+            purpose="the complete WF-03 role-call ceiling plus a two-request safety margin after preflight",
+        )
+        print(
+            "OpenRouter quota rechecked after provider preflight: "
+            f"{remaining_quota['remaining']} remaining; "
+            f"{quota_requirements['after_preflight']} required for WF-03."
+        )
+    except Exception as exc:
+        print(f"PREFLIGHT BLOCKED: post-preflight quota reserve failed: {type(exc).__name__}: {str(exc)[:300]}")
+        failures.append("openrouter_quota_reserve")
 
     print(f"PROVIDER PREFLIGHT: {len(ROLE_MODEL_ASSIGNMENTS) + 1 - len(failures)}/{len(ROLE_MODEL_ASSIGNMENTS) + 1} checks passed.")
     if failures:
