@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import httpx
 
-from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES, Worker
+from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES, Worker, provider_error_detail
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
 
 
@@ -57,6 +57,47 @@ class ProviderRequestContractTests(unittest.TestCase):
                 self.assertNotIn(other, payload)
                 self.assertEqual(payload["model"], profile["model"])
                 self.assertEqual(result["final"], "contract-ok")
+
+
+    def test_cloudflare_errors_array_is_extracted_without_copying_untrusted_fields(self):
+        response = httpx.Response(
+            403,
+            json={
+                "success": False,
+                "errors": [
+                    {"code": 10000, "message": "Invalid API token", "documentation_url": "do-not-copy"},
+                    {"code": 10001, "message": "Second diagnostic"},
+                ],
+                "debug": "do-not-copy",
+            },
+            headers={"x-private-debug": "do-not-copy"},
+            request=httpx.Request("POST", "https://api.cloudflare.com/client/v4/accounts/test/ai/run"),
+        )
+        rendered = provider_error_detail(response, ("test-secret",))
+        self.assertIn('"cloudflare_errors"', rendered)
+        self.assertIn("Invalid API token", rendered)
+        self.assertIn("10001", rendered)
+        self.assertNotIn("documentation_url", rendered)
+        self.assertNotIn("do-not-copy", rendered)
+
+    def test_rfc9457_problem_details_are_extracted_and_secrets_redacted(self):
+        response = httpx.Response(
+            403,
+            json={
+                "type": "https://example.invalid/problems/permission",
+                "title": "Forbidden",
+                "detail": "Token test-secret lacks Workers AI permission",
+                "status": 403,
+                "instance": "do-not-copy",
+            },
+            request=httpx.Request("POST", "https://api.cloudflare.com/client/v4/accounts/test/ai/run"),
+        )
+        rendered = provider_error_detail(response, ("test-secret",))
+        self.assertIn('"problem"', rendered)
+        self.assertIn("Forbidden", rendered)
+        self.assertIn("[REDACTED]", rendered)
+        self.assertNotIn("test-secret", rendered)
+        self.assertNotIn("instance", rendered)
 
 
 if __name__ == "__main__":
