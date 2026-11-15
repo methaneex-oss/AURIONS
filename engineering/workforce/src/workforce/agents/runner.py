@@ -532,6 +532,7 @@ class Worker:
             wait_for_free_model_request_slot(
                 retry_after,
                 remaining_seconds=self.remaining_seconds(),
+                account_key=self.openrouter_api_key,
             )
             retry_after = None
             try:
