@@ -14,12 +14,12 @@ on:
         default: false
         type: boolean
       confirm_groq_free_plan:
-        description: "I verified this Groq account is on Free tier, not Developer tier. Developer tier charges per token."
+        description: "I verified this account is on Groq Free, not Developer tier, and checked its current model rate limits. Developer tier charges per token."
         required: true
         default: false
         type: boolean
       confirm_openrouter_free_only:
-        description: "I confirm OpenRouter fallback is openrouter/free only, only returned :free models are accepted, and no credits or paid routes will be used."
+        description: "I confirm OpenRouter fallback is openrouter/free only, only returned :free models are accepted, sufficient free daily quota is available, and no credits or paid routes will be used."
         required: true
         default: false
         type: boolean
