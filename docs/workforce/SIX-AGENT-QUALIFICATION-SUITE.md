@@ -49,18 +49,21 @@ run through the provider-smoke workflow) before any workforce task is dispatched
   workflow checks the 39-request reserve again immediately before worker execution.
   These values are calculated from the committed manifest, not copied as fixed
   assumptions. Treat the quota as a hard ceiling and never purchase credits to raise it.
-- Once a role falls back, qualification pins the actual returned `:free` model for
-  the remainder of its two-request conversation, matching the production worker's per-conversation pinning.
+- In WF-03, once a worker falls back, it pins the actual returned `:free` model for
+  the remainder of that worker conversation. Every retry uses the same pinned model.
 - No paid model, paid credit, automatic paid upgrade, or non-free router is allowed.
 - HTTP 401, Cloudflare HTTP 403 and request-contract errors do not trigger fallback; Groq model-permission HTTP 403 is the explicit exception.
 - The workflow does not print provider response bodies or credentials.
 
 ## Required GitHub Actions secrets
 
+The isolated primary-only qualification workflow requires:
 - `GROQ_API_KEY`
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
-- `OPENROUTER_API_KEY`
+
+The provider-smoke and supervised WF-03 workflows additionally require:
+- `OPENROUTER_API_KEY` for the explicitly free-only fallback and live fallback preflight.
 
 The primary-only workflow is available through **Actions → Six-agent qualification → Run workflow**.
 It is manual-only and requires explicit confirmation of the run, Groq Free tier and
