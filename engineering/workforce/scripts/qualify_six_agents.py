@@ -101,6 +101,24 @@ def _post(
         raise ProviderFailure("provider response was not a JSON object")
     return data
 
+def _openrouter_post_with_two_attempts(payload: dict[str, Any], token: str) -> dict[str, Any]:
+    for attempt in range(1, 3):
+        try:
+            return _post(OPENROUTER_URL, token, payload, openrouter=True)
+        except ProviderFailure as exc:
+            if not exc.retryable:
+                raise
+            if attempt == 2:
+                raise ProviderFailure(
+                    f"OpenRouter free fallback failed after 2 attempts: {exc}",
+                    retryable=True,
+                    status_code=exc.status_code,
+                    provider_error_type=exc.provider_error_type,
+                    provider_error_code=exc.provider_error_code,
+                ) from None
+    raise ProviderFailure("OpenRouter free fallback failed after 2 attempts", retryable=True)
+
+
 def _call(
     role: str,
     payload: dict[str, Any],
@@ -116,7 +134,7 @@ def _call(
         fallback_payload = dict(payload)
         fallback_payload["model"] = fallback_model
         fallback_payload["max_tokens"] = max_tokens
-        data = _post(OPENROUTER_URL, fallback_key, fallback_payload, openrouter=True)
+        data = _openrouter_post_with_two_attempts(fallback_payload, fallback_key)
         actual_model = data.get("model")
         if actual_model != fallback_model or not isinstance(actual_model, str) or not actual_model.endswith(":free"):
             raise ProviderFailure("pinned OpenRouter fallback changed model identity")
@@ -156,7 +174,7 @@ def _call(
         fallback_payload = dict(payload)
         fallback_payload["model"] = OPENROUTER_MODEL
         fallback_payload["max_tokens"] = max_tokens
-        fallback_data = _post(OPENROUTER_URL, fallback_key, fallback_payload, openrouter=True)
+        fallback_data = _openrouter_post_with_two_attempts(fallback_payload, fallback_key)
         actual_model = fallback_data.get("model")
         if not isinstance(actual_model, str) or not actual_model.endswith(":free"):
             raise ProviderFailure("OpenRouter fallback did not identify a verified :free model")
