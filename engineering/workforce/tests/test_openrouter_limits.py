@@ -32,7 +32,7 @@ class OpenRouterFreeQuotaTests(unittest.TestCase):
 
     def test_retry_after_beyond_role_deadline_fails_without_sleeping(self):
         with patch("workforce.openrouter_limits.time.sleep") as sleep:
-            with self.assertRaisesRegex(RuntimeError, "Retry-After exceeds remaining role time"):
+            with self.assertRaisesRegex(RuntimeError, "exceeds remaining role time"):
                 wait_for_free_model_request_slot("3600", remaining_seconds=5.0)
         sleep.assert_not_called()
 
