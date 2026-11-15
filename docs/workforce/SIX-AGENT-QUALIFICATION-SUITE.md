@@ -35,7 +35,12 @@ free-model identity, and function-call support.
   the fallback is rejected.
 - OpenRouter free variants are rate-limited (currently 20 requests/minute and 50
   requests/day without a qualifying credit purchase); failed attempts count toward
-  the daily cap. Treat the quota as a hard ceiling and never purchase credits to raise it.
+  the daily cap. The qualification checks the live daily counter before inference,
+  provider preflight reserves enough quota for the remaining WF-03 model-call budget,
+  and the orchestrated workflow checks that reserve again immediately before work.
+  Treat the quota as a hard ceiling and never purchase credits to raise it.
+- Once a role falls back, qualification pins the actual returned `:free` model for
+  the rest of that role's checks, matching the production worker's per-conversation pinning.
 - No paid model, paid credit, automatic paid upgrade, or non-free router is allowed.
 - HTTP 401, Cloudflare HTTP 403 and request-contract errors do not trigger fallback; Groq model-permission HTTP 403 is the explicit exception.
 - The workflow does not print provider response bodies or credentials.
