@@ -13,6 +13,7 @@ import httpx
 
 from workforce.agents.runner import TOOLS, is_groq_model_permission_block, provider_error_detail
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
+from workforce.openrouter_limits import require_free_model_quota
 
 
 def _verify_free_fallback(payload: dict, openrouter_key: str) -> tuple[str, int]:
@@ -71,6 +72,20 @@ def main() -> int:
     ]
     if missing:
         print("PREFLIGHT BLOCKED: missing required credentials: " + ", ".join(missing))
+        return 2
+
+    try:
+        quota = require_free_model_quota(
+            openrouter_key,
+            minimum_remaining=27,
+            purpose="provider preflight plus the 20-request WF-03 fallback reserve",
+        )
+        print(
+            "OpenRouter free quota verified before provider preflight: "
+            f"{quota['remaining']}/{quota['limit']} daily requests remain."
+        )
+    except Exception as exc:
+        print(f"PREFLIGHT BLOCKED: {type(exc).__name__}: {str(exc)[:300]}")
         return 2
 
     failures: list[str] = []
