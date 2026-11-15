@@ -344,6 +344,82 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertIn("primary HTTP 429", result["route_history"][-1]["primary_failure"])
         self.assertEqual(result["total_tokens"], 100)
 
+    def test_openrouter_transient_fallback_failure_retries_once_then_succeeds(self):
+        env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        primary = httpx.Response(
+            503, json={"error": {"message": "primary unavailable"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        fallback_429 = httpx.Response(
+            429, json={"error": {"message": "free route rate limited"}},
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        fallback_ok = httpx.Response(
+            200,
+            json={
+                "model": "openai/gpt-oss-20b:free",
+                "usage": {"prompt_tokens": 80, "completion_tokens": 20, "total_tokens": 100},
+                "choices": [{"message": {"role": "assistant", "content": "bounded result"}, "finish_reason": "stop"}],
+            },
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        with patch(
+            "workforce.agents.runner.httpx.post",
+            side_effect=[primary, fallback_429, fallback_ok],
+        ) as provider:
+            result = worker.run("small task", [])
+        self.assertEqual(provider.call_count, 3)
+        self.assertEqual(result["provider"], "openrouter-free-fallback")
+        self.assertEqual(result["model"], "openai/gpt-oss-20b:free")
+        self.assertEqual(provider.call_args_list[1].args[0], "https://openrouter.ai/api/v1/chat/completions")
+        self.assertEqual(provider.call_args_list[2].args[0], "https://openrouter.ai/api/v1/chat/completions")
+
+    def test_openrouter_fallback_stops_after_two_transient_attempts(self):
+        env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        primary = httpx.Response(
+            503, json={"error": {"message": "primary unavailable"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        fallback_1 = httpx.Response(
+            429, json={"error": {"message": "rate limited"}},
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        fallback_2 = httpx.Response(
+            503, json={"error": {"message": "still unavailable"}},
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        with patch(
+            "workforce.agents.runner.httpx.post",
+            side_effect=[primary, fallback_1, fallback_2],
+        ) as provider:
+            with self.assertRaisesRegex(RuntimeError, "rejected request after 2 attempts"):
+                worker.run("small task", [])
+        self.assertEqual(provider.call_count, 3)
+
+    def test_openrouter_fallback_does_not_retry_permanent_client_errors(self):
+        env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        primary = httpx.Response(
+            503, json={"error": {"message": "primary unavailable"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        fallback_401 = httpx.Response(
+            401, json={"error": {"message": "invalid fallback key"}},
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        with patch(
+            "workforce.agents.runner.httpx.post",
+            side_effect=[primary, fallback_401],
+        ) as provider:
+            with self.assertRaisesRegex(RuntimeError, "after 1 attempt"):
+                worker.run("small task", [])
+        self.assertEqual(provider.call_count, 2)
+
     def test_openrouter_free_model_is_pinned_for_the_worker_conversation(self):
         env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
         with patch.dict("os.environ", env, clear=True):
