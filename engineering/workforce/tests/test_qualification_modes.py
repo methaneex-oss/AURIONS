@@ -53,6 +53,27 @@ class QualificationModeTests(unittest.TestCase):
                     qualification._call("lead_builder", {"messages": [{"role": "user", "content": "test"}]})
         self.assertEqual(post.call_count, 2)
 
+    def test_primary_retry_does_not_repeat_permanent_groq_model_permission_403(self):
+        env = {
+            "GROQ_API_KEY": "test-primary-key",
+            "AURIONS_QUALIFICATION_PRIMARY_ONLY": "true",
+        }
+        failure = qualification.ProviderFailure(
+            "HTTP 403: model permission blocked",
+            retryable=True,
+            status_code=403,
+            provider_error_type="permissions_error",
+            provider_error_code="model_permission_blocked_project",
+        )
+        with patch.dict("os.environ", env, clear=True):
+            with patch.object(qualification, "_post", side_effect=failure) as post:
+                with self.assertRaisesRegex(qualification.ProviderFailure, "model permission blocked"):
+                    qualification._call(
+                        "lead_builder",
+                        {"messages": [{"role": "user", "content": "test"}]},
+                    )
+        post.assert_called_once()
+
     def test_groq_request_too_large_429_is_not_retryable(self):
         response = qualification.httpx.Response(
             429,
