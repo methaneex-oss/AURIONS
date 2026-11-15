@@ -37,7 +37,7 @@ class OpenRouterFreeQuotaTests(unittest.TestCase):
                 ):
                     with patch("workforce.openrouter_limits.time.sleep") as sleep:
                         first = wait_for_free_model_request_slot()
-                        second = wait_for_free_model_request_slot(account_key="shared-test-account")
+                        second = wait_for_free_model_request_slot()
         self.assertEqual(first, 0.0)
         self.assertAlmostEqual(second, 2.05)
         sleep.assert_called_once_with(2.05)
