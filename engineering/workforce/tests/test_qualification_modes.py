@@ -13,7 +13,7 @@ SPEC.loader.exec_module(qualification)
 
 
 class QualificationModeTests(unittest.TestCase):
-    def test_primary_only_mode_stops_on_retryable_primary_failure_without_fallback(self):
+    def test_primary_only_retries_one_transient_primary_failure_without_fallback(self):
         env = {
             "GROQ_API_KEY": "test-primary-key",
             "OPENROUTER_API_KEY": "test-free-key",
@@ -23,13 +23,56 @@ class QualificationModeTests(unittest.TestCase):
             with patch.object(
                 qualification,
                 "_post",
-                side_effect=qualification.ProviderFailure("HTTP 429: rate limited", retryable=True),
+                side_effect=[
+                    qualification.ProviderFailure("network ReadTimeout", retryable=True),
+                    {"model": "openai/gpt-oss-120b"},
+                ],
             ) as post:
-                with self.assertRaisesRegex(qualification.ProviderFailure, "primary-only qualification stopped"):
+                data, provider, model = qualification._call(
+                    "lead_builder", {"messages": [{"role": "user", "content": "test"}]}
+                )
+        self.assertEqual(data["model"], "openai/gpt-oss-120b")
+        self.assertEqual(provider, "groq")
+        self.assertEqual(model, "openai/gpt-oss-120b")
+        self.assertEqual(post.call_count, 2)
+        self.assertTrue(all(not call.kwargs.get("openrouter", False) for call in post.call_args_list))
+        self.assertTrue(all("openrouter.ai" not in call.args[0] for call in post.call_args_list))
+
+    def test_primary_only_stops_after_two_transient_primary_failures(self):
+        env = {
+            "GROQ_API_KEY": "test-primary-key",
+            "AURIONS_QUALIFICATION_PRIMARY_ONLY": "true",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            with patch.object(
+                qualification,
+                "_post",
+                side_effect=qualification.ProviderFailure("network ReadTimeout", retryable=True),
+            ) as post:
+                with self.assertRaisesRegex(qualification.ProviderFailure, "after 2 primary attempts"):
                     qualification._call("lead_builder", {"messages": [{"role": "user", "content": "test"}]})
-        post.assert_called_once()
-        self.assertFalse(post.call_args.kwargs.get("openrouter", False))
-        self.assertNotIn("openrouter.ai", post.call_args.args[0])
+        self.assertEqual(post.call_count, 2)
+
+    def test_groq_request_too_large_429_is_not_retryable(self):
+        response = qualification.httpx.Response(
+            429,
+            json={"error": {"message": "Request too large for model on output tokens per minute", "type": "rate_limit_error", "code": "rate_limit_exceeded"}},
+            request=qualification.httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        with patch.object(qualification.httpx, "post", return_value=response):
+            with self.assertRaises(qualification.ProviderFailure) as raised:
+                qualification._post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    "test-key",
+                    {"model": "qwen/qwen3.8-27b"},
+                    groq_primary=True,
+                )
+        self.assertFalse(raised.exception.retryable)
+        self.assertIn("Request too large", str(raised.exception))
+
+    def test_code_reviewer_uses_small_qualification_followup_budget(self):
+        self.assertEqual(qualification._followup_completion_budget("code_reviewer"), 256)
+        self.assertEqual(qualification._followup_completion_budget("specialist_builder"), 4096)
 
     def test_default_mode_retains_free_only_fallback(self):
         env = {
