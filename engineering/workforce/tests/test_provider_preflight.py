@@ -14,6 +14,9 @@ from workforce.provider_http import USER_AGENT
 
 class ProviderPreflightTests(unittest.TestCase):
     def setUp(self):
+        free_wait = patch("workforce.provider_preflight.wait_for_free_model_request_slot")
+        free_wait.start()
+        self.addCleanup(free_wait.stop)
         quota = patch(
             "workforce.provider_preflight.require_free_model_quota",
             return_value={"used": 0, "limit": 50, "remaining": 50},
