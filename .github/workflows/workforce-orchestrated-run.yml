@@ -308,14 +308,16 @@ jobs:
               role["max_model_calls"]
               for role in manifest["roles"].values()
           )
+          safety_margin = 2
+          minimum_required = required + safety_margin
           quota = require_free_model_quota(
               os.environ["OPENROUTER_API_KEY"],
-              minimum_remaining=required,
-              purpose="the full WF-03 model-call budget",
+              minimum_remaining=minimum_required,
+              purpose="the full WF-03 model-call budget plus a two-request safety margin",
           )
           print(
               f"Verified OpenRouter free quota: {quota['remaining']} remaining; "
-              f"reserved {required} possible fallback calls for WF-03."
+              f"reserved {required} possible fallback calls plus {safety_margin} safety requests."
           )
           PY
       - name: Start authenticated local control plane
