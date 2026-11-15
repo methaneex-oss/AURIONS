@@ -52,6 +52,9 @@ class SixAgentQualificationTests(unittest.TestCase):
             return self.first_response(), "groq", "openai/gpt-oss-120b"
         self.assertEqual(payload["messages"][0]["content"], self.initial_prompt)
         tool_message = next(item for item in payload["messages"] if item["role"] == "tool")
+        self.assertIn("Do not make another tool call", payload["messages"][-1]["content"])
+        self.assertIn("README_CONTENT_START_", tool_message["content"])
+        self.assertIn("README_CONTENT_END_", tool_message["content"])
         challenge = re.search(r"QUALIFICATION_CONTEXT_CHALLENGE: ([0-9a-f]+)", tool_message["content"]).group(1)
         answer = {
             "text": "I can generate text. TEXT_RESPONSE_OK",
@@ -129,6 +132,47 @@ class SixAgentQualificationTests(unittest.TestCase):
             [item["check"] for item in results],
             ["connectivity", "text_response", "reasoning_training_simulation", "repository_tool_access"],
         )
+
+    def test_followup_budget_accounts_for_gemma_reasoning_output(self):
+        calls = []
+
+        def capture_call(role, payload, max_tokens, fallback_model=None, fallback_primary_failure=None):
+            calls.append(max_tokens)
+            if payload.get("tools"):
+                return self.first_response(), "cloudflare", "@cf/google/gemma-4-26b-a4b-it"
+            tool_message = next(item for item in payload["messages"] if item["role"] == "tool")
+            challenge = re.search(r"QUALIFICATION_CONTEXT_CHALLENGE: ([0-9a-f]+)", tool_message["content"]).group(1)
+            answer = {
+                "text": "TEXT_RESPONSE_OK",
+                "value": 110,
+                "parity": "even",
+                "method": "multiply then subtract",
+                "first_non_empty_line": "# test repository",
+                "context_challenge": challenge,
+            }
+            return {
+                "choices": [{
+                    "message": {"role": "assistant", "content": json.dumps(answer)},
+                    "finish_reason": "stop",
+                }],
+            }, "cloudflare", "@cf/google/gemma-4-26b-a4b-it"
+
+        results = []
+        with patch.object(qualification, "_call", side_effect=capture_call):
+            qualification.qualify_role("specialist_builder", self.root, results)
+        self.assertEqual(calls, [512, 4096])
+        self.assertTrue(all(item["status"] == "PASS" for item in results))
+
+    def test_context_extraction_prompt_excludes_wrapper_labels(self):
+        results = []
+        with patch.object(qualification, "_call", side_effect=self.successful_call) as call:
+            qualification.qualify_role("lead_builder", self.root, results)
+        followup = call.call_args_list[1].kwargs if call.call_args_list else {}
+        payload = call.call_args_list[1].args[1]
+        prompt = payload["messages"][-1]["content"]
+        self.assertIn("README_CONTENT_START_", prompt)
+        self.assertIn("ignore all wrapper labels", prompt)
+        self.assertIn("Do not make another tool call", prompt)
 
     def test_unverified_followup_records_bounded_response_preview(self):
         def partial_call(role, payload, max_tokens, fallback_model=None, fallback_primary_failure=None):
