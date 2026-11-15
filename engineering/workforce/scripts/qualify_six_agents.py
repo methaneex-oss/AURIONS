@@ -21,6 +21,7 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_MODEL = "openrouter/free"
 TIMEOUT_SECONDS = 45
 MAX_RESPONSE_BYTES = 1_000_000
+USER_AGENT = "AURIONS-Agent-Qualification/1.0 (+https://github.com/methaneex-oss/AURIONS)"
 
 READ_FILE_TOOL = [{
     "type": "function",
@@ -57,6 +58,7 @@ def _post(
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
         "Accept": "application/json",
+        "User-Agent": USER_AGENT,
     }
     if openrouter:
         headers["HTTP-Referer"] = "https://github.com/methaneex-oss/AURIONS"
@@ -238,7 +240,7 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         data, provider, model = role_call({
             "messages": [{"role": "user", "content": "Write one short sentence confirming you can generate text. Include the exact token TEXT_RESPONSE_OK."}],
             "temperature": 0,
-        })
+        }, max_tokens=1024)
         content = _choice(data).get("content")
         if not isinstance(content, str) or not content.strip() or "TEXT_RESPONSE_OK" not in content:
             choices = data.get("choices") or [{}]
@@ -426,7 +428,7 @@ def groq_model_catalog_diagnostic() -> dict[str, Any]:
         return {"status": "BLOCKED", "reason": "GROQ_API_KEY is missing"}
     request = urllib.request.Request(
         "https://api.groq.com/openai/v1/models",
-        headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
+        headers={"Authorization": f"Bearer {token}", "Accept": "application/json", "User-Agent": USER_AGENT},
     )
     try:
         with urllib.request.urlopen(request, timeout=15) as response:
@@ -469,6 +471,12 @@ def groq_model_catalog_diagnostic() -> dict[str, Any]:
                     {key: item[key] for key in ("code", "message") if isinstance(item.get(key), (str, int))}
                     for item in body["errors"][:2] if isinstance(item, dict)
                 ]
+            problem = {
+                key: body[key] for key in ("type", "title", "detail", "status")
+                if isinstance(body.get(key), (str, int))
+            }
+            if problem:
+                detail["problem"] = problem
         rendered = json.dumps(detail, ensure_ascii=True)[:500]
         if token:
             rendered = rendered.replace(token, "[REDACTED]")
