@@ -189,5 +189,32 @@ class ProviderPreflightTests(unittest.TestCase):
             post.assert_not_called()
 
 
+    @patch.dict(os.environ, {
+        "GROQ_API_KEY": "test-groq",
+        "CLOUDFLARE_API_TOKEN": "test-cloudflare",
+        "CLOUDFLARE_ACCOUNT_ID": "test-account",
+        "OPENROUTER_API_KEY": "test-openrouter",
+    }, clear=True)
+    @patch("workforce.provider_preflight.httpx.post")
+    def test_generic_groq_403_does_not_use_free_fallback(self, post):
+        denied = httpx.Response(
+            403,
+            json={"error": {"message": "account access denied", "type": "forbidden", "code": "account_access_denied"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        profiles = list(ROLE_MODEL_ASSIGNMENTS.values())
+        post.side_effect = [
+            denied,
+            *[self.response(profile["model"]) for profile in profiles[1:]],
+            self.response("openrouter/free", "openai/gpt-oss-20b:free"),
+        ]
+        self.assertEqual(main(), 1)
+        self.assertEqual(post.call_count, 7)
+        self.assertNotEqual(
+            post.call_args_list[1].args[0],
+            "https://openrouter.ai/api/v1/chat/completions",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
