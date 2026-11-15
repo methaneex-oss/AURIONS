@@ -100,5 +100,24 @@ class ProviderRequestContractTests(unittest.TestCase):
         self.assertNotIn("instance", rendered)
 
 
+    def test_generic_groq_403_does_not_trigger_openrouter_fallback(self):
+        env = {
+            "GROQ_API_KEY": "test-groq",
+            "OPENROUTER_API_KEY": "test-openrouter",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 1, 512, 12000)
+        denied = httpx.Response(
+            403,
+            json={"error": {"message": "account access denied", "type": "forbidden", "code": "account_access_denied"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        with patch("workforce.agents.runner.httpx.post", return_value=denied) as post:
+            with self.assertRaisesRegex(RuntimeError, r"primary provider rejected request \(HTTP 403\)"):
+                worker.run("bounded test", [])
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(post.call_args.args[0], "https://api.groq.com/openai/v1/chat/completions")
+
+
 if __name__ == "__main__":
     unittest.main()
