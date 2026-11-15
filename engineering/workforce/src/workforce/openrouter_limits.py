@@ -4,7 +4,6 @@ from __future__ import annotations
 from datetime import timezone
 from email.utils import parsedate_to_datetime
 import fcntl
-import hashlib
 import os
 import tempfile
 import time
@@ -51,18 +50,15 @@ def wait_for_free_model_request_slot(
     retry_after: str | None = None,
     *,
     remaining_seconds: float | None = None,
-    account_key: str | None = None,
 ) -> float:
     """Pace free-router requests across worker subprocesses and honor Retry-After.
 
-    A locked, account-key-scoped state file in the runner's shared temporary
-    directory coordinates the six independently spawned worker processes.
-    Only a one-way digest of the API key is used in the filename.
+    A locked host-wide state file in the runner's shared temporary directory
+    coordinates independently spawned workers and avoids per-key limiter resets.
     """
-    key_fingerprint = hashlib.sha256((account_key or "default").encode("utf-8")).hexdigest()[:20]
     state_path = os.path.join(
         tempfile.gettempdir(),
-        f"aurions-openrouter-free-rate-{key_fingerprint}.lock",
+        "aurions-openrouter-free-rate.lock",
     )
     flags = os.O_CREAT | os.O_RDWR
     if hasattr(os, "O_NOFOLLOW"):
