@@ -146,6 +146,10 @@ def _call(
     except ProviderFailure as exc:
         if not exc.retryable:
             raise
+        if os.environ.get("AURIONS_QUALIFICATION_PRIMARY_ONLY", "").lower() == "true":
+            raise ProviderFailure(
+                f"primary-only qualification stopped after retryable {profile['provider']} failure: {exc}"
+            ) from None
         fallback_key = os.environ.get("OPENROUTER_API_KEY", "")
         if not fallback_key:
             raise ProviderFailure(f"primary {exc}; OpenRouter fallback key unavailable") from None
@@ -548,13 +552,16 @@ def groq_model_catalog_diagnostic() -> dict[str, Any]:
 def main() -> int:
     repo_root = Path(os.environ.get("GITHUB_WORKSPACE", Path.cwd())).resolve()
     results: list[dict[str, Any]] = []
+    primary_only = os.environ.get("AURIONS_QUALIFICATION_PRIMARY_ONLY", "").lower() == "true"
+    qualification_quota = 39 if primary_only else 40
     try:
         quota = require_free_model_quota(
             os.environ.get("OPENROUTER_API_KEY", ""),
-            minimum_remaining=40,
+            minimum_remaining=qualification_quota,
             purpose=(
-                "qualification (12 worst-case role fallback calls plus one probe), "
-                "provider preflight (up to seven fallback/probe calls), and the 20-call WF-03 reserve"
+                "the full WF-03 free-fallback reserve plus a two-request safety margin"
+                if primary_only else
+                "qualification fallback, free-router probe, and WF-03 free-fallback reserve"
             ),
         )
         print(
@@ -566,12 +573,35 @@ def main() -> int:
         return 2
     for role in ROLE_MODEL_ASSIGNMENTS:
         qualify_role(role, repo_root, results)
-    openrouter_free_probe(results)
+    if primary_only:
+        results.append({
+            "role": "openrouter_fallback",
+            "check": "free_router_connectivity_and_tool_call",
+            "status": "REUSED_PRIOR_VERIFIED_EVIDENCE",
+            "provider": "openrouter",
+            "model": "recursive/flint-v1.0:free",
+            "evidence": "fallback route implementation unchanged; prior live qualification verified free-model identity and required repository tool call",
+            "source_run_id": "43725222751",
+            "source_head_sha": "6646e2edae837ab1f9863a817ce9662274935dae",
+            "fresh_execution": False,
+        })
+    else:
+        openrouter_free_probe(results)
     groq_diagnostic = groq_model_catalog_diagnostic()
     summary = {
         "suite": "AURIONS six-agent read-only qualification",
         "training": "simulation only; no model weights or persistent learning changed",
         "fallback_policy": "OpenRouter openrouter/free after primary HTTP 429, 5xx, network failure, or Groq model-permission HTTP 403; HTTP 401, Cloudflare 403, and request-contract errors stop; record every primary failure; require returned :free model identity",
+        "qualification_mode": "primary_only" if primary_only else "primary_with_free_fallback",
+        "fallback_qualification_evidence": (
+            {
+                "status": "REUSED_PRIOR_VERIFIED_EVIDENCE",
+                "source_run_id": "43725222751",
+                "source_head_sha": "6646e2edae837ab1f9863a817ce9662274935dae",
+                "fresh_execution": False,
+                "scope": "OpenRouter free-route connectivity, returned :free identity, and required repository tool call only",
+            } if primary_only else {"status": "FRESHLY_TESTED"}
+        ),
         "provider_diagnostics": {"groq_model_catalog": groq_diagnostic},
         "checks_per_role": ["connectivity", "text_response", "reasoning_training_simulation", "repository_tool_access"],
         "results": results,
