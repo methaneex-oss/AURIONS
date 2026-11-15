@@ -26,6 +26,22 @@ class OpenRouterFreeQuotaTests(unittest.TestCase):
         self.assertEqual(free_model_request_delay(100.0, 104.0), 0.0)
         self.assertEqual(free_model_request_delay(100.0, 101.0, retry_after_seconds=9.0), 9.0)
 
+    def test_free_router_spacing_state_is_shared_between_worker_process_invocations(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as state_dir:
+            with patch("workforce.openrouter_limits.tempfile.gettempdir", return_value=state_dir):
+                with patch(
+                    "workforce.openrouter_limits.time.monotonic",
+                    side_effect=[100.0, 100.0, 101.0, 104.1],
+                ):
+                    with patch("workforce.openrouter_limits.time.sleep") as sleep:
+                        first = wait_for_free_model_request_slot(account_key="shared-test-account")
+                        second = wait_for_free_model_request_slot(account_key="shared-test-account")
+        self.assertEqual(first, 0.0)
+        self.assertAlmostEqual(second, 2.05)
+        sleep.assert_called_once_with(2.05)
+
     def test_retry_after_header_supports_seconds_and_rejects_invalid_values(self):
         self.assertEqual(parse_retry_after_seconds("5"), 5.0)
         self.assertEqual(parse_retry_after_seconds("not-a-delay"), 0.0)
