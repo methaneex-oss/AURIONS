@@ -113,7 +113,15 @@ def _primary_post_with_two_attempts(
         try:
             return _post(url, token, payload, groq_primary=groq_primary)
         except ProviderFailure as exc:
-            if not exc.retryable:
+            transient = (
+                exc.retryable
+                and (
+                    exc.status_code is None
+                    or exc.status_code == 429
+                    or exc.status_code >= 500
+                )
+            )
+            if not transient:
                 raise
             if attempt == 2:
                 raise ProviderFailure(
