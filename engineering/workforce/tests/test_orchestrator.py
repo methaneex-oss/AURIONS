@@ -99,8 +99,10 @@ class OrchestratorTests(unittest.TestCase):
             (source / "engineering/workforce/src").mkdir(parents=True)
             (source / "engineering/workforce/tests").mkdir(parents=True)
             (source / "engineering/workforce/migrations").mkdir(parents=True)
+            (source / "engineering/workforce/scripts").mkdir(parents=True)
             (source / "core/cpp").mkdir(parents=True)
             (source / "engineering/workforce/src/module.py").write_text("value = 1\n", encoding="utf-8")
+            (source / "engineering/workforce/scripts/qualify_six_agents.py").write_text("print('qualification')\n", encoding="utf-8")
             (source / "engineering/workforce/tests/test_module.py").write_text("assert True\n", encoding="utf-8")
             (source / "engineering/workforce/migrations/001_initial.sql").write_text("SELECT 1;\n", encoding="utf-8")
             (source / "core/cpp/main.cpp").write_text("int main() {}\n", encoding="utf-8")
@@ -110,6 +112,7 @@ class OrchestratorTests(unittest.TestCase):
             self.assertTrue((target / "core/cpp/main.cpp").is_file())
             self.assertTrue((target / "engineering/workforce/src/module.py").is_file())
             self.assertTrue((target / "engineering/workforce/migrations/001_initial.sql").is_file())
+            self.assertTrue((target / "engineering/workforce/scripts/qualify_six_agents.py").is_file())
             self.assertFalse((target / "core/cpp/api_key.json").exists())
             self.assertFalse((target / "core/cpp/.env.production").exists())
 

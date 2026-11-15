@@ -315,6 +315,8 @@ def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) ->
         "engineering/workforce/src",
         "engineering/workforce/tests",
         "engineering/workforce/migrations",
+        # The qualification tests import this production script from the isolated snapshot.
+        "engineering/workforce/scripts/qualify_six_agents.py",
         *test_paths,
     ]))
     excluded_dirs = {".git", ".venv", "node_modules", "__pycache__", ".pytest_cache", ".workforce-artifacts", ".aws", ".ssh", ".gnupg"}

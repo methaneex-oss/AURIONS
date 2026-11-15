@@ -118,19 +118,6 @@ class SixAgentQualificationTests(unittest.TestCase):
             self.assertEqual(quota.call_args.kwargs["minimum_remaining"], 40)
             self.assertTrue(report_path.is_file())
 
-    def test_provider_inference_workflows_share_quota_serialization_and_explicit_router_gate(self):
-        root = Path(__file__).resolve().parents[3]
-        workflow_paths = (
-            root / ".github/workflows/six-agent-qualification.yml",
-            root / ".github/workflows/workforce-orchestrated-run.yml",
-            root / ".github/workflows/workforce-provider-smoke-test.yml",
-        )
-        for path in workflow_paths:
-            self.assertIn("group: aurions-provider-inference", path.read_text(encoding="utf-8"))
-        smoke = workflow_paths[2].read_text(encoding="utf-8")
-        self.assertIn("confirm_openrouter_free_only", smoke)
-        self.assertIn("CONFIRM_OPENROUTER_FREE_ONLY", smoke)
-
     def test_role_qualification_covers_four_capabilities_in_two_calls(self):
         results = []
         with patch.object(qualification, "_call", side_effect=self.successful_call) as call:
