@@ -46,7 +46,7 @@ def _verify_free_fallback(payload: dict, openrouter_key: str) -> tuple[str, int]
     fallback_payload["model"] = "openrouter/free"
     if "max_completion_tokens" in fallback_payload:
         fallback_payload["max_tokens"] = fallback_payload.pop("max_completion_tokens")
-    wait_for_free_model_request_slot(remaining_seconds=45)
+    wait_for_free_model_request_slot(remaining_seconds=45, account_key=openrouter_key)
     response = httpx.post(
         "https://openrouter.ai/api/v1/chat/completions",
         headers=chat_completion_headers(
