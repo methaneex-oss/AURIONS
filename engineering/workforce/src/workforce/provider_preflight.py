@@ -11,7 +11,7 @@ import sys
 
 import httpx
 
-from workforce.agents.runner import TOOLS, provider_error_detail
+from workforce.agents.runner import TOOLS, is_groq_model_permission_block, provider_error_detail
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
 
 
@@ -132,7 +132,7 @@ def main() -> int:
         fallback_eligible = (
             response.status_code == 429
             or response.status_code >= 500
-            or (provider == "groq" and response.status_code == 403)
+            or (provider == "groq" and is_groq_model_permission_block(response))
         )
         if fallback_eligible:
             detail = provider_error_detail(response, (token,))
