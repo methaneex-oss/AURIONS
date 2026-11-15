@@ -15,6 +15,9 @@ from workforce.agents.runner import MAX_INLINE_CONTEXT_BYTES, MANDATORY_GOVERNAN
 
 class RunnerBudgetTests(unittest.TestCase):
     def setUp(self):
+        self._free_wait_patch = patch("workforce.agents.runner.wait_for_free_model_request_slot")
+        self.free_wait = self._free_wait_patch.start()
+        self.addCleanup(self._free_wait_patch.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         for relative in MANDATORY_GOVERNANCE_FILES:
@@ -375,6 +378,40 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertEqual(result["model"], "openai/gpt-oss-20b:free")
         self.assertEqual(provider.call_args_list[1].args[0], "https://openrouter.ai/api/v1/chat/completions")
         self.assertEqual(provider.call_args_list[2].args[0], "https://openrouter.ai/api/v1/chat/completions")
+
+    def test_openrouter_retry_honors_retry_after_before_second_attempt(self):
+        env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
+        with patch.dict("os.environ", env, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 512, 12000)
+        primary = httpx.Response(
+            503, json={"error": {"message": "primary unavailable"}},
+            request=httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions"),
+        )
+        fallback_429 = httpx.Response(
+            429,
+            headers={"retry-after": "5"},
+            json={"error": {"message": "free route rate limited"}},
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        fallback_ok = httpx.Response(
+            200,
+            json={
+                "model": "openai/gpt-oss-20b:free",
+                "usage": {"prompt_tokens": 80, "completion_tokens": 20, "total_tokens": 100},
+                "choices": [{"message": {"role": "assistant", "content": "bounded result"}, "finish_reason": "stop"}],
+            },
+            request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
+        )
+        with patch(
+            "workforce.agents.runner.httpx.post",
+            side_effect=[primary, fallback_429, fallback_ok],
+        ) as provider:
+            result = worker.run("small task", [])
+        self.assertEqual(provider.call_count, 3)
+        self.assertEqual(result["provider"], "openrouter-free-fallback")
+        self.assertEqual(self.free_wait.call_count, 2)
+        self.assertIsNone(self.free_wait.call_args_list[0].args[0])
+        self.assertEqual(self.free_wait.call_args_list[1].args[0], "5")
 
     def test_openrouter_fallback_stops_after_two_transient_attempts(self):
         env = {"GROQ_API_KEY": "test-key-only", "OPENROUTER_API_KEY": "test-openrouter-key"}
