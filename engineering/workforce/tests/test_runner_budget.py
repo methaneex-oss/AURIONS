@@ -396,7 +396,7 @@ class RunnerBudgetTests(unittest.TestCase):
             "workforce.agents.runner.httpx.post",
             side_effect=[primary, fallback_1, fallback_2],
         ) as provider:
-            with self.assertRaisesRegex(RuntimeError, "rejected request after 2 attempts"):
+            with self.assertRaisesRegex(RuntimeError, r"rejected request after 2 attempt"):
                 worker.run("small task", [])
         self.assertEqual(provider.call_count, 3)
 
