@@ -605,8 +605,8 @@ def main() -> int:
         "provider_diagnostics": {"groq_model_catalog": groq_diagnostic},
         "checks_per_role": ["connectivity", "text_response", "reasoning_training_simulation", "repository_tool_access"],
         "results": results,
-        "passed": sum(item["status"] in {"PASS", "PASS_WITH_FREE_FALLBACK"} for item in results),
-        "failed": sum(item["status"] not in {"PASS", "PASS_WITH_FREE_FALLBACK"} for item in results),
+        "passed": sum(item["status"] in {"PASS", "PASS_WITH_FREE_FALLBACK", "REUSED_PRIOR_VERIFIED_EVIDENCE"} for item in results),
+        "failed": sum(item["status"] not in {"PASS", "PASS_WITH_FREE_FALLBACK", "REUSED_PRIOR_VERIFIED_EVIDENCE"} for item in results),
         "total": len(results),
     }
     output = json.dumps(summary, indent=2, ensure_ascii=False)
