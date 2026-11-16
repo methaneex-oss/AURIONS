@@ -69,26 +69,26 @@ These parameters must be versioned in model, tokenizer, dataset, training and ev
 
 ## 4. Material contract gap: training-data authorization
 
-MD-16 is an owner decision, but the current machine contracts do not yet fully enforce it.
+MD-16 now has initial machine-readable payload coverage, but it is not yet an enforceable end-to-end authorization system.
 
-Evidence in the current repository:
+**Now present in the current branch:**
 
-- The generic permissionRecord and permissionEvaluated payloads describe permission state and policy evaluation, but do not define a dataset-source authorization record that binds source, rights holder, license/terms, permitted purpose, training use, owner authorization, scope, expiry and revocation.
-- The artifactManifest payload records source references, sensitivity and retention class, but has no required structured license/usage-rights or training-authorization fields.
-- The domain payload schema has no dedicated dataset-manifest/source-rights schema that proves every included source was authorized for the intended training use.
-- The command registry has generic approval commands but no dedicated dataset-source authorization/consent lifecycle command. approval.revoke revokes an approval decision; it is not by itself a complete source-rights or training-consent revocation workflow.
-- The engineering specification's worker rule that dataset references must already be authorized is a downstream enforcement requirement. It does not define the complete upstream source-authorization and revocation lifecycle.
+- `datasetSourceAuthorization` binds immutable source identity/content digest, acquisition provenance, rights basis, license/terms reference and digest, permitted purposes, explicit training permission, separate memory-retention permission, private-data classification/authorization evidence, owner/model scope, validity, policy version, status and revocation evidence.
+- `datasetManifest` binds included source digests to authorization IDs and authorization/terms digests, records exclusions, preprocessing/deduplication/quality/curriculum references, split digests, rights-policy snapshot and derived-artifact references.
+- Positive fixtures cover an active licensed source whose training permission is allowed while memory retention is denied. Six negative fixtures cover missing rights basis, private data without authorization, missing source authorization reference, empty manifests, activation without evaluation evidence and rollback without restore digest.
+- `scripts/validate_schemas.py` checks source/content/authorization/terms digest, owner/model-scope and training-purpose consistency in the positive dataset-manifest fixture.
+- `candidate.activated.v1` and `candidate.rolled_back.v1` now reference state-specific schemas requiring their respective approval, evaluation or restore evidence and pointer revision.
 
-**Required before any nontrivial corpus ingestion or training:**
+**Still missing before nontrivial corpus ingestion or training:**
 
-1. Define a versioned source-rights/authorization record covering source identity, provenance, classification, license/terms, permitted purposes, training permission, private-data authorization evidence, owner/scope, validity, policy version and revocation state.
-2. Define a dataset manifest that binds immutable source records and transformations to authorization evidence, checksums, inclusion/exclusion decisions, splits, deduplication and quality/evaluation metadata.
-3. Enforce authorization at acquisition, dataset preparation, worker dispatch, artifact registration and training admission. A worker must receive only the already-authorized immutable dataset manifest and cannot expand its scope.
-4. Separate memory-retention permission from training permission in both policy and persistence. A memory item may be retained but excluded from training; training authorization must not imply unrestricted retention or disclosure.
-5. Record revocation as a durable event. Block future use immediately, identify derived datasets/experiments/checkpoints/candidates, and run an impact assessment. Where data has influenced weights, require an evidence-based decision on exclusion, retraining or validated unlearning; do not promise exact removal automatically.
-6. Add positive and negative fixtures for public licensed data, incompatible/restricted licenses, private data without explicit authorization, expired/revoked grants, mixed-rights datasets, derived artifacts and attempted worker scope expansion.
+1. Durable governance persistence for immutable source authorization versions, terms evidence, grants and append-only revocations.
+2. Durable dataset-manifest/source-membership persistence and lineage into experiments, checkpoints and candidate artifacts.
+3. Trusted internal event contracts for authorization granted/denied/revoked, manifest sealed, admission blocked and revocation impact assessed, reconciled with producer/consumer, ingress and store-local outbox/saga matrices.
+4. Runtime authorization enforcement at acquisition, dataset construction, artifact registration, worker dispatch and immediately before training. Worker scope must be immutable and non-expandable.
+5. Revocation impact assessment over dependent manifests, experiments, checkpoints, candidates, backups and synchronized copies. Historical evidence must not be silently rewritten.
+6. Positive/negative and crash/replay tests for expiry, revocation, changed terms/content, purpose/scope mismatch, mixed-rights datasets, worker expansion and active-candidate impact.
 
-Until this gap is closed, only sources whose rights and permitted training use are independently established may enter a training corpus. “Publicly accessible” is not a sufficient authorization state.
+The schema/fixture layer does not establish persistence or runtime enforcement. Until the remaining gates close, unapproved and ambiguous sources remain denied; no nontrivial corpus training is authorized by these schema changes.
 
 ## 5. Model lifecycle contract status
 
