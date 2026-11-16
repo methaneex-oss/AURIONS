@@ -13,11 +13,11 @@ This directory contains the canonical planning mirror, technical contracts, owne
 
 ## Product, architecture and roadmap
 
-- [First Usable Release Definition](../product/FIRST-USABLE-RELEASE-DEFINITION.md) — proposed PR-01…PR-18 acceptance baseline.
+- [First Usable Release Definition](../product/FIRST-USABLE-RELEASE-DEFINITION.md) — proposed PR-01…PR-20 acceptance baseline.
 - [Cloud and Offline-Mobile Runtime Topology Decision](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md) — compares independent histories, selective synchronization and cloud-compute options; continuity remains an owner decision.
 - [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md) — WP-00…WP-16 sequence and dependency boundaries.
 - [Work-Package Traceability and Exit Matrix](WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md) — owners, inputs/outputs, acceptance, recovery evidence and external gates.
-- [First-Release Acceptance Traceability Matrix](FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md) — traces PR-01…PR-18 to contracts, work packages, scenarios and evidence.
+- [First-Release Acceptance Traceability Matrix](FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md) — traces PR-01…PR-20 to contracts, work packages, scenarios and evidence.
 - [Semantic Architecture Reconciliation Report](SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md) — maps concepts, state ownership, command/query/event surfaces, work packages and evidence.
 
 ## Technical contract matrices
