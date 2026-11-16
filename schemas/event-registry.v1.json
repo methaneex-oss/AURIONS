@@ -2442,8 +2442,8 @@
           "purpose": "Records protected activation/rollback lineage."
         }
       ],
-      "owner_transition_contract": "Advance active candidate pointer only with verified artifact, explicit owner/governance approval and rollback readiness.",
-      "consumer_transition_summary": "Evolution activation manager: Advance active candidate pointer only with verified artifact, explicit owner/governance approval and rollback readiness. Intended consumers: Evolution activation manager; Audit subsystem.",
+      "owner_transition_contract": "Advance active candidate pointer only with verified artifact, explicit owner/governance approval and both required evaluations; activation event requires exact approval, artifact digest, learning/evolution evaluation references and digests, and pointer revision.",
+      "consumer_transition_summary": "Evolution activation manager: Advance active candidate pointer only with verified artifact, explicit owner/governance approval and both required evaluations; activation event requires exact approval, artifact digest, learning/evolution evaluation references and digests, and pointer revision. Intended consumers: Evolution activation manager; Audit subsystem.",
       "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
       "failure_recovery_contract": "Commit aggregate mutation with its event/outbox in one owning-store transaction. Deliver at least once; consumers must be idempotent. On crash replay from durable checkpoint; on missing predecessor hold and reconcile the gap; quarantine poison/unknown-version events without dropping them. Cross-store consumers use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
       "acceptance_scenario_refs": [
@@ -2480,8 +2480,8 @@
           "purpose": "Records protected activation/rollback lineage."
         }
       ],
-      "owner_transition_contract": "Restore exact prior approved artifact pointer and preserve failed candidate and rollback audit lineage.",
-      "consumer_transition_summary": "Evolution activation manager: Restore exact prior approved artifact pointer and preserve failed candidate and rollback audit lineage. Intended consumers: Evolution activation manager; Audit subsystem.",
+      "owner_transition_contract": "Restore the exact prior approved artifact pointer and preserve failed candidate and rollback audit lineage; rollback event requires separate approval, rollback reference, prior candidate, restored artifact and digest, and pointer revision.",
+      "consumer_transition_summary": "Evolution activation manager: Restore the exact prior approved artifact pointer and preserve failed candidate and rollback audit lineage; rollback event requires separate approval, rollback reference, prior candidate, restored artifact and digest, and pointer revision. Intended consumers: Evolution activation manager; Audit subsystem.",
       "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
       "failure_recovery_contract": "Commit aggregate mutation with its event/outbox in one owning-store transaction. Deliver at least once; consumers must be idempotent. On crash replay from durable checkpoint; on missing predecessor hold and reconcile the gap; quarantine poison/unknown-version events without dropping them. Cross-store consumers use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
       "acceptance_scenario_refs": [
