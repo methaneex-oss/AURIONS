@@ -75,4 +75,4 @@ Product acceptance PR-15 through PR-18 applies to every option. Option B additio
 
 **OWNER DECISION: OPTION B SELECTED — 2026-11-16.** WP-15 must include bounded selective synchronization. Exact field-level allowlists, local-only classes, version/causality metadata, conflicts, deletion, offline replay, idempotency, retention, crash recovery and executable SY cases remain pre-implementation gates.
 
-Until this is resolved, WP-15's cloud/mobile integration topology and state-continuity exit criteria are not implementation-ready. This does not block continued builder work on unrelated planning layers and does not authorize implementation.
+The selected topology is resolved at the option level. WP-15's detailed state-continuity contracts are not yet implementation-ready. This does not authorize implementation.
