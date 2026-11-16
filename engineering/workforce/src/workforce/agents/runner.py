@@ -158,6 +158,7 @@ def is_groq_model_permission_block(response: httpx.Response) -> bool:
 
 MAX_INLINE_CONTEXT_BYTES = 10_000
 MAX_TOOL_OUTPUT_BYTES_PER_TURN = 6_000
+MINIMUM_COMPLETION_TOKENS = 256
 
 
 def is_sensitive_path(path: Path) -> bool:
@@ -247,13 +248,21 @@ def _available_prompt_budget(
     completion_reserve: int,
     aggregate_role_limit: int,
     tokens_already_used: int = 0,
+    minimum_completion_tokens: int | None = None,
 ) -> int:
-    """Compute the same effective prompt ceiling for preflight and live execution."""
-    if min(per_request_limit, completion_reserve, aggregate_role_limit) < 0 or tokens_already_used < 0:
-        raise ValueError("token budget inputs must be non-negative")
+    """Compute prompt headroom while preserving request and aggregate completion floors."""
+    minimum_completion = (
+        completion_reserve if minimum_completion_tokens is None
+        else minimum_completion_tokens
+    )
+    if (
+        min(per_request_limit, completion_reserve, aggregate_role_limit, tokens_already_used, minimum_completion) < 0
+        or minimum_completion > completion_reserve
+    ):
+        raise ValueError("token budget inputs must be non-negative and the minimum completion floor cannot exceed its cap")
     return min(
         per_request_limit - completion_reserve,
-        aggregate_role_limit - tokens_already_used - completion_reserve,
+        aggregate_role_limit - tokens_already_used - minimum_completion,
     )
 
 
@@ -674,11 +683,17 @@ class Worker:
             # Preserve the full configured completion allowance on every turn;
             # context compaction, not silent output-budget reduction, makes room.
             completion_reserve = self.max_tokens
+            # The configured completion value is a per-request ceiling. Keep
+            # its full reserve while possible, but permit a shorter final response
+            # so a nearly exhausted aggregate budget does not reject a request
+            # that still has enough room for a useful bounded completion.
+            minimum_completion = min(self.max_tokens, MINIMUM_COMPLETION_TOKENS)
             prompt_budget = _available_prompt_budget(
                 self.max_request_tokens,
                 completion_reserve,
                 self.max_total_tokens,
                 self.total_tokens,
+                minimum_completion,
             )
             base_prompt_tokens = _prompt_token_estimate(messages[:2])
             if base_prompt_tokens > prompt_budget:
@@ -697,12 +712,12 @@ class Worker:
                 remaining - prompt_reserve,
                 self.max_request_tokens - prompt_reserve,
             )
-            if output_limit < completion_reserve:
+            if output_limit < minimum_completion:
                 raise RuntimeError(
-                    f"prompt estimate ({prompt_reserve} tokens) leaves less than the "
-                    f"{completion_reserve}-token configured completion allowance within the "
-                    f"{self.max_request_tokens}-token per-request ceiling or remaining role budget; "
-                    "provider request was not sent"
+                    f"prompt estimate ({prompt_reserve} tokens) leaves only {output_limit} "
+                    f"completion tokens, below the {minimum_completion}-token minimum floor "
+                    f"within the {self.max_request_tokens}-token request ceiling or remaining "
+                    "role budget; provider request was not sent"
                 )
             self.renew_durable_lease()
             reservation = self.reserve_durable_budget(prompt_reserve + output_limit)
@@ -942,6 +957,17 @@ def main() -> None:
                 "status": "FAILED",
                 "error_type": type(exc).__name__,
                 "error": str(exc)[:1000],
+                # Keep enough bounded telemetry to reconcile partial provider use.
+                "calls_completed": getattr(worker, "calls", 0),
+                "reported_tokens": getattr(worker, "total_tokens", 0),
+                "configured_total_token_budget": getattr(worker, "max_total_tokens", args.max_total_tokens),
+                "remaining_total_tokens": max(
+                    0,
+                    getattr(worker, "max_total_tokens", args.max_total_tokens)
+                    - getattr(worker, "total_tokens", 0),
+                ),
+                "provider": getattr(worker, "provider", None),
+                "model": getattr(worker, "model", None),
             }
             report_bytes = json.dumps(failure, indent=2).encode("utf-8")
             report_file.write_bytes(report_bytes)
