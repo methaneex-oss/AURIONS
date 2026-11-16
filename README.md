@@ -33,3 +33,8 @@ The initial planning design is consolidated. Implementation-readiness evidence g
 ## Repository integrity
 
 Do not commit runtime databases, personal memory, model weights, secrets, credentials, private datasets or generated artifacts unless an explicit, reviewed policy permits it. Keep source, reproducible configuration, tests and non-sensitive documentation under version control.
+
+
+## Repository access verification
+
+This section is a harmless repository write-access test. It can be removed after verification.
