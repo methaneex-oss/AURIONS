@@ -1,0 +1,14 @@
+{
+  "candidate_id": "ae100000-0000-4000-8000-000000000002",
+  "proposal_id": "a8000000-0000-4000-8000-000000000002",
+  "action": "rollback",
+  "artifact_ref": "artifact:candidate:2",
+  "evaluation_ref": null,
+  "approval_ref": "approval:1",
+  "rollback_ref": null,
+  "requested_at": "2026-11-11T08:11:00Z",
+  "expected_active_pointer_revision": 2,
+  "previous_candidate_ref": "candidate:prior",
+  "restore_artifact_ref": "artifact:prior",
+  "restore_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

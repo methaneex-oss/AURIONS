@@ -1,0 +1,16 @@
+{
+  "candidate_artifact_ref": "artifact:candidate:1",
+  "baseline_artifact_ref": "artifact:baseline:1",
+  "dataset_manifest_ref": "artifact:dataset:1",
+  "evaluation_protocol_ref": "artifact:protocol:1",
+  "regression_suite_ref": "artifact:regression:2",
+  "requested_at": "2026-11-11T08:11:00Z",
+  "deadline": "2026-11-11T08:20:00Z",
+  "learning_update_id": "90000000-0000-4000-8000-000000000001",
+  "attempt_id": "ad200000-0000-4000-8000-000000000001",
+  "job_id": "b0400000-0000-4000-8000-000000000001",
+  "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "baseline_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "dataset_manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "evaluation_protocol_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+}

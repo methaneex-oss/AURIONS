@@ -1482,8 +1482,56 @@
         },
         "updated_at": {
           "$ref": "#/$defs/timestamp"
+        },
+        "candidate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "learning_update_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "experiment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "learning_evaluation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "candidate_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "candidate_artifact_ref": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "candidate_artifact_ref"
+            ]
+          },
+          "then": {
+            "required": [
+              "candidate_id",
+              "learning_update_id",
+              "experiment_id",
+              "attempt_id",
+              "learning_evaluation_id",
+              "candidate_artifact_sha256"
+            ]
+          }
+        }
+      ]
     },
     "permissionEvaluated": {
       "type": "object",
@@ -2619,7 +2667,12 @@
         "random_seed",
         "started_at",
         "finished_at",
-        "status"
+        "status",
+        "learning_update_id",
+        "job_id",
+        "configuration_digest",
+        "training_manifest_ref",
+        "candidate_artifact_sha256"
       ],
       "properties": {
         "experiment_id": {
@@ -2683,6 +2736,26 @@
             "inconclusive",
             "cancelled"
           ]
+        },
+        "learning_update_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "configuration_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "training_manifest_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       }
     },
@@ -2766,6 +2839,34 @@
         "occurred_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "candidate_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "learning_evaluation_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "learning_evaluation_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evolution_evaluation_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evolution_evaluation_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "pointer_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "restore_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       }
     },
@@ -3180,7 +3281,11 @@
         "input_artifact_refs",
         "config",
         "resource_budget",
-        "deadline"
+        "deadline",
+        "experiment_id",
+        "attempt_id",
+        "learning_update_id",
+        "configuration_digest"
       ],
       "properties": {
         "job_id": {
@@ -3218,6 +3323,22 @@
         "deadline": {
           "type": "string",
           "format": "date-time"
+        },
+        "experiment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "learning_update_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "configuration_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       }
     },
@@ -3270,7 +3391,11 @@
         "code_revision",
         "random_seed",
         "started_at",
-        "finished_at"
+        "finished_at",
+        "experiment_id",
+        "attempt_id",
+        "learning_update_id",
+        "configuration_digest"
       ],
       "properties": {
         "job_id": {
@@ -3319,6 +3444,22 @@
         "finished_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "experiment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "learning_update_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "configuration_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       }
     },
@@ -5483,7 +5624,17 @@
         "protocol_ref",
         "resource_budget",
         "requested_at",
-        "deadline"
+        "deadline",
+        "learning_update_id",
+        "configuration_digest",
+        "code_revision",
+        "dataset_split_ref",
+        "training_manifest_ref",
+        "initialization_method",
+        "initialization_artifact_ref",
+        "architecture_config_ref",
+        "tokenizer_artifact_ref",
+        "random_seed"
       ],
       "properties": {
         "experiment_id": {
@@ -5533,6 +5684,44 @@
         "deadline": {
           "type": "string",
           "format": "date-time"
+        },
+        "learning_update_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "configuration_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "code_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataset_split_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "training_manifest_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "initialization_method": {
+          "enum": [
+            "random_initialization",
+            "prior_aurions_checkpoint"
+          ]
+        },
+        "initialization_artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "architecture_config_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tokenizer_artifact_ref": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },
@@ -5546,7 +5735,14 @@
         "evaluation_protocol_ref",
         "regression_suite_ref",
         "requested_at",
-        "deadline"
+        "deadline",
+        "learning_update_id",
+        "experiment_id",
+        "attempt_id",
+        "candidate_artifact_sha256",
+        "baseline_artifact_sha256",
+        "dataset_manifest_sha256",
+        "evaluation_protocol_sha256"
       ],
       "properties": {
         "candidate_artifact_ref": {
@@ -5576,6 +5772,34 @@
         "deadline": {
           "type": "string",
           "format": "date-time"
+        },
+        "learning_update_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "experiment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "candidate_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "baseline_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "dataset_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evaluation_protocol_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       }
     },
@@ -5646,8 +5870,124 @@
         "requested_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "learning_evaluation_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "learning_evaluation_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evolution_evaluation_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evolution_evaluation_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "candidate_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "expected_active_pointer_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "previous_candidate_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "restore_artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "restore_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "activate"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "required": [
+              "approval_ref",
+              "evaluation_ref",
+              "learning_evaluation_ref",
+              "learning_evaluation_digest",
+              "evolution_evaluation_ref",
+              "evolution_evaluation_digest",
+              "candidate_artifact_sha256",
+              "expected_active_pointer_revision",
+              "previous_candidate_ref"
+            ],
+            "properties": {
+              "approval_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evaluation_ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "rollback"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "required": [
+              "approval_ref",
+              "rollback_ref",
+              "expected_active_pointer_revision",
+              "previous_candidate_ref",
+              "restore_artifact_ref",
+              "restore_artifact_sha256"
+            ],
+            "properties": {
+              "approval_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "rollback_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "previous_candidate_ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "taskRunTransition": {
       "type": "object",
@@ -5858,7 +6198,15 @@
         "regression_results_ref",
         "unseen_controls_ref",
         "status",
-        "evaluated_at"
+        "evaluated_at",
+        "learning_update_id",
+        "experiment_id",
+        "attempt_id",
+        "candidate_artifact_sha256",
+        "baseline_artifact_sha256",
+        "dataset_manifest_sha256",
+        "evaluation_protocol_sha256",
+        "report_digest"
       ],
       "properties": {
         "evaluation_id": {
@@ -5905,6 +6253,38 @@
         },
         "evaluated_at": {
           "$ref": "#/$defs/timestamp"
+        },
+        "learning_update_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "experiment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "candidate_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "baseline_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "dataset_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evaluation_protocol_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "report_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       }
     },

@@ -711,7 +711,12 @@
     "random_seed": 42,
     "started_at": "2026-11-11T08:00:00Z",
     "finished_at": "2026-11-11T08:02:00Z",
-    "status": "inconclusive"
+    "status": "inconclusive",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "configuration_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "training_manifest_ref": "artifact:training-manifest:1",
+    "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
   },
   "evolutionCandidateLifecycle": {
     "candidate_id": "ae100000-0000-4000-8000-000000000001",
@@ -807,7 +812,7 @@
   "workerRequest": {
     "job_id": "b0400000-0000-4000-8000-000000000001",
     "protocol_version": "1.0",
-    "job_type": "evaluation",
+    "job_type": "training",
     "input_artifact_refs": [
       "artifact:dataset:1"
     ],
@@ -819,7 +824,11 @@
       "cpu_ms": 10000,
       "memory_bytes": 268435456
     },
-    "deadline": "2026-11-11T08:10:00Z"
+    "deadline": "2026-11-11T08:10:00Z",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "configuration_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   },
   "workerProgress": {
     "job_id": "b0400000-0000-4000-8000-000000000001",
@@ -835,7 +844,7 @@
     "job_id": "b0400000-0000-4000-8000-000000000001",
     "status": "completed",
     "output_artifact_refs": [
-      "artifact:metrics:1"
+      "artifact:candidate:1"
     ],
     "metrics": {
       "held_out_score": 0.7
@@ -845,7 +854,11 @@
     "code_revision": "commit:fixture",
     "random_seed": 42,
     "started_at": "2026-11-11T08:04:00Z",
-    "finished_at": "2026-11-11T08:06:00Z"
+    "finished_at": "2026-11-11T08:06:00Z",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "configuration_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   },
   "workerFailure": {
     "job_id": "b0400000-0000-4000-8000-000000000001",
@@ -1262,28 +1275,47 @@
     "requested_at": "2026-11-11T08:11:00Z"
   },
   "learningExperimentRequest": {
-    "experiment_id": "ad100000-0000-4000-8000-000000000002",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
     "hypothesis_ref": "hypothesis:2",
     "baseline_artifact_ref": "artifact:baseline:2",
     "dataset_manifest_ref": "artifact:dataset:2",
     "protocol_ref": "artifact:protocol:2",
-    "candidate_artifact_ref": "artifact:candidate:2",
-    "random_seed": 17,
+    "candidate_artifact_ref": null,
+    "random_seed": 42,
     "resource_budget": {
       "cpu_ms": 60000,
       "memory_bytes": 536870912
     },
     "requested_at": "2026-11-11T08:11:00Z",
-    "deadline": "2026-11-11T08:20:00Z"
+    "deadline": "2026-11-11T08:20:00Z",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "configuration_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "code_revision": "commit:fixture",
+    "dataset_split_ref": "artifact:dataset-split:1",
+    "training_manifest_ref": "artifact:training-manifest:1",
+    "initialization_method": "random_initialization",
+    "initialization_artifact_ref": "artifact:baseline:1",
+    "architecture_config_ref": "artifact:architecture:1",
+    "tokenizer_artifact_ref": "artifact:tokenizer:1"
   },
   "learningCandidateEvaluationRequest": {
-    "candidate_artifact_ref": "artifact:candidate:2",
-    "baseline_artifact_ref": "artifact:baseline:2",
-    "dataset_manifest_ref": "artifact:dataset:2",
-    "evaluation_protocol_ref": "artifact:protocol:2",
+    "candidate_artifact_ref": "artifact:candidate:1",
+    "baseline_artifact_ref": "artifact:baseline:1",
+    "dataset_manifest_ref": "artifact:dataset:1",
+    "evaluation_protocol_ref": "artifact:protocol:1",
     "regression_suite_ref": "artifact:regression:2",
     "requested_at": "2026-11-11T08:11:00Z",
-    "deadline": "2026-11-11T08:20:00Z"
+    "deadline": "2026-11-11T08:20:00Z",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "baseline_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "dataset_manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "evaluation_protocol_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
   },
   "evolutionCandidateActionRequest": {
     "candidate_id": "ae100000-0000-4000-8000-000000000002",
@@ -1322,16 +1354,25 @@
   },
   "learningCandidateEvaluated": {
     "evaluation_id": "ad300000-0000-4000-8000-000000000001",
-    "candidate_artifact_ref": "artifact:candidate:fixture",
-    "baseline_artifact_ref": "artifact:baseline:fixture",
-    "dataset_manifest_ref": "artifact:heldout-dataset:fixture",
-    "evaluation_protocol_ref": "artifact:evaluation-protocol:fixture",
+    "candidate_artifact_ref": "artifact:candidate:1",
+    "baseline_artifact_ref": "artifact:baseline:1",
+    "dataset_manifest_ref": "artifact:dataset:1",
+    "evaluation_protocol_ref": "artifact:protocol:1",
     "regression_suite_ref": "artifact:regression-suite:fixture",
     "metrics_ref": "artifact:candidate-metrics:fixture",
     "regression_results_ref": "artifact:regression-results:fixture",
     "unseen_controls_ref": "artifact:unseen-controls:fixture",
     "status": "inconclusive",
-    "evaluated_at": "2026-11-11T08:03:00Z"
+    "evaluated_at": "2026-11-11T08:03:00Z",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "baseline_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "dataset_manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "evaluation_protocol_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "report_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
   },
   "selfModelUpdateProposed": {
     "self_model_revision_id": "a7000000-0000-4000-8000-000000000002",

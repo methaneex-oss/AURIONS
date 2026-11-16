@@ -1,0 +1,17 @@
+{
+  "candidate_id": "ae100000-0000-4000-8000-000000000002",
+  "proposal_id": "a8000000-0000-4000-8000-000000000002",
+  "action": "activate",
+  "artifact_ref": "artifact:candidate:2",
+  "evaluation_ref": "artifact:evolution-eval:1",
+  "approval_ref": null,
+  "rollback_ref": null,
+  "requested_at": "2026-11-11T08:11:00Z",
+  "learning_evaluation_ref": "artifact:learning-eval:1",
+  "learning_evaluation_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "evolution_evaluation_ref": "artifact:evolution-eval:1",
+  "evolution_evaluation_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "expected_active_pointer_revision": 0,
+  "previous_candidate_ref": null
+}

@@ -1235,6 +1235,35 @@ def main() -> int:
         validate(payload, {"$ref": f"{domain_schema['$id']}#/$defs/{name}"},
                  f"positive domain fixture {name}")
 
+    # The PR-19 lineage fixture is one coherent chain, not disconnected examples.
+    lineage_request = domain_fixture["learningExperimentRequest"]
+    lineage_worker_request = domain_fixture["workerRequest"]
+    lineage_worker_result = domain_fixture["workerResult"]
+    lineage_completion = domain_fixture["learningExperimentCompleted"]
+    lineage_eval_request = domain_fixture["learningCandidateEvaluationRequest"]
+    lineage_eval_result = domain_fixture["learningCandidateEvaluated"]
+    for label, payload in (
+        ("worker request", lineage_worker_request),
+        ("worker result", lineage_worker_result),
+        ("experiment completion", lineage_completion),
+        ("candidate evaluation request", lineage_eval_request),
+        ("candidate evaluation result", lineage_eval_result),
+    ):
+        if payload["learning_update_id"] != lineage_request["learning_update_id"]:
+            fail(f"PR-19 lineage: {label} changed learning_update_id")
+        if payload["experiment_id"] != lineage_request["experiment_id"]:
+            fail(f"PR-19 lineage: {label} changed experiment_id")
+        if "configuration_digest" in payload and payload["configuration_digest"] != lineage_request["configuration_digest"]:
+            fail(f"PR-19 lineage: {label} changed configuration_digest")
+    if lineage_worker_request["attempt_id"] != lineage_worker_result["attempt_id"] or lineage_worker_request["job_id"] != lineage_worker_result["job_id"]:
+        fail("PR-19 lineage: worker result does not echo exact attempt/job identity")
+    if lineage_completion["attempt_id"] != lineage_worker_request["attempt_id"] or lineage_completion["job_id"] != lineage_worker_request["job_id"]:
+        fail("PR-19 lineage: completion does not bind exact worker attempt/job")
+    if lineage_eval_request["attempt_id"] != lineage_completion["attempt_id"] or lineage_eval_result["attempt_id"] != lineage_completion["attempt_id"]:
+        fail("PR-20 lineage: evaluation does not bind exact completed attempt")
+    if lineage_eval_request["candidate_artifact_sha256"] != lineage_completion["candidate_artifact_sha256"] or lineage_eval_result["candidate_artifact_sha256"] != lineage_completion["candidate_artifact_sha256"]:
+        fail("PR-20 lineage: evaluation candidate digest differs from worker output")
+
     # Additional focused positive fixtures.
     for fixture_name, definition in [
         ("decision-recorded.fixture.json", "decisionRecorded"),
@@ -1267,6 +1296,11 @@ def main() -> int:
         "domain-query-invalid-limit.invalid.json": ("domain-payloads.v1.schema.json", "domainQuery"),
         "error-registry-missing-side-effect.invalid.json": ("error-registry.v1.schema.json", None),
         "learning-experiment-missing-protocol.invalid.json": ("domain-payloads.v1.schema.json", "learningExperimentRequest"),
+        "learning-experiment-missing-lineage.invalid.json": ("domain-payloads.v1.schema.json", "learningExperimentRequest"),
+        "worker-result-missing-attempt.invalid.json": ("domain-payloads.v1.schema.json", "workerResult"),
+        "learning-evaluation-missing-lineage.invalid.json": ("domain-payloads.v1.schema.json", "learningCandidateEvaluationRequest"),
+        "candidate-activation-missing-approval.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActionRequest"),
+        "candidate-rollback-missing-reference.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActionRequest"),
         "memory-retrieval-invalid-limit.invalid.json": ("domain-payloads.v1.schema.json", "memoryRetrievalQuery"),
         "message-envelope-invalid-owner-type.invalid.json": ("message-envelope.v1.schema.json", None),
         "operation-control-invalid-action.invalid.json": ("domain-payloads.v1.schema.json", "operationControlRequest"),
