@@ -213,3 +213,55 @@ These are bounded source-level cross-reference checks executed against retrieved
 ## 11. Owner-decision reconciliation — 2026-11-16
 
 D-01 is accepted; D-02 Option B is selected; D-03 is staged; D-04 remains pending owner acceptance. The registry contains 54 command records and 29 query records; exact proposed identifiers must be derived from the registry at the final planning HEAD, not stale prose. No entry becomes dispatchable by inclusion in a proposal. The first-release subset must include the full bounded training path: reproducible experiment submission, worker budgets/cancellation, immutable artifact provenance, held-out evaluation, quarantine and separately governed activation/rollback. The registry includes `learning.experiment.submit`, `learning.candidate.evaluate` and `learning.update.propose`; their dependencies and PR-19/PR-20 lifecycle coverage remain to be proven. Option B's candidate domains are durable experience/provenance, representations, memory and evidence-backed beliefs, objectives/derived goals, and approved immutable model-version references. Sensitive raw observations, transient context, execution checkpoints, local capabilities, permissions, credentials, approvals and governance authority remain local by default. Field-level classification and executable SY tests remain open.
+
+
+## 12. D-04 exact first-release subset proposal — 2026-11-16
+
+This section supersedes the older unresolved owner-decision wording in §§8–9 where it conflicts with the D-01/D-02 decisions recorded on 2026-11-16. D-04 itself remains a builder recommendation pending owner acceptance. The list is a scope proposal, not dispatch authorization.
+
+### P0 command proposal
+
+The minimum first-release command surface is:
+
+- Experience and representation: `experience.submit`, `representation.create`, `context.assemble`.
+- Evidence-backed knowledge: `belief.propose`, `belief.revise`.
+- Objective and derived-goal lifecycle: `objective.create`, `objective.revise`, `goal.create`, `goal.revise`, `goal.cancel`.
+- Planning and resumable work: `plan.propose`, `plan.revise`, `plan.checkpoint`, `task.start`, `task.pause`, `task.resume`, `task.cancel`.
+- Open-world situation and interaction reasoning: `world.entity.observe`, `world.relationship.revise`, `situation.snapshot.create`, `means.affordance.propose`, `interaction.propose`, `interaction.outcome.record`.
+- Experience-dependent adaptation and trainable model path: `outcome.evaluate`, `learning.update.propose`, `learning.experiment.submit`, `learning.candidate.evaluate`.
+
+The training path must include immutable experiment manifests, dataset provenance and held-out separation, reproducible parameter updates, worker resource budgets/cancellation, artifact validation/quarantine, frozen-baseline evaluation and a separate governed activation/rollback path. Experiment submission and candidate evaluation do not activate a candidate. Model-generated output cannot grant authority or approve itself.
+
+### P0 read-only query proposal
+
+- Memory and evidence: `memory.search`, `representation.inspect`, `context.get`, `belief.inspect`.
+- Objectives and work: `objective.inspect`, `goal.get`, `plan.get`, `task.status`.
+- World/situation/interaction: `world.entity.search`, `world.entity.inspect`, `world.relationship.search`, `situation.inspect`, `means.affordance.search`, `interaction.inspect`, `interaction.outcome.inspect`.
+- Governance visibility: `permission.inspect`, `audit.lookup`.
+
+### Conditional P1; not part of the default dispatch subset
+
+- Concrete operation lifecycle: `operation.propose`, `operation.cancel`, `operation.reconcile`, `operation.status`.
+- Exact approval lifecycle: `approval.request`, `approval.revoke`.
+- Platform-specific discovery/observation: `capability.discover`, `capability.verify`, `capability.invalidate`, `capability.search`, `capability.inspect`, `device.capabilities`, `environment.inspect`.
+- Capability-use knowledge commands remain conditional on a demonstrated first-release workflow.
+
+D-03 is staged, so no concrete Android operation or platform-specific permission set is selected. The generic open-world reasoning contracts remain P0; concrete Android execution remains conditional P1 until the owner selects an action after target-device validation.
+
+### Internal-only or excluded
+
+- `context.invalidate` is internal lifecycle maintenance unless a separately justified public workflow is approved; do not expose it by default.
+- `memory.retrieve` is not a separate public command in this proposal; provenance-aware retrieval is represented by `memory.search` unless an auditable state-changing retrieval workflow is proven necessary.
+- `device.pair` and `device.revoke` remain deferred; broad device handoff, voice, continuous sensing and broad external integrations remain outside first release.
+- Unrestricted self-model/evolution activation and protected policy/value mutation remain excluded. Candidate activation/rollback is a separately governed lifecycle and must be traced to PR-20; no self-approval.
+
+### Required before D-04 can be accepted
+
+1. Verify every identifier above against the registry at the final planning HEAD and remove any name without a corresponding schema/contract.
+2. Map every proposed P0 entry to its aggregate, store, event, command/query semantics and acceptance scenario.
+3. Resolve the PR-19/PR-20 candidate activation/rollback command path without conflating model training with general evolution.
+4. Complete per-entry positive/negative, owner-isolation, idempotency, concurrency, crash/recovery and resource-bound tests.
+5. Reconcile query privacy/redaction, cursor/snapshot semantics, limits and freshness against actual handlers.
+6. Obtain owner acceptance of this exact list. Until then, all registry entries remain `design_only_not_dispatchable`.
+
+**Builder recommendation:** accept the P0 list as the first-release surface after the six checks above; keep P1 conditional and all other registry entries deferred. This preserves the full cognitive loop and the required trainable-model demonstration without turning the entire registry into an enabled API.
