@@ -799,12 +799,6 @@ This migration does not make a device capability descriptor mandatory for possib
 
 Required v4 validation includes fresh install and upgrade paths, owner isolation, revision/temporal validity, evidence-details linkage, referential-integrity and stale-reference checks, interaction proposal versus authorization separation, cross-store operation reconciliation, retention/deletion propagation, crash/rollback and restore. The new schema and DDL remain IN PROGRESS until those checks are executed on the pinned SQLite baseline.
 
-### 26.5.4 PR-19/PR-20 model-candidate lifecycle — proposed memory migration v8
-
-Memory migration v8 is the machine-readable persistence contract for the model-training lifecycle. It adds owner-bound experiment, worker-attempt and learning-evaluation records; binds each evaluation to the exact candidate, baseline, dataset and protocol artifact digests; adds the source-learning lineage and candidate identity to evolution proposals; records a separate governed evolution evaluation; and maintains an owner/mechanism-scoped active pointer with monotonic revision and append-only activation/rollback history. The pointer may advance only with a matching history row; activation history requires both learning and evolution evaluations to be passing. Legacy rows remain unbound and are not backfilled by inference.
-
-The payload schemas and coherent positive/negative lineage fixtures are checked by `validate_schemas.py`. Host SQLite validation executed all eighteen DDL files and exercised one valid candidate activation plus rejection of pointer revision without matching history, pointer deletion, history mutation/deletion and cross-owner experiment linkage in run [43939457017](https://github.com/methaneex-oss/AURIONS/actions/runs/43939457017), commit `da136f617757ce73265971a921c64e8e1ffdcd9d`. This is host-side DDL/contract evidence only: no worker, evaluator, approval consumer, activation saga or rollback handler is implemented; target Termux/Android, crash/recovery and runtime authorization tests remain open.
-
 ### 26.5.3 Query projection source completion — proposed migrations v7/v4/v4
 
 The 29 query result schemas contain 310 fields. The query/persistence reconciliation now declares an explicit proposed source or derivation for every field in `projection_resolved_fields`; no field remains unclassified in `projection_unresolved_fields`. This is not a claim that the SQL handlers exist or that owner scope, redaction, pagination or consistency has been behaviourally verified.
@@ -827,6 +821,13 @@ The cross-store saga contract previously described ordered steps but the event/r
 For the three evolution sagas, each step has an immutable `step_key`, target store, idempotency key, request digest and optional expected revision. Unique constraints prevent duplicate step keys and target-store idempotency keys. Terminal states require completion timestamps. The recovery journal references the exact operation step and verifies that its local store matches the step's target store. Saga step history cannot be deleted or have its identity rewritten.
 
 The host DDL runner now checks these constraints, duplicate/replay identities, terminal timestamps and recovery-journal linkage. This does not implement the saga coordinator or prove crash/replay/compensation behaviour; those remain runtime and independent-test gates.
+
+### 26.5.5 PR-19/PR-20 model-candidate lifecycle — proposed memory migration v8
+
+Memory migration v8 is the machine-readable persistence contract for the model-training lifecycle. It adds owner-bound experiment, worker-attempt and learning-evaluation records; binds each evaluation to the exact candidate, baseline, dataset and protocol artifact digests; adds the source-learning lineage and candidate identity to evolution proposals; records a separate governed evolution evaluation; and maintains an owner/mechanism-scoped active pointer with monotonic revision and append-only activation/rollback history. The pointer may advance only with a matching history row; activation history requires both learning and evolution evaluations to be passing. Legacy rows remain unbound and are not backfilled by inference.
+
+The payload schemas and coherent positive/negative lineage fixtures are checked by `validate_schemas.py`. Host SQLite validation executed all eighteen DDL files and exercised one valid candidate activation plus rejection of pointer revision without matching history, pointer deletion, history mutation/deletion and cross-owner experiment linkage in run [43939457017](https://github.com/methaneex-oss/AURIONS/actions/runs/43939457017), commit `da136f617757ce73265971a921c64e8e1ffdcd9d`. This is host-side DDL/contract evidence only: no worker, evaluator, approval consumer, activation saga or rollback handler is implemented; target Termux/Android, crash/recovery and runtime authorization tests remain open.
+
 
 ### 26.6 Migration protocol
 
