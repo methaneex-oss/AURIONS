@@ -56,13 +56,25 @@ class RunnerBudgetTests(unittest.TestCase):
                     )
                     self.assertTrue(result["fits"])
                     self.assertLessEqual(
-                        result["prompt_estimate_tokens"] + result["completion_reserve_tokens"],
-                        result["per_request_limit"],
+                        result["prompt_estimate_tokens"],
+                        result["effective_prompt_budget"],
                     )
-                    self.assertLessEqual(
-                        result["prompt_estimate_tokens"] + result["completion_reserve_tokens"],
-                        result["aggregate_role_budget"],
-                    )
+
+    def test_effective_prompt_budget_uses_the_tighter_request_or_aggregate_limit(self):
+        from workforce.agents.runner import _available_prompt_budget
+        self.assertEqual(_available_prompt_budget(7000, 2048, 24000), 4952)
+        self.assertEqual(_available_prompt_budget(12000, 3072, 5281), 2209)
+        self.assertEqual(_available_prompt_budget(7000, 2048, 5281, 1000), 2233)
+
+    def test_live_worker_budget_and_preflight_share_the_same_calculation(self):
+        from workforce.agents.runner import _available_prompt_budget
+        expected = _available_prompt_budget(7000, 1536, 24000)
+        result = preflight_role_prompt(
+            self.root, "lead_builder", "bounded role assignment", [],
+            max_total_tokens=24000, max_completion_tokens=1536,
+        )
+        self.assertEqual(result["effective_prompt_budget"], expected)
+        self.assertLessEqual(result["prompt_estimate_tokens"], expected)
 
     def test_preflight_checks_initial_prompts_for_all_six_roles_without_credentials(self):
         from workforce.agents.runner import ROLE_INSTRUCTIONS
