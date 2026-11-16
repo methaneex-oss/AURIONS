@@ -4,7 +4,7 @@
 - **Branch:** `docs/complete-system-architecture`
 - **Authority:** `INITIAL-ENGINEERING-SPECIFICATION.md`, the First Usable Release Definition, and the Project Directorship and Team Operating Standard remain authoritative.
 - **Purpose:** Consolidate only decisions that the builder cannot make without changing product scope, personal authority, risk tolerance or owner intent.
-- **Boundary:** This packet does not approve the product proposal, planning exit, implementation, PR merge, first Android action, or any synchronization topology.
+- **Boundary:** D-01 is accepted and D-02 Option B is selected. D-03 remains staged; D-04 remains pending owner acceptance. This packet does not approve planning exit, implementation, PR merge or a concrete Android action.
 
 ## 1. Decisions required before planning exit
 
