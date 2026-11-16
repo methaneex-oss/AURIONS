@@ -217,13 +217,13 @@ D-01 is accepted; D-02 Option B is selected; D-03 is staged; D-04 remains pendin
 
 ## 12. D-04 exact first-release subset proposal — 2026-11-16
 
-This section supersedes the older unresolved owner-decision wording in §§8–9 where it conflicts with the D-01/D-02 decisions recorded on 2026-11-16. D-04 itself remains a builder recommendation pending owner acceptance. The list is a scope proposal, not dispatch authorization.
+This section supersedes older unresolved owner-decision wording in §§8–9 where it conflicts with D-01/D-02. D-04 remains a builder recommendation pending owner acceptance. This is a proposed first-release interface classification, not dispatch authorization.
 
 ### Synchronization boundary
 
-Under D-02 Option B, selected durable domain changes are synchronized internally through versioned change records, durable outboxes, idempotent relay/reconciliation and explicit conflict/deletion handling. This is a runtime infrastructure capability, not a general-purpose user-dispatch command. No sync operation transfers device-local permissions, credentials, approvals, operation-dispatch state or governance authority. Exact field-level allowlists and SY acceptance evidence remain pre-implementation gates.
+Under D-02 Option B, selected durable domain changes are synchronized internally through versioned change records, durable outboxes, idempotent relay/reconciliation and explicit conflict/deletion handling. This is runtime infrastructure, not a general-purpose user-dispatch command. No sync operation transfers device-local permissions, credentials, approvals, operation-dispatch state or governance authority. Exact field-level allowlists and executable SY acceptance evidence remain pre-implementation gates.
 
-### P0 command proposal
+### P0 public/owner-facing command proposal
 
 The minimum first-release command surface is:
 
@@ -234,38 +234,65 @@ The minimum first-release command surface is:
 - Open-world situation and interaction reasoning: `world.entity.observe`, `world.relationship.revise`, `situation.snapshot.create`, `means.affordance.propose`, `interaction.propose`, `interaction.outcome.record`.
 - Experience-dependent adaptation and trainable model path: `outcome.evaluate`, `learning.update.propose`, `learning.experiment.submit`, `learning.candidate.evaluate`.
 
-The training path must include immutable experiment manifests, dataset provenance and held-out separation, reproducible parameter updates, worker resource budgets/cancellation, artifact validation/quarantine, frozen-baseline evaluation and a separate governed activation/rollback path. Experiment submission and candidate evaluation do not activate a candidate. Model-generated output cannot grant authority or approve itself.
+### P0 internal cognitive-cycle commands
+
+These commands are required internal mechanisms for the first-release cognitive loop. They are not user-facing or model-selectable tools and must only be invoked by the owning runtime subsystem under its internal contract:
+
+- Prediction: `prediction.create`, `prediction.evaluate`.
+- Appraisal and attention: `appraisal.evaluate`, `attention.allocate`.
+- Reasoning and decision recording: `reasoning.assess`, `decision.record`.
+
+### P0 owner-governed self-model, evolution and approval lifecycle
+
+These are internal/protected transitions needed for the WP-13 governed-evolution path and the first-release candidate lifecycle. They are not model-authorized operations or ordinary user-dispatch commands:
+
+- Self-model and evolution proposals/evaluation: `self_model.update.propose`, `evolution.change.propose`, `evolution.candidate.evaluate`.
+- Protected candidate lifecycle: `evolution.candidate.activate`, `evolution.candidate.rollback`.
+- Owner-governed approval lifecycle: `approval.request`, `approval.decide`, `approval.revoke`.
+
+`learning.candidate.evaluate` is the held-out model-training evaluation required by PR-20. `evolution.candidate.evaluate` is the governed evolution-candidate evaluation in WP-13; the two are not interchangeable. Activation and rollback require exact owner/governance authorization, immutable artifact identity, verified evaluation and rollback readiness. The current generic evolution action schema requires candidate and proposal identifiers; the mapping from a trained learning artifact/evaluation to those identifiers and the exact approval digest is not yet proven. That crosswalk remains a blocking D-04 item. No model or worker may approve, activate or roll back its own candidate.
 
 ### P0 read-only query proposal
 
-- Memory and evidence: `memory.search`, `representation.inspect`, `context.get`, `belief.inspect`.
+- Memory and evidence: `memory.search`, `knowledge.search`, `representation.inspect`, `context.get`, `belief.inspect`.
 - Objectives and work: `objective.inspect`, `goal.get`, `plan.get`, `task.status`.
 - World/situation/interaction: `world.entity.search`, `world.entity.inspect`, `world.relationship.search`, `situation.inspect`, `means.affordance.search`, `interaction.inspect`, `interaction.outcome.inspect`.
 - Governance visibility: `permission.inspect`, `audit.lookup`.
 
-### Conditional P1; not part of the default dispatch subset
+### Conditional P1 commands and queries
 
-- Concrete operation lifecycle: `operation.propose`, `operation.cancel`, `operation.reconcile`, `operation.status`.
-- Exact approval lifecycle: `approval.request`, `approval.revoke`.
-- Platform-specific discovery/observation: `capability.discover`, `capability.verify`, `capability.invalidate`, `capability.search`, `capability.inspect`, `device.capabilities`, `environment.inspect`.
-- Capability-use knowledge commands remain conditional on a demonstrated first-release workflow.
+These are conditional on the owner-selected first Android action, target-device validation and a demonstrated first-release workflow. They are not part of the default dispatch subset:
 
-D-03 is staged, so no concrete Android operation or platform-specific permission set is selected. The generic open-world reasoning contracts remain P0; concrete Android execution remains conditional P1 until the owner selects an action after target-device validation.
+- Observation and discovery commands: `environment.observe`, `capability.discover`, `capability.verify`, `capability.invalidate`.
+- Capability-use knowledge commands: `capability.knowledge.propose`, `capability.knowledge.revise`.
+- Concrete operation commands: `operation.propose`, `operation.cancel`, `operation.reconcile`.
+- Conditional read-only queries: `environment.inspect`, `capability.search`, `capability.inspect`, `capability.knowledge.inspect`, `device.capabilities`, `operation.status`.
 
-### Internal-only or excluded
+The owner-governed `approval.*` commands above may also support a separately approved local-action lifecycle; their presence does not select an Android action or grant a permission. D-03 remains staged, so no concrete Android operation or platform-specific permission set is selected. The generic open-world reasoning contracts remain P0; concrete platform observation and execution remain conditional P1.
 
-- `context.invalidate` is internal lifecycle maintenance unless a separately justified public workflow is approved; do not expose it by default.
+### Internal maintenance, diagnostics and deferred entries
+
+- `context.invalidate` is internal context-lifecycle maintenance, not a public command.
 - `memory.retrieve` is not a separate public command in this proposal; provenance-aware retrieval is represented by `memory.search` unless an auditable state-changing retrieval workflow is proven necessary.
+- `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect` and `decision.inspect` are owner-scoped internal diagnostic queries, not part of the first-release user-facing query surface.
 - `device.pair` and `device.revoke` remain deferred; broad device handoff, voice, continuous sensing and broad external integrations remain outside first release.
-- Unrestricted self-model/evolution activation and protected policy/value mutation remain excluded. Candidate activation/rollback is a separately governed lifecycle and must be traced to PR-20; no self-approval.
+
+### Registry-wide accounting
+
+The above classification accounts for the complete current registry without making entries dispatchable:
+
+- **54 command records:** 27 P0 public/owner-facing; 14 P0 internal or owner-governed; 9 conditional P1; 2 internal maintenance/optional; 2 deferred.
+- **29 query records:** 18 P0 read-only; 6 conditional P1; 5 internal diagnostic.
+
+All registry entries remain `design_only_not_dispatchable` until their own implementation and verification gates pass. Registry inclusion, P0 classification or owner approval of D-04 does not itself enable dispatch.
 
 ### Required before D-04 can be accepted
 
-1. Verify every identifier above against the registry at the final planning HEAD and remove any name without a corresponding schema/contract.
-2. Map every proposed P0 entry to its aggregate, store, event, command/query semantics and acceptance scenario.
-3. Resolve the PR-19/PR-20 candidate activation/rollback command path without conflating model training with general evolution.
-4. Complete per-entry positive/negative, owner-isolation, idempotency, concurrency, crash/recovery and resource-bound tests.
-5. Reconcile query privacy/redaction, cursor/snapshot semantics, limits and freshness against actual handlers.
-6. Obtain owner acceptance of this exact list. Until then, all registry entries remain `design_only_not_dispatchable`.
+1. Verify the complete 54-command/29-query classification against the registry at the final planning HEAD; preserve the counts and explicit disposition of every identifier.
+2. Map every P0 entry to its aggregate, store, event, command/query semantics and acceptance scenario.
+3. Complete the PR-19/PR-20 candidate lifecycle crosswalk: learning experiment artifact → candidate/evolution proposal identifiers → held-out evaluation → exact owner approval → activation → verified rollback. Do not assume the generic evolution IDs or approval digest bind correctly until proven by schemas and executable cases.
+4. Complete per-entry positive/negative, owner-isolation, idempotency, concurrency, crash/recovery and resource-bound tests for all P0 commands.
+5. Reconcile P0/P1 query privacy/redaction, cursor/snapshot semantics, limits and freshness against actual handlers; add executable positive/negative read-only tests.
+6. Obtain owner acceptance of this exact classification. Until then, all registry entries remain `design_only_not_dispatchable`.
 
-**Builder recommendation:** accept the P0 list as the first-release surface after the six checks above; keep P1 conditional and all other registry entries deferred. This preserves the full cognitive loop and the required trainable-model demonstration without turning the entire registry into an enabled API.
+**Builder recommendation:** accept the P0 public, internal cognitive-cycle and owner-governed lifecycle subsets after the six checks above; keep P1 conditional, internal diagnostics/maintenance non-public, and the two device-pairing entries deferred. This retains the full cognitive loop and the bounded trainable-model path without turning the entire registry into an enabled API.
