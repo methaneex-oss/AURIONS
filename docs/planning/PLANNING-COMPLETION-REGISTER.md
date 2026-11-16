@@ -6,9 +6,21 @@
 - **Mandatory builder standard:** [Builder Operating Protocol](../governance/BUILDER-OPERATING-PROTOCOL.md); builders must satisfy its self-review, testing, correction and evidence requirements.
 - **Current phase:** Architecture planning and technical design, with implementation planning in progress.
 - **Implementation authorization:** Not granted.
-- **Last builder audit:** 2026-11-13 (continued command/query/event/recovery/scenario/work-package cross-artifact integrity and validation hardening; see the dated appendices in the main-builder audit).
+- **Last builder audit:** 2026-11-16 (product identity, model-training acceptance and WP dependency reconciliation) (continued command/query/event/recovery/scenario/work-package cross-artifact integrity and validation hardening; see the dated appendices in the main-builder audit).
 - **Authority:** Existing owner decision register in `INITIAL-ENGINEERING-SPECIFICATION.md`; this register tracks completion and does not replace owner decisions.
 - **Governance integration evidence:** [Governance Standard Validation Results](../reviews/GOVERNANCE-STANDARD-VALIDATION-RESULTS-2026-11-12.md) — CI verified the mandatory role/workflow document structure and repository entry-point links; this does not prove human compliance or close technical findings.
+
+## Current reconciliation — 2026-11-16
+
+The current product/roadmap reconciliation records the owner's clarified product identity: **AURIONS is a trainable AI system with an evolving cognitive architecture, not a personal-assistant product or chatbot.** Conversation is an interface capability, not the system identity.
+
+The first-release proposal now includes a bounded, reproducible model-training path alongside experience-dependent adaptation. Acceptance criteria PR-19 and PR-20 cover parameter-update provenance, held-out evaluation, candidate quarantine, governed activation and rollback. This is a proposed planning baseline; it does not claim that training infrastructure or model learning is implemented.
+
+The work-package dependency correction removes the circular ordering: WP-14 supplies the isolated training/evaluation infrastructure and depends on WP-01, WP-02, WP-03, WP-04 and WP-05; WP-12 consumes WP-14; WP-15 includes WP-14 in the first-release path. The updated validator enforces these edges and the PR-01…PR-20 acceptance inventory.
+
+Older dated audit entries that refer to PR-01…PR-18 or describe WP-14 as optional are historical records of the prior proposal, not the current acceptance baseline. They are retained for provenance and must not override the current roadmap, product definition or acceptance matrix.
+
+**Evidence boundary:** These are documentation and structural-validation changes only. No cognitive runtime, training worker, dataset pipeline, model update, target-device training run or held-out improvement has been implemented or verified. Implementation authorization remains separate from this reconciliation.
 
 ## 1. Completion semantics
 
