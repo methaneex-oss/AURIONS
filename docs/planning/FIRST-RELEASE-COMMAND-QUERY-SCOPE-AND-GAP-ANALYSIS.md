@@ -2,12 +2,12 @@
 
 **Status:** Builder analysis; D-01 accepted and D-02 Option B selected on 2026-11-16; D-04 subset remains pending owner acceptance. No registry entry is dispatchable and this is not implementation authorization.  
 **Applies to:** BR-001 and BR-002 in the 2026-11-12 main-builder pre-review audit.  
-**Source revision examined:** PR #2 branch `docs/complete-system-architecture`, head `6988b0e3f849a681b663e2a88433347e3ded6671`.  
+**Source revision examined:** PR #2 branch `docs/complete-system-architecture`, head `8884f51b82c350d9a0db98af9903c44e2a44231c`.  
 **Source artifacts:** `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`, `docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md`, `docs/architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md`, and `schemas/command-query-registry.v1.json`.
 
 ## 1. Purpose and boundary
 
-BR-001/BR-002 must be closed against the first-release workflows, not by attempting to make every catalogued interface dispatchable. This document identifies the minimum command/query surface implied by the proposed product definition, separates required interfaces from owner-dependent interfaces, and records the gaps between that surface and the current registry.
+BR-001/BR-002 must be closed against the accepted first-release workflows, not by attempting to make every catalogued interface dispatchable. D-01 accepted PR-01…PR-20 and D-02 selected Option B on 2026-11-16. This document identifies the minimum command/query surface implied by that baseline, separates required interfaces from owner-dependent interfaces, and records the gaps between that surface and the current registry.
 
 This is a builder proposal. The first-release product definition is itself marked proposed for owner review. The mappings below do not silently approve that product definition, select the first Android action, select cloud/mobile history topology, authorize implementation, or make any registry entry dispatchable.
 
@@ -17,7 +17,7 @@ The governing architecture remains objective- and situation-centred. An objectiv
 
 | Product workflow | Required contract capability | Proposed first-release scope |
 |---|---|---|
-| 0 — Cloud runtime | Authenticated owner context, policy-bounded execution, durable experience/task/outcome state, cloud-side ownership | Required platform envelope; cloud/mobile history continuity remains an owner decision |
+| 0 — Cloud runtime | Authenticated owner context, policy-bounded execution, durable experience/task/outcome state, cloud-side ownership | Required platform envelope; D-02 selects bounded selective synchronization of approved durable domains, with local execution authority retained per runtime |
 | A — Offline conversation | Submit experience, assemble context, persist representation/experience, respond through inference abstraction | P0 |
 | B — Recall | Search/retrieve persisted memory with provenance and inspect supporting records | P0 |
 | C — Bounded objective | Create/revise/inspect an objective; derive and persist a distinct plan; checkpoint and control resumable task state | P0 |
@@ -159,7 +159,7 @@ The first-release command/query subset must demonstrate, with executable fixture
 ## 8. Owner decisions and blockers — do not resolve by builder assumption
 
 1. The product definition is proposed for owner review; its first-release workflow set must be accepted before this scope can become authoritative.
-2. Cloud/mobile cognitive-history continuity is unresolved. Shared contracts do not settle shared persistence or synchronization.
+2. Cloud/mobile topology is resolved at option level: D-02 selects dual runtimes with bounded selective domain synchronization. Exact field-level allowlists, local-only classes, conflict/deletion/recovery semantics and executable SY acceptance cases remain open.
 3. The first Android action remains an owner decision. No concrete capability, permission set or adapter is selected here.
 4. Risk thresholds and approval policy for the selected action remain governed by the existing owner decision record.
 5. Numerical query budgets and performance thresholds require measured baselines; the builder must propose values with evidence before they become acceptance thresholds.
@@ -218,6 +218,10 @@ D-01 is accepted; D-02 Option B is selected; D-03 is staged; D-04 remains pendin
 ## 12. D-04 exact first-release subset proposal — 2026-11-16
 
 This section supersedes the older unresolved owner-decision wording in §§8–9 where it conflicts with the D-01/D-02 decisions recorded on 2026-11-16. D-04 itself remains a builder recommendation pending owner acceptance. The list is a scope proposal, not dispatch authorization.
+
+### Synchronization boundary
+
+Under D-02 Option B, selected durable domain changes are synchronized internally through versioned change records, durable outboxes, idempotent relay/reconciliation and explicit conflict/deletion handling. This is a runtime infrastructure capability, not a general-purpose user-dispatch command. No sync operation transfers device-local permissions, credentials, approvals, operation-dispatch state or governance authority. Exact field-level allowlists and SY acceptance evidence remain pre-implementation gates.
 
 ### P0 command proposal
 

@@ -45,14 +45,14 @@ The foundational [Open-World Interaction and Means Architecture](../architecture
 
 ### 2.1 Deployment semantics that must not be conflated
 
-The owner-approved requirement is concurrent first-release availability of cloud operation and offline-capable mobile operation. It does not, by itself, specify a single shared live process, a cloud-dependent mobile client, automatic state replication or first-release multi-device synchronization.
+The owner-approved requirement is concurrent first-release availability of cloud operation and offline-capable mobile operation. D-02 further selects dual full runtimes with bounded selective domain synchronization. This does not specify a single shared live process, a cloud-dependent mobile client or unrestricted state replication.
 
 The architecture must distinguish:
 - **Shared implementation:** both deployment contexts use the same versioned contracts and authoritative cognitive-core implementation/semantics; they are not separate intelligence designs.
 - **Runtime authority:** each runtime must enforce policy at the boundary where an operation is executed. A remote planner cannot authorize a local Android action.
 - **Offline independence:** the mobile runtime must complete its required local workflows without a cloud connection.
 - **State ownership and continuity:** the authoritative location of user state, cloud/mobile continuity, conflict handling and whether any subset of data is synchronized must be explicitly specified before implementation. Do not infer that shared contracts mean shared live state.
-- **Synchronization scope:** the existing decision to defer multi-device synchronization remains distinct from the requirement to deliver cloud and offline-mobile operation concurrently. Any required first-release cross-context continuity must be stated explicitly and reconciled with that deferred scope.
+- **Synchronization scope:** D-02 selects a bounded cloud/mobile continuity subset for first release. General multi-device synchronization and seamless handoff remain deferred. Exact domain/field allowlists, local-only classes, conflict/deletion/recovery semantics and executable SY tests are required before implementation.
 
 The owner selected Option B (selective synchronization) on 2026-11-16. WP-15 therefore includes a bounded continuity subset. Exact domains, field-level classification, conflict/deletion/recovery rules and executable SY tests remain required design gates. See the [topology decision record](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md).
 

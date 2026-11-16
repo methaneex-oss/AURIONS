@@ -3,7 +3,7 @@
 - **Status:** Owner selected Option B on 2026-11-16; detailed synchronization contracts remain IN PROGRESS.
 - **Decision authority:** Builder owns the technical topology proposal. Owner approval is required only if the selected topology changes the product's cross-context continuity or first-release synchronization scope. This document does not reinterpret the approved deployment direction.
 - **Related owner decision:** Cloud operation and offline-capable mobile operation are concurrent first-release targets. Offline mobile must remain functional without cloud availability. Both contexts use shared versioned contracts and the authoritative cognitive-core implementation.
-- **Related existing proposal:** General multi-device synchronization and handoff are currently excluded from first release. The relationship between this proposal and the concurrent deployment decision requires explicit reconciliation.
+- **Scope clarification:** D-02 selects bounded cloud/mobile selective synchronization for first release. General multi-device synchronization and seamless handoff remain excluded; this decision supersedes earlier no-sync wording in the product proposal.
 
 ## 1. The unresolved distinction
 
@@ -23,7 +23,7 @@ Shared implementation does not automatically provide shared state. Shared state 
 - The cognitive core and contracts must remain common rather than fork into two intelligence implementations.
 - SQLite stores are local to a runtime; SQLite database files must not be replicated directly.
 - Versioned domain changes, outboxes, idempotency, receipts, tombstones and reconciliation are the approved direction for any synchronization.
-- General multi-device synchronization/handoff is currently outside the proposed first-release scope.
+- Bounded selective synchronization between the first-release cloud and offline-mobile runtimes is in scope under D-02; general multi-device synchronization/handoff remains outside first release.
 - No first Android operation or capability catalogue is selected.
 
 ## 3. Architecture options
@@ -31,31 +31,26 @@ Shared implementation does not automatically provide shared state. Shared state 
 | Option | Runtime model | State continuity | Consequence |
 |---|---|---|---|
 | A — Independent full runtimes | Cloud and mobile each run the same core implementation and contracts, with their own authoritative local state. | None in first release. | Satisfies concurrent availability and offline operation without first-release sync, but the user's cloud and mobile cognitive histories diverge. They are two instances of one system, not one continuous state. |
-| B — Dual runtime with selective domain synchronization | Both run the same core. Each owns local execution state; a defined set of owner-authorized domain changes is synchronized through versioned changes/outboxes. | Defined continuity for selected domains; offline changes reconcile on reconnect. | Best supports one continuous assistant across cloud and mobile, but requires a minimum synchronization subset in first release. This revises the current proposal to defer all multi-device synchronization. |
+| B — Dual runtime with selective domain synchronization | Both run the same core. Each owns local execution state; a defined set of approved domain changes is synchronized through versioned changes/outboxes. | Defined continuity for selected domains; offline changes reconcile on reconnect. | Selected by the owner for first release. It replaces the earlier no-sync proposal with bounded cloud/mobile synchronization; general multi-device synchronization and seamless handoff remain deferred. |
 | C — Mobile runtime with cloud compute/services | Mobile owns the cognitive state and device authority. Cloud supplies optional stateless or job-scoped compute/inference/training services. | Mobile remains authoritative; cloud does not host a separate full cognitive state. | Strong offline independence and less synchronization complexity, but may not satisfy the owner's intended meaning of a concurrent full cloud operation target. |
 
 ## 4. The constraint conflict
 
 If "cloud operation" and "offline mobile operation" both mean full independently running AURIONS runtimes, and both must share one continuous cognitive state, then some form of synchronization is required.
 
-Therefore the following three statements cannot all be true at once:
-- Full cloud and mobile runtimes are both first-release targets.
-- They share continuous cognitive state.
-- No cross-runtime synchronization is included in the first release.
+The former three-way conflict is resolved by the owner's D-02 decision: the first release includes bounded selective synchronization between the cloud and offline-mobile runtimes. The remaining design problem is to define exactly which durable domain changes may synchronize, how conflicts/deletions/replay/recovery work, and which state remains local. The phrase "shared contracts" alone is not evidence of state continuity.
 
-The architecture must explicitly relax or qualify one of these statements. It must not conceal the conflict behind the phrase "shared contracts."
-
-## 5. Builder recommendation
+## 5. Decision rationale
 
 Retain one cognitive-core implementation and common versioned contracts in every option. Keep local Android authorization and execution authority on the device in every option.
 
-**Builder recommendation: Option B — dual runtime with selective domain synchronization — is the best semantic fit if AURIONS is intended to remain one persistent personal intelligence when the owner moves between cloud and offline mobile.** Without some continuity mechanism, Option A creates two separate histories: an experience or belief learned in one runtime is unavailable to the other until manually transferred. That weakens the product's persistent-memory and experience-dependent adaptation objectives.
+**Pre-decision builder rationale:** Option B — dual runtimes with selective domain synchronization — best preserves one persistent cognitive history across cloud and offline mobile. Without continuity, Option A would create two separate histories: an experience or belief learned in one runtime would be unavailable to the other until manually transferred.
 
-This recommendation is deliberately narrower than general multi-device synchronization. A first-release continuity subset should be considered for owner-approved durable memory/knowledge/belief updates and explicitly selected goal/context continuity. Device-local operation state, Android permissions, device credentials, owner approval secrets and governance authority remain local and are never made transferable merely because a memory domain is synchronized. Sensitive/raw observations remain local unless separately classified and authorized for transfer. The exact domain set, retention/deletion propagation and conflict semantics must be specified before implementation.
+The selected scope is deliberately narrower than general multi-device synchronization. The initial candidate domains are durable experiences/provenance, representations, memory, evidence-backed knowledge/belief revisions, objectives/derived goals and explicitly approved immutable model-version references. Device-local operation state, Android permissions, device credentials, owner approval secrets, dispatch state and governance authority remain local. Raw/sensitive observations remain local by default. Field-level allowlists, retention/deletion propagation, conflict semantics and crash recovery must be specified before implementation.
 
-The trade-off is real: Option B brings a limited synchronization mechanism into the first-release scope and therefore changes the existing proposal to defer all synchronization. That scope change requires explicit owner approval. It cannot be smuggled in as an engineering detail.
+The owner selected Option B on 2026-11-16. No further owner decision is needed to design this bounded subset. Expanding the domain set, transferring local authority or enabling general device handoff requires a separate owner decision.
 
-If the owner does **not** want first-release cross-context continuity, Option A is the clean fallback. It preserves the existing no-sync scope, but the product must explicitly accept and disclose that cloud and mobile maintain separate cognitive histories. Option C is appropriate only if cloud is intended as an optional compute/service plane rather than a full concurrent AURIONS runtime; it is not the default recommendation under the current wording of the deployment target.
+Option A remains the historical no-sync alternative; it is not the selected topology. Option C is not selected.
 
 **Owner decision recorded 2026-11-16: Option B selected.** Both runtimes remain independent and offline-capable where required, using the same core and versioned contracts. This authorizes detailed selective-sync design only, not unrestricted replication or implementation.
 
