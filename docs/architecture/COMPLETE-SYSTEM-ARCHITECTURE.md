@@ -51,7 +51,7 @@ Deployment topology proposal:
 - **Android platform adapter/UI:** Android-specific adapters are required for the offline-mobile target; a native UI remains a separate engineering choice and is not implied by the CLI decision.
 - **Optional remote services:** inference providers, search, APIs or compute; enabled only through explicit provider and data policies.
 
-Shared core contracts do not imply shared mutable databases or automatic state replication. Cloud/mobile state ownership and any first-release cross-context continuity must be explicitly specified before implementation. Until that contract is approved, each runtime is authoritative for its own local state and cross-runtime synchronization is not assumed.
+Shared core contracts do not imply shared mutable databases or automatic replication. D-02 Option B is selected: the first release includes bounded selective synchronization of approved durable domain changes through versioned changes, store-local outboxes and reconciliation. Each runtime retains local authority for local effects, permissions, credentials, approval secrets, dispatch and governance. Exact field-level allowlists, conflict/deletion/replay/recovery semantics and executable SY evidence remain pre-implementation gates. This selection does not authorize unrestricted replication or cross-runtime execution authority. See the [Cloud and Offline-Mobile Runtime Topology Decision](CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md).
 
 AURIONS must remain useful when remote services are unavailable. A cloud backend is not mandatory merely to support multiple devices.
 
