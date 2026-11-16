@@ -67,28 +67,36 @@ The repository's general model-groundwork section deliberately left architecture
 
 These parameters must be versioned in model, tokenizer, dataset, training and evaluation manifests. Do not turn provisional values into permanent architecture rules without measurement.
 
-## 4. Material contract gap: training-data authorization
+## 4. MD-16 dataset-rights contracts and remaining enforcement gap
 
-MD-16 now has initial machine-readable payload coverage, but it is not yet an enforceable end-to-end authorization system.
+MD-16 now has machine-readable source/manifest schemas, five event-specific payload schemas, positive fixtures, eleven dataset-rights negative controls and validator cross-binding. Five trusted non-command events are registered and reconciled across the producer/consumer matrix, ingress-trigger matrix and integrated scenario INT-004.
 
-**Now present in the current branch:**
+**Machine contracts now present:**
 
 - `datasetSourceAuthorization` binds immutable source identity/content digest, acquisition provenance, rights basis, license/terms reference and digest, permitted purposes, explicit training permission, separate memory-retention permission, private-data classification/authorization evidence, owner/model scope, validity, policy version, status and revocation evidence.
 - `datasetManifest` binds included source digests to authorization IDs and authorization/terms digests, records exclusions, preprocessing/deduplication/quality/curriculum references, split digests, rights-policy snapshot and derived-artifact references.
-- Positive fixtures cover an active licensed source whose training permission is allowed while memory retention is denied. Six negative fixtures cover missing rights basis, private data without authorization, missing source authorization reference, empty manifests, activation without evaluation evidence and rollback without restore digest.
-- `scripts/validate_schemas.py` checks source/content/authorization/terms digest, owner/model-scope and training-purpose consistency in the positive dataset-manifest fixture.
-- `candidate.activated.v1` and `candidate.rolled_back.v1` now reference state-specific schemas requiring their respective approval, evaluation or restore evidence and pointer revision.
+- Event payloads cover authorization decided, authorization revoked, manifest sealed, admission blocked and revocation impact assessed. Event registry entries, producer/consumer rows, ingress-trigger rows and INT-004 acceptance references are aligned.
+- The 11 dataset-rights negative controls cover source-rights basis, private-data authorization, manifest source membership/emptiness, activation/rollback evidence and invalid authorization/manifest lifecycle event payloads.
+- `validate_schemas.py` checks exact source/content/authorization/terms digests, owner/model/purpose scope and cross-event authorization/manifest identity consistency.
+
+**Persistence contracts now present:**
+
+- Governance migration v5 defines immutable authorization versions and append-only revocation evidence, using the existing governance approval-request and local-outbox boundaries.
+- Memory migration v9 defines immutable manifest metadata, source membership, exclusions, split digests, seal evidence, lifecycle events, admission decisions and revocation-impact lineage.
+- The existing events-store operation/step/recovery tables represent the revocation-impact saga; no additional events-store migration is currently justified.
+- SQLite smoke assertions for the new governance and memory records, append-only behavior, complete manifest sealing and admission without a seal are added to the host DDL validator.
 
 **Still missing before nontrivial corpus ingestion or training:**
 
-1. Durable governance persistence for immutable source authorization versions, terms evidence, grants and append-only revocations.
-2. Durable dataset-manifest/source-membership persistence and lineage into experiments, checkpoints and candidate artifacts.
-3. Trusted internal event contracts for authorization granted/denied/revoked, manifest sealed, admission blocked and revocation impact assessed, reconciled with producer/consumer, ingress and store-local outbox/saga matrices.
-4. Runtime authorization enforcement at acquisition, dataset construction, artifact registration, worker dispatch and immediately before training. Worker scope must be immutable and non-expandable.
-5. Revocation impact assessment over dependent manifests, experiments, checkpoints, candidates, backups and synchronized copies. Historical evidence must not be silently rewritten.
-6. Positive/negative and crash/replay tests for expiry, revocation, changed terms/content, purpose/scope mismatch, mixed-rights datasets, worker expansion and active-candidate impact.
+1. Execute the current 20-file SQLite chain on host SQLite and validate the new governance v5 and memory v9 migrations; prior host evidence covers the previous 18-file chain only.
+2. Implement and verify authorization checks at acquisition, dataset construction, artifact registration and immediately before worker dispatch. Workers must receive immutable, non-expandable source scope and cannot authorize themselves.
+3. Make final admission fail closed for unknown, denied, expired, revoked, digest-mismatched, out-of-scope or unavailable governance state, independent of event-relay delay.
+4. Implement revocation impact assessment over dependent manifests, experiments, checkpoints, candidates, backups and synchronized copies. Preserve unknown training influence explicitly; do not claim automatic unlearning.
+5. Add cross-store crash/replay, outbox relay, worker cancellation, restore and target-device SQLite tests.
+6. Complete candidate-ID mismatch and canonical activation/rollback operation-digest fixtures, plus runtime authenticated approval verification.
 
-The schema/fixture layer does not establish persistence or runtime enforcement. Until the remaining gates close, unapproved and ambiguous sources remain denied; no nontrivial corpus training is authorized by these schema changes.
+The schema, event and DDL contracts are specification-level artifacts, not proof of runtime enforcement. Unapproved and ambiguous sources remain denied. No nontrivial corpus ingestion or training is authorized until the remaining gates are implemented and verified.
+
 
 ## 5. Model lifecycle contract status
 
@@ -96,7 +104,7 @@ The schema/fixture layer does not establish persistence or runtime enforcement. 
 |---|---|---|
 | Model ownership and initialization | Initial Engineering Specification; learningExperimentRequest initialization fields | Specified; no production trainer |
 | Experiment/worker identity | learningExperimentRequest, learningExperimentCompleted, workerRequest, workerResult | Schema specified; runtime handlers not implemented |
-| Artifact provenance and quarantine | artifactManifest and artifact registry events | Generic schema/registry contract specified; structured training-data rights remain incomplete |
+| Artifact provenance and quarantine | artifactManifest and artifact registry events | Source/manifest and event schemas plus governance v5/memory v9 DDL contracts specified; runtime rights enforcement and exact-head migration validation remain open |
 | Learning evaluation | learningCandidateEvaluationRequest and learningCandidateEvaluated; migration v8 evaluation table | Contract and proposed persistence specified; executable evaluator/held-out improvement not established |
 | Evolution evaluation | evolutionCandidateActionRequest/lifecycle; migration v8 evolution evaluation table | Contract and proposed persistence specified; runtime evaluator not implemented |
 | Owner approval | approvalRequested, approvalDecision, approval/revocation registry entries | Governance contract specified; authenticated runtime verification not demonstrated |
@@ -107,7 +115,7 @@ All related command/event registry entries remain design-only and non-dispatchab
 
 ## 6. Required work-package order
 
-1. Close the MD-16 source-rights, dataset-manifest and revocation contract gap before admitting private or otherwise ambiguous data.
+1. Execute and validate the MD-16 governance v5/memory v9 persistence contracts, then implement and verify source-rights enforcement before admitting private or otherwise ambiguous data.
 2. Consolidate MD-01 through MD-16 into the normative model/training specification and align the Initial Engineering Specification and PR-19/PR-20 crosswalk.
 3. Complete schema/fixture/validator alignment for model configuration, tokenizer, dataset authorization, training manifests and staged objectives.
 4. Implement the bounded C++ supervisor ↔ Python worker contract and verify matching positive/negative fixtures at both ends.

@@ -1,6 +1,6 @@
 # AURIONS — Dataset Source Rights and Training Authorization Contract
 
-- **Status:** Builder technical contract proposal derived from owner decision MD-16; initial JSON Schema, fixture and validator coverage now exists. Durable persistence, trusted event contracts and executable enforcement remain open.
+- **Status:** MD-16 technical contract integrated into source/manifest schemas, five event payloads, event registry/matrices, INT-004, governance v5 and memory v9. Exact-head execution of the new migrations and executable enforcement remain open.
 - **Authority:** [Model Architecture and Training Owner Decisions — MD-16](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md).
 - **Scope:** Source acquisition, training-use authorization, immutable dataset manifests, worker admission, revocation and derived-artifact impact.
 - **Boundary:** This document does not authorize corpus ingestion, training, worker dispatch, model activation, implementation or planning exit. Unapproved sources are denied by default.
@@ -89,11 +89,11 @@ Revocation must not silently rewrite historical manifests or experiment evidence
 
 ## 6. Persistence and event requirements
 
-The current JSON Schema definitions `datasetSourceAuthorization` and `datasetManifest` encode the source-rights and immutable-manifest payload shapes. Positive fixtures and negative controls cover missing rights basis, private-data authorization, source authorization references and empty manifests; `validate_schemas.py` also checks the positive fixture's source/content/terms/owner/model-scope/purpose binding. These are shape and fixture checks, not persistence or runtime enforcement. The eventual persistence contract must store authorization versions in the governance authority boundary, immutable dataset manifests and source membership/lineage in the appropriate owning store, revocation records and derived-artifact impact assessments. It must enforce owner scope, uniqueness, immutable digests, valid status transitions, authorization expiry/revocation checks and referential lineage.
+The current JSON Schema definitions `datasetSourceAuthorization` and `datasetManifest` encode the source-rights and immutable-manifest payload shapes. Positive fixtures and negative controls cover missing rights basis, private-data authorization, source authorization references and empty manifests; `validate_schemas.py` also checks the positive fixture's source/content/terms/owner/model-scope/purpose binding. These are shape and fixture checks; governance v5 and memory v9 now define the corresponding persistence contracts, but the new migrations have not yet been executed. Runtime enforcement must still verify owner scope, uniqueness, immutable digests, authorization expiry/revocation and referential lineage.
 
-The state transitions still require trusted internal events for authorization granted/denied/revoked, dataset manifest sealed, admission blocked and revocation impact assessed. Those event entries have not been added. Their producer/consumer ownership, owner transitions, idempotency, outbox boundaries and recovery must be reconciled against the existing event registry and three-store saga model before adding them. Separately, candidate activation and rollback events now reference state-specific schemas that require the corresponding evidence. Do not invent public commands or make any registry entry dispatchable as part of this proposal; D-04 remains a separate owner gate.
+The five trusted internal event types for authorization decided/revoked, manifest sealed, admission blocked and revocation impact assessed are now registered and reconciled with producer/consumer ownership, ingress triggers, owner transitions, idempotency, outbox boundaries and the existing three-store saga model. Separately, candidate activation and rollback events now reference state-specific schemas that require the corresponding evidence. Do not invent public commands or make any registry entry dispatchable as part of this proposal; D-04 remains a separate owner gate.
 
-A new additive SQLite migration is required only after the payload schema, fixtures, registry/event semantics and migration ownership are reconciled. It must not introduce cross-file foreign keys or imply distributed ACID transactions. The existing local-outbox and cross-store saga rules continue to apply.
+Governance migration v5 and memory migration v9 now encode the owning-store persistence boundaries. They introduce no cross-file foreign keys or distributed ACID transaction. The existing local-outbox and cross-store saga rules continue to apply. Their exact-head host SQLite execution remains pending.
 
 ## 7. Required acceptance evidence
 
@@ -103,17 +103,17 @@ A new additive SQLite migration is required only after the payload schema, fixtu
 - Recovery: crash before/after authorization commit, manifest seal, worker dispatch, revocation, impact assessment and outbox relay; idempotent replay and no blind worker retry.
 - Security: worker cannot read governance secrets, change authorization state, broaden source scope or bypass owner approval.
 
-These are planned acceptance cases until machine fixtures and executable handlers/tests exist.
+The payload/fixture contracts and initial DDL smoke assertions now exist; cross-store crash/replay tests, executable handlers and target-device validation remain planned.
 
 ## 8. Closure status
 
 - **Owner decision:** MD-16 accepted.
 - **Specified in this document:** source-rights record, dataset-manifest structure, admission checks, revocation/lineage behavior and acceptance evidence.
-- **Machine contracts:** initial JSON Schema definitions, positive/negative fixtures and validator cross-binding checks are present for source authorization and dataset manifests; state-specific activation/rollback event schemas are also bound in the event registry. Dataset-rights persistence, authorization/revocation/sealing/admission/impact event definitions, event matrices and runtime enforcement remain open.
+- **Machine contracts:** source/manifest schemas, five event payload schemas, positive fixtures, eleven dataset-rights negative controls, validator cross-binding, five registered events, both event matrices and INT-004 are present. Governance v5 and memory v9 DDL plus SQLite smoke assertions are added but not executed. Runtime acquisition/admission/revocation enforcement and cross-store recovery remain open.
 - **Runtime:** no dataset-rights enforcement, worker admission or revocation-impact handler is implemented or validated.
 - **Gate:** do not admit nontrivial/ambiguous sources or begin training until the machine contracts and authorization enforcement are implemented and verified under the separately authorized implementation milestone.
 
 
 ## Current machine-contract status — 2026-11-16
 
-The dataset-rights contract now has five event-specific payload definitions and fixtures: authorization decided, authorization revoked, manifest sealed, admission blocked and revocation impact assessed. All five events are registered as trusted non-command internal events and are bound to the event producer/consumer matrix, ingress-trigger matrix and integrated scenario INT-004. Five event-specific negative controls supplement the six existing source/manifest negative controls. This is machine-contract specification only; durable governance and memory persistence, worker/supervisor enforcement, executable revocation recovery and training authorization remain unimplemented. No nontrivial corpus ingestion or training is authorized by these documents.
+The dataset-rights contract now has five event-specific payload definitions and fixtures: authorization decided, authorization revoked, manifest sealed, admission blocked and revocation impact assessed. All five events are registered as trusted non-command internal events and are bound to the event producer/consumer matrix, ingress-trigger matrix and integrated scenario INT-004. Five event-specific negative controls supplement the six existing source/manifest and lifecycle negative controls, for eleven MD-16 controls total. Governance v5 and memory v9 DDL plus host SQLite smoke assertions are present but not executed. Worker/supervisor enforcement, cross-store crash/replay and training authorization remain unimplemented. No nontrivial corpus ingestion or training is authorized by these documents.
