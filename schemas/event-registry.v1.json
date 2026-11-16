@@ -2341,7 +2341,8 @@
       "event_version": "1.0",
       "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionProposed",
       "fixture_refs": [
-        "schemas/fixtures/domain-payloads.fixture.json#/evolutionProposed"
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionProposed",
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionModelCandidateProposed"
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [

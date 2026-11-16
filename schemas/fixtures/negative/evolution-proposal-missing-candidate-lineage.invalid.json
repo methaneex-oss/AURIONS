@@ -1,0 +1,23 @@
+{
+  "proposal_id": "e0000000-0000-4000-8000-000000000001",
+  "target_mechanism": "primary_model",
+  "description": "Model candidate proposal fixture with exact source lineage",
+  "evidence_refs": [
+    "artifact:learning-evaluation:1"
+  ],
+  "impact_risk": {
+    "risk_class": "R5",
+    "status": "quarantined"
+  },
+  "candidate_artifact_ref": "artifact:model-candidate:1",
+  "evaluation_ref": "artifact:learning-evaluation:1",
+  "state": "proposed",
+  "approval_ref": null,
+  "created_at": "2026-11-16T18:00:00Z",
+  "updated_at": "2026-11-16T18:00:00Z",
+  "learning_update_id": "90000000-0000-4000-8000-000000000001",
+  "experiment_id": "ad100000-0000-4000-8000-000000000001",
+  "attempt_id": "ad200000-0000-4000-8000-000000000001",
+  "learning_evaluation_id": "ae300000-0000-4000-8000-000000000001",
+  "candidate_artifact_sha256": "8888888888888888888888888888888888888888888888888888888888888888"
+}

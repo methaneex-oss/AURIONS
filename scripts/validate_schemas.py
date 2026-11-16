@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import re
+import uuid
 import sys
 from pathlib import Path
 
@@ -1265,6 +1266,21 @@ def main() -> int:
     if lineage_eval_request["candidate_artifact_sha256"] != lineage_completion["candidate_artifact_sha256"] or lineage_eval_result["candidate_artifact_sha256"] != lineage_completion["candidate_artifact_sha256"]:
         fail("PR-20 lineage: evaluation candidate digest differs from worker output")
 
+    identity_fixture = domain_fixture["modelCandidateIdentityFixture"]
+    expected_candidate_id = str(uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        "aurions:candidate:v1:"
+        f"{identity_fixture['owner_ref']}:{identity_fixture['proposal_id']}:"
+        f"{identity_fixture['artifact_sha256']}",
+    ))
+    if identity_fixture["candidate_id"] != expected_candidate_id:
+        fail("model candidate identity fixture does not match canonical UUIDv5 derivation")
+    model_proposal = domain_fixture["evolutionModelCandidateProposed"]
+    if model_proposal["candidate_id"] != identity_fixture["candidate_id"]:
+        fail("model candidate proposal does not bind the canonical candidate ID")
+    if model_proposal["proposal_id"] != identity_fixture["proposal_id"] or model_proposal["candidate_artifact_sha256"] != identity_fixture["artifact_sha256"]:
+        fail("model candidate proposal identity fixture changed its proposal/artifact binding")
+
     # Additional focused positive fixtures.
     for fixture_name, definition in [
         ("decision-recorded.fixture.json", "decisionRecorded"),
@@ -1302,6 +1318,7 @@ def main() -> int:
         "learning-evaluation-missing-lineage.invalid.json": ("domain-payloads.v1.schema.json", "learningCandidateEvaluationRequest"),
         "candidate-activation-missing-approval.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActionRequest"),
         "candidate-rollback-missing-reference.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActionRequest"),
+        "evolution-proposal-missing-candidate-lineage.invalid.json": ("domain-payloads.v1.schema.json", "evolutionProposed"),
         "memory-retrieval-invalid-limit.invalid.json": ("domain-payloads.v1.schema.json", "memoryRetrievalQuery"),
         "message-envelope-invalid-owner-type.invalid.json": ("message-envelope.v1.schema.json", None),
         "operation-control-invalid-action.invalid.json": ("domain-payloads.v1.schema.json", "operationControlRequest"),

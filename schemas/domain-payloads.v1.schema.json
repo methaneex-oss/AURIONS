@@ -6327,6 +6327,35 @@
           "const": "proposed"
         }
       }
+    },
+    "evolutionModelCandidateProposed": {
+      "$ref": "#/$defs/evolutionProposed"
+    },
+    "modelCandidateIdentityFixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner_ref",
+        "proposal_id",
+        "artifact_sha256",
+        "candidate_id"
+      ],
+      "properties": {
+        "owner_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposal_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "artifact_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "candidate_id": {
+          "$ref": "#/$defs/uuid"
+        }
+      }
     }
   }
 }
