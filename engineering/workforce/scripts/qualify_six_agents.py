@@ -15,7 +15,7 @@ from typing import Any
 
 import httpx
 
-from workforce.agents.runner import is_groq_model_permission_block, provider_error_detail
+from workforce.agents.runner import TOOLS, is_groq_model_permission_block, provider_error_detail
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
 from workforce.openrouter_limits import require_free_model_quota
 from workforce.provider_http import authorization_headers, chat_completion_headers
@@ -25,19 +25,11 @@ OPENROUTER_MODEL = "openrouter/free"
 TIMEOUT_SECONDS = 45
 MAX_RESPONSE_BYTES = 1_000_000
 
-READ_FILE_TOOL = [{
-    "type": "function",
-    "function": {
-        "name": "read_file",
-        "description": "Read a bounded UTF-8 text file from the checked-out repository. This qualification tool is read-only and only permits README.md.",
-        "parameters": {
-            "type": "object",
-            "properties": {"path": {"type": "string"}},
-            "required": ["path"],
-            "additionalProperties": False,
-        },
-    },
-}]
+def _qualification_tool_choice(role: str) -> str | dict[str, dict[str, str]]:
+    """Constrain GLM to the named read_file function while testing the runtime tool schema."""
+    if ROLE_MODEL_ASSIGNMENTS[role]["model"] == "@cf/zai-org/glm-4.7-flash":
+        return {"type": "function", "function": {"name": "read_file"}}
+    return "required"
 
 
 class ProviderFailure(Exception):
@@ -330,8 +322,8 @@ def qualify_role(role: str, repo_root: Path, results: list[dict[str, Any]]) -> N
         )
         first_data, first_provider, first_model = role_call({
             "messages": [{"role": "user", "content": initial_prompt}],
-            "tools": READ_FILE_TOOL,
-            "tool_choice": "required",
+            "tools": TOOLS,
+            "tool_choice": _qualification_tool_choice(role),
             "temperature": 0,
         }, max_tokens=512)
         first_message = _choice(first_data)
