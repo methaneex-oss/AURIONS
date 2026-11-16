@@ -16,7 +16,7 @@ The architecture must provide:
 - Multiple interfaces and integrations without making any platform, connector or capability registry the definition of intelligence.
 - Local-first operation and policy-controlled remote resources where applicable.
 - Explicit state ownership, authority, consent, effect verification, failure recovery and auditability.
-- Multi-device contracts designed early, with distributed implementation deferred until the single-runtime core is reliable.
+- The owner-selected cloud/offline-mobile pair shares an explicitly allowlisted durable continuity subset in the first release under D-02 Option B; broader device ecosystems, general pairing and seamless task handoff remain later expansion after the core is reliable.
 - A mechanism-based cognitive architecture; learned behaviour must not be replaced by hardcoded stimulus-response or task-to-action conclusions.
 
 ## 2. System layers and responsibility ownership
@@ -36,7 +36,7 @@ The foundational objective/world/means distinctions are defined in [Open-World I
 | Outcome evaluation and learning | Independent observation, attribution, memory revision, experiments and competence evaluation | C++ authority with isolated workers where justified |
 | User experience | Text, voice, visual status, task views, notifications, settings and accessibility | UI clients; no direct domain DB writes |
 | Persistence and synchronization | Durable state, artifacts, migrations, backup, recovery, conflict and deletion | Domain-owned stores and explicit replication contracts |
-| Model and inference services | Model-independent inference, routing and optional local/remote compute | Replaceable provider boundary; no authority grant |
+| Model and inference services | AURIONS-owned, trainable primary model behind a model-independent inference interface; separately governed research, retrieval and compute services | Replaceable runtime boundary; no external pretrained model is the default brain and no model receives authority |
 
 These are logical ownership boundaries, not a mandate for one process/service per row. Retain a modular monolith at the centre. Split components only when lifecycle, security, resource isolation, platform integration or distribution gives a concrete reason.
 
@@ -51,7 +51,7 @@ Deployment topology proposal:
 - **Android platform adapter/UI:** Android-specific adapters are required for the offline-mobile target; a native UI remains a separate engineering choice and is not implied by the CLI decision.
 - **Optional remote services:** inference providers, search, APIs or compute; enabled only through explicit provider and data policies.
 
-Shared core contracts do not imply shared mutable databases or automatic replication. D-02 Option B is selected: the first release includes bounded selective synchronization of approved durable domain changes through versioned changes, store-local outboxes and reconciliation. Each runtime retains local authority for local effects, permissions, credentials, approval secrets, dispatch and governance. Exact field-level allowlists, conflict/deletion/replay/recovery semantics and executable SY evidence remain pre-implementation gates. This selection does not authorize unrestricted replication or cross-runtime execution authority. See the [Cloud and Offline-Mobile Runtime Topology Decision](CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md).
+D-02 Option B is selected: cloud and offline-mobile are full runtimes using the same authoritative cognitive core, with bounded selective synchronization of explicitly allowlisted durable domain changes in the first release. This is not unrestricted replication or one shared live database. Each runtime remains authoritative for local execution state, permissions, credentials, approvals and governance authority. Field-level allowlists, data classification, conflict/deletion/recovery rules and executable SY cases are pre-implementation gates; synchronization is not assumed to be complete until those contracts are closed. See the [Cloud and Offline-Mobile Runtime Topology Decision](CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md).
 
 AURIONS must remain useful when remote services are unavailable. A cloud backend is not mandatory merely to support multiple devices.
 
@@ -90,7 +90,7 @@ Examples such as launching an application, adjusting volume or manipulating file
 
 ## 6. Multi-device identity, communication and synchronization
 
-Multi-device support is a distributed-systems concern, not simply a UI feature. Design contracts now; implement after the single-device core works.
+Cross-runtime continuity is a distributed-systems concern, not simply a UI feature. The bounded cloud/mobile subset selected under D-02 is a first-release requirement and must be designed with authenticated identities, versioned changes, outboxes, idempotency, causality, conflict/deletion handling and recovery. Broader device ecosystems, general device management and seamless task handoff remain deferred until the single-runtime core is reliable.
 
 ### Identity and pairing
 - Each installation/device has a distinct cryptographic identity.
@@ -119,10 +119,12 @@ Tasks have durable IDs, ownership, checkpoints, deadlines and operation receipts
 
 ## 7. Model, inference and compute routing
 
-Keep a model-independent interface. Select a model/provider based on required capability, measured quality, latency, resource budget, privacy classification, availability and cost policy.
+Keep a model-independent inference interface, but do not confuse interface independence with model ownership. The primary model is AURIONS-owned and trained under AURIONS control; its initial baseline uses randomly initialized parameters and versioned architecture/tokenizer/configuration. Pretrained third-party weights or a hosted LLM are not silently substituted as the AURIONS brain. Architecture size, tokenizer, training objective and inference engine are engineering choices requiring measurement.
 
-- Local inference is preferred where it meets task requirements.
-- Remote inference is optional and task-scoped; only minimum authorized context may leave the device.
+- The AURIONS-owned model is the primary inference path; local inference is required for offline-mobile workflows and must not depend on remote inference.
+- Online research/search and data acquisition are separate capabilities from model inference. Retrieved content retains provenance and trust/sensitivity/licensing metadata and enters training only after curation and data-use approval.
+- Training may use approved cloud/remote compute where local resources are insufficient; training compute does not make cloud availability a dependency for local inference or operation.
+- External model inference is not a required first-release dependency; any later use requires explicit owner approval, task scoping and minimum authorized disclosure.
 - Adapters normalize capability metadata, request/response schemas, cancellation, timeouts and errors.
 - Model output is untrusted content/proposal, never authority to grant permissions or execute privileged actions.
 - Heavy workloads may use an authorized desktop or remote compute provider subject to data-transfer and spending policies.
@@ -195,7 +197,7 @@ These families are product-planning prompts inspired by J.A.R.V.I.S., F.R.I.D.A.
 Reproducible repository/build, stable contracts, dependency inventory, test harness and validated target toolchain.
 
 ### First usable release
-A usable CLI as the first user-facing interface; a cloud runtime and an offline-capable mobile runtime delivered concurrently, using the same versioned contracts and authoritative cognitive architecture; model-independent inference; persistent conversation/experience; provenance-aware memory and retrieval; bounded task reasoning/planning; environment/capability discovery; one narrowly scoped owner-approved permitted action through the gateway; verified outcome persistence; restart recovery; offline operation; inspectable permissions and resource limits. Offline mobile operation does not by itself select a native Android UI technology; the CLI remains the first user-facing interface and the mobile interface/topology must be validated.
+A usable CLI as the first user-facing interface; a cloud runtime and an offline-capable mobile runtime delivered concurrently, using the same versioned contracts and authoritative cognitive architecture; an AURIONS-owned trainable primary model behind a model-independent inference interface; persistent conversation/experience; provenance-aware memory and retrieval; bounded task reasoning/planning; environment/capability discovery; one narrowly scoped owner-approved permitted action through the gateway; verified outcome persistence; restart recovery; offline operation; inspectable permissions and resource limits. Offline mobile operation does not by itself select a native Android UI technology; the CLI remains the first user-facing interface and the mobile interface/topology must be validated.
 
 It must demonstrate that a recorded outcome changes later retrieval/reasoning in a repeatable test. Conversation history alone does not qualify as learning.
 
