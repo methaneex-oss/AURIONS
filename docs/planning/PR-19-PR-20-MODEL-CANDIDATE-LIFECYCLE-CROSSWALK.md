@@ -1,7 +1,7 @@
 # AURIONS — PR-19 / PR-20 Model-Candidate Lifecycle Crosswalk
 
 - **Status:** Builder-authored technical proposal; specified for owner review, not implemented or runtime-validated.
-- **Revision baseline:** `docs/complete-system-architecture` at `62599932254bc5e17556ea368fe94c52df438691`.
+- **Revision baseline:** `docs/complete-system-architecture` audited at `66a1a05659600f5261170d4318fd7b7d494e9524`; subsequent documentation consolidation is recorded in the current branch history.
 - **Authority:** Owner-accepted first-release product baseline PR-01…PR-20; D-04 command/query subset remains a builder proposal pending owner acceptance.
 - **Purpose:** Define one traceable, enforceable path from a model-training experiment to a governed active model artifact and a verifiable rollback.
 - **Model decision register:** [MD-01…MD-16 — Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md).
@@ -22,8 +22,8 @@ Current contract coverage includes:
 The material remaining gaps are now narrower:
 
 1. **Training-data rights are not a complete machine contract.** The generic permission payloads and artifact provenance fields do not bind each dataset source to license/usage terms, explicit private-data authorization, training purpose, scope, expiry and revocation. There is no dedicated dataset-source rights record or dataset-manifest schema proving that all included sources were authorized for training. See the [Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md), §4.
-2. **Lifecycle event state requirements are weaker than action-request requirements.** `evolutionCandidateLifecycle` requires only candidate ID, proposal ID, state, artifact reference and timestamp. For `active` and `rolled_back` states, approval, evaluation digests, pointer revision and restore/rollback evidence remain optional at the event-schema level. Add state-specific required fields and negative fixtures.
-3. **Candidate-ID derivation needs executable conformance.** The UUIDv5 rule in §2 is specified here, but runtime recomputation and valid/invalid conformance fixtures are not evidence-backed as implemented.
+2. **Lifecycle event state requirements are weaker than action-request requirements.** `evolutionCandidateLifecycle` currently has no state-specific schema conditions. For `active` and `rolled_back` states, approval, both evaluation digests, pointer revision and restore/rollback evidence are not required by the event schema. Add conditional requirements and positive/negative fixtures.
+3. **Candidate-ID source validation exists; runtime conformance does not.** `scripts/validate_schemas.py` recomputes the canonical UUIDv5 from the positive identity fixture and checks the proposal binding. This is a host-side fixture/validator check, not evidence that runtime command handlers recompute and reject mismatches. Add a negative mismatch fixture and runtime conformance tests after authorization.
 4. **Approval digest verification and cross-store saga execution remain runtime work.** The memory DDL can bind pointer history to operation/approval references, but cannot itself prove authenticated owner identity or atomically verify governance-store approval consumption. The coordinator, recovery and reconciliation handlers are not implemented.
 5. **The migration is a proposed persistence contract, not an applied user database migration.** Host validation of selected DDL invariants does not prove target-device migration, application-handler, crash/replay or rollback behavior.
 6. **All related command/event entries remain design-only and non-dispatchable.** Schema and registry presence do not establish working runtime handlers. The event registry correctly models `learning.update.accepted.v1` as a Learning-supervisor transition consuming the generic owner-approval path; a separate public `learning.accept` command is not required.
@@ -106,11 +106,11 @@ The identity and persistence amendments listed in the earlier draft are now pres
 
 - Add the MD-16 dataset-source rights/authorization record and versioned dataset-manifest contract, including license/usage terms, explicit private-data authorization, purpose/scope, retention separation, revocation and derived-artifact impact lineage.
 - Strengthen `evolutionCandidateLifecycle` with state-specific required fields for active and rolled-back events. An activation event must carry the exact approval, both passing evaluation references/digests and pointer revision. A rollback event must carry its separate approval, rollback reference, restored candidate/artifact digest and pointer revision.
-- Add executable UUIDv5 candidate-identity conformance fixtures and canonical activation/rollback operation-digest fixtures.
+- Add canonical activation/rollback operation-digest fixtures and negative candidate-ID mismatch coverage. The positive UUIDv5 fixture and validator recomputation already exist; runtime handler conformance remains unimplemented.
 - Complete command/event producer-consumer, ingress-trigger and store-local saga matrices against the current registries. Preserve the existing design-only/non-dispatchable status until runtime handlers and acceptance tests exist.
 - Keep legacy rows without verified candidate identity non-activatable; never backfill identity by inference.
 
-The current payload schema and migration v8 are specification/persistence contracts, not proof of runtime implementation. Exact-head host run [43939457017](https://github.com/methaneex-oss/AURIONS/actions/runs/43939457017) passed all nine steps on commit `da136f617757ce73265971a921c64e8e1ffdcd9d`, including eighteen-file SQLite execution and selected v8 positive/negative invariants. That historical host result does not prove that the migration has been applied to a user database or that C++/Python handlers, governance verification, cross-store recovery or target-device behavior work.
+The current payload schema and migration v8 are specification/persistence contracts, not proof of runtime implementation. Historical host run [43939457017](https://github.com/methaneex-oss/AURIONS/actions/runs/43939457017) passed all nine steps on commit `da136f617757ce73265971a921c64e8e1ffdcd9d`, including eighteen-file SQLite execution and selected v8 positive/negative invariants. The later exact-head host run [43945221654](https://github.com/methaneex-oss/AURIONS/actions/runs/43945221654) also passed all nine steps on `66a1a05659600f5261170d4318fd7b7d494e9524`. Neither result proves that migration v8 has been applied to a user database or that C++/Python handlers, governance verification, cross-store recovery or target-device behavior work.
 
 ## 5. Acceptance evidence mapping
 
@@ -127,18 +127,11 @@ Relevant integrated scenarios include CM-011…CM-013 for learning/outcome feedb
 
 ## 6. Closure boundary
 
-- **Specified:** the model-candidate identity model, lifecycle ordering, approval-digest contents, activation/rollback saga boundary and persistence responsibilities.
-- **Machine contracts present:** payload schemas and memory migration v8 encode most experiment/attempt/evaluation/candidate lineage and active-pointer persistence. Selected v8 DDL invariants have historical host validation evidence; the current contracts still need the MD-16 data-rights model and stronger lifecycle-event state requirements.
+- **Specified:** model ownership/initialization, experiment and worker identity, artifact/evaluation lineage, candidate identity, approval-digest content, activation/rollback saga boundaries and persistence responsibilities.
+- **Machine contracts present and host-validated:** experiment/attempt/job/configuration lineage; candidate artifact digest and separate learning/evolution evaluation records; owner/mechanism active pointers and append-only pointer history; positive UUIDv5 candidate-identity fixture with validator recomputation; memory migration v8 and selected DDL invariants.
+- **Machine-contract gaps still open:** MD-16 source-rights and dataset-manifest authorization/revocation; state-specific required fields and fixtures for `active` and `rolled_back` lifecycle events; canonical activation/rollback digest fixtures; negative candidate-ID mismatch coverage; full producer/consumer/ingress/saga semantic crosswalk.
 - **Not implemented:** training worker, experiment execution, dataset-rights enforcement, candidate registry handlers, approval consumer, authenticated digest verification, active-pointer saga coordinator or runtime handlers. Migration v8 is a proposed DDL contract, not an applied user database migration.
 - **Not validated:** target-device training/resource feasibility, C++/Python runtime conformance, crash/replay/rollback execution, held-out model improvement, data-revocation impact handling or independent review.
-- **Owner gate:** existing D-04 remains a separate command/query-subset acceptance gate; it is not one of the 16 model decisions. Planning exit and implementation authorization remain separate explicit owner decisions.
-
-
-
-- **Specified by this document:** identifier semantics, lifecycle ordering, approval binding, activation/rollback saga boundary and the exact schema/DDL/validator work still required.
-- **Machine contracts amended — host validated:** payload schemas, coherent lineage fixtures, negative controls, migration v8 and selected DDL invariants now encode the PR-19/PR-20 identity and persistence links. The exact approval digest still requires runtime recomputation and authenticated governance-store verification; host DDL validation does not prove the cross-store saga.
-- **Not implemented:** training worker, experiment execution, candidate registry handlers, approval consumer, active-pointer saga coordinator or runtime handlers. Migration v8 is a proposed DDL contract, not an applied user database migration.
-- **Not validated:** target-device training/resource feasibility, C++/Python conformance, crash/replay/rollback execution, held-out improvement or independent review.
-- **Owner gate:** D-04 remains pending owner acceptance of the exact command/query subset and its crosswalk. Planning exit and implementation authorization remain separate explicit owner decisions.
+- **Owner gate:** D-04 remains a separate command/query-subset acceptance gate; it is not one of the 16 model decisions. Planning exit and implementation authorization remain separate explicit owner decisions.
 
 No model, worker or generated artifact may approve, activate or roll back its own candidate.
