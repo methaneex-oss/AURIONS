@@ -677,11 +677,9 @@ class Worker:
             if remaining_seconds <= 0:
                 raise RuntimeError(f"task duration budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
             remaining = self.max_total_tokens - self.total_tokens
-            # Reserve a minimum completion allowance, then discard older complete
-            # tool exchanges before shrinking the newest exchange. This prevents
-            # accumulated read/list output from exhausting later requests.
-            # Preserve the full configured completion allowance on every turn;
-            # context compaction, not silent output-budget reduction, makes room.
+            # Keep the configured completion cap as the preferred output ceiling.
+            # Conversation compaction preserves recent tool context; near aggregate
+            # exhaustion, a smaller completion is allowed down to the bounded floor.
             completion_reserve = self.max_tokens
             # The configured completion value is a per-request ceiling. Keep
             # its full reserve while possible, but permit a shorter final response
