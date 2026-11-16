@@ -4,8 +4,12 @@ The `six-agent-qualification.yml` workflow runs a read-only, bounded qualificati
 of all six pinned workforce roles.
 
 Each role is checked independently for four capabilities (24 role checks total)
-using one bounded two-request conversation: the first request must call the read-only
-repository tool, and the second must use the returned tool data while producing
+using one bounded two-request conversation. The initial request advertises the same
+three function schemas used by the production worker (`list_files`, `read_file`, and
+`write_file`), but qualification executes only the read-only `read_file` operation.
+The Architecture Reviewer model is constrained to the named `read_file` function via
+Cloudflare's explicit function-selection form; other roles retain required-tool-call
+semantics. The second request must use the returned tool data while producing
 machine-checkable text and reasoning results. This workflow is deliberately primary-only:
 it receives no OpenRouter credential and does not test or consume fallback quota. The
 separate provider preflight is run by the supervised WF-03 workflow (and can also be
