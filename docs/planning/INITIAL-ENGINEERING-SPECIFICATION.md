@@ -42,7 +42,7 @@ A section is complete only when requirements, interfaces, ownership, failure beh
 
 **Mission:** Develop an intelligent, adaptive and persistent system that acquires knowledge, learns from experience, develops capabilities, reasons about its environment, pursues objectives and continuously improves its ability to operate effectively.
 
-AURION is intended to be an advanced personal assistant, not merely a chatbot or thin LLM wrapper; offline-first but able to use online resources under policy; capable of reasoning, planning, knowledge acquisition, memory, tool use, objective execution and adaptation; proactively autonomous within explicit boundaries; designed for multiple devices; initially developed/tested in Termux; and continuously evolving rather than following fixed developmental stages.
+AURIONS is a trainable AI system with an evolving cognitive architecture; it is not a personal-assistant product, chatbot or thin LLM wrapper. Conversation is an interface capability, not its identity. The system is local-first and online-capable under policy; it must acquire knowledge, retain and use experience, reason, form and pursue objectives, adapt its mechanisms and improve its local model primarily through training. It is designed for local and server operation, with governed authority boundaries and an evolving rather than fixed developmental trajectory.
 
 AURION is a separate project, not a copy of the whole JARVIS project/repository. Selected JARVIS mechanisms and principles may be reused where appropriate.
 
@@ -80,7 +80,7 @@ Protected rules may be proposed for revision, but changes require explicit appro
 | IP-07 | Training pipeline supports capable external hardware and lightweight local experiments where feasible. |
 | IP-08 | Build/test mechanisms individually, then validate their interaction in complete cognitive cycles. |
 | IP-09 | Use external libraries when they reduce development time without compromising the design. |
-| IP-10 | First milestone: persistent local assistant that converses, remembers, retrieves, reasons through a task and retains outcomes. |
+| IP-10 | First milestone: a persistent local trainable AI system with a working cognitive runtime, experience/memory mechanisms, reasoning, outcome feedback and a reproducible model-training path. CLI is the first user-facing interface. |
 
 ### Detailed engineering baselines
 
