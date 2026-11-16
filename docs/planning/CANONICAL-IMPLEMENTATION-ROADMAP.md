@@ -54,7 +54,7 @@ The architecture must distinguish:
 - **State ownership and continuity:** the authoritative location of user state, cloud/mobile continuity, conflict handling and whether any subset of data is synchronized must be explicitly specified before implementation. Do not infer that shared contracts mean shared live state.
 - **Synchronization scope:** the existing decision to defer multi-device synchronization remains distinct from the requirement to deliver cloud and offline-mobile operation concurrently. Any required first-release cross-context continuity must be stated explicitly and reconciled with that deferred scope.
 
-The builder's provisional recommendation is Option B (selective synchronization) if one continuous cognitive history is required; Option A remains the no-sync alternative with separate histories. The owner must resolve this before WP-15 implementation authorization. See the [topology decision record](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md).
+The owner selected Option B (selective synchronization) on 2026-11-16. WP-15 therefore includes a bounded continuity subset. Exact domains, field-level classification, conflict/deletion/recovery rules and executable SY tests remain required design gates. See the [topology decision record](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md).
 
 ### 2.2 Dependency-graph audit
 
@@ -75,7 +75,7 @@ This is a valid ordering, not a required serial schedule. Independent packages m
 - WP-14 training infrastructure must precede WP-12 model-candidate evaluation; WP-12 must not depend on a training subsystem scheduled after it.
 - Android integration is a first-release platform realization because offline-capable mobile is a concurrent first-release target. It must implement the relevant general observation/interaction boundaries without defining the system's world or means model.
 - Cloud and offline mobile share contracts and the authoritative cognitive core. Cloud must not become a hidden dependency for offline mobile or a remote bypass of local authorization.
-- General multi-device synchronization, voice/continuous sensing and broad external integrations remain later expansions unless the owner changes scope. If the owner accepts the builder's Option B recommendation, only the explicitly approved first-release continuity subset moves into WP-15; broad device handoff remains WP-16.
+- Voice/continuous sensing and broad external integrations remain later expansions. The owner selected Option B on 2026-11-16, so WP-15 includes bounded selective domain synchronization; broad device handoff remains WP-16. Exact sync allowlists and conflict/deletion/recovery contracts are required before implementation.
 - No WP can use a fixed task-to-action catalogue as a substitute for discovery, reasoning or learning.
 
 ## 4. First-release scope boundary
