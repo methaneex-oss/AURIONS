@@ -181,18 +181,48 @@ class ProviderPreflightTests(unittest.TestCase):
         "OPENROUTER_API_KEY": "test-openrouter",
     }, clear=True)
     @patch("workforce.provider_preflight.httpx.post")
-    def test_one_rejected_model_blocks_preflight(self, post):
+    def test_glm_malformed_xml_tool_output_blocks_without_fallback(self, post):
+        profiles = list(ROLE_MODEL_ASSIGNMENTS.values())
+        malformed = httpx.Response(
+            400,
+            json={
+                "success": False,
+                "errors": [{
+                    "code": 3030,
+                    "message": "Validation error: expected JSON, got <tool_call>read_file<arg_value>README.md</arg_value></tool_call>",
+                }],
+            },
+            request=httpx.Request(
+                "POST",
+                "https://api.cloudflare.com/client/v4/accounts/test-account/ai/v1/chat/completions",
+            ),
+        )
         post.side_effect = [
-            httpx.Response(
-                400,
-                json={"error": {"message": "unsupported test parameter", "code": "invalid_request"}},
-                request=httpx.Request("POST", "https://provider.example/chat/completions"),
-            )
-        ] + [
-            *[self.response(profile["model"]) for profile in list(ROLE_MODEL_ASSIGNMENTS.values())[1:]],
+            self.response(profiles[0]["model"]),
+            self.response(profiles[1]["model"]),
+            malformed,
+            *[self.response(profile["model"]) for profile in profiles[3:]],
             self.response("openrouter/free", "openai/gpt-oss-20b:free"),
         ]
-        self.assertEqual(main(), 1)
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(main(), 1)
+        self.assertIn("FAIL architecture_reviewer: HTTP 400", output.getvalue())
+        self.assertIn("3030", output.getvalue())
+        router_calls = [
+            call for call in post.call_args_list
+            if call.args[0] == "https://openrouter.ai/api/v1/chat/completions"
+        ]
+        # The one explicit fallback health probe is expected; the malformed
+        # Cloudflare request must not trigger a per-role fallback attempt.
+        self.assertEqual(len(router_calls), 1)
+        self.assertEqual(post.call_count, 7)
+        glm_payload = post.call_args_list[2].kwargs["json"]
+        self.assertEqual(
+            glm_payload["tool_choice"],
+            {"type": "function", "function": {"name": "read_file"}},
+        )
+        self.assertEqual(glm_payload["tools"], TOOLS)
 
     @patch.dict(os.environ, {
         "GROQ_API_KEY": "test-groq-secret",
