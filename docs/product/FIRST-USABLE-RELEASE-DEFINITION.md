@@ -89,6 +89,18 @@ The system must remain useful when remote services are unavailable. Remote model
 
 **Expected result:** The complete feedback path is demonstrated: experience → representation/context → persistence → retrieval → later reasoning. This proves persistent feedback and use of experience, not by itself general learning improvement.
 
+### Workflow G — Train and evaluate a model candidate
+
+1. AURIONS selects an explicitly approved training dataset with provenance, version and declared data-use scope.
+2. The training pipeline creates non-overlapping training, validation and held-out evaluation partitions and checks for leakage.
+3. A bounded worker runs a reproducible training configuration against an identified baseline model or adapter.
+4. The worker returns a versioned candidate artifact, metrics, configuration and provenance; it cannot modify the active model or authoritative cognitive state.
+5. The evaluation path compares the candidate with the frozen baseline on held-out tasks and relevant regression controls.
+6. Candidate activation requires the applicable approval and compatibility checks; failed or regressive candidates remain quarantined and can be discarded.
+7. An activated candidate has a recorded rollback target and a tested rollback procedure.
+
+**Expected result:** A real parameter update is produced and evaluated with reproducible evidence. The system distinguishes model-weight training from memory, belief and strategy adaptation. Training may use local resources where feasible or explicitly approved capable hardware; local inference and local operation remain independent of remote training.
+
 ### Workflow F — Respect permissions and resource limits
 
 1. The owner can inspect the capabilities and permissions available to AURIONS.
