@@ -72,7 +72,7 @@ The event registry now contains 89 entries. All new events remain design-only/no
 
 These are not builder choices:
 - First permitted Android action/capability remains owner-reserved.
-- Cloud/offline-mobile cognitive-history continuity remains an owner decision; the architecture does not assume shared live state or separate histories.
+- D-02 Option B was selected on 2026-11-16: the first release includes bounded selective synchronization between the cloud and offline-mobile runtimes. Exact domain/field allowlists, local-only classes, conflict/deletion/recovery semantics and executable SY evidence remain open; unrestricted replication and cross-context authority transfer are not approved.
 - Target Android device selection and empirical Termux/SQLite/permission/lifecycle/resource evidence remain outstanding.
 - Cloud key provider, recovery custodian and production recovery policy remain unselected.
 - The first-release command/query subset remains a builder proposal pending owner acceptance.
