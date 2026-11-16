@@ -1,0 +1,132 @@
+# AURIONS — Model Architecture and Training Owner Decisions
+
+- **Status:** All 16 model-design decisions below are owner-selected and consolidated.
+- **Authority:** Owner selections made in the AURIONS planning conversation on 2026-11-16. This record supersedes ambiguity about the model direction; it does not supersede unrelated product, security, governance or implementation gates.
+- **Scope:** Primary model, training, data, evaluation, inference and model evolution.
+- **Implementation status:** Specification only. This document does not authorize training, worker dispatch, production inference, model activation, deployment, PR merge or planning exit.
+- **Related records:** [Initial Engineering Specification](INITIAL-ENGINEERING-SPECIFICATION.md); [PR-19 / PR-20 Model-Candidate Lifecycle Crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md); [domain payload schemas](../../schemas/domain-payloads.v1.schema.json); [memory migration v8](../../schemas/persistence/aurion_memory.migration_v8.sql).
+
+## 1. Owner-approved model decisions
+
+The identifiers MD-01 through MD-16 are local identifiers for this model decision register. They are not the repository's existing D-04 command/query-scope decision.
+
+| ID | Owner decision | Consolidated requirement |
+|---|---|---|
+| MD-01 | General-purpose language foundation model | AURIONS develops its own general-purpose language foundation model. It is not a chatbot wrapper or a thin interface to a third-party hosted model. |
+| MD-02 | Decoder-only Transformer | Use a decoder-only causal Transformer as the initial neural architecture. |
+| MD-03 | Progressive parameter scaling | Begin with a small trainable baseline. Increase scale only after the data pipeline, training process, evaluation and resource measurements justify it. There is no permanent owner-imposed upper parameter cap. |
+| MD-04 | Train and version a multilingual tokenizer | Develop AURIONS' own multilingual tokenizer, evaluate it, and freeze/version it for each model generation. Training and inference for a generation must use the matching tokenizer artifact. |
+| MD-05 | Staged training objectives | Start with autoregressive next-token prediction. Introduce additional objectives only when controlled experiments demonstrate a benefit. |
+| MD-06 | Staged, expanding data acquisition | Start with a curated multilingual, multi-domain corpus. Expand acquisition continuously under quality, provenance, authorization and evaluation controls. Information acquisition, memory retention and training-corpus approval remain distinct decisions. |
+| MD-07 | Hybrid training compute | Use local resources for development, data preparation and appropriately small experiments; use replaceable cloud GPU compute when larger training requires it. Remote training compute is not a prerequisite for local/offline inference. |
+| MD-08 | Multi-timescale continual learning | Support distinct timescales: immediate adaptation, persistent memory, controlled model-weight training and governed model evolution. Experience does not automatically modify model weights. |
+| MD-09 | Layered evaluation and governed candidate progression | Evaluate training validity, held-out performance, capability, regression, safety/reliability and human-assessed outcomes as applicable. A trained candidate is quarantined until required evidence and owner approval are complete; training never auto-activates a candidate. |
+| MD-10 | Hybrid, replaceable inference | Keep a stable model-independent inference interface. Support local separate-process inference and cloud-hosted inference, with useful local/offline operation. The cloud may host an AURIONS-owned model artifact; it does not silently substitute a third-party pretrained or hosted commercial model as AURIONS' primary brain. The C++ core remains authoritative and independent of the inference engine. |
+| MD-11 | Staged instruction and behavior learning | Separate foundation training, instruction supervised fine-tuning, preference learning and outcome-based learning. Add later stages only where justified; version and evaluate each stage independently. |
+| MD-12 | Progressive context-window scaling | Start by evaluating a 2K–4K context window. Measure quality, memory, latency and runtime cost before exploring 8K–16K or larger contexts. Context is not a substitute for persistent memory. |
+| MD-13 | Text-first, extensible multimodal architecture | The first model generation is text-first. Preserve an extension path for image and audio capabilities; do not imply those modalities are already implemented. |
+| MD-14 | Tiered multilingual development | Define core, priority-expansion and future language tiers. Nigerian languages must be considered explicitly in language/data evaluation. Language tiers and priorities are versioned configuration and dataset/evaluation data, not hardcoded language-to-behavior rules in application code. Tokenizer coverage alone is not evidence of language capability. |
+| MD-15 | Adaptive, evidence-driven curriculum | Start with a broad, balanced foundation curriculum. Adjust data proportions and priorities using measured weaknesses and evaluation results. Curriculum policies and experiment manifests are configurable and versioned; do not hardcode subject-to-capability mappings or fixed behavioral outcomes. |
+| MD-16 | Configurable, permission-governed training-data ingestion | Deny unapproved sources by default. Preserve source provenance and classification; check license and permitted use; require explicit authorization for private data; keep memory-retention permission separate from model-training permission; produce versioned, auditable datasets; and make revocation block future use while triggering an impact assessment for derived datasets and model artifacts. |
+
+## 2. Binding interpretation and non-negotiable boundaries
+
+1. **AURIONS owns the primary model.** The initial weights are randomly initialized. A later run may start from a prior AURIONS-owned checkpoint. Third-party pretrained weights and hosted commercial LLMs are not the primary brain under these decisions.
+2. **Architecture is not a behavior script.** The Transformer, tokenizer, objectives, training pipeline, evaluation, memory and governance are engineered mechanisms. Learned behavior must arise through training and experience. Do not encode language-specific or subject-specific behavior mappings as fixed application logic.
+3. **Memory is not training data.** Retaining an experience, retrieving it, including it in a dataset, and using it to update model weights are separate operations with separate authorization and lifecycle rules.
+4. **Training is not activation.** A worker can produce an untrusted candidate artifact. Only the trusted AURIONS control path can validate lineage, run evaluation, obtain owner approval and activate a candidate.
+5. **Cloud training and cloud inference are separate.** Remote compute may train an AURIONS model. Cloud inference may serve an AURIONS model artifact. Neither choice makes a third-party hosted model the system's brain or makes cloud availability mandatory for offline local operation.
+6. **Context is not memory.** Increasing the context window does not replace persistent, provenance-bearing memory or governed retrieval.
+7. **Multilingual and multimodal are evidence claims.** A language or modality is not supported merely because a tokenizer, schema or interface can represent it. Capability must be measured on appropriate data and evaluation sets.
+8. **Deletion and revocation require lineage.** Removing a source record is not proof that information has been removed from derived datasets or model weights. Trace affected artifacts and assess quarantine, exclusion, retraining or validated unlearning; never claim exact removal without evidence.
+
+## 3. Reconciliation with existing repository specifications
+
+### Already specified or substantially aligned
+
+- **Primary-model ownership:** The Initial Engineering Specification records the owner direction to build and train AURIONS' primary model from a randomly initialized baseline and not silently adopt pretrained third-party weights. It also distinguishes remote training compute from external model inference. See MP-06 and the model-groundwork discussion around §12.
+- **Core/worker boundary:** The specification assigns authoritative runtime, cognition, memory, reasoning, learning/evolution coordination and tool policy to C++; Python owns ML training, dataset preparation, experiments and evaluation. C++ remains authoritative for data authorization, evaluation criteria and release eligibility. Worker processes use typed/versioned messages and cannot mutate live cognitive state or approve production artifacts.
+- **Training and candidate lifecycle:** The current payload schema includes experiment requests/completions, worker requests/results, learning-candidate evaluation requests/results, evolution proposals and candidate actions. The schema carries learning-update, experiment, attempt and job identities plus configuration and artifact digests.
+- **Persistence crosswalk:** Memory migration v8 adds owner-bound learning experiments, worker attempts, learning evaluations, source-learning lineage, candidate identity, a separate evolution evaluation, owner/mechanism-scoped active pointers and append-only pointer history. Its SQL contract includes lineage, owner-scope, evaluation and pointer-history checks.
+- **Governed progression:** The command/event registries describe learning proposal, experiment submission, candidate evaluation, evolution proposal/evaluation, activation, rollback and generic owner approval/revocation. Their entries remain design-only and non-dispatchable.
+- **Data handling foundations:** The engineering specification requires authorized dataset references before workers receive them, restricts workers from broadening access, records artifact provenance/classification/retention, tracks model and dataset licensing, and requires deletion impact assessment where source data influenced model weights.
+- **Cloud/mobile continuity:** The existing planning record selects dual runtimes with selective synchronization of approved durable domains. Governance authority, credentials, permissions and execution authority are not ordinary synchronized data.
+
+### New owner-selected specificity not yet fully represented as normative model configuration
+
+The repository's general model-groundwork section deliberately left architecture, parameter count, tokenizer algorithm, corpus and compute provider for evaluation. MD-01 through MD-16 now resolve the owner-level direction for those areas. The following details remain engineering parameters to establish through implementation experiments rather than further owner preference questions:
+
+- Transformer depth/width, parameter count for the first baseline, initialization details and scaling schedule.
+- Tokenizer algorithm, vocabulary size, normalization rules, language coverage measurements and tokenizer training/evaluation corpus.
+- Exact training corpus composition, source acquisition mechanisms, deduplication, quality filters, contamination controls and per-language sampling.
+- Optimizer, learning-rate schedule, batch/sequence packing, precision, checkpoint cadence, distributed-training strategy and compute budget.
+- Exact objective schedule and measurable entry/exit criteria for instruction, preference and outcome-learning stages.
+- Evaluation datasets, held-out/unseen controls, thresholds, regression suites, human-assessment protocol and release criteria.
+- Local/cloud inference engine selection, quantization, serving topology, latency/memory budgets and offline behavior.
+- Evidence-based timing for image/audio modality work and larger context windows.
+
+These parameters must be versioned in model, tokenizer, dataset, training and evaluation manifests. Do not turn provisional values into permanent architecture rules without measurement.
+
+## 4. Material contract gap: training-data authorization
+
+MD-16 is an owner decision, but the current machine contracts do not yet fully enforce it.
+
+Evidence in the current repository:
+
+- The generic permissionRecord and permissionEvaluated payloads describe permission state and policy evaluation, but do not define a dataset-source authorization record that binds source, rights holder, license/terms, permitted purpose, training use, owner authorization, scope, expiry and revocation.
+- The artifactManifest payload records source references, sensitivity and retention class, but has no required structured license/usage-rights or training-authorization fields.
+- The domain payload schema has no dedicated dataset-manifest/source-rights schema that proves every included source was authorized for the intended training use.
+- The command registry has generic approval commands but no dedicated dataset-source authorization/consent lifecycle command. approval.revoke revokes an approval decision; it is not by itself a complete source-rights or training-consent revocation workflow.
+- The engineering specification's worker rule that dataset references must already be authorized is a downstream enforcement requirement. It does not define the complete upstream source-authorization and revocation lifecycle.
+
+**Required before any nontrivial corpus ingestion or training:**
+
+1. Define a versioned source-rights/authorization record covering source identity, provenance, classification, license/terms, permitted purposes, training permission, private-data authorization evidence, owner/scope, validity, policy version and revocation state.
+2. Define a dataset manifest that binds immutable source records and transformations to authorization evidence, checksums, inclusion/exclusion decisions, splits, deduplication and quality/evaluation metadata.
+3. Enforce authorization at acquisition, dataset preparation, worker dispatch, artifact registration and training admission. A worker must receive only the already-authorized immutable dataset manifest and cannot expand its scope.
+4. Separate memory-retention permission from training permission in both policy and persistence. A memory item may be retained but excluded from training; training authorization must not imply unrestricted retention or disclosure.
+5. Record revocation as a durable event. Block future use immediately, identify derived datasets/experiments/checkpoints/candidates, and run an impact assessment. Where data has influenced weights, require an evidence-based decision on exclusion, retraining or validated unlearning; do not promise exact removal automatically.
+6. Add positive and negative fixtures for public licensed data, incompatible/restricted licenses, private data without explicit authorization, expired/revoked grants, mixed-rights datasets, derived artifacts and attempted worker scope expansion.
+
+Until this gap is closed, only sources whose rights and permitted training use are independently established may enter a training corpus. “Publicly accessible” is not a sufficient authorization state.
+
+## 5. Model lifecycle contract status
+
+| Layer | Current repository evidence | Honest status |
+|---|---|---|
+| Model ownership and initialization | Initial Engineering Specification; learningExperimentRequest initialization fields | Specified; no production trainer |
+| Experiment/worker identity | learningExperimentRequest, learningExperimentCompleted, workerRequest, workerResult | Schema specified; runtime handlers not implemented |
+| Artifact provenance and quarantine | artifactManifest and artifact registry events | Generic schema/registry contract specified; structured training-data rights remain incomplete |
+| Learning evaluation | learningCandidateEvaluationRequest and learningCandidateEvaluated; migration v8 evaluation table | Contract and proposed persistence specified; executable evaluator/held-out improvement not established |
+| Evolution evaluation | evolutionCandidateActionRequest/lifecycle; migration v8 evolution evaluation table | Contract and proposed persistence specified; runtime evaluator not implemented |
+| Owner approval | approvalRequested, approvalDecision, approval/revocation registry entries | Governance contract specified; authenticated runtime verification not demonstrated |
+| Activation and rollback | action-specific request conditions; migration v8 active pointer and append-only history | Persistence contract specified; cross-store saga/handlers and crash-recovery execution not demonstrated |
+| Local/cloud inference | replaceable inference interface and dual-runtime planning | Architecture direction specified; runtime and target-device measurements outstanding |
+
+All related command/event registry entries remain design-only and non-dispatchable. Schema presence and SQL constraints do not establish working C++ handlers, Python workers, applied migrations, authenticated governance, model training, candidate activation or rollback.
+
+## 6. Required work-package order
+
+1. Close the MD-16 source-rights, dataset-manifest and revocation contract gap before admitting private or otherwise ambiguous data.
+2. Consolidate MD-01 through MD-16 into the normative model/training specification and align the Initial Engineering Specification and PR-19/PR-20 crosswalk.
+3. Complete schema/fixture/validator alignment for model configuration, tokenizer, dataset authorization, training manifests and staged objectives.
+4. Implement the bounded C++ supervisor ↔ Python worker contract and verify matching positive/negative fixtures at both ends.
+5. Implement dataset preparation and artifact provenance/authorization enforcement before training runs.
+6. Establish the first small randomly initialized Transformer baseline and run reproducible local experiments; use measured evidence to decide when cloud GPU training is necessary.
+7. Implement layered held-out evaluation and regression before any candidate can be considered for approval.
+8. Implement authenticated owner approval, activation saga, pointer compare-and-swap, append-only history, recovery and separately authorized rollback.
+9. Benchmark local inference, cloud-hosted AURIONS inference, context-window scaling and device resource behavior. Keep cloud inference optional for offline operation.
+10. Add later training stages, language tiers and modalities only when their versioned data and evaluation evidence support them.
+
+This order is a dependency sequence, not a claim that the work packages are implemented or that the global planning-exit gate has been met.
+
+## 7. Separate outstanding repository gates
+
+- Existing D-04 command/query subset acceptance is separate from MD-01…MD-16. Closing this model questionnaire does not accept or alter that registry proposal.
+- The Initial Engineering Specification states that planning exit requires consolidated mission/non-goals, owner decisions, architecture, schemas/migrations, contracts, authorization/privacy, recovery/deletion, tests, dependency/license review, device limits, work-package dependencies and acceptance evidence, followed by owner approval of the consolidated specification and roadmap.
+- The current model lifecycle registry is design-only/non-dispatchable. No implementation, training, activation, deployment or PR merge is authorized by this decision record.
+- Independent review and executable runtime evidence remain separate from documentation consistency.
+
+## 8. Acceptance of this record
+
+This document records the 16 owner-selected model decisions and their engineering consequences. It does not imply that every decision has already been implemented in code or fully encoded in machine contracts. Any later change to these owner decisions requires an explicit owner decision; implementation details within the approved boundaries are engineering work and should be resolved by evidence, measurement and tests.
