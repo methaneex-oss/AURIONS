@@ -161,7 +161,7 @@ def validate_owner_decision_traceability() -> None:
          "Deployment: OWNER DECISION — cloud and offline mobile concurrently."),
         ("Cross-context cognitive-history continuity", "Cloud/mobile state continuity"),
         ("First permitted Android local action", "first permitted local action remains unresolved"),
-        ("Approval of the first-release product definition", "The owner must approve this product definition."),
+        ("Approval of the first-release product definition", "**Status:** ACCEPTED BY OWNER on 2026-11-16."),
     )
     for matrix_phrase, source_phrase in required_owner_gates:
         if matrix_phrase not in matrix:
