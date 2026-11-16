@@ -2,11 +2,11 @@
 
 **AURIONS** is the repository/system identifier; the final **S** denotes **System**.
 
-This repository is the implementation home for the adaptive, persistent intelligence system described in the planning specification. Its foundational principle is:
+This repository is the implementation home for a local-first, trainable AI system with an evolving learning brain. It is designed to run locally and on servers, use online resources when authorized, and extend to multiple devices over time. Voice, vision and other modalities are expandable capabilities, not the definition of the intelligence itself. Its foundational principle is:
 
 > Engineer the mechanisms; let behaviour be acquired through experience.
 
-The system is not intended to be a chatbot wrapper or a collection of hardcoded stimulus-to-response rules. Learning must be demonstrated through persistent, experience-dependent changes and repeatable evaluation.
+The system is not a chatbot wrapper or an ordinary assistant. Conversation is one possible interface, not the product's identity. The brain must learn from experience through persistent, measurable changes; the local model must also have a real, separately evaluated training path. Neither memory writes nor lower training loss alone demonstrate learning.
 
 ## Project status
 
