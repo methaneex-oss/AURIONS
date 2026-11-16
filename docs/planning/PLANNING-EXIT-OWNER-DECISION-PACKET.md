@@ -12,11 +12,11 @@
 
 **Proposal under review:** `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`, PR-01…PR-20.
 
-The proposal defines AURIONS as a trainable AI system with an evolving cognitive architecture, not a personal-assistant product or chatbot. It requires a bounded, reproducible model-training path alongside experience-dependent adaptation; PR-19 covers training provenance and reproducibility, while PR-20 covers held-out evaluation, candidate quarantine, governed activation and rollback. It does not claim general intelligence or improvement beyond the evaluated distribution. The CLI remains the first interface, with cloud and offline-capable mobile as concurrent first-release targets. Voice, continuous sensing, broad integrations and automatic cross-runtime synchronization remain separately scoped.
+The proposal defines AURIONS as a trainable AI system with an evolving cognitive architecture, not a personal-assistant product or chatbot. It requires a bounded, reproducible model-training path alongside experience-dependent adaptation; PR-19 covers training provenance and reproducibility, while PR-20 covers held-out evaluation, candidate quarantine, governed activation and rollback. It does not claim general intelligence or improvement beyond the evaluated distribution. The CLI remains the first interface, with cloud and offline-capable mobile as concurrent first-release targets. Voice, continuous sensing, broad integrations, unrestricted replication and seamless handoff remain separately scoped; D-02 separately selects bounded cloud/mobile selective synchronization for the first release.
 
 **Owner decision: ACCEPTED — 2026-11-16.** The owner accepted PR-01…PR-20 as the first-release product baseline. This is not implementation or validation evidence.
 
-**Consequence:** The accepted PR-01…PR-20 baseline may be used by WP-15 as the product contract, subject to remaining topology, command/query, evidence and authorization gates.
+**Consequence:** The accepted PR-01…PR-20 baseline may be used by WP-15 as the product contract, subject to detailed D-02 synchronization contracts, D-04 command/query acceptance, external evidence gates and implementation authorization.
 
 ### D-02 — Cloud/mobile cognitive-history continuity: OPTION B SELECTED
 
