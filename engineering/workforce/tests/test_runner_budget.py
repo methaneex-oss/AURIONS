@@ -73,6 +73,24 @@ class RunnerBudgetTests(unittest.TestCase):
             4952,
         )
 
+    def test_wf03_regression_budget_after_18719_reported_tokens(self):
+        from workforce.agents.runner import _available_prompt_budget
+
+        # Exact operands from WF-03 run 43821849418: 24,000 aggregate tokens,
+        # 18,719 already used, a 7,000 request ceiling and a 2,048 preferred
+        # completion cap. The former full-reserve policy exposed only 3,233
+        # prompt tokens and rejected the 3,436-token base prompt.
+        remaining = 24000 - 18719
+        self.assertEqual(remaining, 5281)
+        prompt_budget = _available_prompt_budget(
+            7000, 2048, 24000, 18719, 256
+        )
+        self.assertEqual(prompt_budget, 4952)
+        self.assertGreaterEqual(prompt_budget, 3436)
+        output_limit = min(2048, remaining - 3436, 7000 - 3436)
+        self.assertEqual(output_limit, 1845)
+        self.assertGreaterEqual(output_limit, 256)
+
     def test_near_exhaustion_uses_reduced_completion_cap_without_losing_prompt(self):
         with patch.dict("os.environ", {"GROQ_API_KEY": "test-key-only"}, clear=True):
             worker = Worker(self.root, "lead_builder", [], 2, 2048, 24000)
