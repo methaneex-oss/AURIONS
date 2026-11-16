@@ -1,6 +1,6 @@
 # AURIONS — Planning Exit Owner Decision Packet
 
-- **Status:** Prepared for owner review; no decisions recorded by this document.
+- **Status:** Partially resolved by owner decisions dated 2026-11-16; planning exit not approved.
 - **Branch:** `docs/complete-system-architecture`
 - **Authority:** `INITIAL-ENGINEERING-SPECIFICATION.md`, the First Usable Release Definition, and the Project Directorship and Team Operating Standard remain authoritative.
 - **Purpose:** Consolidate only decisions that the builder cannot make without changing product scope, personal authority, risk tolerance or owner intent.
@@ -14,7 +14,7 @@
 
 The proposal defines AURIONS as a trainable AI system with an evolving cognitive architecture, not a personal-assistant product or chatbot. It requires a bounded, reproducible model-training path alongside experience-dependent adaptation; PR-19 covers training provenance and reproducibility, while PR-20 covers held-out evaluation, candidate quarantine, governed activation and rollback. It does not claim general intelligence or improvement beyond the evaluated distribution. The CLI remains the first interface, with cloud and offline-capable mobile as concurrent first-release targets. Voice, continuous sensing, broad integrations and automatic cross-runtime synchronization remain separately scoped.
 
-**Owner decision required:** Accept the PR-01…PR-20 acceptance baseline as the first-release product definition, request specific revisions, or reject it.
+**Owner decision: ACCEPTED — 2026-11-16.** The owner accepted PR-01…PR-20 as the first-release product baseline. This is not implementation or validation evidence.
 
 **Consequence:** Until accepted, the acceptance matrix remains a builder proposal and WP-15 cannot treat it as an approved product contract.
 
@@ -32,13 +32,13 @@ The proposal defines AURIONS as a trainable AI system with an evolving cognitive
 
 **Non-negotiable boundary in every option:** Device-local permissions, credentials, approval secrets and authority over local effects remain local. Shared contracts never grant cross-context authority.
 
-**Owner decision required:** Select A, B or C. If B, approve the exact first-release synchronization domain set and data classes before implementation planning can freeze.
+**Owner decision: OPTION B SELECTED — 2026-11-16.** Proceed with dual runtime and selective domain synchronization. Exact field-level allowlists, classification, conflict, deletion and recovery semantics remain required before sync implementation.
 
 ### D-03 — Select the first permitted Android local action
 
 The product proposal requires one narrow, explicitly permitted, reversible local action to validate the real interaction and authority lifecycle. The owner has not selected it.
 
-**Owner decision required:** Identify the exact action and its target, allowed parameters/effects, reversibility expectation and any excluded data or destinations. The target device and Android/Termux environment must also be identified for empirical validation.
+**Owner disposition: STAGED — 2026-11-16.** Do not select or authorize an action until target-device and Android/Termux validation is complete.
 
 **Builder restriction:** No builder, model, capability descriptor, prior success or test fixture may choose or authorize this action. A proposal is not permission. OS permission and AURIONS governance must independently authorize the exact operation.
 
@@ -46,7 +46,7 @@ The product proposal requires one narrow, explicitly permitted, reversible local
 
 The current registries contain 54 command records (52 mapped and two deferred) and 29 read-only query records. Registry presence does not mean every command/query belongs in the first release or is dispatchable.
 
-**Owner decision required:** Review and accept or revise the proposed first-release subset in `FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md`.
+**Owner disposition:** Builder to complete the registry-derived subset proposal and present exact identifiers for owner acceptance. Unselected entries remain design-only/non-dispatchable.
 
 **Consequence:** Unselected entries remain design-only/non-dispatchable. No registry-wide dispatch enablement is implied.
 
