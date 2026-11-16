@@ -1,6 +1,6 @@
 # AURIONS — First Usable Release Product Definition
 
-**Status:** Proposed product definition for owner review. This document translates the existing owner-approved mission and first-milestone requirements into a bounded first-release proposal under the foundational [Open-World Interaction and Means Architecture](../architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md). It does not authorize implementation or silently settle unresolved product choices.
+**Status:** ACCEPTED BY OWNER on 2026-11-16. This document translates the existing owner-approved mission and first-milestone requirements into a bounded first-release proposal under the foundational [Open-World Interaction and Means Architecture](../architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md). It does not authorize implementation or silently settle unresolved product choices.
 
 ## 1. Product purpose
 
@@ -215,7 +215,7 @@ The architecture/validation work must establish the general objective-led world/
 This product definition depends on the existing owner-approved engineering specification and architecture constraints. It must be reconciled with the API contracts, persistence/recovery design, platform strategy, security/operations design and evidence review.
 
 No implementation work package is authorized by this proposal. Before implementation:
-- The owner must approve this product definition. The first interface and concurrent cloud/offline-mobile direction are owner decisions; the first permitted local action remains unresolved. The independent runtime state boundary is a builder proposal and must be explicitly surfaced for owner acceptance if cross-context continuity is expected.
+- The owner accepted this product definition on 2026-11-16 (D-01) and selected Option B for dual-runtime selective domain synchronization (D-02). The first permitted local action remains staged (D-03), pending target-device/runtime validation. D-04 command/query subset remains pending owner acceptance.
 - The architecture and contracts must be reconciled with it.
 - Required security, persistence, recovery and learning-evaluation criteria must be testable.
 - The owner must explicitly approve the planning exit.
