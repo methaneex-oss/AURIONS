@@ -87,12 +87,12 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertEqual(result["calls"], 1)
         self.assertEqual(result["total_tokens"], worker.total_tokens)
 
-    def test_live_worker_budget_and_preflight_share_the_same_calculation(self):
+    def test_preflight_uses_the_full_configured_completion_reserve(self):
         from workforce.agents.runner import _available_prompt_budget
-        expected = _available_prompt_budget(7000, 1536, 24000)
+        expected = _available_prompt_budget(7000, 2048, 24000)
         result = preflight_role_prompt(
             self.root, "lead_builder", "bounded role assignment", [],
-            max_total_tokens=24000, max_completion_tokens=1536,
+            max_total_tokens=24000, max_completion_tokens=2048,
         )
         self.assertEqual(result["effective_prompt_budget"], expected)
         self.assertLessEqual(result["prompt_estimate_tokens"], expected)
