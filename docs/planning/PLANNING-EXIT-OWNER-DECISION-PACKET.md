@@ -16,7 +16,7 @@ The proposal defines AURIONS as a trainable AI system with an evolving cognitive
 
 **Owner decision: ACCEPTED — 2026-11-16.** The owner accepted PR-01…PR-20 as the first-release product baseline. This is not implementation or validation evidence.
 
-**Consequence:** Until accepted, the acceptance matrix remains a builder proposal and WP-15 cannot treat it as an approved product contract.
+**Consequence:** The accepted PR-01…PR-20 baseline may be used by WP-15 as the product contract, subject to remaining topology, command/query, evidence and authorization gates.
 
 ### D-02 — Resolve cloud/mobile cognitive-history continuity
 
