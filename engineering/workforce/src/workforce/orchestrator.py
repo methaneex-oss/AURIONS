@@ -825,6 +825,13 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             if not context_path.is_file():
                 raise OrchestrationError(f"{role} context file does not exist: {path}")
             command.extend(["--context-file", path])
+        print(
+            f"Dispatch budget {role}: model={profile['model']} "
+            f"per_request_limit={profile['max_request_tokens']} "
+            f"completion_reserve={spec['max_completion_tokens']} "
+            f"aggregate_role_limit={spec['max_tokens']} "
+            f"effective_prompt_budget={preflight['effective_prompt_budget']}"
+        )
         try:
             result = subprocess.run(
                 command, cwd=root, env=env, capture_output=True, text=True,
