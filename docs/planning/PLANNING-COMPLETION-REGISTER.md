@@ -783,3 +783,13 @@ Expanded the canonical scenario fixture inventory from 39 to 47 by adding indivi
 The eight new scenarios add 32 ordered steps and eight negative controls. The resulting corpus contains **47 scenarios, 287 ordered steps and 53 negative controls**. Each new scenario has a positive command transition bound to its exact event, a negative-control injection, durable-state assertions, restart/replay, concurrency, fault and held-out controls. The event registry acceptance references are recomputed from the fixture and currently match all 89 event entries exactly. The schema validator requires all CM-001…CM-029 scenarios and enforces the new counts and concrete-command/event coverage.
 
 **Evidence boundary:** These are concrete design/test specifications only. The actions are not dispatched, the fakes are not a runtime harness, and no behavioural result is claimed. CI must pass on the exact resulting HEAD before this increment is considered validated.
+
+
+## 2026-11-16 owner-decision reconciliation
+
+- D-01 — First Usable Release Definition PR-01…PR-20: **OWNER ACCEPTED**. This is product-scope acceptance, not implementation, validation or planning-exit approval.
+- D-02 — Cloud/mobile cognitive-history continuity: **OPTION B SELECTED**. WP-15 must include bounded selective domain synchronization. Exact field-level data allowlists, local-only classes, causal/revision semantics, conflict/deletion/recovery rules and executable SY evidence remain open.
+- D-03 — First permitted Android local action: **STAGED** pending empirical validation of the owner-selected Android/Termux target and permission/runtime lifecycle. No action is selected or authorized.
+- D-04 — First-release command/query subset: **BUILDER PROPOSAL PREPARED; OWNER ACCEPTANCE PENDING**. The current registry has 54 commands and 29 queries. A proposed P0/P1 subset is recorded in FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md §12. All entries remain design-only/non-dispatchable. The exact list has been checked against the registry names; semantic bindings, acceptance evidence and owner acceptance remain outstanding.
+
+These decisions do not close planning. Remaining blockers include full semantic reconciliation, target/runtime evidence, C++/Python conformance, dependency/security gates, exact-head builder self-review, independent review and separate owner planning-exit/implementation authorization. PR #2 remains draft/open/unmerged.
