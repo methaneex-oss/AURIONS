@@ -18,7 +18,7 @@ This document is not evidence that implementation or validation has occurred.
 ## 1. Project control
 
 **Phase:** Initial planning / pre-implementation specification.
-**Implementation status:** Not started by this planning work. No source code, repository changes, device configuration changes or database migrations have been made.
+**Implementation status:** Runtime implementation has not started. Repository changes in this planning phase are limited to planning documents, machine-readable schemas/fixtures/registries/validators and proposed SQL DDL. No runtime source implementation, device configuration change or database migration has been applied to a user database.
 **Next milestone:** Complete the implementation-ready specification, run a consistency review, then obtain explicit owner approval before implementation.
 
 ### Working rules
@@ -826,7 +826,7 @@ The host DDL runner now checks these constraints, duplicate/replay identities, t
 
 Memory migration v8 is the machine-readable persistence contract for the model-training lifecycle. It adds owner-bound experiment, worker-attempt and learning-evaluation records; binds each evaluation to the exact candidate, baseline, dataset and protocol artifact digests; adds the source-learning lineage and candidate identity to evolution proposals; records a separate governed evolution evaluation; and maintains an owner/mechanism-scoped active pointer with monotonic revision and append-only activation/rollback history. The pointer may advance only with a matching history row; activation history requires both learning and evolution evaluations to be passing. Legacy rows remain unbound and are not backfilled by inference.
 
-The payload schemas and coherent positive/negative lineage fixtures are checked by `validate_schemas.py`. Host SQLite validation executed all eighteen DDL files and exercised one valid candidate activation plus rejection of pointer revision without matching history, pointer deletion, history mutation/deletion and cross-owner experiment linkage in run [43939457017](https://github.com/methaneex-oss/AURIONS/actions/runs/43939457017), commit `da136f617757ce73265971a921c64e8e1ffdcd9d`. This is host-side DDL/contract evidence only: no worker, evaluator, approval consumer, activation saga or rollback handler is implemented; target Termux/Android, crash/recovery and runtime authorization tests remain open.
+The payload schemas and coherent positive/negative lineage fixtures are checked by `validate_schemas.py`. Historical host SQLite validation executed the then-current eighteen-file DDL chain and exercised one valid candidate activation plus rejection of pointer revision without matching history, pointer deletion, history mutation/deletion and cross-owner experiment linkage in run [43939457017](https://github.com/methaneex-oss/AURIONS/actions/runs/43939457017), commit `da136f617757ce73265971a921c64e8e1ffdcd9d`. This evidence predates governance v5 and memory v9; those two migrations bring the current chain to twenty files and have not yet been executed. This is host-side DDL/contract evidence only: no worker, evaluator, approval consumer, activation saga or rollback handler is implemented; target Termux/Android, crash/recovery and runtime authorization tests remain open.
 
 
 ### 26.6 Migration protocol

@@ -4,7 +4,7 @@
 - **Authority:** Owner selections made in the AURIONS planning conversation on 2026-11-16. This record supersedes ambiguity about the model direction; it does not supersede unrelated product, security, governance or implementation gates.
 - **Scope:** Primary model, training, data, evaluation, inference and model evolution.
 - **Implementation status:** Specification only. This document does not authorize training, worker dispatch, production inference, model activation, deployment, PR merge or planning exit.
-- **Related records:** [Initial Engineering Specification](INITIAL-ENGINEERING-SPECIFICATION.md); [PR-19 / PR-20 Model-Candidate Lifecycle Crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md); [domain payload schemas](../../schemas/domain-payloads.v1.schema.json); [memory migration v8](../../schemas/persistence/aurion_memory.migration_v8.sql).
+- **Related records:** [Initial Engineering Specification](INITIAL-ENGINEERING-SPECIFICATION.md); [PR-19 / PR-20 Model-Candidate Lifecycle Crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md); [domain payload schemas](../../schemas/domain-payloads.v1.schema.json); [memory migration v8](../../schemas/persistence/aurion_memory.migration_v8.sql); [memory migration v9](../../schemas/persistence/aurion_memory.migration_v9.sql); [governance migration v5](../../schemas/persistence/aurion_governance.migration_v5.sql); [dataset-rights persistence/event crosswalk](DATASET-RIGHTS-PERSISTENCE-AND-EVENT-CROSSWALK.md).
 
 ## 1. Owner-approved model decisions
 
