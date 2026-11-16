@@ -242,6 +242,21 @@ def _conversation_groups(messages: list[dict[str, Any]]) -> list[list[dict[str, 
     return groups
 
 
+def _available_prompt_budget(
+    per_request_limit: int,
+    completion_reserve: int,
+    aggregate_role_limit: int,
+    tokens_already_used: int = 0,
+) -> int:
+    """Compute the same effective prompt ceiling for preflight and live execution."""
+    if min(per_request_limit, completion_reserve, aggregate_role_limit) < 0 or tokens_already_used < 0:
+        raise ValueError("token budget inputs must be non-negative")
+    return min(
+        per_request_limit - completion_reserve,
+        aggregate_role_limit - tokens_already_used - completion_reserve,
+    )
+
+
 def _compact_conversation(
     messages: list[dict[str, Any]], max_prompt_tokens: int
 ) -> list[dict[str, Any]]:
@@ -659,10 +674,22 @@ class Worker:
             # Preserve the full configured completion allowance on every turn;
             # context compaction, not silent output-budget reduction, makes room.
             completion_reserve = self.max_tokens
-            prompt_budget = min(
-                self.max_request_tokens - completion_reserve,
-                remaining - completion_reserve,
+            prompt_budget = _available_prompt_budget(
+                self.max_request_tokens,
+                completion_reserve,
+                self.max_total_tokens,
+                self.total_tokens,
             )
+            base_prompt_tokens = _prompt_token_estimate(messages[:2])
+            if base_prompt_tokens > prompt_budget:
+                raise RuntimeError(
+                    f"base prompt estimate ({base_prompt_tokens} tokens) exceeds the "
+                    f"available {prompt_budget}-token prompt budget; provider request was not sent; "
+                    f"budget inputs: per_request_limit={self.max_request_tokens}, "
+                    f"completion_reserve={completion_reserve}, "
+                    f"aggregate_role_limit={self.max_total_tokens}, "
+                    f"role_tokens_already_used={self.total_tokens}"
+                )
             messages = _compact_conversation(messages, prompt_budget)
             prompt_reserve = _prompt_token_estimate(messages)
             output_limit = min(
@@ -771,17 +798,15 @@ def preflight_role_prompt(
     prompt_tokens = _prompt_token_estimate(messages)
     completion_reserve = max_completion_tokens
     request_limit = role_assignment(role)["max_request_tokens"]
-    if prompt_tokens + completion_reserve > request_limit:
+    effective_prompt_budget = _available_prompt_budget(
+        request_limit, completion_reserve, max_total_tokens, 0
+    )
+    if prompt_tokens > effective_prompt_budget:
         raise RuntimeError(
-            f"{role} prompt preflight failed: {prompt_tokens}-token prompt plus "
-            f"{completion_reserve}-token configured completion allowance exceeds the "
-            f"{request_limit}-token per-request ceiling"
-        )
-    if prompt_tokens + completion_reserve > max_total_tokens:
-        raise RuntimeError(
-            f"{role} prompt preflight failed: {prompt_tokens}-token prompt plus "
-            f"{completion_reserve}-token configured completion allowance exceeds the "
-            f"{max_total_tokens}-token aggregate role budget"
+            f"{role} prompt preflight failed: {prompt_tokens}-token prompt exceeds the "
+            f"{effective_prompt_budget}-token effective prompt budget "
+            f"(per_request_limit={request_limit}, completion_reserve={completion_reserve}, "
+            f"aggregate_role_limit={max_total_tokens})"
         )
     return {
         "role": role,
@@ -789,6 +814,7 @@ def preflight_role_prompt(
         "completion_reserve_tokens": completion_reserve,
         "per_request_limit": request_limit,
         "aggregate_role_budget": max_total_tokens,
+        "effective_prompt_budget": effective_prompt_budget,
         "context_file_count": len(context_files),
         "governance_source_count": len(governance_records),
         "fits": True,
