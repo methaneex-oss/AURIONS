@@ -488,6 +488,162 @@ def test_memory() -> None:
         (bytes([18])*16,"subject:test","{}","{}",10,2,"open","{}",0.6,'["evidence:test"]'),
     )
 
+    # PR-19/PR-20 lifecycle: bind one exact update -> experiment -> attempt/job
+    # -> candidate artifact -> held-out evaluation -> evolution candidate.
+    owner = "owner-model"
+    ids = {name: bytes([number]) * 16 for name, number in {
+        "update": 60, "experiment": 61, "attempt": 62, "job": 63,
+        "evaluation": 64, "proposal": 65, "candidate": 66,
+        "evolution_evaluation": 67, "transition": 68,
+    }.items()}
+    digests = {
+        "baseline": "1" * 64, "dataset": "2" * 64, "protocol": "3" * 64,
+        "training": "4" * 64, "initialization": "5" * 64, "architecture": "6" * 64,
+        "tokenizer": "7" * 64, "candidate": "8" * 64, "regression": "9" * 64,
+        "metrics": "a" * 64, "results": "b" * 64, "unseen": "c" * 64,
+        "evolution_report": "d" * 64,
+    }
+    artifact_ids = {name: bytes([70 + index]) * 16 for index, name in enumerate(digests)}
+    for name, artifact_id in artifact_ids.items():
+        db.execute(
+            """INSERT INTO artifacts
+            (artifact_id,artifact_kind,logical_name,sha256,byte_size,media_type,storage_uri,
+             producer_id,producer_version,provenance_ref,sensitivity,retention_class,
+             validation_state,availability_state,deletion_state,created_at_ms,updated_at_ms,owner_ref)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (artifact_id,name,name,digests[name],128,"application/octet-stream",
+             "artifact-store:"+name,"ddl-smoke","1.0","provenance:"+name,0,"project-retained",
+             "validated","available","active",100,100,owner),
+        )
+    db.execute(
+        """INSERT INTO learning_updates
+        (learning_update_id,mechanism,state,evidence_ref,created_at_ms,updated_at_ms,owner_ref)
+        VALUES (?,?,?,?,?,?,?)""",
+        (ids["update"],"primary_model","proposed","evidence:model",101,101,owner),
+    )
+    db.execute(
+        """INSERT INTO learning_update_details
+        (learning_update_id,update_kind,hypothesis_json,scope_json,evidence_refs_json,
+         baseline_artifact_id,candidate_artifact_id,evaluation_protocol_artifact_id,created_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?)""",
+        (ids["update"],"model_training",'{"hypothesis":"smoke"}','{"scope":"model"}','[]',
+         artifact_ids["baseline"],artifact_ids["candidate"],artifact_ids["protocol"],101),
+    )
+    db.execute(
+        """INSERT INTO learning_experiments
+        (experiment_id,learning_update_id,owner_ref,baseline_artifact_id,dataset_manifest_artifact_id,
+         protocol_artifact_id,training_manifest_artifact_id,initialization_artifact_id,
+         architecture_config_artifact_id,tokenizer_artifact_id,initialization_method,
+         dataset_split_ref,code_revision,configuration_digest,random_seed,resource_budget_json,
+         deadline_at_ms,created_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (ids["experiment"],ids["update"],owner,artifact_ids["baseline"],artifact_ids["dataset"],
+         artifact_ids["protocol"],artifact_ids["training"],artifact_ids["initialization"],
+         artifact_ids["architecture"],artifact_ids["tokenizer"],"random_initialization",
+         "split:train-validation","commit:fixture","e"*64,"42",'{"cpu_ms":1000}',200,102),
+    )
+    db.execute(
+        """INSERT INTO learning_experiment_attempts
+        (attempt_id,experiment_id,learning_update_id,owner_ref,job_id,attempt_number,
+         configuration_digest,state,started_at_ms,finished_at_ms,candidate_artifact_id)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        (ids["attempt"],ids["experiment"],ids["update"],owner,ids["job"],1,"e"*64,
+         "completed",103,104,artifact_ids["candidate"]),
+    )
+    db.execute(
+        """INSERT INTO learning_candidate_evaluations
+        (evaluation_id,learning_update_id,experiment_id,attempt_id,owner_ref,
+         candidate_artifact_id,candidate_artifact_sha256,baseline_artifact_id,baseline_artifact_sha256,
+         dataset_manifest_artifact_id,dataset_manifest_sha256,evaluation_protocol_artifact_id,
+         evaluation_protocol_sha256,regression_suite_artifact_id,metrics_artifact_id,
+         regression_results_artifact_id,unseen_controls_artifact_id,report_digest,status,evaluated_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (ids["evaluation"],ids["update"],ids["experiment"],ids["attempt"],owner,
+         artifact_ids["candidate"],digests["candidate"],artifact_ids["baseline"],digests["baseline"],
+         artifact_ids["dataset"],digests["dataset"],artifact_ids["protocol"],digests["protocol"],
+         artifact_ids["regression"],artifact_ids["metrics"],artifact_ids["results"],
+         artifact_ids["unseen"],"f"*64,"passed",105),
+    )
+    db.execute(
+        """UPDATE learning_update_details SET experiment_id=?,attempt_id=?,evaluation_id=?
+        WHERE learning_update_id=?""",
+        (ids["experiment"],ids["attempt"],ids["evaluation"],ids["update"]),
+    )
+    db.execute(
+        """INSERT INTO evolution_proposals
+        (proposal_id,target_mechanism,description,evidence_refs_json,impact_risk_json,
+         candidate_artifact_ref,evaluation_ref,state,created_at_ms,updated_at_ms,
+         owner_ref,candidate_id,source_learning_update_id,source_experiment_id,source_attempt_id,
+         learning_evaluation_id,candidate_artifact_id,candidate_artifact_sha256)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (ids["proposal"],"primary_model","model candidate","[]","{}","artifact:candidate",
+         "evaluation:learning","proposed",106,106,owner,ids["candidate"],ids["update"],
+         ids["experiment"],ids["attempt"],ids["evaluation"],artifact_ids["candidate"],digests["candidate"]),
+    )
+    db.execute(
+        """INSERT INTO evolution_candidate_evaluations
+        (evaluation_id,proposal_id,candidate_id,owner_ref,artifact_id,artifact_sha256,
+         baseline_artifact_id,baseline_artifact_sha256,evaluation_protocol_artifact_id,
+         evaluation_protocol_sha256,report_artifact_id,report_digest,status,evaluated_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (ids["evolution_evaluation"],ids["proposal"],ids["candidate"],owner,
+         artifact_ids["candidate"],digests["candidate"],artifact_ids["baseline"],digests["baseline"],
+         artifact_ids["protocol"],digests["protocol"],artifact_ids["evolution_report"],"f"*64,"passed",107),
+    )
+    # The history row is inserted before the active pointer in the same local transaction.
+    db.execute(
+        """INSERT INTO candidate_pointer_history
+        (transition_id,owner_ref,target_mechanism,revision,previous_revision,operation_type,
+         proposal_id,previous_candidate_id,new_candidate_id,previous_artifact_id,new_artifact_id,
+         artifact_sha256,approval_ref,operation_id,operation_digest,learning_evaluation_id,
+         evolution_evaluation_id,occurred_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (ids["transition"],owner,"primary_model",1,0,"activate",ids["proposal"],None,
+         ids["candidate"],None,artifact_ids["candidate"],digests["candidate"],"approval:smoke",
+         bytes([69])*16,"f"*64,ids["evaluation"],ids["evolution_evaluation"],108),
+    )
+    db.execute(
+        """INSERT INTO active_candidate_pointers
+        (owner_ref,target_mechanism,revision,candidate_id,proposal_id,artifact_id,artifact_sha256,updated_at_ms)
+        VALUES (?,?,?,?,?,?,?,?)""",
+        (owner,"primary_model",1,ids["candidate"],ids["proposal"],artifact_ids["candidate"],digests["candidate"],108),
+    )
+    expect_integrity_error(
+        db,"active pointer revision without matching history",
+        "UPDATE active_candidate_pointers SET revision=2 WHERE owner_ref=? AND target_mechanism=?",
+        (owner,"primary_model"),
+    )
+    expect_integrity_error(
+        db,"active pointer deletion",
+        "DELETE FROM active_candidate_pointers WHERE owner_ref=? AND target_mechanism=?",
+        (owner,"primary_model"),
+    )
+    expect_integrity_error(
+        db,"candidate pointer history update",
+        "UPDATE candidate_pointer_history SET artifact_sha256=? WHERE transition_id=?",
+        ("0"*64,ids["transition"]),
+    )
+    expect_integrity_error(
+        db,"candidate pointer history deletion",
+        "DELETE FROM candidate_pointer_history WHERE transition_id=?",
+        (ids["transition"],),
+    )
+    # Owner scope is not inferred from the referenced update or artifact.
+    expect_integrity_error(
+        db,"experiment crossing owner scope",
+        """INSERT INTO learning_experiments
+        (experiment_id,learning_update_id,owner_ref,baseline_artifact_id,dataset_manifest_artifact_id,
+         protocol_artifact_id,training_manifest_artifact_id,initialization_artifact_id,
+         architecture_config_artifact_id,tokenizer_artifact_id,initialization_method,
+         dataset_split_ref,code_revision,configuration_digest,random_seed,resource_budget_json,
+         deadline_at_ms,created_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([90])*16,ids["update"],"owner-other",artifact_ids["baseline"],artifact_ids["dataset"],
+         artifact_ids["protocol"],artifact_ids["training"],artifact_ids["initialization"],
+         artifact_ids["architecture"],artifact_ids["tokenizer"],"random_initialization",
+         "split:train-validation","commit:fixture","e"*64,"42",'{"cpu_ms":1000}',200,109),
+    )
+
     validate_query_projection_source_columns("aurion_memory.db", db)
     check_database("memory smoke insert", db)
     db.close()
@@ -926,7 +1082,7 @@ def main() -> int:
     print(
         f"PASS: all three SQLite stores and eighteen ordered DDL files executed; "
         f"SQLite {sqlite3.sqlite_version}; FK/integrity checks passed; "
-        "memory v4/v5/v6/v7/v8, event v3/v4/v5/v6 and governance v2/v3/v4 outbox/objective/approval/query-projection/saga-ledger smoke invariants passed."
+        "memory v4/v5/v6/v7/v8 model-lineage/pointer, event v3/v4/v5/v6 and governance v2/v3/v4 outbox/objective/approval/query-projection/saga-ledger smoke invariants passed."
     )
     print(
         "LIMIT: host smoke validation only; Android/Termux baseline, crash/restore, "
