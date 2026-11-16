@@ -1266,6 +1266,33 @@ def main() -> int:
     if lineage_eval_request["candidate_artifact_sha256"] != lineage_completion["candidate_artifact_sha256"] or lineage_eval_result["candidate_artifact_sha256"] != lineage_completion["candidate_artifact_sha256"]:
         fail("PR-20 lineage: evaluation candidate digest differs from worker output")
 
+    # MD-16: dataset admission is bound to exact source bytes, authorization,
+    # license terms, owner/model scope and the declared training purpose.
+    source_authorization = domain_fixture["datasetSourceAuthorization"]
+    dataset_manifest = domain_fixture["datasetManifest"]
+    if source_authorization["status"] != "active" or source_authorization["training_permission"] != "allow":
+        fail("MD-16 fixture: source authorization is not active and training-allowed")
+    if dataset_manifest["owner_ref"] != source_authorization["owner_ref"]:
+        fail("MD-16 fixture: dataset manifest and source authorization owner differ")
+    if dataset_manifest["model_family_ref"] != source_authorization["owner_scope"]["model_family_ref"]:
+        fail("MD-16 fixture: dataset manifest model family exceeds source authorization scope")
+    if dataset_manifest["training_purpose"] not in source_authorization["permitted_purposes"]:
+        fail("MD-16 fixture: dataset purpose is not permitted by source authorization")
+    included_refs = [item["source_ref"] for item in dataset_manifest["included_sources"]]
+    if len(included_refs) != len(set(included_refs)):
+        fail("MD-16 fixture: duplicate source identity in immutable dataset manifest")
+    for included in dataset_manifest["included_sources"]:
+        if included["source_ref"] != source_authorization["source_ref"]:
+            fail("MD-16 fixture: included source has no matching authorization record")
+        if included["source_content_sha256"] != source_authorization["source_content_sha256"]:
+            fail("MD-16 fixture: included source content digest differs from authorization")
+        if included["authorization_id"] != source_authorization["authorization_id"]:
+            fail("MD-16 fixture: included source authorization identity mismatch")
+        if included["authorization_record_digest"] != source_authorization["record_digest"]:
+            fail("MD-16 fixture: included source authorization record digest mismatch")
+        if included["license_or_terms_digest"] != source_authorization["license_or_terms_digest"]:
+            fail("MD-16 fixture: included source license/terms digest mismatch")
+
     identity_fixture = domain_fixture["modelCandidateIdentityFixture"]
     expected_candidate_id = str(uuid.uuid5(
         uuid.NAMESPACE_URL,
@@ -1318,6 +1345,12 @@ def main() -> int:
         "learning-evaluation-missing-lineage.invalid.json": ("domain-payloads.v1.schema.json", "learningCandidateEvaluationRequest"),
         "candidate-activation-missing-approval.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActionRequest"),
         "candidate-rollback-missing-reference.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActionRequest"),
+        "candidate-activated-missing-evaluation.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActivated"),
+        "candidate-rolled-back-missing-restore-digest.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateRolledBack"),
+        "dataset-source-missing-rights-basis.invalid.json": ("domain-payloads.v1.schema.json", "datasetSourceAuthorization"),
+        "dataset-source-private-missing-authorization.invalid.json": ("domain-payloads.v1.schema.json", "datasetSourceAuthorization"),
+        "dataset-manifest-source-missing-authorization.invalid.json": ("domain-payloads.v1.schema.json", "datasetManifest"),
+        "dataset-manifest-empty-sources.invalid.json": ("domain-payloads.v1.schema.json", "datasetManifest"),
         "evolution-proposal-missing-candidate-lineage.invalid.json": ("domain-payloads.v1.schema.json", "evolutionProposed"),
         "memory-retrieval-invalid-limit.invalid.json": ("domain-payloads.v1.schema.json", "memoryRetrievalQuery"),
         "message-envelope-invalid-owner-type.invalid.json": ("message-envelope.v1.schema.json", None),
