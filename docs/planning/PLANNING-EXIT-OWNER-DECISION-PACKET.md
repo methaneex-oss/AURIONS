@@ -8,7 +8,7 @@
 
 ## 1. Decisions required before planning exit
 
-### D-01 — Accept or revise the First Usable Release Definition
+### D-01 — First Usable Release Definition: ACCEPTED
 
 **Proposal under review:** `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`, PR-01…PR-20.
 
@@ -18,7 +18,7 @@ The proposal defines AURIONS as a trainable AI system with an evolving cognitive
 
 **Consequence:** The accepted PR-01…PR-20 baseline may be used by WP-15 as the product contract, subject to remaining topology, command/query, evidence and authorization gates.
 
-### D-02 — Resolve cloud/mobile cognitive-history continuity
+### D-02 — Cloud/mobile cognitive-history continuity: OPTION B SELECTED
 
 **Options in the topology analysis:**
 
@@ -28,7 +28,7 @@ The proposal defines AURIONS as a trainable AI system with an evolving cognitive
 | B — Dual runtime with selective domain synchronization | Both run the same core; a narrowly approved set of durable domain changes synchronizes through versioned changes, outboxes and reconciliation. | Supports continuity across contexts but adds first-release synchronization, conflict, deletion and recovery scope. |
 | C — Mobile runtime with cloud compute/services | Mobile owns cognitive state and device authority; cloud is an optional compute/service plane, not a second full cognitive runtime. | Strong offline independence but may not satisfy the approved direction for concurrent full cloud operation. |
 
-**Builder recommendation:** Option B only if one continuous personal intelligence across cloud and mobile is a first-release requirement. Option A is the clean fallback if the owner prefers no synchronization in the first release. Option C changes the meaning of the cloud target and should be selected only if that is the intended product.
+**Historical pre-decision builder recommendation (retained for provenance):** Option B was recommended to preserve one persistent cognitive history across cloud and offline mobile. This recommendation is superseded by the owner's explicit Option B selection recorded below.
 
 **Non-negotiable boundary in every option:** Device-local permissions, credentials, approval secrets and authority over local effects remain local. Shared contracts never grant cross-context authority.
 
@@ -46,7 +46,7 @@ The product proposal requires one narrow, explicitly permitted, reversible local
 
 The current registries contain 54 command records (52 mapped and two deferred) and 29 read-only query records. Registry presence does not mean every command/query belongs in the first release or is dispatchable.
 
-**Owner disposition:** Builder to complete the registry-derived subset proposal and present exact identifiers for owner acceptance. Unselected entries remain design-only/non-dispatchable.
+**Builder proposal:** The registry-derived subset and exact identifiers are recorded in [First-Release Command/Query Scope and Gap Analysis §12](FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md). The PR-19/PR-20 lifecycle crosswalk is recorded in [the candidate lifecycle crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md); its payload/DDL/validator additions remain a pre-implementation contract-reconciliation task. **Owner acceptance remains pending.** Unselected entries remain design-only/non-dispatchable.
 
 **Consequence:** Unselected entries remain design-only/non-dispatchable. No registry-wide dispatch enablement is implied.
 
