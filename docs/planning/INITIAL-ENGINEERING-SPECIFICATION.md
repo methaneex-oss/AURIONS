@@ -63,7 +63,7 @@ Do not ask these again unless the owner changes them.
 | MP-03 | Identify limitations, propose changes, test in isolation and seek approval to integrate. |
 | MP-04 | Maintain a self-model of capabilities, limitations, confidence, resources, performance and goals. |
 | MP-05 | Core principles and user authority are protected; other elements may adapt within constraints. |
-| MP-06 | Improve the local model primarily through training. |
+| MP-06 | Own and train AURIONS' primary model under AURIONS control; use an initially randomly initialized model baseline rather than silently adopting pretrained third-party weights or a hosted commercial LLM as the system's brain. Training may use approved capable cloud/remote compute when local resources are insufficient; local inference and offline operation remain independent. |
 
 Protected rules may be proposed for revision, but changes require explicit approval and a recovery mechanism.
 
@@ -76,7 +76,7 @@ Protected rules may be proposed for revision, but changes require explicit appro
 | IP-03 | Model-independent interfaces from the beginning. |
 | IP-04 | SQLite initially, with defined schemas and migration support. |
 | IP-05 | Typed internal events and explicit interfaces. |
-| IP-06 | Design multi-device contracts early; implement distribution after the single-device core works. |
+| IP-06 | Design multi-device contracts early. The owner-selected first-release cloud/mobile continuity subset (D-02 Option B) is bounded selective synchronization; broader device pairing, general multi-device distribution and seamless task handoff remain later expansion after the core is reliable. |
 | IP-07 | Training pipeline supports capable external hardware and lightweight local experiments where feasible. |
 | IP-08 | Build/test mechanisms individually, then validate their interaction in complete cognitive cycles. |
 | IP-09 | Use external libraries when they reduce development time without compromising the design. |
@@ -177,7 +177,7 @@ Previously established:
 1. Interfaces: CLI, Android, voice, web and other devices.
 2. C++ cognitive core.
 3. Runtime services: inference, storage, scheduling, resources, model management and events.
-4. Supporting systems: Python training/evaluation workers; later synchronization service.
+4. Supporting systems: Python training/evaluation workers; first-release bounded cloud/mobile synchronization under D-02; broader multi-device synchronization/handoff after the core is reliable.
 5. Data and model assets.
 6. Platform infrastructure.
 
@@ -297,7 +297,7 @@ WAL, synchronous mode, busy timeout, checkpointing and backup behaviour must be 
 
 ## 9. Model and inference architecture
 
-Model-independent inference interface. Initial local model candidate: Qwen3-4B Q4_K_M via llama.cpp, basic inference tested. Future options: local GGUF models, alternative engines, remote models, embeddings and reranking.
+Model-independent inference interface. Historical prototype note: Qwen3-4B Q4_K_M via llama.cpp was used for a basic inference experiment; it is not the selected AURIONS primary model or the first-release training baseline. The owner direction is an AURIONS-owned model initialized with random weights and trained under AURIONS control. Do not treat pretrained Qwen3 weights or another hosted/pretrained model as the AURIONS brain without a separate explicit owner decision. Keep the inference interface replaceable; select architecture, tokenizer, runtime, embeddings and retrieval components only through documented engineering evaluation. Online research/data acquisition and approved training compute are distinct from external model inference.
 
 Capability discovery includes text, structured output, tool-call format, context size, embeddings and multimodal capabilities where relevant. Preserve in-process and separate-process inference options until benchmarked.
 
@@ -1005,7 +1005,7 @@ Implementation roadmap:
 - **G — Demonstrable learning:** outcome feedback, held-out evaluation, learning updates and strategy adaptation.
 - **H — Self-model/evolution:** capability/performance model, candidate evaluation, approval, rollout and rollback.
 - **I — Hardening:** fault injection, security, performance, resource limits and recovery exercises.
-- **J — Expansion:** voice/native Android, broader tools, external compute and multi-device sync after earlier gates pass.
+- **J — Expansion:** voice/native Android UI, broader tools, additional device ecosystems and general multi-device handoff after earlier gates pass. The bounded cloud/mobile selective-sync subset is a first-release requirement under D-02.
 
 Every work package must specify inputs/dependencies, owned outputs, interface references, tests, acceptance evidence, resource/security constraints and rollback/recovery. Prose alone does not make a package implementation-ready.
 
@@ -1206,7 +1206,7 @@ Security acceptance requires threat-model review, authorization bypass and repla
 | RSK-09 | False learning claims | No real adaptation | Held-out baseline, regression gates, reproducible evidence |
 | RSK-10 | License incompatibility | Legal/redistribution restrictions | SBOM and model/dataset license register |
 | RSK-11 | Key loss/device compromise | Exposure or irrecoverable data | Key separation, recovery, rotation, revocation |
-| RSK-12 | Scope expansion | Delayed milestone | Critical path; defer multi-device/voice |
+| RSK-12 | Scope expansion | Delayed milestone | Protect first-release critical path; defer broad multi-device handoff and voice, but retain D-02 bounded cloud/mobile synchronization |
 | RSK-13 | Schema/contract drift | Integration failure | Versioned contracts, shared fixtures, migration CI |
 | RSK-14 | Unbounded autonomy/resource use | Cost, battery, privacy, safety | Budgets, scheduler, stop conditions, audit |
 
