@@ -114,3 +114,16 @@ The owner supplied those operations as illustrative examples to communicate that
 No first Android action has been selected. The exact first permitted local action in the first-release acceptance protocol remains a separate unresolved product decision; it must not be inferred from the Android examples. This correction does not close target-device or other empirical gates and does not authorize implementation or merging.
 
 The review verdict remains ACCEPT WITH REQUIRED CORRECTIONS for the historical revision identified at the top of this report. This record is not an independent review of the current corrected PR #2 head.
+
+
+## 10. Owner-decision and documentation update — 2026-11-16
+
+The review recorded in this document applies only to the historical revision identified at the top of the report. It is not an independent review of the current PR #2 head or the documentation commits made after that review.
+
+The owner decisions now recorded in the repository are:
+- **D-01:** First Usable Release Definition PR-01…PR-20 accepted.
+- **D-02:** Option B selected — bounded selective synchronization between cloud and offline-capable mobile runtimes. Detailed allowlists, local-only classes and SY-* conflict/deletion/recovery evidence remain open.
+- **D-03:** First Android action staged pending empirical target/runtime validation; no action selected or authorized.
+- **D-04:** Command/query subset proposal pending owner acceptance. The PR-19/PR-20 model-candidate lifecycle crosswalk is now documented, but its payload/DDL/validator amendments are not yet integrated or validated.
+
+The MCU J.A.R.V.I.S./human-cognition research reference and current builder audit addenda are linked from the planning index. These updates do not change the historical review verdict or convert its recommendations into implementation authorization. Independent review of the final corrected PR #2 revision remains outstanding.
