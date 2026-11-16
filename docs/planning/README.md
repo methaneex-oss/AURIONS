@@ -22,6 +22,7 @@ This directory contains the canonical planning mirror, technical contracts, owne
 - [PR-19/PR-20 Model-Candidate Lifecycle Crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md) — exact learning/experiment/artifact/evaluation/approval/activation/rollback identity chain and remaining schema/DDL work.
 - [Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md) — all 16 owner-selected model/training decisions, their binding constraints, feasibility parameters and the MD-16 data-rights contract gap.
 - [Dataset Source Rights and Training Authorization Contract](DATASET-SOURCE-RIGHTS-AND-TRAINING-AUTHORIZATION-CONTRACT.md) — MD-16 source authorization, immutable dataset manifest, worker admission, revocation and derived-artifact impact requirements; initial schemas/fixtures/validator coverage is present, while persistence, trusted events and runtime enforcement remain open.
+- [Dataset Rights Persistence and Trusted-Event Crosswalk](DATASET-RIGHTS-PERSISTENCE-AND-EVENT-CROSSWALK.md) — proposed governance/memory/events-store ownership, append-only revocation, local-outbox/saga sequence and trusted internal events; persistence and event registry integration remain open.
 - [MCU J.A.R.V.I.S. and Human Cognition Research](../research/MCU-JARVIS-AND-HUMAN-COGNITION-REFERENCE.md) — evidence-based engineering reference, separating MCU canon, neuroscience findings and design extrapolation.
 
 ## Technical contract matrices
