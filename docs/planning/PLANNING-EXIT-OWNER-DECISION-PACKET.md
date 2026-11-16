@@ -10,11 +10,11 @@
 
 ### D-01 — Accept or revise the First Usable Release Definition
 
-**Proposal under review:** `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`, PR-01…PR-18.
+**Proposal under review:** `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`, PR-01…PR-20.
 
-The proposal makes the CLI the first user-facing interface and treats cloud and offline-capable mobile as concurrent first-release runtime targets using one cognitive-core implementation and common versioned contracts. Offline mobile must remain useful without cloud availability. It does not claim general intelligence, unrestricted autonomy, mature learning improvement, voice/continuous sensing, broad integrations or automatic cross-runtime synchronization.
+The proposal defines AURIONS as a trainable AI system with an evolving cognitive architecture, not a personal-assistant product or chatbot. It requires a bounded, reproducible model-training path alongside experience-dependent adaptation; PR-19 covers training provenance and reproducibility, while PR-20 covers held-out evaluation, candidate quarantine, governed activation and rollback. It does not claim general intelligence or improvement beyond the evaluated distribution. The CLI remains the first interface, with cloud and offline-capable mobile as concurrent first-release targets. Voice, continuous sensing, broad integrations and automatic cross-runtime synchronization remain separately scoped.
 
-**Owner decision required:** Accept the PR-01…PR-18 acceptance baseline as the first-release product definition, request specific revisions, or reject it.
+**Owner decision required:** Accept the PR-01…PR-20 acceptance baseline as the first-release product definition, request specific revisions, or reject it.
 
 **Consequence:** Until accepted, the acceptance matrix remains a builder proposal and WP-15 cannot treat it as an approved product contract.
 
