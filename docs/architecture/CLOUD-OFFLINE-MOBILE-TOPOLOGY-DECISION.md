@@ -1,6 +1,6 @@
 # AURIONS — Cloud and Offline-Mobile Runtime Topology Decision
 
-- **Status:** Builder decision analysis; unresolved.
+- **Status:** Owner selected Option B on 2026-11-16; detailed synchronization contracts remain IN PROGRESS.
 - **Decision authority:** Builder owns the technical topology proposal. Owner approval is required only if the selected topology changes the product's cross-context continuity or first-release synchronization scope. This document does not reinterpret the approved deployment direction.
 - **Related owner decision:** Cloud operation and offline-capable mobile operation are concurrent first-release targets. Offline mobile must remain functional without cloud availability. Both contexts use shared versioned contracts and the authoritative cognitive-core implementation.
 - **Related existing proposal:** General multi-device synchronization and handoff are currently excluded from first release. The relationship between this proposal and the concurrent deployment decision requires explicit reconciliation.
@@ -57,7 +57,7 @@ The trade-off is real: Option B brings a limited synchronization mechanism into 
 
 If the owner does **not** want first-release cross-context continuity, Option A is the clean fallback. It preserves the existing no-sync scope, but the product must explicitly accept and disclose that cloud and mobile maintain separate cognitive histories. Option C is appropriate only if cloud is intended as an optional compute/service plane rather than a full concurrent AURIONS runtime; it is not the default recommendation under the current wording of the deployment target.
 
-The owner must resolve whether one continuous cognitive history is required in the first release. Until then, Option B is a builder recommendation, not a selected topology or owner decision.
+**Owner decision recorded 2026-11-16: Option B selected.** Both runtimes remain independent and offline-capable where required, using the same core and versioned contracts. This authorizes detailed selective-sync design only, not unrestricted replication or implementation.
 
 ## 6. Acceptance consequences
 
@@ -73,6 +73,6 @@ Product acceptance PR-15 through PR-18 applies to every option. Option B additio
 
 ## 7. Current disposition
 
-**UNRESOLVED — builder recommendation is Option B if one continuous personal intelligence is required; owner approval is required because this adds selective synchronization to first-release scope. Option A remains the no-sync fallback with explicitly separate histories.**
+**OWNER DECISION: OPTION B SELECTED — 2026-11-16.** WP-15 must include bounded selective synchronization. Exact field-level allowlists, local-only classes, version/causality metadata, conflicts, deletion, offline replay, idempotency, retention, crash recovery and executable SY cases remain pre-implementation gates.
 
 Until this is resolved, WP-15's cloud/mobile integration topology and state-continuity exit criteria are not implementation-ready. This does not block continued builder work on unrelated planning layers and does not authorize implementation.
