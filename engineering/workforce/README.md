@@ -14,7 +14,15 @@ This directory contains engineering-workforce infrastructure only. It is not par
 - A durable supervisor that recovers expired leases, preserves checkpoints for retry, caps attempts and enforces the contract's absolute deadline while queued, then the earlier of that deadline or the maximum task lifetime measured from first claim.
 - Separate API and supervisor containers with non-root, read-only filesystems.
 - Six distinct pinned model assignments; runner hard ceilings of 100 calls, 32,768 completion tokens/call, 200,000 total tokens and 360 minutes. Every CLI task execution requires a live control-plane lease and atomically reserves/settles per-work-package/per-role token and call budgets in PostgreSQL. Reservations left by a crashed or fenced worker are conservatively charged at their full reserved amount.
-- Paid inference fallback remains disabled.
+
+## Worker token-budget policy
+
+The role's aggregate token ceiling is cumulative across all provider turns and is charged from provider-reported `usage.total_tokens` (prompt plus completion). The model registry supplies a separate per-request ceiling. Before inference, preflight checks the complete initial system/task prompt against the per-request ceiling and the configured completion allowance.
+
+On each subsequent turn, the worker recomputes prompt headroom from the selected model's per-request ceiling, the role's remaining aggregate tokens and the completion allowance. The configured completion value is a preferred maximum, not a mandatory amount to reserve on every turn. When the aggregate budget is nearly exhausted, the worker may reduce that turn's output cap while preserving a minimum completion floor of 256 tokens. This allows a still-valid prompt to finish without exceeding either the per-request ceiling or the aggregate role budget. The worker never silently reduces the prompt itself to force a request through: it compacts older complete tool exchanges and bounds tool-result content; if the base prompt cannot fit while preserving the minimum completion floor, it stops before sending the provider request.
+
+The prompt estimator is a conservative serialized-request byte heuristic, not the provider's exact tokenizer. Preflight and runtime use the same budget calculation, while runtime recalculates against actual cumulative usage after every response. A passing initial preflight therefore does not mean the full role budget is guaranteed to cover an arbitrary number of long responses; model-call, aggregate-token and duration ceilings remain independent stop conditions.
+- Paid inference fallback remains disabled. OpenRouter `openrouter/free` is the only permitted free fallback. It is used for primary HTTP 429, HTTP 5xx, network failures, and Groq model-permission HTTP 403; the Groq 403 is retained in route history as a primary-provider defect. HTTP 401, Cloudflare HTTP 403 and request-contract failures stop without fallback. The runtime verifies the returned model ID ends in `:free`, pins that model for each worker conversation, rejects mid-run model changes, records the actual route and primary failure, and requires valid usage accounting. Free routing is dynamic and capped (currently 20 RPM / 50 RPD); send public repository context only and never secrets or confidential material.
 
 ## Required deployment secrets
 
@@ -33,6 +41,7 @@ The worker CLI requires `WORKFORCE_CONTROL_PLANE_URL`, `WORKFORCE_TASK_ID` and `
 Provider secrets remain separate:
 - `GROQ_API_KEY` for the three Groq roles.
 - `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for the three Cloudflare roles.
+- `OPENROUTER_API_KEY` for transient-failure free-only fallback.
 
 ## Deployment
 

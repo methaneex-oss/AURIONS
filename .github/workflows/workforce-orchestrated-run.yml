@@ -9,12 +9,17 @@ on:
         default: false
         type: boolean
       confirm_cloudflare_free_plan:
-        description: "I verified this Cloudflare account is on Workers Free, not Workers Paid. Workers Paid can bill above 10,000 Neurons/day."
+        description: "I verified this account is on Workers Free and checked that enough of today's 10,000-Neuron free allowance remains for the three Cloudflare roles. Workers Paid can bill above the free allocation."
         required: true
         default: false
         type: boolean
       confirm_groq_free_plan:
-        description: "I verified this Groq account is on Free tier, not Developer tier. Developer tier charges per token."
+        description: "I verified this account is on Groq Free, not Developer tier, and checked its current model rate limits. Developer tier charges per token."
+        required: true
+        default: false
+        type: boolean
+      confirm_openrouter_free_plan:
+        description: "I confirm fallback uses only openrouter/free, accepts only returned :free models, has sufficient free daily quota for the enforced reserve, and no credits or paid routes will be used."
         required: true
         default: false
         type: boolean
@@ -23,13 +28,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: aurions-wf03-${{ github.ref }}
+  group: aurions-provider-inference
   cancel-in-progress: false
 
 jobs:
   orchestrated-run:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 100
     services:
       postgres:
         image: postgres:17-alpine@sha256:d3244e8ce3f165ee3c93d9c4a4b1d0fe48b3a89e2287b717fdcbbde92d405065
@@ -60,17 +65,18 @@ jobs:
           CONFIRM_RUN: ${{ inputs.confirm_run }}
           CONFIRM_CLOUDFLARE_FREE_PLAN: ${{ inputs.confirm_cloudflare_free_plan }}
           CONFIRM_GROQ_FREE_PLAN: ${{ inputs.confirm_groq_free_plan }}
+          CONFIRM_OPENROUTER_FREE_PLAN: ${{ inputs.confirm_openrouter_free_plan }}
         run: |
-          if [ "$REF_NAME" != "feat/workforce-control-plane-hardening" ]; then
-            echo "Refusing to execute workforce providers outside the authorized feature branch."
+          if [ "$REF_NAME" != "feat/workforce-control-plane-hardening" ] && [ "$REF_NAME" != "feat/workforce-free-fallback" ]; then
+            echo "Refusing to execute workforce providers outside the authorized feature branches."
             exit 1
           fi
           if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$CONFIRM_RUN" != "true" ]; then
             echo "Explicit workflow_dispatch confirmation is required."
             exit 1
           fi
-          if [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ] || [ "$CONFIRM_GROQ_FREE_PLAN" != "true" ]; then
-            echo "Refusing provider inference: Director must verify and explicitly confirm both Cloudflare Workers Free and Groq Free tiers."
+          if [ "$CONFIRM_CLOUDFLARE_FREE_PLAN" != "true" ] || [ "$CONFIRM_GROQ_FREE_PLAN" != "true" ] || [ "$CONFIRM_OPENROUTER_FREE_PLAN" != "true" ]; then
+            echo "Refusing provider inference: Director must confirm Cloudflare Workers Free, Groq Free and OpenRouter free-only routing."
             exit 1
           fi
           if [ "$EVENT_NAME" != "workflow_dispatch" ]; then
@@ -173,6 +179,7 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           python - <<'PY'
           import json
@@ -188,6 +195,7 @@ jobs:
               "GROQ_API_KEY",
               "CLOUDFLARE_API_TOKEN",
               "CLOUDFLARE_ACCOUNT_ID",
+              "OPENROUTER_API_KEY",
           ):
               if not os.environ.get(key):
                   raise SystemExit(f"required environment value is missing: {key}")
@@ -200,12 +208,25 @@ jobs:
           base_sha = manifest["base_commit_sha"].lower()
           subprocess.run(["git", "cat-file", "-e", f"{base_sha}^{{commit}}"], check=True)
           manifest_rel = manifest_path.relative_to(root).as_posix()
-          manifest_commit = subprocess.check_output(
-              ["git", "log", "-1", "--format=%H", "HEAD", "--", manifest_rel],
+          introducing_commits = subprocess.check_output(
+              [
+                  "git",
+                  "log",
+                  "--diff-filter=A",
+                  "--format=%H",
+                  "--reverse",
+                  f"{base_sha}..HEAD",
+                  "--",
+                  manifest_rel,
+              ],
               text=True,
-          ).strip().lower()
-          if not manifest_commit:
-              raise SystemExit("the authorized work-package manifest has no introducing commit")
+          ).splitlines()
+          if len(introducing_commits) != 1:
+              raise SystemExit(
+                  "expected exactly one commit to introduce the authorized work-package "
+                  f"manifest after the clean baseline; found {len(introducing_commits)}"
+              )
+          manifest_commit = introducing_commits[0].strip().lower()
           parent_sha = subprocess.check_output(
               ["git", "rev-parse", f"{manifest_commit}^"], text=True
           ).strip().lower()
@@ -228,14 +249,22 @@ jobs:
           manifest_copy.write_bytes(manifest_path.read_bytes())
           print("Manifest, exact clean base commit, isolated worktree and six role credentials validated.")
           PY
-      - name: Live preflight all six provider models before starting agents
+      - name: Run fresh six-agent primary-only qualification on the exact candidate HEAD
         env:
-          PYTHONPATH: engineering/workforce/src
+          AURIONS_QUALIFICATION_PRIMARY_ONLY: "true"
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          python -m workforce.provider_preflight
+          python -m py_compile engineering/workforce/scripts/qualify_six_agents.py
+          python engineering/workforce/scripts/qualify_six_agents.py
+      - name: Live preflight all six primary routes and OpenRouter free-only fallback
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python -m workforce.provider_preflight
       - name: Start authenticated local control plane
         run: |
           python -m uvicorn workforce.api:app --host 127.0.0.1 --port 8000 > "$RUNNER_TEMP/workforce-api.log" 2>&1 &
@@ -259,11 +288,36 @@ jobs:
         run: |
           WORKFORCE_SUPERVISOR_INTERVAL_SECONDS=5 python -m workforce.supervisor > "$RUNNER_TEMP/workforce-supervisor.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/workforce-supervisor.pid"
+      - name: Recheck full WF-03 free fallback reserve immediately before execution
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from workforce.openrouter_limits import require_free_model_quota
+
+          manifest = json.loads(Path(os.environ["WORKFORCE_MANIFEST_COPY"]).read_text(encoding="utf-8"))
+          role_calls = sum(role["max_model_calls"] for role in manifest["roles"].values())
+          safety_margin = 2
+          required = role_calls + safety_margin
+          quota = require_free_model_quota(
+              os.environ["OPENROUTER_API_KEY"],
+              minimum_remaining=required,
+              purpose="the complete WF-03 role-call ceiling plus a two-request safety margin",
+          )
+          print(
+              f"Verified final OpenRouter reserve: {quota['remaining']} remaining; "
+              f"{role_calls} role calls + {safety_margin} safety requests required."
+          )
+          PY
       - name: Execute six roles and prepare Director packet
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           python -m workforce.orchestrator --manifest "$WORKFORCE_MANIFEST_COPY" --workspace "$WORKSPACE_DIR"
       - name: Capture candidate patch and reports without committing
@@ -312,11 +366,12 @@ jobs:
       - name: Upload candidate, reports and Director packet
         if: always()
         # actions/upload-artifact v4.6.1
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: aurions-workforce-${{ github.run_id }}
           path: |
             candidate.patch
+            agent-qualification-report.json
             wf03-artifacts/
           if-no-files-found: warn
           retention-days: 14

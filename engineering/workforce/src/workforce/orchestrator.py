@@ -21,7 +21,7 @@ from typing import Any
 
 import httpx
 
-from workforce.agents.runner import ROLE_INSTRUCTIONS, is_sensitive_path, safe_path
+from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES, ROLE_INSTRUCTIONS, is_sensitive_path, safe_path, preflight_role_prompt
 from workforce.domain import path_is_permitted
 
 ROLES = tuple(ROLE_INSTRUCTIONS)
@@ -310,11 +310,36 @@ def _verify_candidate_files(root: Path, records: list[dict[str, Any]]) -> list[d
     return verified
 
 
-def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) -> None:
+def _copy_test_snapshot(
+    root: Path,
+    destination: Path,
+    test_paths: list[str],
+    supplemental_manifest: dict[str, Any] | None = None,
+) -> None:
     selected = list(dict.fromkeys([
         "engineering/workforce/src",
         "engineering/workforce/tests",
         "engineering/workforce/migrations",
+        # Workers and the real-manifest preflight test both require the canonical
+        # governance sources. Include them when present in full repository snapshots.
+        *[
+            relative for relative in MANDATORY_GOVERNANCE_FILES
+            if (root / relative).is_file()
+        ],
+        # The committed manifest is required by the real six-role prompt-preflight
+        # regression test; minimal temporary repositories may omit it.
+        *(
+            ["engineering/workforce/work-package.json"]
+            if (root / "engineering/workforce/work-package.json").is_file()
+            else []
+        ),
+        # Include the production qualification script when present so its tests work
+        # in the isolated snapshot without burdening minimal temporary repositories.
+        *(
+            ["engineering/workforce/scripts/qualify_six_agents.py"]
+            if (root / "engineering/workforce/scripts/qualify_six_agents.py").is_file()
+            else []
+        ),
         *test_paths,
     ]))
     excluded_dirs = {".git", ".venv", "node_modules", "__pycache__", ".pytest_cache", ".workforce-artifacts", ".aws", ".ssh", ".gnupg"}
@@ -350,6 +375,20 @@ def _copy_test_snapshot(root: Path, destination: Path, test_paths: list[str]) ->
                 target_file = target_dir / name
                 target_file.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source_file, target_file)
+
+    # WF-03's authorized manifest is committed after its clean code baseline and
+    # therefore is intentionally absent from the candidate worktree. Inject the
+    # validated manifest into the disposable test snapshot, not the candidate tree.
+    manifest_relative = "engineering/workforce/work-package.json"
+    if supplemental_manifest is not None and not (root / manifest_relative).is_file():
+        manifest_target = safe_path(destination, manifest_relative)
+        if manifest_target.exists() or manifest_target.is_symlink():
+            raise OrchestrationError("supplemental work-package manifest would overwrite test input")
+        manifest_target.parent.mkdir(parents=True, exist_ok=True)
+        manifest_target.write_text(
+            json.dumps(supplemental_manifest, indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
 
 
 def _docker_run(
@@ -567,6 +606,21 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         for context_file in manifest["roles"][role]["context_files"]:
             if not safe_path(root, context_file).is_file():
                 raise OrchestrationError(f"required {role} context file does not exist: {context_file}")
+    # Preflight every role's exact base prompt before creating or dispatching
+    # any worker task. No provider credentials are used by this check.
+    prompt_preflight: dict[str, Any] = {}
+    for role in ROLES:
+        spec = manifest["roles"][role]
+        evidence = preflight_role_prompt(
+            root, role, spec["task"], spec["context_files"],
+            spec["max_tokens"], spec["max_completion_tokens"],
+        )
+        prompt_preflight[f"{role}:initial"] = evidence
+        print(
+            f"Prompt preflight {role}: {evidence['prompt_estimate_tokens']} estimated prompt tokens; "
+            f"{evidence['completion_reserve_tokens']} completion reserve tokens; "
+            f"{evidence['per_request_limit']} request ceiling; PASS."
+        )
     for test_path in manifest["test_paths"]:
         if not safe_path(root, test_path).exists():
             raise OrchestrationError(f"declared test input does not exist: {test_path}")
@@ -626,12 +680,14 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         "role_reports": reports,
         "test_results_ref": saved_test_results_ref,
         "test_results_sha256": saved_test_results_sha256,
+        "prompt_preflight": prompt_preflight,
         "status": "RUNNING",
     }
 
     def save_journal(status: str = "RUNNING") -> None:
         journal["status"] = status
         journal["role_reports"] = reports
+        journal["prompt_preflight"] = prompt_preflight
         temporary = state_path.with_suffix(".tmp")
         temporary.write_text(json.dumps(journal, indent=2), encoding="utf-8")
         os.replace(temporary, state_path)
@@ -716,9 +772,9 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             created.add(role)
         from workforce.model_registry import role_assignment
         profile = role_assignment(role)
-        # Workers receive only their own role token and the one provider credential
-        # required by their pinned model. Director/orchestrator/other-agent secrets
-        # never enter the model worker process.
+        # Workers receive only their own role token, their pinned primary-provider
+        # credential, and the shared free-only transient-fallback credential.
+        # Director/orchestrator/other-agent credentials never enter the worker process.
         env = {
             "PATH": os.environ.get("PATH", ""),
             "HOME": os.environ.get("HOME", str(root)),
@@ -730,6 +786,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             "WORKFORCE_TASK_ID": task_ids[role],
             "WORKFORCE_WORKER_TOKEN": worker_token,
             profile["key_env"]: os.environ.get(profile["key_env"], ""),
+            "OPENROUTER_API_KEY": os.environ.get("OPENROUTER_API_KEY", ""),
         }
         if profile["account_env"]:
             env[profile["account_env"]] = os.environ.get(profile["account_env"], "")
@@ -756,11 +813,25 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
         for path in spec["permitted_paths"]:
             command.extend(["--permitted-path", path])
         from workforce.agents.runner import safe_path
-        for path in spec["context_files"] + (extra_context or []):
+        actual_context_files = spec["context_files"] + (extra_context or [])
+        preflight = preflight_role_prompt(
+            root, role, spec["task"], actual_context_files,
+            spec["max_tokens"], spec["max_completion_tokens"],
+        )
+        prompt_preflight[f"{role}:dispatch"] = preflight
+        save_journal()
+        for path in actual_context_files:
             context_path = safe_path(root, path)
             if not context_path.is_file():
                 raise OrchestrationError(f"{role} context file does not exist: {path}")
             command.extend(["--context-file", path])
+        print(
+            f"Dispatch budget {role}: model={profile['model']} "
+            f"per_request_limit={profile['max_request_tokens']} "
+            f"completion_reserve={spec['max_completion_tokens']} "
+            f"aggregate_role_limit={spec['max_tokens']} "
+            f"effective_prompt_budget={preflight['effective_prompt_budget']}"
+        )
         try:
             result = subprocess.run(
                 command, cwd=root, env=env, capture_output=True, text=True,
@@ -860,7 +931,12 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             persist_test_results("RUNNING")
             with tempfile.TemporaryDirectory(prefix="workforce-package-tests-") as test_dir:
                 test_root = Path(test_dir)
-                _copy_test_snapshot(root, test_root, manifest["test_paths"])
+                _copy_test_snapshot(
+                    root,
+                    test_root,
+                    manifest["test_paths"],
+                    supplemental_manifest=manifest,
+                )
                 test_image = os.environ.get("WORKFORCE_TEST_DOCKER_IMAGE", "")
                 if not test_image or not re.fullmatch(r"[A-Za-z0-9._:/@-]{1,200}", test_image):
                     raise OrchestrationError("WORKFORCE_TEST_DOCKER_IMAGE must identify the prebuilt trusted test image")
@@ -885,10 +961,32 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             candidate_path.relative_to(root).as_posix(),
             test_report.relative_to(root).as_posix(),
         ]
+        # Reviewers share the same frozen candidate/test context. Check all
+        # three complete prompts before allowing the first reviewer to run.
+        for role in REVIEWERS:
+            spec = manifest["roles"][role]
+            evidence = preflight_role_prompt(
+                root, role, spec["task"], spec["context_files"] + shared_context,
+                spec["max_tokens"], spec["max_completion_tokens"],
+            )
+            prompt_preflight[f"{role}:review-context"] = evidence
+            print(
+                f"Prompt preflight {role} with frozen candidate/test evidence: "
+                f"{evidence['prompt_estimate_tokens']} estimated prompt tokens; PASS."
+            )
+        save_journal()
         for role in REVIEWERS:
             run_role(role, shared_context)
 
         integration_context = shared_context + [reports[r]["report_ref"] for r in REVIEWERS]
+        integration_spec = manifest["roles"]["integration_verifier"]
+        integration_preflight = preflight_role_prompt(
+            root, "integration_verifier",
+            integration_spec["task"], integration_spec["context_files"] + integration_context,
+            integration_spec["max_tokens"], integration_spec["max_completion_tokens"],
+        )
+        prompt_preflight["integration_verifier:integrated-context"] = integration_preflight
+        save_journal()
         run_role("integration_verifier", integration_context)
 
         review_records = [reports[r] for r in REVIEWERS]
@@ -919,6 +1017,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             "review_bundle_sha256": review_sha,
             "review_reports": review_records,
             "integration_verifier_report": reports["integration_verifier"],
+            "prompt_preflight": prompt_preflight,
             "verified_reports": verified_reports,
             "verified_artifacts": verified_artifacts,
             "status": "AWAITING_DIRECTOR_REVIEW",
@@ -949,6 +1048,7 @@ def run_work_package(manifest: dict[str, Any], workspace: Path, report_dir: Path
             "test_results": test_report.relative_to(root).as_posix(),
             "director_packet": integrated_path.relative_to(root).as_posix(),
             "director_packet_sha256": integrated_sha,
+            "prompt_preflight": prompt_preflight,
             "status": "AWAITING_DIRECTOR_REVIEW",
         }
     except Exception:

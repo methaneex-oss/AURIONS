@@ -26,6 +26,29 @@ class ModelRegistryTests(unittest.TestCase):
         models = [entry["model"] for entry in ROLE_MODEL_ASSIGNMENTS.values()]
         self.assertEqual(len(models), len(set(models)))
 
+    def test_every_role_declares_the_documented_completion_parameter(self):
+        expected = {
+            "lead_builder": "max_completion_tokens",
+            "specialist_builder": "max_completion_tokens",
+            "architecture_reviewer": "max_completion_tokens",
+            "code_reviewer": "max_completion_tokens",
+            "negative_tester": "max_completion_tokens",
+            "integration_verifier": "max_tokens",
+        }
+        self.assertEqual(
+            {role: profile["completion_tokens_parameter"] for role, profile in ROLE_MODEL_ASSIGNMENTS.items()},
+            expected,
+        )
+
+    def test_registry_rejects_provider_completion_parameter_mismatch(self):
+        original = ROLE_MODEL_ASSIGNMENTS["lead_builder"]["completion_tokens_parameter"]
+        try:
+            ROLE_MODEL_ASSIGNMENTS["lead_builder"]["completion_tokens_parameter"] = "max_tokens"
+            with self.assertRaisesRegex(ValueError, "completion-token contract mismatch"):
+                validate_registry()
+        finally:
+            ROLE_MODEL_ASSIGNMENTS["lead_builder"]["completion_tokens_parameter"] = original
+
     def test_roles_have_one_provider_profile_and_secret(self):
         for role in ROLE_MODEL_ASSIGNMENTS:
             profile = role_assignment(role)

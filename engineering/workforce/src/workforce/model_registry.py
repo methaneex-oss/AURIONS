@@ -61,7 +61,7 @@ ROLE_MODEL_ASSIGNMENTS = {
         "account_env": "",
         "cost_class": "free",
         "max_request_tokens": 7000,
-        "selection_basis": "Tool-capable reasoning model for generating and executing bounded adversarial test hypotheses.",
+        "selection_basis": "Tool-capable reasoning model for generating bounded adversarial test hypotheses and identifying failure cases from candidate/test evidence.",
     },
     "integration_verifier": {
         "provider": "cloudflare",
@@ -101,6 +101,16 @@ def validate_registry() -> None:
     for role, entry in ROLE_MODEL_ASSIGNMENTS.items():
         if entry["provider"] not in {"groq", "cloudflare"}:
             raise ValueError(f"unsupported provider for {role}")
+        expected_parameter = (
+            "max_completion_tokens"
+            if entry["provider"] == "groq" or entry["model"] in {
+                "@cf/google/gemma-4-26b-a4b-it",
+                "@cf/zai-org/glm-4.7-flash",
+            }
+            else "max_tokens"
+        )
+        if entry.get("completion_tokens_parameter") != expected_parameter:
+            raise ValueError(f"provider completion-token contract mismatch for {role}")
         if entry["cost_class"] not in {"free", "free_daily_allowance"}:
             raise ValueError(f"non-free model registered for {role}")
         if entry.get("completion_tokens_parameter") not in {"max_tokens", "max_completion_tokens"}:

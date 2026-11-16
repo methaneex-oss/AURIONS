@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - "feat/workforce-control-plane-hardening"
+      - "feat/workforce-free-fallback"
     paths:
       - "engineering/workforce/**"
       - ".github/workflows/workforce-control-plane-tests.yml"
@@ -15,6 +16,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: aurions-workforce-control-plane-tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   workforce-tests:
@@ -114,7 +119,7 @@ jobs:
                   print("Verified all required workforce tables and deadline functions.")
           PY
       - name: Compile workforce
-        run: python -m compileall -q engineering/workforce/src engineering/workforce/tests
+        run: python -m compileall -q engineering/workforce/src engineering/workforce/tests engineering/workforce/scripts
       - name: Build credential-free candidate test image
         run: |
           docker pull postgres:17-alpine@sha256:d3244e8ce3f165ee3c93d9c4a4b1d0fe48b3a89e2287b717fdcbbde92d405065

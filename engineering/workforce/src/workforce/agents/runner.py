@@ -16,6 +16,8 @@ from typing import Any
 import httpx
 
 from workforce.domain import path_is_permitted
+from workforce.provider_http import chat_completion_headers
+from workforce.openrouter_limits import wait_for_free_model_request_slot
 
 MANDATORY_GOVERNANCE_FILES = (
     "docs/workforce/AGENT-INDUCTION-AND-ROLE-TRAINING.md",
@@ -96,6 +98,24 @@ def provider_error_detail(response: httpx.Response, secrets: tuple[str, ...] = (
         if isinstance(error, dict)
         and isinstance(error.get(key), (str, int, float, bool))
     }
+    safe_cloudflare_errors = []
+    if isinstance(payload, dict) and isinstance(payload.get("errors"), list):
+        for item in payload["errors"][:3]:
+            if isinstance(item, dict):
+                entry = {
+                    key: item[key]
+                    for key in ("code", "message")
+                    if isinstance(item.get(key), (str, int, float, bool))
+                }
+                if entry:
+                    safe_cloudflare_errors.append(entry)
+    safe_problem = {}
+    if isinstance(payload, dict):
+        safe_problem = {
+            key: payload[key]
+            for key in ("type", "title", "detail", "status")
+            if isinstance(payload.get(key), (str, int, float, bool))
+        }
     safe_headers = {
         key: response.headers[key]
         for key in PROVIDER_DIAGNOSTIC_HEADERS
@@ -104,6 +124,10 @@ def provider_error_detail(response: httpx.Response, secrets: tuple[str, ...] = (
     detail: dict[str, Any] = {}
     if safe_fields:
         detail["error"] = safe_fields
+    if safe_cloudflare_errors:
+        detail["cloudflare_errors"] = safe_cloudflare_errors
+    if safe_problem:
+        detail["problem"] = safe_problem
     if safe_headers:
         detail["rate_limit_headers"] = safe_headers
     rendered = json.dumps(detail, ensure_ascii=True)[:1600] if detail else "no structured provider diagnostics"
@@ -113,7 +137,28 @@ def provider_error_detail(response: httpx.Response, secrets: tuple[str, ...] = (
     return rendered[:1600]
 
 
+def is_groq_model_permission_block(response: httpx.Response) -> bool:
+    """Only the documented Groq org/project model-permission 403 may use fallback."""
+    if response.status_code != 403:
+        return False
+    try:
+        payload = response.json()
+    except ValueError:
+        return False
+    error = payload.get("error") if isinstance(payload, dict) else None
+    return (
+        isinstance(error, dict)
+        and error.get("type") == "permissions_error"
+        and error.get("code") in {
+            "model_permission_blocked_org",
+            "model_permission_blocked_project",
+        }
+    )
+
+
 MAX_INLINE_CONTEXT_BYTES = 10_000
+MAX_TOOL_OUTPUT_BYTES_PER_TURN = 6_000
+MINIMUM_COMPLETION_TOKENS = 256
 
 
 def is_sensitive_path(path: Path) -> bool:
@@ -151,6 +196,121 @@ def safe_path(root: Path, relative: str) -> Path:
     if is_sensitive_path(candidate):
         raise ValueError("credential or private-key material is not accessible")
     return candidate
+
+
+def _prompt_token_estimate(messages: list[dict[str, Any]]) -> int:
+    request_bytes = len(json.dumps(
+        {"messages": messages, "tools": TOOLS}, ensure_ascii=False
+    ).encode("utf-8"))
+    return (request_bytes + 2) // 3 + 256
+
+
+def _truncate_utf8(value: str, max_bytes: int) -> str:
+    if max_bytes <= 0:
+        return ""
+    encoded = value.encode("utf-8")
+    if len(encoded) <= max_bytes:
+        return value
+    marker = "\n[tool output truncated; request a narrower range to continue]"
+    marker_bytes = marker.encode("utf-8")
+    if max_bytes <= len(marker_bytes):
+        return marker_bytes[:max_bytes].decode("utf-8", "ignore")
+    return encoded[:max_bytes - len(marker_bytes)].decode("utf-8", "ignore") + marker
+
+
+def _conversation_groups(messages: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+    groups: list[list[dict[str, Any]]] = []
+    tail = messages[2:]
+    index = 0
+    while index < len(tail):
+        message = tail[index]
+        group = [message]
+        index += 1
+        if message.get("role") == "assistant":
+            pending = {
+                call.get("id")
+                for call in (message.get("tool_calls") or [])
+                if isinstance(call, dict) and isinstance(call.get("id"), str)
+            }
+            while pending and index < len(tail):
+                following = tail[index]
+                if following.get("role") != "tool" or following.get("tool_call_id") not in pending:
+                    break
+                group.append(following)
+                pending.discard(following.get("tool_call_id"))
+                index += 1
+        groups.append(group)
+    return groups
+
+
+def _available_prompt_budget(
+    per_request_limit: int,
+    completion_reserve: int,
+    aggregate_role_limit: int,
+    tokens_already_used: int = 0,
+    minimum_completion_tokens: int | None = None,
+) -> int:
+    """Compute prompt headroom while preserving request and aggregate completion floors."""
+    minimum_completion = (
+        completion_reserve if minimum_completion_tokens is None
+        else minimum_completion_tokens
+    )
+    if (
+        min(per_request_limit, completion_reserve, aggregate_role_limit, tokens_already_used, minimum_completion) < 0
+        or minimum_completion > completion_reserve
+    ):
+        raise ValueError("token budget inputs must be non-negative and the minimum completion floor cannot exceed its cap")
+    return min(
+        per_request_limit - completion_reserve,
+        aggregate_role_limit - tokens_already_used - minimum_completion,
+    )
+
+
+def _compact_conversation(
+    messages: list[dict[str, Any]], max_prompt_tokens: int
+) -> list[dict[str, Any]]:
+    """Keep the system/task and newest complete tool exchanges within the request budget."""
+    if len(messages) < 2:
+        raise RuntimeError("worker prompt is missing its system or task message")
+    base = messages[:2]
+    if _prompt_token_estimate(base) > max_prompt_tokens:
+        raise RuntimeError(
+            f"base prompt estimate ({_prompt_token_estimate(base)} tokens) exceeds the "
+            f"available {max_prompt_tokens}-token prompt budget; provider request was not sent"
+        )
+    groups = _conversation_groups(messages)
+    while groups:
+        candidate = base + [message for group in groups for message in group]
+        if _prompt_token_estimate(candidate) <= max_prompt_tokens:
+            return candidate
+        if len(groups) > 1:
+            groups.pop(0)
+            continue
+
+        # Preserve the newest tool exchange, but shrink its returned file/list
+        # content if that single exchange cannot fit beside the system and task.
+        latest = groups[0]
+        candidate = base + latest
+        while _prompt_token_estimate(candidate) > max_prompt_tokens:
+            tool_messages = [
+                message for message in latest
+                if message.get("role") == "tool" and isinstance(message.get("content"), str)
+            ]
+            if not tool_messages:
+                break
+            largest = max(tool_messages, key=lambda message: len(message["content"].encode("utf-8")))
+            current_bytes = len(largest["content"].encode("utf-8"))
+            if current_bytes <= 256:
+                break
+            largest["content"] = _truncate_utf8(largest["content"], max(128, int(current_bytes * 0.7)))
+            candidate = base + latest
+        if _prompt_token_estimate(candidate) <= max_prompt_tokens:
+            return candidate
+        raise RuntimeError(
+            "latest tool exchange cannot fit the available prompt budget after bounded "
+            "truncation; narrow the tool request; provider request was not sent"
+        )
+    return base
 
 
 class Worker:
@@ -196,6 +356,10 @@ class Worker:
             raise RuntimeError(
                 f"{profile['key_env']} is required for the selected {profile['provider']} role endpoint"
             )
+        self.openrouter_api_key = os.environ.get("OPENROUTER_API_KEY", "")
+        self.openrouter_fallback_model: str | None = None
+        self.openrouter_primary_failure: str | None = None
+        self.route_history: list[dict[str, str]] = []
         if profile["cost_class"] not in {"free", "free_daily_allowance"}:
             raise RuntimeError("free-only policy: selected role model is not registered as free")
         if (max_calls <= 0 or max_calls > 100 or max_tokens <= 0 or max_tokens > 32768
@@ -321,8 +485,132 @@ class Worker:
         if response.status_code >= 400:
             raise RuntimeError(f"durable inference-budget settlement failed (HTTP {response.status_code}); task must stop")
 
-    def run(self, task: str, context_files: list[str]) -> dict[str, Any]:
-        self.deadline_monotonic = time.monotonic() + self.max_duration_minutes * 60
+    def request_completion(self, payload: dict[str, Any], timeout: float) -> tuple[httpx.Response, str, str]:
+        """Use the pinned provider first, then keep one verified free fallback for this run."""
+        if self.openrouter_fallback_model:
+            return self._request_openrouter_free(
+                payload,
+                timeout,
+                self.openrouter_primary_failure or "continuing pinned free fallback after primary failure",
+            )
+        primary_headers = chat_completion_headers(self.api_key)
+        try:
+            response = httpx.post(self.api_url, headers=primary_headers, json=payload, timeout=timeout)
+        except httpx.HTTPError as exc:
+            if not self.openrouter_api_key:
+                raise RuntimeError(
+                    f"primary provider network failure ({type(exc).__name__}); "
+                    "OPENROUTER_API_KEY is not configured"
+                ) from None
+            return self._request_openrouter_free(
+                payload, timeout, f"primary network failure ({type(exc).__name__})"
+            )
+
+        fallback_eligible = (
+            response.status_code == 429
+            or response.status_code >= 500
+            or (self.provider == "groq" and is_groq_model_permission_block(response))
+        )
+        if fallback_eligible:
+            detail = provider_error_detail(response, (self.api_key, self.worker_token, self.lease_token))
+            failure_kind = "permission-blocked" if response.status_code == 403 else "transient"
+            if not self.openrouter_api_key:
+                raise RuntimeError(
+                    f"primary provider {failure_kind} failure (HTTP {response.status_code}): {detail}; "
+                    "OPENROUTER_API_KEY is not configured"
+                )
+            return self._request_openrouter_free(
+                payload, timeout, f"primary HTTP {response.status_code}: {detail}"
+            )
+        if response.status_code >= 400:
+            detail = provider_error_detail(response, (self.api_key, self.worker_token, self.lease_token))
+            if response.status_code == 403:
+                raise RuntimeError(
+                    f"primary provider permission denied (HTTP 403): {detail}; "
+                    "fallback is not enabled for this provider"
+                )
+            raise RuntimeError(f"primary provider rejected request (HTTP {response.status_code}): {detail}")
+        self.route_history.append({"provider": self.provider, "model": self.model})
+        return response, self.provider, self.model
+
+    def _request_openrouter_free(
+        self, payload: dict[str, Any], timeout: float, primary_failure: str
+    ) -> tuple[httpx.Response, str, str]:
+        if self.openrouter_primary_failure is None:
+            self.openrouter_primary_failure = primary_failure[:400]
+        fallback_payload = dict(payload)
+        # Resolve the dynamic free router once per worker run, then pin that
+        # verified :free model for the remainder of the conversation.
+        fallback_payload["model"] = self.openrouter_fallback_model or "openrouter/free"
+        if "max_completion_tokens" in fallback_payload:
+            fallback_payload["max_tokens"] = fallback_payload.pop("max_completion_tokens")
+        headers = chat_completion_headers(
+            self.openrouter_api_key,
+            openrouter=True,
+            title="AURIONS free-only workforce",
+        )
+        response = None
+        last_network_error = None
+        retry_after = None
+        for fallback_attempt in range(1, 3):
+            wait_for_free_model_request_slot(
+                retry_after,
+                remaining_seconds=self.remaining_seconds(),
+            )
+            retry_after = None
+            try:
+                candidate_response = httpx.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers=headers,
+                    json=fallback_payload,
+                    timeout=timeout,
+                )
+            except httpx.HTTPError as exc:
+                last_network_error = type(exc).__name__
+                if fallback_attempt < 2:
+                    continue
+                raise RuntimeError(
+                    f"primary provider failed ({primary_failure}); OpenRouter free fallback "
+                    f"network failure after 2 attempts ({last_network_error})"
+                ) from None
+            if candidate_response.status_code >= 400:
+                detail = provider_error_detail(candidate_response, (self.openrouter_api_key,))
+                retryable = candidate_response.status_code == 429 or candidate_response.status_code >= 500
+                if retryable and fallback_attempt < 2:
+                    retry_after = candidate_response.headers.get("retry-after")
+                    continue
+                raise RuntimeError(
+                    f"primary provider failed ({primary_failure}); OpenRouter free fallback rejected "
+                    f"request after {fallback_attempt} attempt(s) (HTTP {candidate_response.status_code}): {detail}"
+                )
+            response = candidate_response
+            break
+        if response is None:
+            raise RuntimeError(
+                f"primary provider failed ({primary_failure}); OpenRouter free fallback failed after 2 attempts"
+            )
+        try:
+            data = response.json()
+        except ValueError:
+            raise RuntimeError("OpenRouter free fallback returned invalid JSON") from None
+        actual_model = data.get("model") if isinstance(data, dict) else None
+        if not isinstance(actual_model, str) or not actual_model.endswith(":free"):
+            raise RuntimeError(
+                "OpenRouter fallback did not identify a :free model; refusing any potentially paid route"
+            )
+        if self.openrouter_fallback_model and actual_model != self.openrouter_fallback_model:
+            raise RuntimeError(
+                f"OpenRouter fallback changed model mid-run: {self.openrouter_fallback_model!r} -> {actual_model!r}"
+            )
+        self.openrouter_fallback_model = actual_model
+        self.route_history.append({
+            "provider": "openrouter-free-fallback",
+            "model": actual_model,
+            "primary_failure": primary_failure[:400],
+        })
+        return response, "openrouter-free-fallback", actual_model
+
+    def build_messages(self, task: str, context_files: list[str]) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
         context, governance_records = self.load_mandatory_governance()
         seen = set(MANDATORY_GOVERNANCE_FILES)
         inline_context_bytes = sum(len(item.encode("utf-8")) for item in context)
@@ -332,26 +620,27 @@ class Worker:
             if rel in seen:
                 continue
             p = safe_path(self.workspace, rel)
-            if p.is_file():
-                raw = p.read_bytes()
-                digest = hashlib.sha256(raw).hexdigest()
-                header = f"\n--- TASK CONTEXT: {rel} | sha256={digest} | bytes={len(raw)} ---\n"
-                inline_entry = header + raw.decode("utf-8")
-                inline_size = len(inline_entry.encode("utf-8"))
-                if inline_context_bytes + inline_size <= MAX_INLINE_CONTEXT_BYTES:
-                    context.append(inline_entry)
-                    inline_context_bytes += inline_size
-                else:
-                    reference = (
-                        f"\n--- TASK CONTEXT NOT INLINED; use read_file: {rel} "
-                        f"| sha256={digest} | bytes={len(raw)} ---"
-                    )
-                    reference_size = len(reference.encode("utf-8"))
-                    if inline_context_bytes + reference_size > MAX_INLINE_CONTEXT_BYTES:
-                        raise RuntimeError("task context metadata exceeds the configured prompt-context ceiling; reduce context_files")
-                    context.append(reference)
-                    inline_context_bytes += reference_size
-                seen.add(rel)
+            if not p.is_file():
+                raise RuntimeError(f"task context file does not exist: {rel}")
+            raw = p.read_bytes()
+            digest = hashlib.sha256(raw).hexdigest()
+            header = f"\n--- TASK CONTEXT: {rel} | sha256={digest} | bytes={len(raw)} ---\n"
+            inline_entry = header + raw.decode("utf-8")
+            inline_size = len(inline_entry.encode("utf-8"))
+            if inline_context_bytes + inline_size <= MAX_INLINE_CONTEXT_BYTES:
+                context.append(inline_entry)
+                inline_context_bytes += inline_size
+            else:
+                reference = (
+                    f"\n--- TASK CONTEXT NOT INLINED; use read_file: {rel} "
+                    f"| sha256={digest} | bytes={len(raw)} ---"
+                )
+                reference_size = len(reference.encode("utf-8"))
+                if inline_context_bytes + reference_size > MAX_INLINE_CONTEXT_BYTES:
+                    raise RuntimeError("task context metadata exceeds the configured prompt-context ceiling; reduce context_files")
+                context.append(reference)
+                inline_context_bytes += reference_size
+            seen.add(rel)
         system = (
             "You are one specialist in the AURIONS supervised engineering workforce. You have exactly one role; do not stack roles, perform another agent's assignment, or claim another role's gate. "
             "The trusted runtime freshly read and SHA-256 hashed the full mandatory governance source set from this pinned workspace. "
@@ -371,7 +660,15 @@ class Worker:
             "Report exact work, changed files, actual tests, evidence, unresolved risks and next steps. "
             "Challenge the task itself if it conflicts with authoritative governance."
         )
-        messages = [{"role": "system", "content": system + "\n\nAUTHORITATIVE CONTEXT:\n" + "\n".join(context)}, {"role": "user", "content": task}]
+        messages = [
+            {"role": "system", "content": system + "\n\nAUTHORITATIVE CONTEXT:\n" + "\n".join(context)},
+            {"role": "user", "content": task},
+        ]
+        return messages, governance_records
+
+    def run(self, task: str, context_files: list[str]) -> dict[str, Any]:
+        self.deadline_monotonic = time.monotonic() + self.max_duration_minutes * 60
+        messages, governance_records = self.build_messages(task, context_files)
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
         if self.provider == "cloudflare":
             headers["Content-Type"] = "application/json"
@@ -380,23 +677,45 @@ class Worker:
             if remaining_seconds <= 0:
                 raise RuntimeError(f"task duration budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
             remaining = self.max_total_tokens - self.total_tokens
-            # Use a bounded UTF-8 byte-to-token heuristic plus framing margin for preflight.
-            # This is not a tokenizer guarantee: provider-reported usage is authoritative,
-            # and the durable ledger fails closed if actual usage exceeds the reservation.
-            request_bytes = len(json.dumps(
-                {"messages": messages, "tools": TOOLS}, ensure_ascii=False
-            ).encode("utf-8"))
-            prompt_reserve = (request_bytes + 2) // 3 + 256
+            # Keep the configured completion cap as the preferred output ceiling.
+            # Conversation compaction preserves recent tool context; near aggregate
+            # exhaustion, a smaller completion is allowed down to the bounded floor.
+            completion_reserve = self.max_tokens
+            # The configured completion value is a per-request ceiling. Keep
+            # its full reserve while possible, but permit a shorter final response
+            # so a nearly exhausted aggregate budget does not reject a request
+            # that still has enough room for a useful bounded completion.
+            minimum_completion = min(self.max_tokens, MINIMUM_COMPLETION_TOKENS)
+            prompt_budget = _available_prompt_budget(
+                self.max_request_tokens,
+                completion_reserve,
+                self.max_total_tokens,
+                self.total_tokens,
+                minimum_completion,
+            )
+            base_prompt_tokens = _prompt_token_estimate(messages[:2])
+            if base_prompt_tokens > prompt_budget:
+                raise RuntimeError(
+                    f"base prompt estimate ({base_prompt_tokens} tokens) exceeds the "
+                    f"available {prompt_budget}-token prompt budget; provider request was not sent; "
+                    f"budget inputs: per_request_limit={self.max_request_tokens}, "
+                    f"completion_reserve={completion_reserve}, "
+                    f"aggregate_role_limit={self.max_total_tokens}, "
+                    f"role_tokens_already_used={self.total_tokens}"
+                )
+            messages = _compact_conversation(messages, prompt_budget)
+            prompt_reserve = _prompt_token_estimate(messages)
             output_limit = min(
                 self.max_tokens,
                 remaining - prompt_reserve,
                 self.max_request_tokens - prompt_reserve,
             )
-            if output_limit <= 0:
+            if output_limit < minimum_completion:
                 raise RuntimeError(
-                    f"prompt estimate ({prompt_reserve - 256} tokens) leaves no safe completion room "
-                    f"within the {self.max_request_tokens}-token per-request ceiling or remaining role budget; "
-                    "provider request was not sent"
+                    f"prompt estimate ({prompt_reserve} tokens) leaves only {output_limit} "
+                    f"completion tokens, below the {minimum_completion}-token minimum floor "
+                    f"within the {self.max_request_tokens}-token request ceiling or remaining "
+                    "role budget; provider request was not sent"
                 )
             self.renew_durable_lease()
             reservation = self.reserve_durable_budget(prompt_reserve + output_limit)
@@ -408,34 +727,23 @@ class Worker:
                 "tool_choice": "auto",
                 "temperature": 0.2,
             }
-            if self.provider == "groq":
-                payload["max_completion_tokens"] = output_limit
-                if self.model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
-                    # Groq documents GPT-OSS as not supporting parallel tool use.
-                    # The API otherwise defaults parallel_tool_calls to true.
-                    payload["parallel_tool_calls"] = False
-            else:
-                payload["max_tokens"] = output_limit
+            from workforce.model_registry import role_assignment
+            completion_parameter = role_assignment(self.role)["completion_tokens_parameter"]
+            payload[completion_parameter] = output_limit
+            if self.provider == "groq" and self.model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}:
+                # Groq documents GPT-OSS as not supporting parallel tool use.
+                # The API otherwise defaults parallel_tool_calls to true.
+                payload["parallel_tool_calls"] = False
 
-            response = httpx.post(self.api_url, headers=headers, json=payload, timeout=max(1, min(120, remaining_seconds)))
-            if response.status_code >= 400:
-                detail = provider_error_detail(
-                    response, (self.api_key, self.worker_token, self.lease_token)
-                )
-                if response.status_code == 429:
-                    raise RuntimeError(
-                        f"provider rate limited request (HTTP 429): {detail}; "
-                        "stopped without retry or paid fallback"
-                    )
-                if response.status_code >= 500:
-                    raise RuntimeError(
-                        f"provider unavailable (HTTP {response.status_code}): {detail}; "
-                        "stopped without paid fallback"
-                    )
-                raise RuntimeError(
-                    f"provider rejected request (HTTP {response.status_code}): {detail}"
-                )
+            response, active_provider, active_model = self.request_completion(
+                payload, max(1, min(120, remaining_seconds))
+            )
             data = response.json()
+            if not isinstance(data, dict) or data.get("model") != active_model:
+                returned = data.get("model") if isinstance(data, dict) else None
+                raise RuntimeError(
+                    f"provider returned unexpected model identity {returned!r}; expected {active_model!r}"
+                )
             usage = data.get("usage")
             if not isinstance(usage, dict):
                 raise RuntimeError("provider response omitted token usage; fail-closed budget stop")
@@ -453,20 +761,77 @@ class Worker:
             tool_calls = choice.get("tool_calls") or []
             if not tool_calls:
                 return {
-                    "role": self.role, "provider": self.provider, "model": self.model, "calls": self.calls,
+                    "role": self.role, "provider": active_provider, "model": active_model,
+                    "primary_provider": self.provider, "primary_model": self.model,
+                    "route_history": list(self.route_history), "calls": self.calls,
                     "total_tokens": self.total_tokens, "usage": usage,
                     "governance_read": {"status": "READ_FROM_PINNED_WORKSPACE", "sources": governance_records},
                     "final": choice.get("content", ""),
                 }
-            for call in tool_calls:
+            tool_output_bytes = 0
+            for call_index, call in enumerate(tool_calls):
                 self.renew_durable_lease()
                 try:
                     args = json.loads(call["function"].get("arguments") or "{}")
                     result = self.invoke_tool(call["function"]["name"], args)
                 except Exception as exc:
                     result = f"TOOL ERROR: {type(exc).__name__}: {exc}"
-                messages.append({"role": "tool", "tool_call_id": call["id"], "content": result[:30000]})
+                remaining_output_bytes = MAX_TOOL_OUTPUT_BYTES_PER_TURN - tool_output_bytes
+                remaining_tool_calls = len(tool_calls) - call_index
+                per_tool_budget = remaining_output_bytes // remaining_tool_calls
+                result = _truncate_utf8(result, per_tool_budget)
+                tool_output_bytes += len(result.encode("utf-8"))
+                messages.append({"role": "tool", "tool_call_id": call["id"], "content": result})
         raise RuntimeError(f"model-call/token budget exhausted after {self.calls} calls and {self.total_tokens} reported tokens")
+
+
+
+def preflight_role_prompt(
+    workspace: Path,
+    role: str,
+    task: str,
+    context_files: list[str],
+    max_total_tokens: int,
+    max_completion_tokens: int,
+) -> dict[str, Any]:
+    """Build the exact initial role prompt without credentials or provider inference."""
+    from workforce.model_registry import role_assignment
+
+    if role not in ROLE_INSTRUCTIONS:
+        raise ValueError(f"unsupported role for prompt preflight: {role}")
+    if (not isinstance(max_total_tokens, int) or isinstance(max_total_tokens, bool)
+            or max_total_tokens < 1
+            or not isinstance(max_completion_tokens, int) or isinstance(max_completion_tokens, bool)
+            or max_completion_tokens < 1):
+        raise ValueError("prompt preflight requires positive integer role budgets")
+    worker = Worker.__new__(Worker)
+    worker.workspace = Path(workspace).resolve()
+    worker.role = role
+    messages, governance_records = worker.build_messages(task, context_files)
+    prompt_tokens = _prompt_token_estimate(messages)
+    completion_reserve = max_completion_tokens
+    request_limit = role_assignment(role)["max_request_tokens"]
+    effective_prompt_budget = _available_prompt_budget(
+        request_limit, completion_reserve, max_total_tokens, 0
+    )
+    if prompt_tokens > effective_prompt_budget:
+        raise RuntimeError(
+            f"{role} prompt preflight failed: {prompt_tokens}-token prompt exceeds the "
+            f"{effective_prompt_budget}-token effective prompt budget "
+            f"(per_request_limit={request_limit}, completion_reserve={completion_reserve}, "
+            f"aggregate_role_limit={max_total_tokens})"
+        )
+    return {
+        "role": role,
+        "prompt_estimate_tokens": prompt_tokens,
+        "completion_reserve_tokens": completion_reserve,
+        "per_request_limit": request_limit,
+        "aggregate_role_budget": max_total_tokens,
+        "effective_prompt_budget": effective_prompt_budget,
+        "context_file_count": len(context_files),
+        "governance_source_count": len(governance_records),
+        "fits": True,
+    }
 
 
 def _control_plane_post(url: str, token: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -590,6 +955,17 @@ def main() -> None:
                 "status": "FAILED",
                 "error_type": type(exc).__name__,
                 "error": str(exc)[:1000],
+                # Keep enough bounded telemetry to reconcile partial provider use.
+                "calls_completed": getattr(worker, "calls", 0),
+                "reported_tokens": getattr(worker, "total_tokens", 0),
+                "configured_total_token_budget": getattr(worker, "max_total_tokens", args.max_total_tokens),
+                "remaining_total_tokens": max(
+                    0,
+                    getattr(worker, "max_total_tokens", args.max_total_tokens)
+                    - getattr(worker, "total_tokens", 0),
+                ),
+                "provider": getattr(worker, "provider", None),
+                "model": getattr(worker, "model", None),
             }
             report_bytes = json.dumps(failure, indent=2).encode("utf-8")
             report_file.write_bytes(report_bytes)

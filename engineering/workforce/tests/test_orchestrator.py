@@ -8,6 +8,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from workforce.agents.runner import MANDATORY_GOVERNANCE_FILES
+
 from workforce.orchestrator import (
     BUILDERS, ROLES, OrchestrationError, _task_brief, _task_contract, _worker_tokens,
     validate_manifest, workspace_manifest, run_work_package,
@@ -25,7 +27,7 @@ def valid_manifest():
             "permitted_paths": paths,
             "context_files": [],
             "max_model_calls": 2,
-            "max_tokens": 4000,
+            "max_tokens": 6000,
             "max_completion_tokens": 1024,
             "max_duration_minutes": 30,
         }
@@ -99,10 +101,17 @@ class OrchestratorTests(unittest.TestCase):
             (source / "engineering/workforce/src").mkdir(parents=True)
             (source / "engineering/workforce/tests").mkdir(parents=True)
             (source / "engineering/workforce/migrations").mkdir(parents=True)
+            (source / "engineering/workforce/scripts").mkdir(parents=True)
             (source / "core/cpp").mkdir(parents=True)
             (source / "engineering/workforce/src/module.py").write_text("value = 1\n", encoding="utf-8")
+            (source / "engineering/workforce/scripts/qualify_six_agents.py").write_text("print('qualification')\n", encoding="utf-8")
             (source / "engineering/workforce/tests/test_module.py").write_text("assert True\n", encoding="utf-8")
             (source / "engineering/workforce/migrations/001_initial.sql").write_text("SELECT 1;\n", encoding="utf-8")
+            (source / "engineering/workforce/work-package.json").write_text('{"roles": {}}', encoding="utf-8")
+            for relative in MANDATORY_GOVERNANCE_FILES:
+                governance_file = source / relative
+                governance_file.parent.mkdir(parents=True, exist_ok=True)
+                governance_file.write_text("governance fixture\n", encoding="utf-8")
             (source / "core/cpp/main.cpp").write_text("int main() {}\n", encoding="utf-8")
             (source / "core/cpp/api_key.json").write_text("must not copy", encoding="utf-8")
             (source / "core/cpp/.env.production").write_text("must not copy", encoding="utf-8")
@@ -110,8 +119,41 @@ class OrchestratorTests(unittest.TestCase):
             self.assertTrue((target / "core/cpp/main.cpp").is_file())
             self.assertTrue((target / "engineering/workforce/src/module.py").is_file())
             self.assertTrue((target / "engineering/workforce/migrations/001_initial.sql").is_file())
+            self.assertTrue((target / "engineering/workforce/work-package.json").is_file())
+            for relative in MANDATORY_GOVERNANCE_FILES:
+                self.assertTrue((target / relative).is_file())
+            self.assertTrue((target / "engineering/workforce/scripts/qualify_six_agents.py").is_file())
             self.assertFalse((target / "core/cpp/api_key.json").exists())
             self.assertFalse((target / "core/cpp/.env.production").exists())
+
+    def test_candidate_test_snapshot_receives_authorized_manifest_when_base_omits_it(self):
+        from workforce.orchestrator import _copy_test_snapshot
+        manifest = valid_manifest()
+        with tempfile.TemporaryDirectory() as source_dir, tempfile.TemporaryDirectory() as target_dir:
+            source = Path(source_dir)
+            target = Path(target_dir)
+            for relative in (
+                "engineering/workforce/src",
+                "engineering/workforce/tests",
+                "engineering/workforce/migrations",
+            ):
+                (source / relative).mkdir(parents=True, exist_ok=True)
+            for relative in MANDATORY_GOVERNANCE_FILES:
+                path = source / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("governance fixture\n", encoding="utf-8")
+            self.assertFalse((source / "engineering/workforce/work-package.json").exists())
+            _copy_test_snapshot(
+                source,
+                target,
+                ["engineering/workforce/src", "engineering/workforce/tests"],
+                supplemental_manifest=manifest,
+            )
+            copied = json.loads(
+                (target / "engineering/workforce/work-package.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(copied["work_package_id"], manifest["work_package_id"])
+            self.assertEqual(copied["roles"], manifest["roles"])
 
     def test_manifest_rejects_non_string_base_sha(self):
         value = valid_manifest()
@@ -175,7 +217,7 @@ class OrchestratorTests(unittest.TestCase):
         value = validate_manifest(valid_manifest())
         contract = _task_contract(value, "code_reviewer")
         self.assertEqual(contract["permitted_paths"], [])
-        self.assertEqual(contract["max_tokens"], 4000)
+        self.assertEqual(contract["max_tokens"], 6000)
 
     def test_worker_registry_requires_one_strong_token_per_role(self):
         registry = {
@@ -206,6 +248,10 @@ class OrchestratorTests(unittest.TestCase):
             (root / "engineering/workforce/migrations/001_initial.sql").write_text("SELECT 1;\n", encoding="utf-8")
             (root / "engineering/workforce/src/workforce/__init__.py").write_text("", encoding="utf-8")
             (root / "engineering/workforce/tests/__init__.py").write_text("", encoding="utf-8")
+            for relative in MANDATORY_GOVERNANCE_FILES:
+                governance_file = root / relative
+                governance_file.parent.mkdir(parents=True, exist_ok=True)
+                governance_file.write_text("bounded governance fixture\n", encoding="utf-8")
             subprocess.run(["git", "init", "-q"], cwd=root, check=True)
             subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
             subprocess.run(["git", "config", "user.name", "Workforce Test"], cwd=root, check=True)
@@ -273,6 +319,9 @@ class OrchestratorTests(unittest.TestCase):
                     runtime_src = Path(kwargs["env"]["PYTHONPATH"]).resolve()
                     self.assertFalse(runtime_src.is_relative_to(root))
                     self.assertTrue((runtime_src / "workforce/agents/runner.py").is_file())
+                    self.assertEqual(kwargs["env"]["OPENROUTER_API_KEY"], "test-openrouter")
+                    self.assertNotIn("DIRECTOR_APPROVAL_TOKEN", kwargs["env"])
+                    self.assertNotIn("WORKFORCE_ORCHESTRATOR_TOKEN", kwargs["env"])
                     task_id = kwargs["env"]["WORKFORCE_TASK_ID"]
                     report_rel = command[command.index("--report-path") + 1]
                     report = root / report_rel
@@ -309,6 +358,7 @@ class OrchestratorTests(unittest.TestCase):
                 "GROQ_API_KEY": "not-used",
                 "CLOUDFLARE_API_TOKEN": "not-used",
                 "CLOUDFLARE_ACCOUNT_ID": "not-used",
+                "OPENROUTER_API_KEY": "test-openrouter",
                 "WORKFORCE_TEST_DOCKER_IMAGE": "aurions-workforce-test-runner:unit",
             }, clear=True):
                 with patch("workforce.orchestrator._post", side_effect=fake_post):
