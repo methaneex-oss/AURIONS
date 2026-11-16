@@ -1453,6 +1453,45 @@ The owner selected dual runtime with selective domain synchronization. Both runt
 No action is selected or authorized. Defer selection until target Android device, Termux/runtime baseline, OS permissions and local execution lifecycle are empirically validated. Only the concrete Android action path is blocked.
 
 ### D-04 — First-release command/query subset: BUILDER PROPOSAL PENDING OWNER ACCEPTANCE
-The builder's exact registry-derived P0/P1 subset proposal is recorded in [First-Release Command/Query Scope and Gap Analysis §12](FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md). The PR-19/PR-20 model-candidate lifecycle design is specified in [the candidate lifecycle crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md). The crosswalk identifies payload, DDL and validator amendments still required before implementation. Unselected entries remain design-only/non-dispatchable. Registry presence does not authorize dispatch.
+The builder's exact registry-derived P0/P1 subset proposal is recorded in [First-Release Command/Query Scope and Gap Analysis §12](FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md). The PR-19/PR-20 model-candidate lifecycle design is specified in [the candidate lifecycle crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md). Core experiment/attempt/artifact/evaluation/candidate identity and active-pointer persistence contracts are integrated and host-validated. The crosswalk records the remaining MD-16 dataset-source rights/authorization contract, state-specific lifecycle-event requirements, exact approval-digest runtime verification and saga execution gaps. Unselected entries remain design-only/non-dispatchable. Registry presence does not authorize dispatch.
 
 D-01 and D-02 are accepted/selected; D-03 is staged; D-04 remains pending owner acceptance. Planning exit, first implementation milestone authorization, PR readiness and merge remain separate decisions.
+
+
+## 27. Normative model architecture and training baseline — owner decisions MD-01…MD-16
+
+The owner-selected decisions in [Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md) are normative requirements for the first AURIONS model/training baseline. They are not optional suggestions and must be traced through WP-05, WP-12, WP-14 and WP-15, PR-19/PR-20, machine-readable contracts and acceptance evidence. This section consolidates their binding direction into the engineering specification; the linked decision register retains the full decision wording and detailed reconciliation.
+
+### 27.1 Binding model direction
+
+- AURIONS develops and owns its own general-purpose language foundation model. It is not a chatbot wrapper or a thin interface to a third-party hosted model.
+- The initial neural architecture is a decoder-only causal Transformer. Begin with a small, randomly initialized trainable baseline and scale only when data, evaluation and resource measurements justify it. No permanent owner-imposed parameter ceiling is set.
+- AURIONS develops and versions its own multilingual tokenizer. The tokenizer artifact and model generation must remain version-bound.
+- Initial training begins with autoregressive next-token prediction. Additional objectives and later stages (instruction SFT, preference learning and outcome-based learning) are introduced only when controlled evidence justifies them.
+- The initial corpus is curated, multilingual and multi-domain, then expanded under provenance, quality, rights and evaluation controls. Nigerian languages must be explicitly considered in language-tier and evaluation planning.
+- Training uses a hybrid compute strategy: local development/data preparation/small experiments, with replaceable approved cloud GPU compute when required. Remote training compute is not a dependency for local inference or offline operation.
+- Continual learning uses distinct timescales: immediate adaptation, persistent memory, controlled weight training and governed model evolution. Experience or memory retention never silently updates model weights.
+- Inference remains behind a stable model-independent interface. Local and cloud-hosted inference may serve AURIONS-owned model artifacts; a hosted third-party commercial LLM or third-party pretrained weights are not the primary brain under the selected decisions.
+- The first generation is text-first, with image/audio extension paths retained but not represented as implemented capabilities. Evaluate an initial 2K–4K context window before considering larger contexts; persistent memory remains distinct from context length.
+- Curriculum changes are configurable, versioned and driven by measured weaknesses, not hardcoded subject-to-capability or language-to-behaviour mappings.
+
+### 27.2 Non-negotiable lifecycle and authority boundaries
+
+- A later training run may start from the initial random-initialization artifact or a prior AURIONS-owned checkpoint only.
+- Dataset acquisition, memory retention, dataset inclusion, training authorization and model activation are separate operations with separate provenance and authority.
+- Workers receive only immutable, already-authorized inputs and bounded job scope. They cannot broaden dataset access, mutate live cognitive/governance state, authenticate owner approval or activate/rollback candidates.
+- Training output is an untrusted quarantined artifact. Learning evaluation and governed evolution evaluation are distinct. Both required evaluations, exact owner approval and active-pointer compare-and-swap precede activation.
+- Rollback is a separately authorized, auditable operation restoring an exact prior artifact; it preserves failed-candidate and evaluation evidence.
+- Revocation/deletion must trace source influence through datasets, experiments, checkpoints and candidate artifacts. Do not claim that source deletion removes information from trained weights without validated retraining or unlearning evidence.
+
+### 27.3 Engineering parameters — not additional owner decisions
+
+The owner has closed the 16 model-design preference decisions. Do not reopen them as a questionnaire. Architecture depth/width and initial parameter count, tokenizer algorithm/vocabulary, corpus composition, optimizer/schedule, precision, batch/sequence packing, distributed strategy, exact staged-objective thresholds, evaluation datasets/thresholds, inference engine/quantization and measured compute budgets are engineering parameters. Resolve them through bounded research, feasibility experiments and recorded evidence within the approved direction.
+
+### 27.4 Outstanding machine-contract gate
+
+MD-16 requires a machine-enforced dataset-source rights and authorization lifecycle: source identity/provenance/classification, rights holder and license/usage terms, permitted training purpose, explicit private-data authorization, owner/scope, validity/expiry, revocation, versioned dataset manifests and derived-artifact impact lineage. The current generic permission and artifact-manifest contracts do not yet prove these conditions for every dataset source. This is a planning-contract blocker before nontrivial corpus ingestion/training, not permission to start a trainer.
+
+The current `evolutionCandidateLifecycle` payload also lacks state-specific required-field conditions for `active` and `rolled_back` transitions. Candidate UUIDv5 derivation has a positive conformance fixture and validator check; it must not be reported as missing. Exact approval digest recomputation, authenticated governance-store consumption and cross-store saga/recovery remain runtime implementation and test obligations.
+
+All registry entries remain design-only/non-dispatchable. These owner decisions do not grant training, worker dispatch, activation, implementation, merge or planning-exit authorization.
