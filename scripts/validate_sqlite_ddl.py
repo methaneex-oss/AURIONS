@@ -182,6 +182,7 @@ def test_memory() -> None:
         "aurion_memory.migration_v5.sql",
         "aurion_memory.migration_v6.sql",
         "aurion_memory.migration_v7.sql",
+        "aurion_memory.migration_v8.sql",
     ])
     require_columns(db, "objective_records", {
         "objective_id", "owner_ref", "version", "success_evidence_json"
@@ -209,6 +210,31 @@ def test_memory() -> None:
     require_columns(db, "memory_records", {"provenance_refs_json", "uncertainty_json"})
     require_columns(db, "predictions", {"conditions_json", "confidence", "evidence_refs_json"})
     require_columns(db, "plans", {"context_version_ref", "capability_epoch_digest"})
+    require_columns(db, "learning_updates", {"owner_ref"})
+    require_columns(db, "artifacts", {"owner_ref"})
+    require_columns(db, "learning_update_details", {"experiment_id", "attempt_id", "evaluation_id"})
+    require_columns(db, "evolution_proposals", {
+        "owner_ref", "candidate_id", "source_learning_update_id", "source_experiment_id",
+        "source_attempt_id", "learning_evaluation_id", "candidate_artifact_id",
+        "candidate_artifact_sha256", "evolution_evaluation_id",
+    })
+    for table in (
+        "learning_experiments", "learning_experiment_attempts",
+        "learning_candidate_evaluations", "evolution_candidate_evaluations",
+        "active_candidate_pointers", "candidate_pointer_history",
+    ):
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone():
+            raise AssertionError(f"memory: missing v8 model-lifecycle table {table}")
+    for trigger in (
+        "learning_experiments_owner_scope", "learning_candidate_evaluations_owner_scope",
+        "learning_update_details_lineage_match", "evolution_proposals_model_lineage_match",
+        "evolution_candidate_evaluations_owner_scope", "candidate_pointer_history_validate",
+        "candidate_pointer_history_no_update", "candidate_pointer_history_no_delete",
+        "active_candidate_pointer_insert_requires_history",
+        "active_candidate_pointer_update_requires_history", "active_candidate_pointer_no_delete",
+    ):
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE type='trigger' AND name=?", (trigger,)).fetchone():
+            raise AssertionError(f"memory: missing v8 lifecycle trigger {trigger}")
     for table in (
         "world_entities", "world_relationships", "situation_snapshots",
         "affordance_hypotheses", "interaction_proposals", "interaction_outcomes",
@@ -898,9 +924,9 @@ def main() -> int:
     test_events()
     test_governance()
     print(
-        f"PASS: all three SQLite stores and seventeen ordered DDL files executed; "
+        f"PASS: all three SQLite stores and eighteen ordered DDL files executed; "
         f"SQLite {sqlite3.sqlite_version}; FK/integrity checks passed; "
-        "memory v4/v5/v6/v7, event v3/v4/v5/v6 and governance v2/v3/v4 outbox/objective/approval/query-projection/saga-ledger smoke invariants passed."
+        "memory v4/v5/v6/v7/v8, event v3/v4/v5/v6 and governance v2/v3/v4 outbox/objective/approval/query-projection/saga-ledger smoke invariants passed."
     )
     print(
         "LIMIT: host smoke validation only; Android/Termux baseline, crash/restore, "

@@ -98,7 +98,7 @@ The following are the proposed contract amendments, not claims about the current
 - Keep approval request/decision rows in `aurion_governance.db`; keep cross-store saga intent, steps and recovery in `aurion_events.db`; keep the active pointer and candidate/artifact projection in `aurion_memory.db`. No cross-file foreign key or distributed transaction is implied.
 - Update the command/event registries, fixtures, command transition matrix, event producer/consumer matrix, ingress trigger matrix, store-local saga matrix and validator assertions together. Do not make any registry entry dispatchable.
 
-The current DDL does not yet provide these experiment/evaluation links or the active-pointer projection. Until the additive schema and validator changes are committed and checked, this crosswalk is a complete **design proposal**, not a closed machine-contract or runtime implementation.
+The payload schemas now require the source learning update, experiment, attempt and configuration digest through worker completion, and held-out evaluation binds the exact candidate artifact SHA-256. Action-specific activation and rollback requests require non-null approval/evaluation or rollback references. Proposed memory migration v8 adds durable experiment/attempt/evaluation records, source-lineage columns, owner/mechanism-scoped active pointers, append-only pointer history and compare-and-swap/history triggers. These are specified persistence contracts; host CI must validate the v8 chain and no runtime handler or saga is implemented.
 
 ## 5. Acceptance evidence mapping
 
@@ -116,8 +116,8 @@ Relevant integrated scenarios include CM-011…CM-013 for learning/outcome feedb
 ## 6. Closure boundary
 
 - **Specified by this document:** identifier semantics, lifecycle ordering, approval binding, activation/rollback saga boundary and the exact schema/DDL/validator work still required.
-- **Not yet reconciled in machine contracts:** the payload additions and additive memory migration listed in §4.
-- **Not implemented:** training worker, experiment store, candidate registry, approval consumer, active pointer, saga coordinator or runtime handlers.
+- **Machine contracts amended — host validation pending:** payload schemas, coherent lineage fixtures, negative controls and additive memory migration v8 now encode the PR-19/PR-20 identity and persistence links. The approval digest is recomputed and authenticated by the runtime; SQL cannot validate a cross-store approval decision.
+- **Not implemented:** training worker, experiment execution, candidate registry handlers, approval consumer, active-pointer saga coordinator or runtime handlers. Migration v8 is a proposed DDL contract, not an applied user database migration.
 - **Not validated:** target-device training/resource feasibility, C++/Python conformance, crash/replay/rollback execution, held-out improvement or independent review.
 - **Owner gate:** D-04 remains pending owner acceptance of the exact command/query subset and its crosswalk. Planning exit and implementation authorization remain separate explicit owner decisions.
 

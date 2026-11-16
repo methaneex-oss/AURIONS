@@ -2258,7 +2258,9 @@
             "learning_update_details",
             "artifacts",
             "artifact_lineage",
-            "outbox"
+            "outbox",
+            "learning_experiments",
+            "learning_experiment_attempts"
           ],
           "binding_role": "authoritative_write"
         },
@@ -2329,7 +2331,10 @@
             "learning_update_details",
             "artifacts",
             "artifact_lineage",
-            "outbox"
+            "outbox",
+            "learning_experiments",
+            "learning_experiment_attempts",
+            "learning_candidate_evaluations"
           ],
           "binding_role": "authoritative_write"
         },
@@ -2465,7 +2470,10 @@
             "evolution_proposals",
             "artifacts",
             "artifact_lineage",
-            "outbox"
+            "outbox",
+            "learning_experiments",
+            "learning_experiment_attempts",
+            "learning_candidate_evaluations"
           ],
           "binding_role": "authoritative_write"
         },
@@ -2545,7 +2553,9 @@
             "evolution_proposals",
             "artifacts",
             "artifact_lineage",
-            "outbox"
+            "outbox",
+            "learning_candidate_evaluations",
+            "evolution_candidate_evaluations"
           ],
           "binding_role": "authoritative_write"
         },
@@ -2632,7 +2642,11 @@
             "evolution_proposals",
             "artifacts",
             "artifact_lineage",
-            "outbox"
+            "outbox",
+            "learning_candidate_evaluations",
+            "evolution_candidate_evaluations",
+            "active_candidate_pointers",
+            "candidate_pointer_history"
           ],
           "binding_role": "authoritative_write"
         },
@@ -2720,7 +2734,11 @@
             "evolution_proposals",
             "artifacts",
             "artifact_lineage",
-            "outbox"
+            "outbox",
+            "learning_candidate_evaluations",
+            "evolution_candidate_evaluations",
+            "active_candidate_pointers",
+            "candidate_pointer_history"
           ],
           "binding_role": "authoritative_write"
         },
