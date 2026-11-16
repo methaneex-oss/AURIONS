@@ -8,6 +8,7 @@ from unittest.mock import patch
 import httpx
 
 from workforce.model_registry import ROLE_MODEL_ASSIGNMENTS
+from workforce.agents.runner import TOOLS
 from workforce.provider_preflight import _quota_requirements, main
 from workforce.provider_http import USER_AGENT
 
@@ -84,8 +85,11 @@ class ProviderPreflightTests(unittest.TestCase):
         for call in post.call_args_list[:6]:
             self.assertEqual(call.kwargs["headers"]["User-Agent"], USER_AGENT)
             payload = call.kwargs["json"]
-            self.assertEqual(payload["tool_choice"], "required")
-            self.assertIn("tools", payload)
+            self.assertEqual(payload["tools"], TOOLS)
+            if payload["model"] == "@cf/zai-org/glm-4.7-flash":
+                self.assertEqual(payload["tool_choice"], {"type": "function", "function": {"name": "read_file"}})
+            else:
+                self.assertEqual(payload["tool_choice"], "required")
             self.assertIn(payload["model"], {p["model"] for p in ROLE_MODEL_ASSIGNMENTS.values()})
         self.assertEqual(post.call_args_list[6].kwargs["headers"]["User-Agent"], USER_AGENT)
 
