@@ -219,7 +219,7 @@ The architecture/validation work must establish the general objective-led world/
 This product definition depends on the existing owner-approved engineering specification and architecture constraints. It must be reconciled with the API contracts, persistence/recovery design, platform strategy, security/operations design and evidence review.
 
 No implementation work package is authorized by this proposal. Before implementation:
-- The owner accepted this product definition on 2026-11-16 (D-01) and selected Option B for dual-runtime selective domain synchronization (D-02). The first permitted local action remains staged (D-03), pending target-device/runtime validation. D-04 command/query subset remains pending owner acceptance.
+- The owner accepted this product definition on 2026-11-16 (D-01) and selected Option B for dual-runtime selective domain synchronization (D-02). The first permitted local action remains unresolved and staged (D-03), pending target-device/runtime validation; no action is selected or authorized. D-04 command/query subset remains pending owner acceptance.
 - The architecture and contracts must be reconciled with it.
 - Required security, persistence, recovery and learning-evaluation criteria must be testable.
 - The owner must explicitly approve the planning exit.
