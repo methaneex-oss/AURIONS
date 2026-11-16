@@ -1541,5 +1541,158 @@
     "restored_artifact_ref": "artifact:restored:1",
     "restore_artifact_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
     "pointer_revision": 2
+  },
+  "datasetSourceAuthorizationDecided": {
+    "authorization": {
+      "authorization_id": "b1400000-0000-4000-8000-000000000001",
+      "owner_ref": "owner:primary",
+      "source_ref": "source:licensed-corpus:1",
+      "source_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "source_origin": {
+        "acquisition_method": "licensed_repository_export",
+        "origin_ref": "source-origin:fixture:1",
+        "acquired_at": "2026-11-16T20:00:00Z"
+      },
+      "rights_holder_ref": "rights-holder:fixture",
+      "authorization_basis": "license",
+      "license_or_terms_ref": "license:fixture:compatible-v1",
+      "license_or_terms_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "permitted_purposes": [
+        "foundation_pretraining"
+      ],
+      "training_permission": "allow",
+      "memory_retention_permission": "deny",
+      "private_data_classification": "public",
+      "private_data_authorization_ref": null,
+      "owner_scope": {
+        "owner_ref": "owner:primary",
+        "project_ref": "project:aurions",
+        "model_family_ref": "model-family:aurions-foundation",
+        "dataset_scope_ref": "dataset-scope:foundation-v1"
+      },
+      "valid_from": "2026-11-16T20:00:00Z",
+      "expires_at": null,
+      "policy_version_ref": "policy:training-data-v1",
+      "status": "active",
+      "revoked_at": null,
+      "revocation_ref": null,
+      "created_at": "2026-11-16T20:00:00Z",
+      "supersedes_authorization_id": null,
+      "record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    "approval_ref": "approval:dataset-source:1",
+    "decision_ref": "decision:dataset-source:1",
+    "decided_at": "2026-11-16T19:00:00Z"
+  },
+  "datasetSourceAuthorizationRevoked": {
+    "authorization_id": "b1400000-0000-4000-8000-000000000001",
+    "authorization_record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "owner_ref": "owner:primary",
+    "revocation_ref": "revocation:dataset-source:1",
+    "reason_ref": "reason:license-withdrawn",
+    "approval_ref": "approval:dataset-revoke:1",
+    "policy_version_ref": "policy:training-data-v1",
+    "revoked_at": "2026-11-16T19:10:00Z"
+  },
+  "datasetManifestSealed": {
+    "manifest": {
+      "dataset_manifest_id": "b1500000-0000-4000-8000-000000000001",
+      "schema_version": "1.0",
+      "owner_ref": "owner:primary",
+      "model_family_ref": "model-family:aurions-foundation",
+      "training_purpose": "foundation_pretraining",
+      "model_generation_ref": "model-generation:initial",
+      "tokenizer_artifact_ref": "artifact:tokenizer:initial",
+      "included_sources": [
+        {
+          "source_ref": "source:licensed-corpus:1",
+          "source_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "authorization_id": "b1400000-0000-4000-8000-000000000001",
+          "authorization_record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "license_or_terms_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "source_artifact_ref": "artifact:source:licensed-corpus:1",
+          "transformation_lineage_refs": [
+            "transform:normalize-v1"
+          ]
+        }
+      ],
+      "excluded_sources": [
+        {
+          "source_ref": "source:unknown-rights:1",
+          "reason": "unknown_rights"
+        }
+      ],
+      "preprocessing_pipeline_ref": "pipeline:foundation-v1",
+      "preprocessing_config_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "deduplication_report_ref": "artifact:dedup-report:1",
+      "quality_report_ref": "artifact:quality-report:1",
+      "language_domain_classification_ref": "artifact:language-domain-report:1",
+      "curriculum_config_ref": "config:curriculum:foundation-v1",
+      "curriculum_config_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "splits": {
+        "train": {
+          "split_ref": "split:train:1",
+          "digest": "1111111111111111111111111111111111111111111111111111111111111111"
+        },
+        "validation": {
+          "split_ref": "split:validation:1",
+          "digest": "2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "held_out": {
+          "split_ref": "split:held-out:1",
+          "digest": "3333333333333333333333333333333333333333333333333333333333333333"
+        }
+      },
+      "rights_policy_snapshot_ref": "policy-snapshot:training-data:1",
+      "rights_policy_snapshot_digest": "4444444444444444444444444444444444444444444444444444444444444444",
+      "authorization_evaluated_at": "2026-11-16T20:01:00Z",
+      "created_at": "2026-11-16T20:02:00Z",
+      "manifest_digest": "5555555555555555555555555555555555555555555555555555555555555555",
+      "lifecycle": "sealed",
+      "derived_artifact_refs": [
+        "artifact:future-checkpoint:1"
+      ]
+    },
+    "authorization_check_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "sealed_at": "2026-11-16T19:05:00Z",
+    "supervisor_ref": "supervisor:dataset:1"
+  },
+  "datasetAdmissionBlocked": {
+    "admission_id": "d1000000-0000-4000-8000-000000000001",
+    "owner_ref": "owner:primary",
+    "model_family_ref": "model-family:aurions-foundation",
+    "training_purpose": "foundation_pretraining",
+    "manifest_id": "b1500000-0000-4000-8000-000000000001",
+    "source_ref": "source:licensed-corpus:1",
+    "authorization_id": "b1400000-0000-4000-8000-000000000001",
+    "denial_reason": "revoked",
+    "checked_at": "2026-11-16T19:11:00Z",
+    "policy_version_ref": "policy:training-data-v1",
+    "worker_job_ref": null,
+    "evidence_refs": [
+      "authorization:b1400000-0000-4000-8000-000000000001",
+      "revocation:dataset-source:1"
+    ]
+  },
+  "datasetRevocationImpactAssessed": {
+    "impact_id": "d2000000-0000-4000-8000-000000000001",
+    "operation_ref": "operation:dataset-revocation:1",
+    "authorization_id": "b1400000-0000-4000-8000-000000000001",
+    "authorization_record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "owner_ref": "owner:primary",
+    "manifest_refs": [
+      "manifest:b1500000-0000-4000-8000-000000000001"
+    ],
+    "derived_artifact_refs": [
+      "artifact:checkpoint:1",
+      "artifact:candidate:1"
+    ],
+    "active_attempt_refs": [
+      "attempt:training:1"
+    ],
+    "influence_state": "unknown",
+    "disposition": "manual_review",
+    "findings_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "assessed_at": "2026-11-16T19:20:00Z"
   }
 }

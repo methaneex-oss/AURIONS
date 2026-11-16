@@ -7382,6 +7382,227 @@
       },
       "execution_status": "specified_not_executed",
       "execution_authority": "none"
+    },
+    {
+      "scenario_id": "INT-004",
+      "title": "INT-004 — dataset authorization, admission and revocation impact",
+      "purpose": "Verify permission-governed dataset source decisions, immutable manifest sealing, fail-closed worker admission and cross-store revocation impact without treating memory retention as training permission or claiming automatic unlearning.",
+      "source_scenario_ids": [
+        "INT-004"
+      ],
+      "contract_refs": [
+        "payload:datasetSourceAuthorization",
+        "payload:datasetManifest",
+        "event:dataset.source.authorization.decided.v1",
+        "event:dataset.source.authorization.revoked.v1",
+        "event:dataset.manifest.sealed.v1",
+        "event:dataset.admission.blocked.v1",
+        "event:dataset.revocation.impact.assessed.v1",
+        "MD-16",
+        "WP-02",
+        "WP-05",
+        "WP-12",
+        "WP-14"
+      ],
+      "initial_state": [
+        "Seed one owner-scoped source with exact content and license/terms digests, explicit training permission, separate memory-retention permission and authenticated private-data evidence where required.",
+        "Seed isolated governance, memory and event/recovery stores with local outboxes and a durable operation/step/recovery journal.",
+        "Seed a deterministic learning supervisor and worker that cannot inspect or override governance authority."
+      ],
+      "deterministic_fakes": {
+        "clock": "Monotonic virtual clock controls grant validity, expiry and revocation order.",
+        "inference": "Deterministic policy evaluator; model output cannot grant rights or alter source authorization.",
+        "stores": "Isolated governance, memory and event/recovery SQLite stores with snapshots and before/after-commit fault injection.",
+        "provider": "No external provider is required; synthetic source artifacts and worker attempts are used.",
+        "authority": "Independent authenticated owner approval and default-deny rights authority; governance unavailability is injected explicitly."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Authenticated owner approval is evaluated against exact source bytes, terms, purpose, privacy evidence and owner/model scope.",
+          "contract_action": "fake:governance.decide_dataset_source",
+          "expected_transitions": [
+            "Append immutable active authorization version and governance outbox envelope."
+          ],
+          "expected_events": [
+            "dataset.source.authorization.decided.v1"
+          ],
+          "durable_assertions": [
+            "Approval binds exact source and terms digests.",
+            "Memory-retention permission remains independent from training permission."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Attempt to seal a manifest using the active authorization and exact source membership.",
+          "contract_action": "fake:dataset.seal_manifest",
+          "expected_transitions": [
+            "Persist immutable manifest, membership, exclusions and split digests after authoritative rights recheck."
+          ],
+          "expected_events": [
+            "dataset.manifest.sealed.v1"
+          ],
+          "durable_assertions": [
+            "Every included source has matching authorization ID, record digest, source digest and terms digest.",
+            "Sealing does not dispatch a worker."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Worker admission is checked against the exact manifest and current governance state.",
+          "contract_action": "fake:worker.admit_dataset",
+          "expected_transitions": [
+            "Allow only when every source grant is active, in-scope, unexpired and purpose-compatible."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Unknown or unavailable governance state fails closed.",
+            "Worker cannot make or cache an authorization decision."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Authenticated owner revokes the exact source authorization.",
+          "contract_action": "fake:governance.revoke_dataset_source",
+          "expected_transitions": [
+            "Append revocation and governance outbox in one local transaction; subsequent checks fail immediately."
+          ],
+          "expected_events": [
+            "dataset.source.authorization.revoked.v1"
+          ],
+          "durable_assertions": [
+            "Revocation does not rewrite the prior grant.",
+            "Outbox relay delay cannot permit another admission."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "A subsequent worker admission rechecks the revoked source.",
+          "contract_action": "fake:worker.recheck_revoked_dataset",
+          "expected_transitions": [
+            "Persist blocked admission and deny worker start."
+          ],
+          "expected_events": [
+            "dataset.admission.blocked.v1"
+          ],
+          "durable_assertions": [
+            "No training worker starts after revocation.",
+            "No training weights or candidate pointer change."
+          ]
+        },
+        {
+          "step_id": "S06",
+          "trigger": "The revocation coordinator scans manifests, attempts and derived artifacts, then reconciles all owning-store receipts.",
+          "contract_action": "fake:coordinator.assess_revocation_impact",
+          "expected_transitions": [
+            "Persist digest-bound findings and explicit influence uncertainty."
+          ],
+          "expected_events": [
+            "dataset.revocation.impact.assessed.v1"
+          ],
+          "durable_assertions": [
+            "Unknown influence is retained as unknown.",
+            "Unlearning, retraining or rollback requires a separate governed disposition."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "NC-001",
+          "injection": "Use a source with unknown or denied rights.",
+          "expected_disposition": "Reject source admission and do not seal a training manifest.",
+          "must_not_change": [
+            "Worker start count",
+            "Active candidate pointer",
+            "Training weights"
+          ]
+        },
+        {
+          "control_id": "NC-002",
+          "injection": "Expire the authorization or change the license/terms digest after sealing.",
+          "expected_disposition": "Block the next admission after authoritative revalidation.",
+          "must_not_change": [
+            "Historical authorization bytes",
+            "Sealed manifest digest",
+            "Worker start count"
+          ]
+        },
+        {
+          "control_id": "NC-003",
+          "injection": "Revoke authorization while the event relay is unavailable.",
+          "expected_disposition": "Fail closed immediately from governance state without waiting for central archive delivery.",
+          "must_not_change": [
+            "Revocation record",
+            "Previously committed history",
+            "Worker start count"
+          ]
+        },
+        {
+          "control_id": "NC-004",
+          "injection": "Attempt to train using memory-retention permission when training permission is denied.",
+          "expected_disposition": "Reject the training purpose; memory retention does not imply training consent.",
+          "must_not_change": [
+            "Training corpus membership",
+            "Worker start count",
+            "Authorization purpose scope"
+          ]
+        },
+        {
+          "control_id": "NC-005",
+          "injection": "Submit a private/personal source without exact authorization evidence.",
+          "expected_disposition": "Reject the source before manifest sealing.",
+          "must_not_change": [
+            "Authorization record",
+            "Manifest membership",
+            "Worker start count"
+          ]
+        },
+        {
+          "control_id": "NC-006",
+          "injection": "Replay a revocation or impact event after a crash.",
+          "expected_disposition": "Apply the same idempotent saga result and do not resurrect revoked admission.",
+          "must_not_change": [
+            "Revocation identity",
+            "Impact operation identity",
+            "Candidate pointer"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash after governance revocation commit but before event relay; future admission must still fail closed.",
+        "Replay the same revocation event and saga step; duplicate delivery must not duplicate impact records.",
+        "Crash between governance and memory impact steps; recover by stable step identity and reconcile before declaring completion."
+      ],
+      "concurrency_controls": [
+        "Race revocation against dataset admission; no admission may pass after revocation commits.",
+        "Race two manifest seals for the same immutable manifest identity; one canonical digest is accepted.",
+        "Race impact replay with a new manifest query; revocation remains authoritative regardless of stale memory projections."
+      ],
+      "fault_controls": [
+        "Governance database unavailable at admission boundary; deny admission.",
+        "Crash after local revocation commit and before central archive append.",
+        "Crash after memory impact commit and before coordinator receipt.",
+        "Malformed or unknown-version event; quarantine and preserve for diagnosis."
+      ],
+      "held_out_controls": [
+        "Use a second source origin and license basis with identical rights semantics.",
+        "Vary model-family and training-purpose scope while retaining source bytes.",
+        "Use an authorization that permits memory retention but denies training."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Training admissions without current exact authorization = 0.",
+          "Admissions after committed revocation = 0.",
+          "Training permission inferred from memory-retention permission = 0.",
+          "Private-data admissions without required evidence = 0.",
+          "Duplicate impact effects after replay/recovery = 0.",
+          "Automatic unlearning or candidate rollback without separate governance = 0."
+        ],
+        "learning_metric_rule": "Not a model-learning performance scenario; no training or behavioural improvement is measured or authorized.",
+        "evidence_requirement": "Record authorization and terms digests, authenticated approval/revocation evidence, manifest and split digests, admission decision trace, worker invocation count, local outbox/archive receipts, saga step/recovery records, impact findings and explicit unknown-influence state."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
     }
   ]
 }

@@ -1,0 +1,10 @@
+{
+  "authorization_id": "b1400000-0000-4000-8000-000000000001",
+  "authorization_record_digest": "bad",
+  "owner_ref": "owner:primary",
+  "revocation_ref": "revocation:dataset-source:1",
+  "reason_ref": "reason:license-withdrawn",
+  "approval_ref": "approval:dataset-revoke:1",
+  "policy_version_ref": "policy:training-data-v1",
+  "revoked_at": "2026-11-16T19:10:00Z"
+}

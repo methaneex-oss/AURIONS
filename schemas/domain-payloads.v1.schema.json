@@ -7034,6 +7034,291 @@
           ]
         }
       ]
+    },
+    "datasetSourceAuthorizationDecided": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorization",
+        "approval_ref",
+        "decision_ref",
+        "decided_at"
+      ],
+      "properties": {
+        "authorization": {
+          "$ref": "#/$defs/datasetSourceAuthorization"
+        },
+        "approval_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decided_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "datasetSourceAuthorizationRevoked": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorization_id",
+        "authorization_record_digest",
+        "owner_ref",
+        "revocation_ref",
+        "reason_ref",
+        "approval_ref",
+        "policy_version_ref",
+        "revoked_at"
+      ],
+      "properties": {
+        "authorization_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "authorization_record_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "owner_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revocation_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approval_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revoked_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "datasetManifestSealed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest",
+        "authorization_check_digest",
+        "sealed_at",
+        "supervisor_ref"
+      ],
+      "properties": {
+        "manifest": {
+          "$ref": "#/$defs/datasetManifest"
+        },
+        "authorization_check_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sealed_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "supervisor_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "datasetAdmissionBlocked": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "admission_id",
+        "owner_ref",
+        "model_family_ref",
+        "training_purpose",
+        "manifest_id",
+        "source_ref",
+        "authorization_id",
+        "denial_reason",
+        "checked_at",
+        "policy_version_ref",
+        "worker_job_ref",
+        "evidence_refs"
+      ],
+      "properties": {
+        "admission_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "owner_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_family_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "training_purpose": {
+          "enum": [
+            "foundation_pretraining",
+            "instruction_sft",
+            "preference_training",
+            "outcome_training",
+            "evaluation"
+          ]
+        },
+        "manifest_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "source_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "authorization_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "denial_reason": {
+          "enum": [
+            "unknown_authorization",
+            "denied",
+            "expired",
+            "revoked",
+            "digest_mismatch",
+            "purpose_mismatch",
+            "owner_scope_mismatch",
+            "model_scope_mismatch",
+            "private_data_unauthorized",
+            "governance_unavailable",
+            "manifest_invalid",
+            "source_not_in_manifest"
+          ]
+        },
+        "checked_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "policy_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "worker_job_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "datasetRevocationImpactAssessed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "impact_id",
+        "operation_ref",
+        "authorization_id",
+        "authorization_record_digest",
+        "owner_ref",
+        "manifest_refs",
+        "derived_artifact_refs",
+        "active_attempt_refs",
+        "influence_state",
+        "disposition",
+        "findings_digest",
+        "assessed_at"
+      ],
+      "properties": {
+        "impact_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "operation_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authorization_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "authorization_record_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "owner_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "manifest_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "derived_artifact_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "active_attempt_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "influence_state": {
+          "enum": [
+            "not_consumed",
+            "staged",
+            "consumed",
+            "unknown"
+          ]
+        },
+        "disposition": {
+          "enum": [
+            "no_affected_artifacts",
+            "quarantine",
+            "compliant_retraining",
+            "unlearning_assessment",
+            "rollback_assessment",
+            "manual_review"
+          ]
+        },
+        "findings_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "assessed_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
     }
   }
 }

@@ -3263,6 +3263,189 @@
       "failure_recovery_contract": "Commit aggregate mutation with its event/outbox in one owning-store transaction. Deliver at least once; consumers must be idempotent. On crash replay from durable checkpoint; on missing predecessor hold and reconcile the gap; quarantine poison/unknown-version events without dropping them. Cross-store consumers use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
       "acceptance_scenario_refs": [],
       "specification_status": "specified_not_runtime_validated"
+    },
+    "dataset.source.authorization.decided.v1": {
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/datasetSourceAuthorizationDecided",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/datasetSourceAuthorizationDecided"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "event_specific_acceptance_execution"
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved",
+      "producer_origin": "governance_evaluator",
+      "producer_trigger_contract": "Emitted after the governance supervisor consumes an authenticated approval decision bound to the exact source digest, license/terms digest, permitted purposes, private-data evidence and owner/model scope, then commits an immutable authorization version and local outbox.",
+      "owning_component": "Dataset rights governance supervisor",
+      "consumer_contracts": [
+        {
+          "component": "Dataset authorization supervisor",
+          "purpose": "Consumes the immutable authorization decision and exposes exact grant state to admission checks."
+        },
+        {
+          "component": "Governance audit subsystem",
+          "purpose": "Retains approval, actor, policy and source-rights decision lineage."
+        }
+      ],
+      "owner_transition_contract": "Append an immutable active or denied source-authorization version; the decision grants no worker dispatch and does not alter memory-retention permission.",
+      "consumer_transition_summary": "Dataset rights governance supervisor: Append an immutable active or denied source-authorization version; the decision grants no worker dispatch and does not alter memory-retention permission. Intended consumers: Dataset authorization supervisor; Governance audit subsystem.",
+      "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
+      "failure_recovery_contract": "Commit the owning-store mutation and event/outbox in one local transaction. Deliver at least once; consumers must be idempotent. Replay from durable checkpoints, hold sequence gaps for reconciliation, and quarantine poison or unknown-version events. Cross-store effects use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
+      "acceptance_scenario_refs": [
+        "INT-004"
+      ],
+      "specification_status": "specified_not_runtime_validated"
+    },
+    "dataset.source.authorization.revoked.v1": {
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/datasetSourceAuthorizationRevoked",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/datasetSourceAuthorizationRevoked"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "event_specific_acceptance_execution"
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved",
+      "producer_origin": "governance_evaluator",
+      "producer_trigger_contract": "Emitted after the governance supervisor validates the exact authenticated revocation authority and commits an append-only revocation record plus governance-local outbox; future authorization checks fail immediately without waiting for event relay.",
+      "owning_component": "Dataset rights governance supervisor",
+      "consumer_contracts": [
+        {
+          "component": "Dataset admission supervisor",
+          "purpose": "Immediately blocks future sealing and worker admission for the revoked authorization."
+        },
+        {
+          "component": "Revocation impact coordinator",
+          "purpose": "Starts or resumes the exact idempotent impact-assessment saga."
+        },
+        {
+          "component": "Governance audit subsystem",
+          "purpose": "Preserves append-only revocation and approval evidence."
+        }
+      ],
+      "owner_transition_contract": "Append revocation evidence for the exact authorization version and make future sealing/admission checks fail closed; do not rewrite the historical grant.",
+      "consumer_transition_summary": "Dataset rights governance supervisor: Append revocation evidence for the exact authorization version and make future sealing/admission checks fail closed; do not rewrite the historical grant. Intended consumers: Dataset admission supervisor; Revocation impact coordinator; Governance audit subsystem.",
+      "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
+      "failure_recovery_contract": "Commit the owning-store mutation and event/outbox in one local transaction. Deliver at least once; consumers must be idempotent. Replay from durable checkpoints, hold sequence gaps for reconciliation, and quarantine poison or unknown-version events. Cross-store effects use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
+      "acceptance_scenario_refs": [
+        "INT-004"
+      ],
+      "specification_status": "specified_not_runtime_validated"
+    },
+    "dataset.manifest.sealed.v1": {
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/datasetManifestSealed",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/datasetManifestSealed"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "event_specific_acceptance_execution"
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved",
+      "producer_origin": "learning_supervisor",
+      "producer_trigger_contract": "Emitted only after the dataset supervisor validates every included source against authoritative current governance state, verifies owner/model/purpose/terms/content digests and split lineage, seals the immutable manifest and commits it with the memory-local outbox.",
+      "owning_component": "Dataset and learning supervisor",
+      "consumer_contracts": [
+        {
+          "component": "Learning supervisor",
+          "purpose": "Uses only sealed manifests after revalidating current source rights before every worker admission."
+        },
+        {
+          "component": "Artifact registry",
+          "purpose": "Tracks immutable manifest bytes and digest without granting training authority."
+        }
+      ],
+      "owner_transition_contract": "Append an immutable sealed manifest and exact source-membership lineage; sealing is not worker admission or training authorization.",
+      "consumer_transition_summary": "Dataset and learning supervisor: Append an immutable sealed manifest and exact source-membership lineage; sealing is not worker admission or training authorization. Intended consumers: Learning supervisor; Artifact registry.",
+      "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
+      "failure_recovery_contract": "Commit the owning-store mutation and event/outbox in one local transaction. Deliver at least once; consumers must be idempotent. Replay from durable checkpoints, hold sequence gaps for reconciliation, and quarantine poison or unknown-version events. Cross-store effects use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
+      "acceptance_scenario_refs": [
+        "INT-004"
+      ],
+      "specification_status": "specified_not_runtime_validated"
+    },
+    "dataset.admission.blocked.v1": {
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/datasetAdmissionBlocked",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/datasetAdmissionBlocked"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "event_specific_acceptance_execution"
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved",
+      "producer_origin": "learning_supervisor",
+      "producer_trigger_contract": "Emitted at the final pre-dispatch boundary when authoritative rights state is denied, expired, revoked, mismatched or unavailable; the supervisor persists the blocked admission and memory-local outbox before any worker starts.",
+      "owning_component": "Learning and worker admission supervisor",
+      "consumer_contracts": [
+        {
+          "component": "Learning supervisor",
+          "purpose": "Denies worker dispatch and quarantines the exact rejected admission request."
+        },
+        {
+          "component": "Governance audit subsystem",
+          "purpose": "Retains the fail-closed reason and authoritative rights-check evidence."
+        }
+      ],
+      "owner_transition_contract": "Persist the exact failed authorization check and deny dispatch; no worker receives the dataset and no model weights change.",
+      "consumer_transition_summary": "Learning and worker admission supervisor: Persist the exact failed authorization check and deny dispatch; no worker receives the dataset and no model weights change. Intended consumers: Learning supervisor; Governance audit subsystem.",
+      "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
+      "failure_recovery_contract": "Commit the owning-store mutation and event/outbox in one local transaction. Deliver at least once; consumers must be idempotent. Replay from durable checkpoints, hold sequence gaps for reconciliation, and quarantine poison or unknown-version events. Cross-store effects use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
+      "acceptance_scenario_refs": [
+        "INT-004"
+      ],
+      "specification_status": "specified_not_runtime_validated"
+    },
+    "dataset.revocation.impact.assessed.v1": {
+      "event_version": "1.0",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/datasetRevocationImpactAssessed",
+      "fixture_refs": [
+        "schemas/fixtures/domain-payloads.fixture.json#/datasetRevocationImpactAssessed"
+      ],
+      "dispatch_status": "design_only_not_dispatchable",
+      "unresolved_bindings": [
+        "runtime_handler",
+        "event_specific_acceptance_execution"
+      ],
+      "command_producers": [],
+      "command_producer_binding_status": "unresolved",
+      "producer_origin": "learning_supervisor",
+      "producer_trigger_contract": "Emitted after the durable cross-store impact saga reconciles governance revocation with memory-owned manifests, derived artifacts and worker attempts, recording unknown influence rather than assuming whether data affected weights.",
+      "owning_component": "Dataset revocation impact coordinator",
+      "consumer_contracts": [
+        {
+          "component": "Learning supervisor",
+          "purpose": "Applies the governed disposition to affected manifests, attempts and candidate lineage."
+        },
+        {
+          "component": "Evolution governance gate",
+          "purpose": "Requires separate approval for candidate rollback, retraining or unlearning disposition."
+        },
+        {
+          "component": "Audit subsystem",
+          "purpose": "Retains the impact findings, uncertainty and recovery lineage."
+        }
+      ],
+      "owner_transition_contract": "Append a digest-bound impact assessment and evidence references; disposition remains governed and no automatic claim of unlearning or candidate rollback is made.",
+      "consumer_transition_summary": "Dataset revocation impact coordinator: Append a digest-bound impact assessment and evidence references; disposition remains governed and no automatic claim of unlearning or candidate rollback is made. Intended consumers: Learning supervisor; Evolution governance gate; Audit subsystem.",
+      "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
+      "failure_recovery_contract": "Commit the owning-store mutation and event/outbox in one local transaction. Deliver at least once; consumers must be idempotent. Replay from durable checkpoints, hold sequence gaps for reconciliation, and quarantine poison or unknown-version events. Cross-store effects use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
+      "acceptance_scenario_refs": [
+        "INT-004"
+      ],
+      "specification_status": "specified_not_runtime_validated"
     }
   }
 }
