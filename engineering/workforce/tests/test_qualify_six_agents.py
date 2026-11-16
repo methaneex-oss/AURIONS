@@ -10,6 +10,7 @@ from unittest.mock import patch
 import httpx
 
 from workforce.provider_http import USER_AGENT
+from workforce.agents.runner import TOOLS
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "qualify_six_agents.py"
@@ -120,6 +121,23 @@ class SixAgentQualificationTests(unittest.TestCase):
                     self.assertEqual(qualification.main(), 0)
             self.assertEqual(quota.call_args.kwargs["minimum_remaining"], 40)
             self.assertTrue(report_path.is_file())
+
+    def test_architecture_reviewer_qualification_uses_runtime_tools_and_named_read_file_choice(self):
+        captured = []
+
+        def capture_call(role, payload, max_tokens, fallback_model=None, fallback_primary_failure=None):
+            captured.append(payload)
+            return self.first_response(), "cloudflare", "@cf/zai-org/glm-4.7-flash"
+
+        results = []
+        with patch.object(qualification, "_call", side_effect=capture_call):
+            qualification.qualify_role("architecture_reviewer", self.root, results)
+
+        self.assertEqual(captured[0]["tools"], TOOLS)
+        self.assertEqual(
+            captured[0]["tool_choice"],
+            {"type": "function", "function": {"name": "read_file"}},
+        )
 
     def test_role_qualification_covers_four_capabilities_in_two_calls(self):
         results = []
