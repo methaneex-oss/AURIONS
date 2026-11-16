@@ -9,7 +9,7 @@
 
 BR-001/BR-002 must be closed against the accepted first-release workflows, not by attempting to make every catalogued interface dispatchable. D-01 accepted PR-01…PR-20 and D-02 selected Option B on 2026-11-16. This document identifies the minimum command/query surface implied by that baseline, separates required interfaces from owner-dependent interfaces, and records the gaps between that surface and the current registry.
 
-This is a builder proposal. The first-release product definition is itself marked proposed for owner review. The mappings below do not silently approve that product definition, select the first Android action, select cloud/mobile history topology, authorize implementation, or make any registry entry dispatchable.
+This is a builder proposal for the D-04 command/query subset. The product definition was accepted under D-01, and Option B was selected under D-02. The exact D-04 list remains pending owner acceptance. These mappings do not select the first Android action, authorize implementation, or make any registry entry dispatchable.
 
 The governing architecture remains objective- and situation-centred. An objective is not a derived goal; a plan is not an objective; a proposal is not authorization; an affordance hypothesis is not a capability grant; a provider receipt is not an observed outcome.
 

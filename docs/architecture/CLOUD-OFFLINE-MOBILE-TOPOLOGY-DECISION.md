@@ -5,7 +5,7 @@
 - **Related owner decision:** Cloud operation and offline-capable mobile operation are concurrent first-release targets. Offline mobile must remain functional without cloud availability. Both contexts use shared versioned contracts and the authoritative cognitive-core implementation.
 - **Scope clarification:** D-02 selects bounded cloud/mobile selective synchronization for first release. General multi-device synchronization and seamless handoff remain excluded; this decision supersedes earlier no-sync wording in the product proposal.
 
-## 1. The unresolved distinction
+## 1. Runtime and state-continuity distinctions
 
 Three concepts must not be conflated:
 
@@ -56,7 +56,7 @@ Option A remains the historical no-sync alternative; it is not the selected topo
 
 ## 6. Acceptance consequences
 
-Whichever option is selected, first-release acceptance must prove:
+Under selected Option B, first-release acceptance must prove:
 - Both required deployment contexts use the same core implementation and compatible contract versions.
 - Mobile completes its required local workflow with network access disabled.
 - No remote component can bypass local device permissions or AURIONS governance.
@@ -64,7 +64,7 @@ Whichever option is selected, first-release acceptance must prove:
 - Restart, crash, stale data, duplicate delivery and deletion behaviour are specified.
 - The system never reports cross-context continuity unless the relevant state has actually been reconciled and verified.
 
-Product acceptance PR-15 through PR-18 applies to every option. Option B additionally requires executable SY tests for the selected domain set. Option A requires tests proving isolation and explicit UI disclosure of context-local history. Option C requires tests proving remote services cannot become mandatory for local cognition or execution.
+Product acceptance PR-15 through PR-18 applies. Option B additionally requires executable SY tests for each synchronized aggregate/domain. These tests must prove allowlist enforcement; local-only data and authority rejection; idempotent outbox delivery and replay; causal revision handling and explicit conflicts; deletion tombstones and retention; offline queuing/reconciliation; and crash/restart recovery.
 
 ## 7. Current disposition
 

@@ -227,7 +227,8 @@ This proposal operationalizes, without replacing, the existing decisions concern
 - C++ authoritative core and model-independent inference.
 - SQLite initial persistence with separate memory, events/recovery and governance stores.
 - Typed contracts and separate Python workers.
-- Provenance-aware memory, provisional beliefs and evidence-based revision.\n- Objective-led open-world understanding, context-dependent possible means, and separation of proposal, authority, execution and verified outcome.
+- Provenance-aware memory, provisional beliefs and evidence-based revision.
+- Objective-led open-world understanding, context-dependent possible means, and separation of proposal, authority, execution and verified outcome.
 - Policy enforcement at the execution boundary and exact owner approval.
 - Proactive bounded autonomy with explicit limits.
 - Held-out learning evaluation and regression testing.
