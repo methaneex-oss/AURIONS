@@ -18,6 +18,13 @@ from workforce.openrouter_limits import require_free_model_quota, wait_for_free_
 from workforce.provider_http import chat_completion_headers
 
 
+def _tool_choice(profile: dict[str, str]) -> str | dict[str, dict[str, str]]:
+    """Use a named read_file call for GLM; retain required-call semantics elsewhere."""
+    if profile["model"] == "@cf/zai-org/glm-4.7-flash":
+        return {"type": "function", "function": {"name": "read_file"}}
+    return "required"
+
+
 def _quota_requirements(manifest: dict) -> dict[str, int]:
     """Calculate the free-router reserve from the committed WF-03 role budgets."""
     roles = manifest.get("roles") if isinstance(manifest, dict) else None
@@ -146,7 +153,7 @@ def main() -> int:
                 "content": "Call the read_file function exactly once with path README.md. Do not answer without calling the function.",
             }],
             "tools": TOOLS,
-            "tool_choice": "required",
+            "tool_choice": _tool_choice(profile),
             "temperature": 0.2,
             output_key: 384,
         }
