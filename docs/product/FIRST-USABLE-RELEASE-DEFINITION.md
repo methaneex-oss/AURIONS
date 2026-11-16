@@ -4,9 +4,9 @@
 
 ## 1. Product purpose
 
-The first usable release is a persistent, adaptive personal intelligence system available through concurrent cloud operation and offline-capable mobile operation. Both deployment contexts use the same authoritative cognitive architecture and versioned contracts. The mobile runtime must complete its required local workflows without cloud connectivity. The system can converse, retain and retrieve relevant experiences, understand bounded objectives in their relevant situations, reason about evidence-supported possible means, interact only through applicable authority boundaries, observe consequences and use evidence in later related interactions. Means are not limited to device capabilities, registered tools or platform adapters.
+The first usable release is a local-first, trainable AI system with a persistent, adaptive learning brain. The same core intelligence must be able to run locally and on a server; online access is an optional, policy-controlled source of information and inference, not a runtime dependency. The existing first-release deployment decision still requires concurrent cloud and offline-capable mobile operation using the same authoritative cognitive architecture and versioned contracts. The system can retain and use experience, understand situations, revise beliefs, make predictions, evaluate outcomes and adapt future processing. Conversation is an interface, not the product's identity. Multiple-device continuity is a later deployment capability whose synchronization and state-ownership design must be explicit. Voice, vision and other modalities are expandable capabilities.
 
-It is a first working system, not a finished general intelligence, unrestricted autonomous agent, multi-device ecosystem or proof of general learning.
+It is a first working system, not a finished general intelligence or unrestricted autonomous agent. It must nevertheless establish a genuine path to model training and demonstrate bounded learning; those capabilities must not be deferred indefinitely behind interface or deployment expansion.
 
 The governing principle remains:
 
@@ -116,7 +116,7 @@ The system must remain useful when remote services are unavailable. Remote model
 | Governance | Required baseline | Execution-boundary enforcement, audit and owner authority |
 | Resource limits | Required baseline | Measured values and platform limitations documented |
 | Proactive autonomy | Architectural requirement; narrow first-release task execution only | No unrestricted background activity |
-| Model training/fine-tuning | Not required to claim first release works | Training infrastructure and evaluation are separate work |
+| Model training/fine-tuning | A bounded local training experiment is an early brain-development milestone; production-scale training is not required for the first usable release | The model must be genuinely trainable through a reproducible path. Training and experience-dependent adaptation remain separate mechanisms and require separate evaluation |
 | General learning improvement | Not claimed by the feedback workflow | Requires held-out evaluation described in architecture |
 | Offline-capable mobile runtime | Required concurrently with cloud operation; local cognition, persistence, situation understanding and governed interactions available in the validated local context must work without cloud availability | The CLI remains the first user-facing interface. A native Android UI is not selected; mobile UI technology and core boundary remain engineering decisions subject to platform validation |
 | Cloud runtime | Required concurrently with offline-capable mobile operation; uses the same cognitive architecture/contracts and independently enforces owner, provider, disclosure and operation policy | Cloud availability does not authorize mobile-local operations or imply automatic cross-runtime state synchronization |
@@ -130,7 +130,7 @@ The system must remain useful when remote services are unavailable. Remote model
 The first usable release does not promise:
 
 - Human-level or general intelligence.
-- A fully trained or self-improving model.
+- A finished, generally self-improving model. A bounded, reproducible local training path and evidence-based learning experiments remain required development goals.
 - Autonomous modification of its own production code or protected governance.
 - Unrestricted shell, device, account, network or filesystem access.
 - Always-on microphone, camera, location or sensor monitoring.
@@ -166,7 +166,7 @@ The release is accepted only when the following scenarios pass in both required 
 | PR-17 | Offline-mobile workflows complete with network disabled; cloud unavailability does not block local cognition, persistence, discovery or authorized local execution | Network-isolation test, local persistence/restart test and authorized/denied local operation traces |
 | PR-18 | Cloud runtime cannot authorize or execute a mobile-local operation, and neither runtime silently assumes the other's local state | Negative cross-boundary authorization tests and state-ownership assertions |
 
-Passing PR-11 demonstrates experience-dependent feedback, not general learning improvement. Any stronger learning claim requires the held-out evaluation standard in the architecture document.
+Passing PR-11 demonstrates experience-dependent feedback, not general learning improvement. A separate bounded local training experiment must establish that the selected model can be trained or fine-tuned, produce a versioned candidate artifact and be evaluated against a frozen baseline on leakage-controlled held-out data. A training job or lower training loss alone is not evidence of improvement.
 
 Numerical performance thresholds for latency, memory, storage and battery are intentionally deferred until baselines are measured on the target device. Acceptance must still report actual measurements and resource limitations; absence of a threshold does not permit omission of measurement.
 
