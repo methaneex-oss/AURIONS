@@ -1437,10 +1437,14 @@
         {
           "component": "Governance audit",
           "purpose": "Retains decision/revocation lineage and actor authority evidence."
+        },
+        {
+          "component": "Learning supervisor",
+          "purpose": "Consumes only approval decisions whose target_ref and operation_digest bind to a quarantined learning candidate; emits learning.update.accepted.v1 after verifying owner identity, exact evaluation lineage, policy and expiry."
         }
       ],
       "owner_transition_contract": "Append an explicit approval decision bound to exact operation digest, target, data scope, actor and expiry; it is not a provider dispatch.",
-      "consumer_transition_summary": "Governance approval subsystem: Append an explicit approval decision bound to exact operation digest, target, data scope, actor and expiry; it is not a provider dispatch. Intended consumers: Action gateway; Governance audit.",
+      "consumer_transition_summary": "Governance approval subsystem: Append an explicit approval decision bound to exact operation digest, target, data scope, actor and expiry; it is not a provider dispatch. Intended consumers: Action gateway; Governance audit. Intended consumers: Learning supervisor (for exact learning-candidate acceptance decisions).",
       "ordering_idempotency_contract": "Events are immutable and unique by event_id; aggregate revision and store-local event_sequence define order within the owning store. Consumers deduplicate by (consumer_id,event_id), persist checkpoints atomically with consumer effects, detect sequence gaps, and never assume a global order across databases. Causation/correlation IDs link cross-store saga steps.",
       "failure_recovery_contract": "Commit aggregate mutation with its event/outbox in one owning-store transaction. Deliver at least once; consumers must be idempotent. On crash replay from durable checkpoint; on missing predecessor hold and reconcile the gap; quarantine poison/unknown-version events without dropping them. Cross-store consumers use stable saga IDs and compensation/reconciliation, not distributed ACID assumptions.",
       "acceptance_scenario_refs": [
@@ -2240,7 +2244,7 @@
       "command_producers": [],
       "command_producer_binding_status": "unresolved",
       "producer_origin": "learning_supervisor",
-      "producer_trigger_contract": "Emitted when the Learning supervisor consumes an authenticated owner/governance acceptance decision bound to the exact quarantined learning-candidate digest, evaluation protocol, baseline and held-out results; it records acceptance only after all required gates pass. This event does not activate the candidate; the public acceptance command remains an API gap.",
+      "producer_trigger_contract": "Emitted when the Learning supervisor consumes an authenticated owner/governance acceptance decision bound to the exact quarantined learning-candidate digest, evaluation protocol, baseline and held-out results; it records acceptance only after all required gates pass. This event does not activate the candidate. The owner-facing decision is carried by the generic approval.request/approval.decide commands; no separate learning.accept command is required. The Learning supervisor is the non-command producer and emits this event only after validating the exact approval decision.",
       "owning_component": "Learning and evaluation subsystem",
       "consumer_contracts": [
         {
