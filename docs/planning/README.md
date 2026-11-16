@@ -20,6 +20,7 @@ This directory contains the canonical planning mirror, technical contracts, owne
 - [First-Release Acceptance Traceability Matrix](FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md) — traces PR-01…PR-20 to contracts, work packages, scenarios and evidence.
 - [Semantic Architecture Reconciliation Report](SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md) — maps concepts, state ownership, command/query/event surfaces, work packages and evidence.
 - [PR-19/PR-20 Model-Candidate Lifecycle Crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md) — exact learning/experiment/artifact/evaluation/approval/activation/rollback identity chain and remaining schema/DDL work.
+- [Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md) — all 16 owner-selected model/training decisions, their binding constraints, feasibility parameters and the MD-16 data-rights contract gap.
 - [MCU J.A.R.V.I.S. and Human Cognition Research](../research/MCU-JARVIS-AND-HUMAN-COGNITION-REFERENCE.md) — evidence-based engineering reference, separating MCU canon, neuroscience findings and design extrapolation.
 
 ## Technical contract matrices
