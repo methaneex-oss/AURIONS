@@ -4,25 +4,31 @@
 - **Revision baseline:** `docs/complete-system-architecture` at `62599932254bc5e17556ea368fe94c52df438691`.
 - **Authority:** Owner-accepted first-release product baseline PR-01…PR-20; D-04 command/query subset remains a builder proposal pending owner acceptance.
 - **Purpose:** Define one traceable, enforceable path from a model-training experiment to a governed active model artifact and a verifiable rollback.
+- **Model decision register:** [MD-01…MD-16 — Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md).
 - **Boundary:** This document does not authorize training, worker dispatch, model activation, implementation, PR merge or planning exit. Existing registries remain design-only/non-dispatchable.
 
 ## 1. Finding
 
-The repository already specifies the individual learning, worker, artifact, evaluation, approval and evolution mechanisms. The missing part is the end-to-end identity and persistence crosswalk between them.
+The current branch now contains most of the model-candidate identity and persistence crosswalk that the earlier draft identified as missing. The payload schemas and memory migration v8 have advanced; the earlier gap list was not updated consistently and must not be read as a description of the current files.
 
-The existing payloads expose distinct identifiers—`learning_update_id`, `experiment_id`, `attempt_id`, `job_id`, `artifact_id`, `evaluation_id`, `proposal_id`, `candidate_id`, approval `request_id` and active-pointer revision—but do not yet require all of the links needed to prove that they refer to the same candidate.
+Current contract coverage includes:
 
-Specific gaps confirmed against the current schemas and DDL:
+- `learningExperimentRequest` requires the learning-update identity, experiment identity, configuration digest, dataset split, training manifest, initialization method/artifact, architecture configuration, tokenizer artifact and random seed.
+- `learningExperimentCompleted`, `workerRequest` and `workerResult` carry the learning-update, experiment, attempt and job identities plus configuration-digest continuity.
+- Candidate-evaluation request/result payloads bind the source learning update, experiment, attempt, candidate artifact digest, baseline, dataset and protocol digests.
+- `evolutionProposed` carries candidate identity, source-learning lineage and candidate artifact digest when a candidate artifact is present. `evolutionCandidateActionRequest` has action-specific non-null requirements for activation and rollback.
+- Memory migration v8 adds owner-bound experiment/attempt/evaluation persistence, source-learning lineage, candidate identity and digest, a separate evolution evaluation, owner/mechanism-scoped active pointers, and append-only pointer history with compare-and-swap/history checks.
 
-1. `learningExperimentRequest` and `learningExperimentCompleted` do not carry a required `learning_update_id`; the worker request/result contracts do not explicitly carry the experiment/attempt identity and training-configuration digest.
-2. `learningCandidateEvaluationRequest` and `learningCandidateEvaluated` identify the candidate artifact, but do not require its source learning update, experiment and attempt identities.
-3. `learning_update_details` persists baseline/candidate/protocol/metrics/regression artifact IDs, but not experiment ID, attempt ID or the immutable candidate-evaluation ID.
-4. `evolution_proposals` stores a proposal ID and candidate artifact reference, but has no candidate ID, no explicit source-learning lineage and no candidate-specific artifact digest field. The lifecycle request/event schemas require candidate IDs.
-5. The proposed DDL has no owner-scoped, versioned active-candidate pointer or append-only pointer-transition history, although activation and rollback contracts depend on an exact active-pointer revision.
-6. Approval records can bind an exact operation digest, but the model-candidate activation digest's complete field set is not yet stated in one canonical contract.
-7. The `learning.update.accepted.v1` producer is an internal Learning-supervisor transition. Its trigger matrix says it consumes an authenticated owner/governance decision, but the event text incorrectly calls a public learning-acceptance command an API gap. The generic `approval.request` / `approval.decide` path can carry that decision; no separate `learning.accept` command is required if the exact target and digest are bound as specified below.
+The material remaining gaps are now narrower:
 
-These are design-contract omissions, not evidence that a working training or activation implementation exists.
+1. **Training-data rights are not a complete machine contract.** The generic permission payloads and artifact provenance fields do not bind each dataset source to license/usage terms, explicit private-data authorization, training purpose, scope, expiry and revocation. There is no dedicated dataset-source rights record or dataset-manifest schema proving that all included sources were authorized for training. See the [Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md), §4.
+2. **Lifecycle event state requirements are weaker than action-request requirements.** `evolutionCandidateLifecycle` requires only candidate ID, proposal ID, state, artifact reference and timestamp. For `active` and `rolled_back` states, approval, evaluation digests, pointer revision and restore/rollback evidence remain optional at the event-schema level. Add state-specific required fields and negative fixtures.
+3. **Candidate-ID derivation needs executable conformance.** The UUIDv5 rule in §2 is specified here, but runtime recomputation and valid/invalid conformance fixtures are not evidence-backed as implemented.
+4. **Approval digest verification and cross-store saga execution remain runtime work.** The memory DDL can bind pointer history to operation/approval references, but cannot itself prove authenticated owner identity or atomically verify governance-store approval consumption. The coordinator, recovery and reconciliation handlers are not implemented.
+5. **The migration is a proposed persistence contract, not an applied user database migration.** Host validation of selected DDL invariants does not prove target-device migration, application-handler, crash/replay or rollback behavior.
+6. **All related command/event entries remain design-only and non-dispatchable.** Schema and registry presence do not establish working runtime handlers. The event registry correctly models `learning.update.accepted.v1` as a Learning-supervisor transition consuming the generic owner-approval path; a separate public `learning.accept` command is not required.
+
+These are the current contract and implementation boundaries, not evidence that a working training, activation or rollback runtime exists.
 
 ## 2. Identity model — identifiers are not interchangeable
 
@@ -88,17 +94,23 @@ A candidate is not its proposal, artifact, evaluation or approval. The proposal 
 
 ## 4. Persistence and registry reconciliation required before implementation
 
-The following are the proposed contract amendments, not claims about the current files:
+The identity and persistence amendments listed in the earlier draft are now present in the current machine contracts:
 
-- Extend learning payloads with explicit `learning_update_id`, `experiment_id`, `attempt_id`, `job_id`, `configuration_digest` and `evaluation_id` bindings where applicable. A model-training worker request/result must echo its experiment/attempt identity and configuration digest.
-- Extend candidate-evaluation request/result payloads with the source learning update, experiment and attempt IDs and exact candidate artifact SHA-256.
-- Extend evolution proposal/lifecycle payloads with candidate identity, candidate artifact digest and source learning/evaluation references.
-- Add action-specific schema conditions: activation requires a non-null evaluation and approval reference; rollback requires a non-null approval and exact rollback reference. A nullable property being present is not equivalent to a valid reference.
-- Add an additive memory migration (next memory migration version) for the experiment/attempt/evaluation references in `learning_update_details`; source-learning lineage and candidate artifact ID/digest in `evolution_proposals`; an owner/mechanism-scoped `active_candidate_pointers` table with monotonic revision; and append-only candidate activation/rollback history. Existing proposals without verified candidate identity must remain non-activatable until explicitly reconciled; do not invent/backfill identities by inference.
-- Keep approval request/decision rows in `aurion_governance.db`; keep cross-store saga intent, steps and recovery in `aurion_events.db`; keep the active pointer and candidate/artifact projection in `aurion_memory.db`. No cross-file foreign key or distributed transaction is implied.
-- Update the command/event registries, fixtures, command transition matrix, event producer/consumer matrix, ingress trigger matrix, store-local saga matrix and validator assertions together. Do not make any registry entry dispatchable.
+- Learning experiment and worker payloads carry the learning-update, experiment, attempt and job identities plus configuration-digest continuity.
+- Candidate-evaluation payloads bind the source learning update, experiment and attempt to exact candidate, baseline, dataset and protocol digests.
+- Evolution proposal and action-request payloads carry candidate identity, source-learning lineage, candidate digest, evaluation references and action-specific activation/rollback requirements.
+- Memory migration v8 adds durable experiment/attempt/evaluation records, owner-bound source lineage, separate learning/evolution evaluations, owner/mechanism-scoped active pointers, append-only pointer history and compare-and-swap/history triggers.
+- Approval request/decision rows remain in `aurion_governance.db`; cross-store operation/saga intent and recovery remain in `aurion_events.db`; active pointers and candidate/artifact projections remain in `aurion_memory.db`. No cross-file foreign key or distributed ACID transaction is implied.
 
-The payload schemas require source learning-update, experiment and attempt identity plus configuration-digest continuity through worker completion; held-out evaluation binds the exact candidate artifact SHA-256. Activation and rollback requests require their action-specific approval/evaluation or rollback references. Memory migration v8 adds durable experiment/attempt/evaluation records, owner-bound source lineage, separate learning/evolution evaluations, owner/mechanism-scoped active pointers, append-only pointer history and compare-and-swap/history triggers. Exact-head host run [43939457017](https://github.com/methaneex-oss/AURIONS/actions/runs/43939457017) passed all nine steps on commit `da136f617757ce73265971a921c64e8e1ffdcd9d`, including eighteen-file SQLite execution and selected v8 positive/negative invariants.
+**Remaining contract amendments before implementation:**
+
+- Add the MD-16 dataset-source rights/authorization record and versioned dataset-manifest contract, including license/usage terms, explicit private-data authorization, purpose/scope, retention separation, revocation and derived-artifact impact lineage.
+- Strengthen `evolutionCandidateLifecycle` with state-specific required fields for active and rolled-back events. An activation event must carry the exact approval, both passing evaluation references/digests and pointer revision. A rollback event must carry its separate approval, rollback reference, restored candidate/artifact digest and pointer revision.
+- Add executable UUIDv5 candidate-identity conformance fixtures and canonical activation/rollback operation-digest fixtures.
+- Complete command/event producer-consumer, ingress-trigger and store-local saga matrices against the current registries. Preserve the existing design-only/non-dispatchable status until runtime handlers and acceptance tests exist.
+- Keep legacy rows without verified candidate identity non-activatable; never backfill identity by inference.
+
+The current payload schema and migration v8 are specification/persistence contracts, not proof of runtime implementation. Exact-head host run [43939457017](https://github.com/methaneex-oss/AURIONS/actions/runs/43939457017) passed all nine steps on commit `da136f617757ce73265971a921c64e8e1ffdcd9d`, including eighteen-file SQLite execution and selected v8 positive/negative invariants. That historical host result does not prove that the migration has been applied to a user database or that C++/Python handlers, governance verification, cross-store recovery or target-device behavior work.
 
 ## 5. Acceptance evidence mapping
 
@@ -114,6 +126,14 @@ The payload schemas require source learning-update, experiment and attempt ident
 Relevant integrated scenarios include CM-011…CM-013 for learning/outcome feedback and CM-017 for governed evolution. These scenarios are specifications, not executed runtime tests.
 
 ## 6. Closure boundary
+
+- **Specified:** the model-candidate identity model, lifecycle ordering, approval-digest contents, activation/rollback saga boundary and persistence responsibilities.
+- **Machine contracts present:** payload schemas and memory migration v8 encode most experiment/attempt/evaluation/candidate lineage and active-pointer persistence. Selected v8 DDL invariants have historical host validation evidence; the current contracts still need the MD-16 data-rights model and stronger lifecycle-event state requirements.
+- **Not implemented:** training worker, experiment execution, dataset-rights enforcement, candidate registry handlers, approval consumer, authenticated digest verification, active-pointer saga coordinator or runtime handlers. Migration v8 is a proposed DDL contract, not an applied user database migration.
+- **Not validated:** target-device training/resource feasibility, C++/Python runtime conformance, crash/replay/rollback execution, held-out model improvement, data-revocation impact handling or independent review.
+- **Owner gate:** existing D-04 remains a separate command/query-subset acceptance gate; it is not one of the 16 model decisions. Planning exit and implementation authorization remain separate explicit owner decisions.
+
+
 
 - **Specified by this document:** identifier semantics, lifecycle ordering, approval binding, activation/rollback saga boundary and the exact schema/DDL/validator work still required.
 - **Machine contracts amended — host validated:** payload schemas, coherent lineage fixtures, negative controls, migration v8 and selected DDL invariants now encode the PR-19/PR-20 identity and persistence links. The exact approval digest still requires runtime recomputation and authenticated governance-store verification; host DDL validation does not prove the cross-store saga.
