@@ -126,7 +126,7 @@ Initial query families: `environment.inspect`, `capability.search`, `capability.
 
 ### 4.2.1 Initial command payload registry
 
-The machine-readable [command/query registry](../../schemas/command-query-registry.v1.json), governed by `schemas/command-query-registry.v1.schema.json`, is the canonical versioned inventory. It records 45 command-envelope references (43 with request-payload mappings and two device commands deferred to the later multi-device phase) and 21 query-envelope, input and result mappings. Every entry is explicitly non-dispatchable while any required handler binding is unresolved. The tables below remain the human-readable payload crosswalk; they do not authorize runtime registration.
+The machine-readable [command/query registry](../../schemas/command-query-registry.v1.json), governed by `schemas/command-query-registry.v1.schema.json`, is the canonical versioned inventory. It contains 54 command records (52 mapped and two explicitly deferred device commands) and 29 query records. All 54 command records bind the common envelope; 52 bind request-payload schemas and two deferred commands have no first-release payload schema. All 29 queries bind their envelope, input and result contracts. Every entry remains design-only/non-dispatchable; registry presence is not dispatch authorization. The tables below remain the human-readable payload crosswalk; they do not authorize runtime registration.
 
 The following table binds the initial command families to request-body schemas. The registry is extensible; it is not a closed list of behaviours or Android capabilities. Command handlers MUST validate the body against the registered schema version before state mutation. The event emitted after a successful command remains a separate immutable event and must use the event-body mapping in Section 4.3.
 
@@ -224,7 +224,7 @@ Every event includes the common envelope and an immutable event body. Initial ev
 
 #### Event-body schema binding
 
-Every event body MUST validate against exactly one versioned payload schema before persistence or publication. The common envelope's `message_type` selects the event contract; the payload schema does not grant authority. The following table is the human-readable event-to-body mapping. The machine-readable companion `schemas/event-registry.v1.json`, validated by `schemas/event-registry.v1.schema.json`, records all 84 event names, payload schema references and body-fixture references. The registry is a design baseline only: every entry remains non-dispatchable with unresolved runtime handler, consumer semantics, owner transition and event-specific acceptance bindings.
+Every event body MUST validate against exactly one versioned payload schema before persistence or publication. The common envelope's `message_type` selects the event contract; the payload schema does not grant authority. The following table is the human-readable event-to-body mapping. The machine-readable companion `schemas/event-registry.v1.json`, validated by `schemas/event-registry.v1.schema.json`, records all 89 event names, payload schema references and body-fixture references. The registry is a design baseline only: every entry remains non-dispatchable with unresolved runtime handler, consumer semantics, owner transition and event-specific acceptance bindings.
 
 | Event family | Payload definition |
 |---|---|
