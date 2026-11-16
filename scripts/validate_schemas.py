@@ -148,7 +148,7 @@ def main() -> int:
             "aurion_memory.migration_v3.sql", "aurion_memory.migration_v4.sql",
             "aurion_memory.migration_v5.sql", "aurion_memory.migration_v6.sql",
             "aurion_memory.migration_v7.sql",
-            "aurion_memory.migration_v8.sql",
+            "aurion_memory.migration_v8.sql", "aurion_memory.migration_v9.sql",
         ],
         "aurion_events.db": [
             "aurion_events.base.sql", "aurion_events.migration_v2.sql",
@@ -157,7 +157,7 @@ def main() -> int:
         ],
         "aurion_governance.db": [
             "aurion_governance.base.sql", "aurion_governance.migration_v2.sql",
-            "aurion_governance.migration_v3.sql", "aurion_governance.migration_v4.sql",
+            "aurion_governance.migration_v3.sql", "aurion_governance.migration_v4.sql", "aurion_governance.migration_v5.sql",
         ],
     }
     store_tables = {}
@@ -1032,7 +1032,7 @@ def main() -> int:
     # Validate integrated scenario contracts as design fixtures, not runtime tests.
     scenario_document = load(FIXTURES / "scenario-contracts.fixture.json")
     scenarios = scenario_document["scenarios"]
-    if len(scenarios) != 47:
+    if len(scenarios) != 48:
         fail(f"scenario contract fixture expected 48 scenarios, found {len(scenarios)}")
     known_commands = {item["command_type"] for item in commands}
     known_queries = {item["query_type"] for item in queries}
@@ -1075,7 +1075,7 @@ def main() -> int:
             fail(f"{scenario_id}: scenario fixture cannot imply execution or authority")
 
     required_scenario_ids = {
-        *(f"INT-{number:03d}" for number in range(1, 4)),
+        *(f"INT-{number:03d}" for number in range(1, 5)),
         *(f"CM-{number:03d}" for number in range(1, 30)),
         *(f"AD-{number:03d}" for number in range(1, 16)),
     }

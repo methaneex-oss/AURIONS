@@ -183,6 +183,7 @@ def test_memory() -> None:
         "aurion_memory.migration_v6.sql",
         "aurion_memory.migration_v7.sql",
         "aurion_memory.migration_v8.sql",
+        "aurion_memory.migration_v9.sql",
     ])
     require_columns(db, "objective_records", {
         "objective_id", "owner_ref", "version", "success_evidence_json"
@@ -649,6 +650,121 @@ def test_memory() -> None:
     db.close()
 
 
+    require_columns(db, "dataset_manifests", {
+        "manifest_id", "owner_ref", "model_family_ref", "training_purpose",
+        "manifest_digest", "rights_policy_snapshot_digest",
+    })
+    require_columns(db, "dataset_manifest_sources", {
+        "manifest_id", "source_ref", "source_content_sha256", "authorization_id",
+        "authorization_record_digest", "license_or_terms_digest", "owner_ref",
+    })
+    require_columns(db, "dataset_manifest_seals", {
+        "manifest_id", "manifest_digest", "authorization_check_digest", "sealed_at_ms",
+    })
+    require_columns(db, "dataset_admission_decisions", {
+        "admission_id", "manifest_id", "outcome", "denial_reason", "evidence_refs_json",
+    })
+    require_columns(db, "dataset_revocation_impacts", {
+        "impact_id", "authorization_id", "authorization_record_digest",
+        "operation_ref", "findings_digest", "influence_state", "disposition",
+    })
+    manifest_id = bytes([31]) * 16
+    manifest_digest = "a" * 64
+    db.execute(
+        """INSERT INTO dataset_manifests
+        (manifest_id,schema_version,owner_ref,model_family_ref,training_purpose,
+         model_generation_ref,tokenizer_artifact_ref,manifest_artifact_ref,manifest_digest,
+         rights_policy_snapshot_ref,rights_policy_snapshot_digest,authorization_evaluated_at_ms,
+         created_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (manifest_id,"1.0","owner-dataset","model-family","foundation_pretraining",
+         "generation-1","artifact:tokenizer","artifact:manifest",manifest_digest,
+         "rights-policy:v1","b"*64,10,11),
+    )
+    db.execute(
+        """INSERT INTO dataset_manifest_sources
+        (manifest_id,source_ref,source_content_sha256,authorization_id,
+         authorization_record_digest,license_or_terms_digest,source_artifact_ref,
+         transformation_lineage_json,owner_ref,model_family_ref)
+        VALUES (?,?,?,?,?,?,?,?,?,?)""",
+        (manifest_id,"source:one","c"*64,bytes([32])*16,"d"*64,"e"*64,
+         "artifact:source","[]","owner-dataset","model-family"),
+    )
+    for split_type in ("train","validation","held_out"):
+        db.execute(
+            """INSERT INTO dataset_manifest_splits
+            (manifest_id,split_type,split_ref,split_digest) VALUES (?,?,?,?)""",
+            (manifest_id,split_type,"split:"+split_type,"f"*64),
+        )
+    db.execute(
+        """INSERT INTO dataset_manifest_seals
+        (manifest_id,manifest_digest,authorization_check_digest,sealed_at_ms,supervisor_ref)
+        VALUES (?,?,?,?,?)""",
+        (manifest_id,manifest_digest,"1"*64,12,"dataset-supervisor"),
+    )
+    db.execute(
+        """INSERT INTO dataset_admission_decisions
+        (admission_id,manifest_id,owner_ref,model_family_ref,training_purpose,outcome,
+         denial_reason,authorization_id,policy_version_ref,worker_job_ref,evidence_refs_json,checked_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([33])*16,manifest_id,"owner-dataset","model-family","foundation_pretraining",
+         "blocked","revoked",bytes([32])*16,"policy:v1",None,'["revocation:one"]',13),
+    )
+    db.commit()
+    expect_integrity_error(
+        db, "memory immutable dataset manifest",
+        "UPDATE dataset_manifests SET manifest_digest=? WHERE manifest_id=?",
+        ("2"*64,manifest_id),
+    )
+    expect_integrity_error(
+        db, "memory immutable dataset source membership",
+        "DELETE FROM dataset_manifest_sources WHERE manifest_id=?",
+        (manifest_id,),
+    )
+    bad_manifest = bytes([34]) * 16
+    db.execute(
+        """INSERT INTO dataset_manifests
+        (manifest_id,schema_version,owner_ref,model_family_ref,training_purpose,
+         model_generation_ref,tokenizer_artifact_ref,manifest_artifact_ref,manifest_digest,
+         rights_policy_snapshot_ref,rights_policy_snapshot_digest,authorization_evaluated_at_ms,
+         created_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (bad_manifest,"1.0","owner-dataset","model-family","foundation_pretraining",
+         "generation-1","artifact:tokenizer","artifact:manifest:bad","2"*64,
+         "rights-policy:v1","b"*64,14,14),
+    )
+    db.execute(
+        """INSERT INTO dataset_manifest_sources
+        (manifest_id,source_ref,source_content_sha256,authorization_id,
+         authorization_record_digest,license_or_terms_digest,source_artifact_ref,
+         transformation_lineage_json,owner_ref,model_family_ref)
+        VALUES (?,?,?,?,?,?,?,?,?,?)""",
+        (bad_manifest,"source:bad","3"*64,bytes([35])*16,"4"*64,"5"*64,
+         "artifact:source:bad","[]","owner-dataset","model-family"),
+    )
+    db.execute(
+        """INSERT INTO dataset_manifest_splits
+        (manifest_id,split_type,split_ref,split_digest) VALUES (?,?,?,?)""",
+        (bad_manifest,"train","split:train","f"*64),
+    )
+    expect_integrity_error(
+        db, "memory reject incomplete dataset manifest seal",
+        """INSERT INTO dataset_manifest_seals
+        (manifest_id,manifest_digest,authorization_check_digest,sealed_at_ms,supervisor_ref)
+        VALUES (?,?,?,?,?)""",
+        (bad_manifest,"2"*64,"1"*64,15,"dataset-supervisor"),
+    )
+    expect_integrity_error(
+        db, "memory reject admission without sealed manifest",
+        """INSERT INTO dataset_admission_decisions
+        (admission_id,manifest_id,owner_ref,model_family_ref,training_purpose,outcome,
+         denial_reason,authorization_id,policy_version_ref,worker_job_ref,evidence_refs_json,checked_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([36])*16,bad_manifest,"owner-dataset","model-family","foundation_pretraining",
+         "admitted",None,bytes([35])*16,"policy:v1","job:bad","[]",16),
+    )
+
+
 def test_events() -> None:
     db = execute_chain("events", [
         "aurion_events.base.sql",
@@ -917,6 +1033,7 @@ def test_governance() -> None:
     db = execute_chain("governance", [
         "aurion_governance.base.sql", "aurion_governance.migration_v2.sql",
         "aurion_governance.migration_v3.sql", "aurion_governance.migration_v4.sql",
+        "aurion_governance.migration_v5.sql",
     ])
     require_columns(db, "outbox", {
         "outbox_id", "message_id", "destination", "envelope_json", "state",
@@ -1069,6 +1186,62 @@ def test_governance() -> None:
     validate_query_projection_source_columns("aurion_governance.db", db)
     check_database("governance projection smoke", db)
     db.close()
+
+
+    require_columns(db, "dataset_source_authorizations", {
+        "authorization_id", "owner_ref", "source_ref", "source_content_sha256",
+        "license_or_terms_digest", "permitted_purposes_json", "training_permission",
+        "memory_retention_permission", "private_data_authorization_ref", "record_digest",
+    })
+    require_columns(db, "dataset_source_authorization_revocations", {
+        "revocation_id", "authorization_id", "authorization_record_digest",
+        "approval_request_id", "operation_id", "revocation_digest",
+    })
+    authorization_id = bytes([41]) * 16
+    approval_request_id = bytes([42]) * 16
+    operation_id = bytes([43]) * 16
+    db.execute(
+        """INSERT INTO approval_requests
+        (request_id,operation_id,requester_id,operation_digest,operation_summary,risk_class,
+         data_categories_json,policy_version_ref,requested_at_ms,expires_at_ms,state)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        (approval_request_id,operation_id,"owner-dataset","a"*64,"dataset source authorization",
+         "R5",'["training_data"]',"policy:v1",1,100,"approved"),
+    )
+    db.execute(
+        """INSERT INTO dataset_source_authorizations
+        (authorization_id,authorization_revision,owner_ref,source_ref,source_content_sha256,
+         source_origin_json,rights_holder_ref,authorization_basis,license_or_terms_ref,
+         license_or_terms_digest,permitted_purposes_json,training_permission,
+         memory_retention_permission,private_data_classification,private_data_authorization_ref,
+         project_ref,model_family_ref,dataset_scope_ref,policy_version_ref,valid_from_ms,
+         expires_at_ms,decision_state,approval_request_id,decision_ref,supersedes_authorization_id,
+         created_at_ms,record_digest)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (authorization_id,1,"owner-dataset","source:one","b"*64,'{"method":"licensed"}',
+         "rights-holder:one","license","license:one","c"*64,'["foundation_pretraining"]',
+         "allow","deny","public",None,"project:one","model-family","dataset:one","policy:v1",
+         1,90,"active",approval_request_id,"decision:one",None,2,"d"*64),
+    )
+    db.execute(
+        """INSERT INTO dataset_source_authorization_revocations
+        (revocation_id,authorization_id,authorization_record_digest,owner_ref,actor_identity,
+         approval_request_id,operation_id,reason_ref,policy_version_ref,revoked_at_ms,revocation_digest)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([44])*16,authorization_id,"d"*64,"owner-dataset","owner-session:one",
+         approval_request_id,operation_id,"reason:withdrawn","policy:v1",3,"e"*64),
+    )
+    db.commit()
+    expect_integrity_error(
+        db, "governance immutable dataset authorization",
+        "UPDATE dataset_source_authorizations SET decision_state='denied' WHERE authorization_id=?",
+        (authorization_id,),
+    )
+    expect_integrity_error(
+        db, "governance append-only dataset revocation",
+        "DELETE FROM dataset_source_authorization_revocations WHERE authorization_id=?",
+        (authorization_id,),
+    )
 
 
 def main() -> int:

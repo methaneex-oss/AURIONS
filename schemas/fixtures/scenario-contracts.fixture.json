@@ -7388,7 +7388,9 @@
       "title": "INT-004 — dataset authorization, admission and revocation impact",
       "purpose": "Verify permission-governed dataset source decisions, immutable manifest sealing, fail-closed worker admission and cross-store revocation impact without treating memory retention as training permission or claiming automatic unlearning.",
       "source_scenario_ids": [
-        "INT-004"
+        "CM-011",
+        "CM-012",
+        "CM-013"
       ],
       "contract_refs": [
         "payload:datasetSourceAuthorization",
