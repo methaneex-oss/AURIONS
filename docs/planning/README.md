@@ -13,12 +13,14 @@ This directory contains the canonical planning mirror, technical contracts, owne
 
 ## Product, architecture and roadmap
 
-- [First Usable Release Definition](../product/FIRST-USABLE-RELEASE-DEFINITION.md) — proposed PR-01…PR-20 acceptance baseline.
-- [Cloud and Offline-Mobile Runtime Topology Decision](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md) — compares independent histories, selective synchronization and cloud-compute options; continuity remains an owner decision.
+- [First Usable Release Definition](../product/FIRST-USABLE-RELEASE-DEFINITION.md) — owner-accepted PR-01…PR-20 first-release baseline (2026-11-16).
+- [Cloud and Offline-Mobile Runtime Topology Decision](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md) — records D-02 Option B selected; detailed selective-sync contracts remain in progress.
 - [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md) — WP-00…WP-16 sequence and dependency boundaries.
 - [Work-Package Traceability and Exit Matrix](WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md) — owners, inputs/outputs, acceptance, recovery evidence and external gates.
 - [First-Release Acceptance Traceability Matrix](FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md) — traces PR-01…PR-20 to contracts, work packages, scenarios and evidence.
 - [Semantic Architecture Reconciliation Report](SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md) — maps concepts, state ownership, command/query/event surfaces, work packages and evidence.
+- [PR-19/PR-20 Model-Candidate Lifecycle Crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md) — exact learning/experiment/artifact/evaluation/approval/activation/rollback identity chain and remaining schema/DDL work.
+- [MCU J.A.R.V.I.S. and Human Cognition Research](../research/MCU-JARVIS-AND-HUMAN-COGNITION-REFERENCE.md) — evidence-based engineering reference, separating MCU canon, neuroscience findings and design extrapolation.
 
 ## Technical contract matrices
 
@@ -51,6 +53,6 @@ This directory contains the canonical planning mirror, technical contracts, owne
 
 ## Evidence and authority boundary
 
-The current planning fixture/schema CI has passed on scenario-expansion code HEAD `a38494b4610a0fa9870908950a1a7336dcb4c2b2` (workflow run [43440727107](https://github.com/methaneex-oss/AURIONS/actions/runs/43440727107)). It validates schemas/fixtures, governance document structure, work-package graph structure, host SQLite DDL/migration smoke tests and Android probe shell syntax. It does not prove production handlers, executed cognitive behaviour, cross-store saga recovery, target Android/Termux behaviour, C++/Python conformance, production security or independent review.
+Historical structural CI evidence: scenario-expansion HEAD `a38494b4610a0fa9870908950a1a7336dcb4c2b2` passed workflow run [43440727107](https://github.com/methaneex-oss/AURIONS/actions/runs/43440727107). That run validated schemas/fixtures, governance structure, work-package graph, host SQLite DDL/migration smoke tests and Android probe syntax on that historical revision. It is not exact-head evidence for the current branch. It does not prove production handlers, executed cognitive behaviour, cross-store saga recovery, target Android/Termux behaviour, C++/Python conformance, production security or independent review.
 
-The builder recommendation is not an owner decision. The first Android action, cloud/mobile history topology, first-release product definition and first-release command/query subset remain subject to owner resolution. Target-device, toolchain, dependency and security evidence must be passed or explicitly staged with restrictions. Planning exit and implementation require separate explicit owner approval. PR #2 remains draft/open/unmerged.
+Owner decisions as of 2026-11-16: D-01 first-release definition ACCEPTED; D-02 Option B SELECTED; D-03 first Android action STAGED; D-04 command/query subset BUILDER PROPOSAL PENDING OWNER ACCEPTANCE. Target-device, toolchain, dependency and security evidence must be passed or explicitly staged with restrictions. Planning exit and implementation require separate explicit owner approval. PR #2 remains draft/open/unmerged.
