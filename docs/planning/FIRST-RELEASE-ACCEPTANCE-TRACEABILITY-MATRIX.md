@@ -1,7 +1,7 @@
 # AURIONS — First-Release Acceptance Traceability Matrix
 
 - **Status:** Builder reconciliation artifact; specified, not independently reviewed or runtime-validated.
-- **Authority:** The proposed First Usable Release Definition supplies PR-01…PR-18. The owner decision register remains authoritative for owner-reserved choices.
+- **Authority:** The proposed First Usable Release Definition supplies PR-01…PR-20. The owner decision register remains authoritative for owner-reserved choices.
 - **Purpose:** Trace every first-release acceptance condition to the contracts, owning work packages, scenario evidence and unresolved gates needed to implement and verify it.
 - **Boundary:** This matrix does not approve the proposed product definition, authorize implementation, select the first Android action, or settle cloud/mobile history topology.
 
@@ -43,7 +43,7 @@
 
 ### 3.1 Product acceptance is broader than current CI
 
-Current CI validates schema/fixture structure, governance-document integrity, work-package graph structure, host SQLite DDL/migration smoke execution and Android probe shell syntax. It does not execute PR-01…PR-18. The acceptance IDs above are release obligations, not passing test IDs.
+Current CI validates schema/fixture structure, governance-document integrity, work-package graph structure, host SQLite DDL/migration smoke execution and Android probe shell syntax. It does not execute PR-01…PR-20. The acceptance IDs above are release obligations, not passing test IDs.
 
 ### 3.2 Cloud/mobile topology is a material acceptance dependency
 
@@ -59,4 +59,4 @@ PR-11 demonstrates persistent experience-dependent feedback. General improvement
 
 ## 4. Builder completion boundary
 
-This matrix closes a missing builder-owned traceability artifact only after its PR-01…PR-18 inventory is checked against the product definition and canonical WP-00…WP-16 roadmap. It does not close runtime implementation, platform evidence, independent review, product approval, owner-reserved topology/action choices, planning exit or implementation authorization.
+This matrix closes a missing builder-owned traceability artifact only after its PR-01…PR-20 inventory is checked against the product definition and canonical WP-00…WP-16 roadmap. It does not close runtime implementation, platform evidence, independent review, product approval, owner-reserved topology/action choices, planning exit or implementation authorization.
