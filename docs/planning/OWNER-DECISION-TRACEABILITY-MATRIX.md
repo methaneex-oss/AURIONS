@@ -63,7 +63,25 @@
 | Contextual sharing/private information | Data minimization, explicit approval for sensitive external disclosure, provider scope and durable disclosure audit. | R3/R4 policy; AU tests; disclosure audit | SPECIFIED. Actual egress enforcement and penetration tests outstanding. |
 | 30-day historical-backup expiry | Immediate active deletion, index/reference cleanup, tombstones, exclusion from future backups and historical expiry within 30 days. | ART and SY deletion tests; retention job schema | SPECIFIED. Execution and restore tests outstanding. |
 
-## 5. First-release product decisions and explicit owner gates
+## 5. Model architecture and training decisions — MD-01…MD-16
+
+The complete owner-selected wording is maintained in [Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md) and is consolidated as normative engineering direction in [Initial Engineering Specification §27](INITIAL-ENGINEERING-SPECIFICATION.md). All sixteen model-design decisions are closed as owner preferences; do not reopen them as a questionnaire. Engineering parameters remain subject to research, feasibility measurements and implementation evidence.
+
+| Decision group | Owner-selected direction | Primary work-package trace | Current contract/evidence state |
+|---|---|---|---|
+| MD-01…MD-03 | AURIONS-owned general-purpose language foundation model; decoder-only causal Transformer; small random-initialized baseline with evidence-led scaling | WP-05, WP-14 | Normative specification recorded; no production trainer or trained baseline |
+| MD-04…MD-06 | AURIONS multilingual tokenizer; staged next-token-first objectives; curated expanding multilingual/multidomain corpus | WP-05, WP-14 | Normative specification recorded; tokenizer, corpus and objective manifests remain engineering work |
+| MD-07 | Hybrid local development and approved remote/cloud GPU training; local inference/offline operation independent | WP-05, WP-14, WP-15 | Architecture direction recorded; compute feasibility and provider validation remain open |
+| MD-08…MD-09 | Multi-timescale continual learning; layered evaluation, quarantine and governed candidate progression | WP-12, WP-13, WP-14 | PR-19/PR-20 identity and persistence contracts partly host-validated; runtime learning/evolution remains unimplemented |
+| MD-10…MD-13 | Replaceable local/cloud inference for AURIONS-owned artifacts; staged instruction/preference/outcome learning; progressive context scaling; text-first extensible multimodal design | WP-05, WP-12, WP-15 | Normative specification recorded; inference and capability measurements remain open |
+| MD-14…MD-15 | Tiered multilingual development including explicit Nigerian-language evaluation; adaptive evidence-driven curriculum | WP-05, WP-12, WP-14 | Normative specification recorded; language tiers, curriculum manifests and evaluation evidence remain open |
+| MD-16 | Permission-governed dataset-source ingestion, license/usage checks, explicit private-data authorization, separation of memory/training permission, revocation and derived-artifact impact lineage | WP-02, WP-05, WP-12, WP-14 | **BLOCKING CONTRACT GAP:** current generic permission/artifact payloads do not yet encode a complete source-rights and versioned dataset-manifest lifecycle. Close before nontrivial corpus ingestion or training. |
+
+**Cross-cutting non-negotiables:** no third-party pretrained weights or hosted commercial LLM as the primary brain; no hardcoded language/subject-to-behaviour mappings; experience or memory retention does not automatically update weights; workers cannot authorize themselves or activate candidates; model training, learning evaluation, governed evolution evaluation, owner approval, activation and rollback remain distinct.
+
+**PR-19/PR-20 evidence boundary:** the current contracts include experiment/attempt/job lineage, candidate artifact digest, separate learning/evolution evaluation persistence, active-pointer history and a positive UUIDv5 candidate-identity validator fixture. The remaining machine-contract gaps are MD-16 dataset rights/manifests, state-specific `active`/`rolled_back` lifecycle-event requirements, activation/rollback digest fixtures and negative candidate-ID mismatch coverage. Runtime workers, evaluators, authenticated approval consumption and cross-store saga/recovery are not implemented.
+
+## 6. First-release product decisions and explicit owner gates
 
 | Owner decision / gate | Authoritative source | Architectural disposition | Contract / acceptance trace | Status / remaining gap |
 |---|---|---|---|---|
@@ -73,7 +91,7 @@
 | First permitted Android local action | First Usable Release Definition §8.3 and PR-07 | General objective-led interaction model is platform-independent; Android OS permission and gateway are one realization. Example actions are illustrative only. | PR-07; INT-003; AD-001…AD-015; WP-11, WP-15 | **STAGED BY OWNER (2026-11-16).** No action is selected or authorized; await target Android/Termux validation. |
 | Approval of the first-release product definition | First Usable Release Definition §9 | Owner-accepted PR-01…PR-20 is the first-release product baseline and release acceptance gate; acceptance is not implementation or validation. | PR-01…PR-20; WP-15 | **OWNER ACCEPTED (2026-11-16).** D-01 accepted PR-01…PR-20 as the first-release product baseline; implementation and planning exit remain unauthorized. |
 
-## 6. Traceability limitations and completion rule
+## 7. Traceability limitations and completion rule
 
 - This matrix maps the current documented owner decisions; it does not authorize changes to them.
 - Engineering details in architecture/contracts remain proposals until owner approval where they materially affect product behaviour, privacy, authority or release scope.
