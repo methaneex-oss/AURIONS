@@ -6,7 +6,7 @@ This repository is the implementation home for the adaptive, persistent intellig
 
 > Engineer the mechanisms; let behaviour be acquired through experience.
 
-The system is not intended to be a chatbot wrapper or a collection of hardcoded stimulus-to-response rules. Learning must be demonstrated through persistent, experience-dependent changes and repeatable evaluation.
+AURIONS is a trainable AI system with an evolving cognitive architecture. It is not a personal-assistant product or chatbot; conversation is an interface capability, not its identity.
 
 ## Project status
 
