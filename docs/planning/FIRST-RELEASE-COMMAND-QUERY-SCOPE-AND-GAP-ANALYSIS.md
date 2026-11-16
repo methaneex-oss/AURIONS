@@ -1,6 +1,6 @@
 # First-Release Command/Query Scope and Gap Analysis
 
-**Status:** Builder analysis and proposed scope; not owner-approved, not dispatchable, and not implementation authorization.  
+**Status:** Builder analysis; D-01 accepted and D-02 Option B selected on 2026-11-16; D-04 subset remains pending owner acceptance. No registry entry is dispatchable and this is not implementation authorization.  
 **Applies to:** BR-001 and BR-002 in the 2026-11-12 main-builder pre-review audit.  
 **Source revision examined:** PR #2 branch `docs/complete-system-architecture`, head `6988b0e3f849a681b663e2a88433347e3ded6671`.  
 **Source artifacts:** `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`, `docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md`, `docs/architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md`, and `schemas/command-query-registry.v1.json`.
@@ -78,7 +78,7 @@ P0 means required to support the workflow contract in the proposed first release
 ### 3.5 Excluded from first-release dispatch
 
 - `device.pair` and `device.revoke`: remain deferred multi-device operations.
-- Learning candidate training/evaluation/activation, self-model updates and evolution activation: not required to demonstrate PR-11 experience retrieval/use; protected learning/evolution remains a later separately gated phase.
+- Unrestricted self-model/evolution activation and protected policy/value changes are excluded from first-release dispatch. The bounded training/evaluation path required by PR-19/PR-20 is in scope: `learning.experiment.submit` and `learning.candidate.evaluate` are P0 candidates for reproducible parameter-update experiments, held-out evaluation and candidate quarantine. `learning.update.propose` is a P0 candidate for evidence-linked experience-dependent adaptation. Candidate activation/rollback remains separately governed; exact lifecycle and approval linkage must be traced before D-04 is finalized. All remain design-only/non-dispatchable pending owner acceptance and implementation gates.
 - Any command or query whose owner, aggregate, data scope, semantics or per-entry acceptance evidence remains unresolved.
 
 ## 4. Foundational open-world command/query gaps
@@ -208,3 +208,8 @@ These are bounded source-level cross-reference checks executed against retrieved
 - The proposed objective/world/means/interaction interfaces are not yet canonical registry entries with request/response contracts, authoritative aggregate/persistence bindings, event mappings and executable acceptance tests.
 
 **Builder verdict for this increment:** The scope analysis is internally cross-referenced at the structural level, but it does not close BR-001 or BR-002. Both remain OPEN and blocking. The registry remains design-only/non-dispatchable. Do not hand off for independent review or final testing until the remaining builder-owned technical contracts and self-review are complete. Owner-reserved product/topology/action decisions remain explicitly outside builder authority.
+
+
+## 11. Owner-decision reconciliation — 2026-11-16
+
+D-01 is accepted; D-02 Option B is selected; D-03 is staged; D-04 remains pending owner acceptance. The registry contains 54 command records and 29 query records; exact proposed identifiers must be derived from the registry at the final planning HEAD, not stale prose. No entry becomes dispatchable by inclusion in a proposal. The first-release subset must include the full bounded training path: reproducible experiment submission, worker budgets/cancellation, immutable artifact provenance, held-out evaluation, quarantine and separately governed activation/rollback. The registry includes `learning.experiment.submit`, `learning.candidate.evaluate` and `learning.update.propose`; their dependencies and PR-19/PR-20 lifecycle coverage remain to be proven. Option B's candidate domains are durable experience/provenance, representations, memory and evidence-backed beliefs, objectives/derived goals, and approved immutable model-version references. Sensitive raw observations, transient context, execution checkpoints, local capabilities, permissions, credentials, approvals and governance authority remain local by default. Field-level classification and executable SY tests remain open.
