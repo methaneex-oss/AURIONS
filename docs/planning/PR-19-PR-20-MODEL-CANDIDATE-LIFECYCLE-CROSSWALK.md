@@ -104,7 +104,7 @@ The identity and persistence amendments listed in the earlier draft are now pres
 
 **Remaining contract amendments before implementation:**
 
-- Add the MD-16 dataset-source rights/authorization record and versioned dataset-manifest contract, including license/usage terms, explicit private-data authorization, purpose/scope, retention separation, revocation and derived-artifact impact lineage.
+- The [MD-16 dataset-source rights and training-authorization contract](DATASET-SOURCE-RIGHTS-AND-TRAINING-AUTHORIZATION-CONTRACT.md) now specifies source-rights records, immutable manifests, admission, revocation and derived-artifact impact. Still add machine-readable schemas/fixtures, persistence, trusted events and executable enforcement.
 - Strengthen `evolutionCandidateLifecycle` with state-specific required fields for active and rolled-back events. An activation event must carry the exact approval, both passing evaluation references/digests and pointer revision. A rollback event must carry its separate approval, rollback reference, restored candidate/artifact digest and pointer revision.
 - Add canonical activation/rollback operation-digest fixtures and negative candidate-ID mismatch coverage. The positive UUIDv5 fixture and validator recomputation already exist; runtime handler conformance remains unimplemented.
 - Complete command/event producer-consumer, ingress-trigger and store-local saga matrices against the current registries. Preserve the existing design-only/non-dispatchable status until runtime handlers and acceptance tests exist.
