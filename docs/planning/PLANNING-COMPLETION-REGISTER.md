@@ -14,7 +14,7 @@
 
 The current product/roadmap reconciliation records the owner's clarified product identity: **AURIONS is a trainable AI system with an evolving cognitive architecture, not a personal-assistant product or chatbot.** Conversation is an interface capability, not the system identity.
 
-The first-release proposal now includes a bounded, reproducible model-training path alongside experience-dependent adaptation. Acceptance criteria PR-19 and PR-20 cover parameter-update provenance, held-out evaluation, candidate quarantine, governed activation and rollback. This is a proposed planning baseline; it does not claim that training infrastructure or model learning is implemented.
+The owner accepted PR-01…PR-20 as the first-release product baseline on 2026-11-16. It includes a bounded, reproducible model-training path alongside experience-dependent adaptation; PR-19 covers training provenance/reproducibility and PR-20 covers held-out evaluation, quarantine, governed activation and rollback. Product-scope acceptance does not claim that training infrastructure or model learning is implemented or validated.
 
 The work-package dependency correction removes the circular ordering: WP-14 supplies the isolated training/evaluation infrastructure and depends on WP-01, WP-02, WP-03, WP-04 and WP-05; WP-12 consumes WP-14; WP-15 includes WP-14 in the first-release path. The updated validator enforces these edges and the PR-01…PR-20 acceptance inventory.
 
@@ -790,6 +790,25 @@ The eight new scenarios add 32 ordered steps and eight negative controls. The re
 - D-01 — First Usable Release Definition PR-01…PR-20: **OWNER ACCEPTED**. This is product-scope acceptance, not implementation, validation or planning-exit approval.
 - D-02 — Cloud/mobile cognitive-history continuity: **OPTION B SELECTED**. WP-15 must include bounded selective domain synchronization. Exact field-level data allowlists, local-only classes, causal/revision semantics, conflict/deletion/recovery rules and executable SY evidence remain open.
 - D-03 — First permitted Android local action: **STAGED** pending empirical validation of the owner-selected Android/Termux target and permission/runtime lifecycle. No action is selected or authorized.
-- D-04 — First-release command/query subset: **BUILDER PROPOSAL PREPARED; OWNER ACCEPTANCE PENDING**. The current registry has 54 commands and 29 queries. A proposed P0/P1 subset is recorded in FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md §12. All entries remain design-only/non-dispatchable. The exact list has been checked against the registry names; semantic bindings, acceptance evidence and owner acceptance remain outstanding.
+- D-04 — First-release command/query subset: **BUILDER PROPOSAL PREPARED; OWNER ACCEPTANCE PENDING**. The current registry has 54 commands and 29 queries. The proposed P0/P1 subset is recorded in FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md §12. The PR-19/PR-20 model-candidate lifecycle design crosswalk is now documented in PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md. The crosswalk identifies required payload, DDL and validator amendments that are not yet integrated or validated. All entries remain design-only/non-dispatchable; exact D-04 owner acceptance is still pending.
 
 These decisions do not close planning. Remaining blockers include full semantic reconciliation, target/runtime evidence, C++/Python conformance, dependency/security gates, exact-head builder self-review, independent review and separate owner planning-exit/implementation authorization. PR #2 remains draft/open/unmerged.
+
+
+## 2026-11-16 builder continuation — documentation audit and research
+
+The builder resumed from the previously verified PR #2 HEAD `62599932254bc5e17556ea368fe94c52df438691`, preserving the existing branch and owner decisions. This continuation is documentation/research work only.
+
+### Completed in this continuation
+- Added [PR-19/PR-20 Model-Candidate Lifecycle Crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md). It distinguishes learning update, experiment, attempt, worker job, artifact, learning evaluation, evolution proposal, candidate, approval and active-pointer identities; defines the proposed approval/activation/rollback sequence; and lists the exact payload/DDL/validator amendments still required.
+- Added [MCU J.A.R.V.I.S. and Human Cognition Research](../research/MCU-JARVIS-AND-HUMAN-COGNITION-REFERENCE.md), grounded in official MCU/Disney material and peer-reviewed neuroscience. Fiction, evidence and engineering extrapolation are kept separate.
+- Reconciled stale D-02 statements in the system architecture, planning index, semantic reconciliation report and first-release acceptance matrix. Option B is selected; detailed SY allowlists/conflict/deletion/recovery evidence remains open.
+- Reconciled the planning index and owner-decision packet with D-01 accepted, D-02 selected, D-03 staged and D-04 pending owner acceptance.
+- Corrected current command/query/event/schema and persistence documentation counts, including the 54-command/29-query registry, 89-event registry, nine top-level JSON Schemas and 17 ordered SQLite DDL files. Historical CI evidence is explicitly distinguished from current-head evidence.
+- Reconciled the learning acceptance event: the owner-facing decision uses the generic approval.request/approval.decide path; the Learning supervisor consumes the exact approval.decided.v1 event and emits learning.update.accepted.v1 as a trusted internal transition. A separate learning.accept command is not required.
+
+### Confirmed remaining contract work
+The candidate lifecycle crosswalk is a design proposal, not machine-contract closure. The current payload schemas and DDL still need the experiment/attempt/evaluation references, candidate artifact digest/source lineage, active-candidate pointer and append-only transition history described in that crosswalk. The exact approval digest and action-specific activation/rollback schema conditions must be integrated and structurally validated before implementation. Do not mark PR-19/PR-20 runtime-ready or make commands dispatchable.
+
+### Evidence boundary
+No runtime implementation, database application, training run, candidate activation, target-device test or independent review was performed. No manual GitHub Actions workflow dispatch or rerun was initiated; repository push automation may run for files under configured workflow path filters. PR #2 remains draft/open/unmerged. D-04, planning exit and implementation authorization remain separate owner gates.
