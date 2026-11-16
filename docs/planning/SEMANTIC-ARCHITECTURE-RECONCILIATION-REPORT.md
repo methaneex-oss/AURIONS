@@ -15,7 +15,7 @@ Current branch inventory:
 - 94 event entries: each has a payload-schema and fixture reference; all remain design-only/non-dispatchable.
 - 52 mapped commands have unique CC-001…CC-052 positive/negative acceptance assertions.
 - 29 queries have unique QCC-001…QCC-029 positive/negative assertions and explicit read-only invariants.
-- 89 reusable domain-payload schema definitions, 92 named positive domain fixtures and 46 negative controls are present in the current source corpus. Event, command and query schema/fixture reference checks are enforced in CI.
+- 100 reusable domain-payload schema definitions, 92 named positive domain fixtures and 46 negative controls are present in the current source corpus. Event, command and query schema/fixture reference checks are enforced in CI.
 
 These are design and structural-integrity facts. They do not establish runtime handler/consumer correctness, executable cognitive scenarios, target-platform behaviour, security enforcement or production readiness.
 
@@ -134,6 +134,6 @@ Exact HEAD 2f4218c669ced79920af16ff122e5ab7080124b4 passed CI run [43323863934](
 
 The current integrated scenario corpus now contains **48 specifications**: INT-001…INT-004, CM-001…CM-029 and AD-001…AD-015. The fixture contains **293 ordered steps and 59 negative controls**. CM-022…CM-029 are individually instantiated with concrete command/event transitions, durable assertions, negative controls, restart/replay, concurrency, fault and held-out controls. The schema validator enforces the exact inventory/counts and concrete command/event requirements. The event registry's acceptance-scenario references were recomputed from the full fixture; the current mismatch count is zero.
 
-The 37 events without command producers remain intentionally non-command events: 15 Action Gateway state-transition events and 27 other trusted-ingress/internal producer events. This is a trigger-origin classification, not a missing-command defect and not a reason to invent public commands.
+The 42 events without command producers remain intentionally non-command events: 15 Action Gateway state-transition events and 27 other trusted-ingress/internal producer events. This is a trigger-origin classification, not a missing-command defect and not a reason to invent public commands.
 
 **Evidence boundary:** The scenario fixture and event-reference consistency are machine-checkable specifications. They do not execute runtime behaviour. Event consumer semantics, cross-store saga behaviour, target SQLite/Android validation, C++ conformance, independent review and owner decisions remain separate gates. The current revision must pass CI before the new fixture increment is considered validated.
