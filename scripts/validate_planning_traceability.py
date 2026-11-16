@@ -215,7 +215,7 @@ def validate() -> tuple[int, int]:
     expected_first_release = {f"WP-{number:02d}" for number in range(15)}
     if graph["WP-15"] != expected_first_release:
         fail(
-            "WP-15 dependencies must be exactly WP-00…WP-13; "
+            "WP-15 dependencies must be exactly WP-00…WP-14; "
             f"found {sorted(graph['WP-15'])}"
         )
     if graph["WP-16"] != {"WP-15"}:
