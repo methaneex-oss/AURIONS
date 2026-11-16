@@ -291,6 +291,9 @@ The current schema is an initial typed baseline, not a complete semantic closure
 - Candidate changes are compared with a frozen baseline and tested on relevant unseen variations.
 - Learning cannot weaken security, privacy, owner authority or governance policy.
 - Model training and architecture evolution require their separate approval and validation paths.
+- AURIONS must support real model-parameter training as a distinct learning capability; retaining experiences, revising beliefs, changing strategies and training model weights are separate mechanisms with separate evidence.
+- Training infrastructure, dataset provenance, frozen baselines and leakage-controlled held-out evaluation must exist before WP-12 can claim model-learning results. A training job or reduced training loss alone is not evidence of improvement.
+- Candidate model artifacts remain isolated and cannot replace the active model without the governed approval, compatibility, regression and rollback path.
 
 ### 4.16 Self-model
 
