@@ -1430,3 +1430,22 @@ Earlier references to Android environment observation, device agents, capability
 The owner-selected Android target remains a concrete mobile engineering/validation target, not the sole environment or universal capability model. Desktop and iOS are acknowledged as possible contexts, not commitments that their integrations are already designed, implemented or validated. Their future treatment must follow task requirements and actual evidence, not a predetermined platform hierarchy.
 
 The initial machine-readable open-world contracts are schemas/world-interaction.v1.schema.json, its fixtures and the proposed memory migration v4. Their schema, command/query/event registry references and integrated scenario references are now covered by the Python-host CI validator; the integrated corpus contains 47 specifications, 287 ordered steps and 53 negative controls, including individual CM-022…CM-029 cases. This is specification-level validation only. Runtime DDL/retention/deletion and cross-store execution, stable-ID semantics under concurrent runtime use, C++ ownership/conformance and executable acceptance tests remain open. The first permitted local action remains an owner decision. No implementation authorization follows from this addendum.
+
+
+## 28. Owner decision record — 2026-11-16
+
+This record does not authorize implementation, PR merge or planning exit.
+
+### D-01 — First Usable Release Definition: ACCEPTED
+The owner accepted PR-01…PR-20 as the first-release product baseline: a bounded trainable AI system with an evolving cognitive architecture, experience-dependent adaptation and a reproducible governed model-training path; CLI first; concurrent cloud and offline-capable mobile runtimes. Acceptance is not evidence of implementation or validation.
+
+### D-02 — Cloud/mobile continuity: OPTION B SELECTED
+The owner selected dual runtime with selective domain synchronization. Both runtimes use the same authoritative cognitive core and compatible versioned contracts; mobile must remain useful offline. This authorizes detailed design, not unrestricted replication. Builder's initial candidate sync domains: durable experiences/provenance, representations, memory and evidence-backed knowledge/belief revisions, objectives/derived goals, and explicitly approved immutable model-version references. Raw/sensitive observations by default, transient context, plans/task checkpoints, device capabilities, permissions, credentials, approval secrets, operation dispatch and governance authority remain local. Required design: versioned changes, durable outboxes, idempotency, causal/revision metadata, offline queuing, explicit conflicts, deletion tombstones, retention, replay protection and crash recovery. No last-write-wins for contradictory cognitive records. Sync never transfers execution authority. Exact field allowlists, data classification, per-aggregate conflict/deletion/recovery semantics and executable SY cases remain pre-implementation gates.
+
+### D-03 — First permitted Android action: STAGED
+No action is selected or authorized. Defer selection until target Android device, Termux/runtime baseline, OS permissions and local execution lifecycle are empirically validated. Only the concrete Android action path is blocked.
+
+### D-04 — First-release command/query subset: BUILDER PROPOSAL PENDING OWNER ACCEPTANCE
+The builder must present an exact registry-derived subset covering the complete cognitive loop, governed interaction boundary and reproducible training/evaluation workflow. Unselected entries remain design-only/non-dispatchable. Registry presence does not authorize dispatch.
+
+D-01 and D-02 are accepted/selected; D-03 is staged; D-04 remains pending owner acceptance. Planning exit, first implementation milestone authorization, PR readiness and merge remain separate decisions.
