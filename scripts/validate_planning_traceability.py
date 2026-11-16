@@ -109,7 +109,7 @@ def parse_acceptance_rows(path: Path, label: str) -> dict[str, list[str]]:
 def validate_acceptance_crosswalk() -> tuple[int, int]:
     product_rows = parse_acceptance_rows(PRODUCT, "product acceptance definition")
     matrix_rows = parse_acceptance_rows(ACCEPTANCE_MATRIX, "first-release acceptance matrix")
-    expected = {f"PR-{number:02d}" for number in range(1, 19)}
+    expected = {f"PR-{number:02d}" for number in range(1, 21)}
     for label, rows in (("product acceptance definition", product_rows),
                         ("first-release acceptance matrix", matrix_rows)):
         actual = set(rows)
@@ -203,15 +203,21 @@ def validate() -> tuple[int, int]:
     if has_cycle(graph):
         fail("canonical work-package dependency graph contains a cycle")
 
-    # First-release path is explicit: WP-15 depends on WP-00…WP-13.
-    expected_first_release = {f"WP-{number:02d}" for number in range(14)}
+    # Training infrastructure is upstream of learning evaluation and first release.
+    expected_training = {"WP-01", "WP-02", "WP-03", "WP-04", "WP-05"}
+    if graph["WP-14"] != expected_training:
+        fail("WP-14 training prerequisites must be exactly WP-01…WP-05")
+    expected_learning = {f"WP-{number:02d}" for number in range(7, 12)} | {"WP-14"}
+    if graph["WP-12"] != expected_learning:
+        fail("WP-12 learning dependencies must include WP-07…WP-11 and WP-14")
+
+    # First-release path includes the required bounded training capability.
+    expected_first_release = {f"WP-{number:02d}" for number in range(15)}
     if graph["WP-15"] != expected_first_release:
         fail(
             "WP-15 dependencies must be exactly WP-00…WP-13; "
             f"found {sorted(graph['WP-15'])}"
         )
-    if "WP-14" in graph["WP-15"]:
-        fail("WP-14 fine-tuning infrastructure must not become a first-release prerequisite")
     if graph["WP-16"] != {"WP-15"}:
         fail(f"WP-16 must depend on accepted WP-15 only; found {sorted(graph['WP-16'])}")
 
@@ -244,8 +250,8 @@ def validate() -> tuple[int, int]:
 
     product_count, acceptance_count = validate_acceptance_crosswalk()
     validate_owner_decision_traceability()
-    if product_count != 18 or acceptance_count != 18:
-        fail("first-release acceptance crosswalk must cover PR-01…PR-18 exactly")
+    if product_count != 20 or acceptance_count != 20:
+        fail("first-release acceptance crosswalk must cover PR-01…PR-20 exactly")
 
     return len(graph), edge_count
 
@@ -255,7 +261,7 @@ def main() -> int:
     print(
         f"PASS: {package_count} roadmap packages and {package_count} traceability rows; "
         f"{edge_count} dependency edges; graph acyclic; WP-15 first-release path "
-        "and WP-14/WP-16 boundaries preserved; PR-01…PR-18 acceptance crosswalk exact."
+        "training precedes learning; WP-15 includes WP-14; WP-16 boundary preserved; PR-01…PR-20 crosswalk exact."
     )
     return 0
 
