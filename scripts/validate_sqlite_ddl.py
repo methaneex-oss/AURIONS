@@ -652,11 +652,13 @@ def test_memory() -> None:
 
     require_columns(db, "dataset_manifests", {
         "manifest_id", "owner_ref", "model_family_ref", "training_purpose",
-        "manifest_digest", "rights_policy_snapshot_digest",
+        "manifest_digest", "rights_policy_snapshot_digest", "preprocessing_config_digest",
+        "deduplication_report_ref", "quality_report_ref", "language_domain_classification_ref",
+        "curriculum_config_ref", "curriculum_config_digest", "lifecycle", "derived_artifact_refs_json",
     })
     require_columns(db, "dataset_manifest_sources", {
         "manifest_id", "source_ref", "source_content_sha256", "authorization_id",
-        "authorization_record_digest", "license_or_terms_digest", "owner_ref",
+        "authorization_record_digest", "license_or_terms_digest", "owner_ref", "transformation_lineage_refs_json",
     })
     require_columns(db, "dataset_manifest_seals", {
         "manifest_id", "manifest_digest", "authorization_check_digest", "sealed_at_ms",
@@ -673,19 +675,22 @@ def test_memory() -> None:
     db.execute(
         """INSERT INTO dataset_manifests
         (manifest_id,schema_version,owner_ref,model_family_ref,training_purpose,
-         model_generation_ref,tokenizer_artifact_ref,manifest_artifact_ref,manifest_digest,
-         rights_policy_snapshot_ref,rights_policy_snapshot_digest,authorization_evaluated_at_ms,
-         created_at_ms)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+         model_generation_ref,tokenizer_artifact_ref,manifest_artifact_ref,preprocessing_pipeline_ref,
+         preprocessing_config_digest,deduplication_report_ref,quality_report_ref,
+         language_domain_classification_ref,curriculum_config_ref,curriculum_config_digest,
+         rights_policy_snapshot_ref,rights_policy_snapshot_digest,manifest_digest,lifecycle,
+         derived_artifact_refs_json,authorization_evaluated_at_ms,created_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (manifest_id,"1.0","owner-dataset","model-family","foundation_pretraining",
-         "generation-1","artifact:tokenizer","artifact:manifest",manifest_digest,
-         "rights-policy:v1","b"*64,10,11),
+         "generation-1","artifact:tokenizer","artifact:manifest","pipeline:v1","1"*64,
+         "dedup:v1","quality:v1","language:v1","curriculum:v1","2"*64,
+         "rights-policy:v1","b"*64,manifest_digest,"sealed",'["artifact:derived"]',10,11),
     )
     db.execute(
         """INSERT INTO dataset_manifest_sources
         (manifest_id,source_ref,source_content_sha256,authorization_id,
          authorization_record_digest,license_or_terms_digest,source_artifact_ref,
-         transformation_lineage_json,owner_ref,model_family_ref)
+         transformation_lineage_refs_json,owner_ref,model_family_ref)
         VALUES (?,?,?,?,?,?,?,?,?,?)""",
         (manifest_id,"source:one","c"*64,bytes([32])*16,"d"*64,"e"*64,
          "artifact:source","[]","owner-dataset","model-family"),
@@ -730,8 +735,9 @@ def test_memory() -> None:
          created_at_ms)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (bad_manifest,"1.0","owner-dataset","model-family","foundation_pretraining",
-         "generation-1","artifact:tokenizer","artifact:manifest:bad","2"*64,
-         "rights-policy:v1","b"*64,14,14),
+         "generation-1","artifact:tokenizer","artifact:manifest:bad","pipeline:v1","1"*64,
+         "dedup:v1","quality:v1","language:v1","curriculum:v1","2"*64,
+         "rights-policy:v1","b"*64,"2"*64,"sealed",'[]',14,14),
     )
     db.execute(
         """INSERT INTO dataset_manifest_sources
@@ -1190,7 +1196,7 @@ def test_governance() -> None:
 
     require_columns(db, "dataset_source_authorizations", {
         "authorization_id", "owner_ref", "source_ref", "source_content_sha256",
-        "license_or_terms_digest", "permitted_purposes_json", "training_permission",
+        "license_or_terms_digest", "permitted_purposes_json", "training_permission", "status", "revoked_at_ms", "revocation_ref",
         "memory_retention_permission", "private_data_authorization_ref", "record_digest",
     })
     require_columns(db, "dataset_source_authorization_revocations", {
@@ -1215,13 +1221,13 @@ def test_governance() -> None:
          license_or_terms_digest,permitted_purposes_json,training_permission,
          memory_retention_permission,private_data_classification,private_data_authorization_ref,
          project_ref,model_family_ref,dataset_scope_ref,policy_version_ref,valid_from_ms,
-         expires_at_ms,decision_state,approval_request_id,decision_ref,supersedes_authorization_id,
-         created_at_ms,record_digest)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-        (authorization_id,1,"owner-dataset","source:one","b"*64,'{"method":"licensed"}',
+         expires_at_ms,status,revoked_at_ms,revocation_ref,approval_request_id,decision_ref,
+         supersedes_authorization_id,created_at_ms,record_digest)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (authorization_id,1,"owner-dataset","source:one","b"*64,'{"acquisition_method":"licensed_repository_export","origin_ref":"source-origin:one","acquired_at":"2026-11-16T20:00:00Z"}',
          "rights-holder:one","license","license:one","c"*64,'["foundation_pretraining"]',
          "allow","deny","public",None,"project:one","model-family","dataset:one","policy:v1",
-         1,90,"active",approval_request_id,"decision:one",None,2,"d"*64),
+         1,90,"active",None,None,approval_request_id,"decision:one",None,2,"d"*64),
     )
     db.execute(
         """INSERT INTO dataset_source_authorization_revocations
@@ -1234,7 +1240,7 @@ def test_governance() -> None:
     db.commit()
     expect_integrity_error(
         db, "governance immutable dataset authorization",
-        "UPDATE dataset_source_authorizations SET decision_state='denied' WHERE authorization_id=?",
+        "UPDATE dataset_source_authorizations SET status='denied' WHERE authorization_id=?",
         (authorization_id,),
     )
     expect_integrity_error(

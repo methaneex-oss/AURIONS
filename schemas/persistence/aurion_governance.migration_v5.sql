@@ -25,15 +25,19 @@ CREATE TABLE dataset_source_authorizations (
   policy_version_ref TEXT NOT NULL CHECK(length(policy_version_ref)>0),
   valid_from_ms INTEGER NOT NULL,
   expires_at_ms INTEGER,
-  decision_state TEXT NOT NULL CHECK(decision_state IN ('active','denied')),
+  status TEXT NOT NULL CHECK(status IN ('pending','active','expired','revoked','denied','superseded')),
+  revoked_at_ms INTEGER,
+  revocation_ref TEXT,
   approval_request_id BLOB NOT NULL REFERENCES approval_requests(request_id),
   decision_ref TEXT NOT NULL CHECK(length(decision_ref)>0),
-  supersedes_authorization_id BLOB CHECK(supersedes_authorization_id IS NULL OR length(supersedes_authorization_id)=16),
+  supersedes_authorization_id BLOB REFERENCES dataset_source_authorizations(authorization_id),
   created_at_ms INTEGER NOT NULL,
   record_digest TEXT NOT NULL CHECK(length(record_digest)=64 AND record_digest NOT GLOB '*[^0-9a-f]*'),
   UNIQUE(authorization_id,record_digest),
   UNIQUE(owner_ref,source_ref,source_content_sha256,authorization_revision),
   CHECK(expires_at_ms IS NULL OR expires_at_ms>valid_from_ms),
+  CHECK((status='revoked' AND revoked_at_ms IS NOT NULL AND revocation_ref IS NOT NULL)
+     OR (status<>'revoked' AND revoked_at_ms IS NULL AND revocation_ref IS NULL)),
   CHECK(private_data_classification='public' OR
         (private_data_authorization_ref IS NOT NULL AND length(private_data_authorization_ref)>0)),
   CHECK(training_permission<>'allow' OR json_array_length(permitted_purposes_json)>0)

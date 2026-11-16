@@ -1293,6 +1293,23 @@ def main() -> int:
         if included["license_or_terms_digest"] != source_authorization["license_or_terms_digest"]:
             fail("MD-16 fixture: included source license/terms digest mismatch")
 
+    # MD-16 event fixtures preserve the exact source authorization and manifest lineage.
+    authorization_decided = domain_fixture["datasetSourceAuthorizationDecided"]["authorization"]
+    authorization_revoked = domain_fixture["datasetSourceAuthorizationRevoked"]
+    manifest_sealed = domain_fixture["datasetManifestSealed"]["manifest"]
+    admission_blocked = domain_fixture["datasetAdmissionBlocked"]
+    revocation_impact = domain_fixture["datasetRevocationImpactAssessed"]
+    if authorization_decided["authorization_id"] != source_authorization["authorization_id"] or authorization_decided["record_digest"] != source_authorization["record_digest"]:
+        fail("MD-16 event fixture: authorization decision changed source authorization identity/digest")
+    if authorization_revoked["authorization_id"] != source_authorization["authorization_id"] or authorization_revoked["authorization_record_digest"] != source_authorization["record_digest"]:
+        fail("MD-16 event fixture: revocation does not bind the exact authorization version")
+    if manifest_sealed["manifest_digest"] != dataset_manifest["manifest_digest"] or manifest_sealed["dataset_manifest_id"] != dataset_manifest["dataset_manifest_id"]:
+        fail("MD-16 event fixture: sealed manifest identity/digest mismatch")
+    if admission_blocked["authorization_id"] != source_authorization["authorization_id"] or admission_blocked["manifest_id"] != dataset_manifest["dataset_manifest_id"]:
+        fail("MD-16 event fixture: blocked admission is not bound to the exact source/manifest")
+    if revocation_impact["authorization_id"] != source_authorization["authorization_id"] or revocation_impact["authorization_record_digest"] != source_authorization["record_digest"]:
+        fail("MD-16 event fixture: revocation impact changed the exact authorization identity/digest")
+
     identity_fixture = domain_fixture["modelCandidateIdentityFixture"]
     expected_candidate_id = str(uuid.uuid5(
         uuid.NAMESPACE_URL,
