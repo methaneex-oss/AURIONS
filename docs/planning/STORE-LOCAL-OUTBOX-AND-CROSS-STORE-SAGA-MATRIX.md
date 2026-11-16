@@ -142,6 +142,16 @@ Only three currently mapped command types declare more than one authoritative st
 
 **Remaining limitation:** These saga sequences are builder contract proposals. They require semantic review, handler implementation, crash/replay/fault injection and independent verification before dispatchability. The registry's current multi-store entries remain blocked on those tests.
 
+### 4.4 Dataset-source revocation impact
+
+- **Stores:** governance authorization/revocation state, memory-owned dataset manifests and derived-artifact impact findings, and the existing events/recovery coordinator.
+- **Coordinator intent:** create or resume one stable operation keyed to the exact authorization ID, authorization-record digest and revocation reference. Persist ordered steps, deterministic step identities, per-store idempotency keys, expected revisions and recovery-journal links in the existing `operations`, `operation_steps` and `recovery_journal` tables.
+- **Revocation commit:** governance validates the authenticated owner/approval and exact authorization version, then appends the revocation record and governance-local outbox in one transaction. From this commit onward, admission checks consult authoritative governance state and fail closed even if event relay is delayed.
+- **Impact scan:** memory resolves manifests and source-membership rows by authorization ID/digest, records immutable impact findings, identifies derived artifacts and worker attempts, and quarantines affected not-yet-used inputs/outputs according to policy. It commits findings and its memory-local outbox atomically.
+- **Worker disposition:** the learning supervisor requests safe cancellation for active attempts. Unresponsive or uncertain attempts remain uncertain; partial outputs remain quarantined. A worker never decides whether rights are valid.
+- **Completion:** the coordinator reconciles governance and memory receipts and emits `dataset.revocation.impact.assessed.v1` only after the impact assessment is durable. Unknown influence remains explicit. Retraining, unlearning assessment or candidate rollback requires a separate governed disposition.
+- **Interruption:** replay uses the same operation/step/idempotency identities. A stale memory projection cannot override a committed governance revocation. No global transaction or automatic removal of training influence is claimed.
+- **Migration decision:** the current events base schema already provides `operations`, `operation_steps`, `recovery_journal` and an events-local `outbox`; no events-store migration is justified unless a concrete missing field is identified during validator/DDL integration.
 ## 5. Verification and evidence boundary
 
 Current code-level guards:

@@ -8,8 +8,8 @@
 - `command_producers` is the exact set of command registry entries whose `emitted_event_bindings` names the event. The validator enforces this relationship in both directions.
 - `command_producer_binding_status: bound` means at least one command producer is explicitly declared. It does **not** establish the complete event producer set; platform ingress, internal domain transitions, workers, sync and owner interactions are not assumed or excluded.
 - `command_producer_binding_status: unresolved` means no command producer is currently bound. It does **not** mean the event is invalid or that no producer exists.
-- All 89 events now carry proposed producer-origin/trigger, owning-component, consumer-contract, owner-transition, ordering/idempotency, failure/recovery and scenario-reference specifications. These are builder contracts, not owner acceptance or runtime evidence.
-- 37 events have no command producer binding. Fifteen Action Gateway lifecycle events now have exact internal state-transition triggers in OPERATION-LIFECYCLE-TRANSITION-MATRIX.md; the 22 other non-command events now have exact ingress/internal producer triggers in EVENT-INGRESS-AND-INTERNAL-PRODUCER-TRIGGER-MATRIX.md.
+- All 94 events now carry proposed producer-origin/trigger, owning-component, consumer-contract, owner-transition, ordering/idempotency, failure/recovery and scenario-reference specifications. These are builder contracts, not owner acceptance or runtime evidence.
+- 42 events have no command producer binding. Fifteen Action Gateway lifecycle events now have exact internal state-transition triggers in OPERATION-LIFECYCLE-TRANSITION-MATRIX.md; the 27 other non-command events now have exact ingress/internal producer triggers in EVENT-INGRESS-AND-INTERNAL-PRODUCER-TRIGGER-MATRIX.md.
 - All events remain `design_only_not_dispatchable`. A producer/consumer specification does not create a runtime handler, authorization or dispatch permission; event-specific acceptance execution remains open.
 
 ## 2. Inventory
@@ -37,6 +37,11 @@
 | `context.assembled.v1` | `context.assemble` | `contextSnapshot` | Context subsystem: Persist a versioned context snapshot bound to exact source revisions and explicit unknowns. Intended consumers: Reasoning subsystem; Planning and attention subsystems. |
 | `context.invalidated.v1` | `context.invalidate` | `contextInvalidated` | Context subsystem: Mark the exact current revision stale and invalidate dependent caches/plans; do not delete source records. Intended consumers: Reasoning subsystem; Planning and attention subsystems. |
 | `decision.recorded.v1` | `decision.record` | `decisionRecorded` | Decision subsystem: Append immutable decision and alternatives; decision does not satisfy governance authorization. Intended consumers: Action gateway; Audit subsystem. |
+| `dataset.admission.blocked.v1` | UNRESOLVED — no command producer bound | `datasetAdmissionBlocked` | Learning and worker admission supervisor: Persist the exact failed authorization check and deny dispatch; no worker receives the dataset and no model weights change. Intended consumers: Learning supervisor; Governance audit subsystem. |
+| `dataset.manifest.sealed.v1` | UNRESOLVED — no command producer bound | `datasetManifestSealed` | Dataset and learning supervisor: Append an immutable sealed manifest and exact source-membership lineage; sealing is not worker admission or training authorization. Intended consumers: Learning supervisor; Artifact registry. |
+| `dataset.revocation.impact.assessed.v1` | UNRESOLVED — no command producer bound | `datasetRevocationImpactAssessed` | Dataset revocation impact coordinator: Append a digest-bound impact assessment and evidence references; disposition remains governed and no automatic claim of unlearning or candidate rollback is made. Intended consumers: Learning supervisor; Evolution governance gate; Audit subsystem. |
+| `dataset.source.authorization.decided.v1` | UNRESOLVED — no command producer bound | `datasetSourceAuthorizationDecided` | Dataset rights governance supervisor: Append an immutable active or denied source-authorization version; the decision grants no worker dispatch and does not alter memory-retention permission. Intended consumers: Dataset authorization supervisor; Governance audit subsystem. |
+| `dataset.source.authorization.revoked.v1` | UNRESOLVED — no command producer bound | `datasetSourceAuthorizationRevoked` | Dataset rights governance supervisor: Append revocation evidence for the exact authorization version and make future sealing/admission checks fail closed; do not rewrite the historical grant. Intended consumers: Dataset admission supervisor; Revocation impact coordinator; Governance audit subsystem. |
 | `disclosure.recorded.v1` | UNRESOLVED — no command producer bound | `externalDisclosureRecord` | Egress governance subsystem: Append an exact disclosure audit record with recipient, purpose, data classes and approval reference. Intended consumers: Audit subsystem; Retention subsystem. |
 | `environment.observed.v1` | `environment.observe` | `environmentObserved` | Environment observation subsystem: Append immutable observation/outcome evidence with source, scope, observed time and limitations; do not infer causality. Intended consumers: Context assembler; Experience/evidence subsystem. |
 | `evidence.recorded.v1` | `experience.submit` | `evidenceItem` | Evidence subsystem: Append immutable owner-scoped record and provenance; no unrelated aggregate is mutated. Intended consumers: Belief and prediction subsystems; Learning supervisor. |
@@ -110,7 +115,7 @@
 
 Before an event can be considered implementation-ready, its owning component must implement and execute evidence for the following contracts (the intended consumer and owner-transition specification is now present in the registry):
 
-1. **Production trigger and owner:** verify the exact state transition or trusted ingress that creates the event. For 52 events, one or more command producers are bound; 15 of the 37 events without command producers have exact Action Gateway state triggers; the 22 other non-command events have exact ingress/internal triggers in the companion matrix. Verify authenticated owner/actor and scope.
+1. **Production trigger and owner:** verify the exact state transition or trusted ingress that creates the event. For 52 events, one or more command producers are bound; 15 of the 42 events without command producers have exact Action Gateway state triggers; the 27 other non-command events have exact ingress/internal triggers in the companion matrix. Verify authenticated owner/actor and scope.
 2. **Aggregate and revision:** authoritative aggregate, expected/current revision rule, event sequence allocation, causation/correlation identifiers and ordering scope.
 3. **Atomicity:** execute the owning-store transaction that commits aggregate mutation with immutable event/outbox; cross-store work must use durable saga semantics, not a distributed-transaction claim.
 4. **Consumer implementation:** implement the named consumers, accepted event/schema versions, idempotency key, duplicate/replay behaviour, ordering/gap recovery, poison-message quarantine and bounded retry/reconciliation.
@@ -120,13 +125,13 @@ Before an event can be considered implementation-ready, its owning component mus
 
 ## 4. Current measured gap
 
-- Total registered events: **89**.
+- Total registered events: **94**.
 - Events with one or more explicit command producers: **52**.
-- Events with no command producer binding: **37**.
-- All events now carry specified owner, producer-origin, consumer, owner-transition, ordering/idempotency and failure/recovery contracts. Remaining unresolved bindings are runtime handler implementation and executed event-specific acceptance; 37 events also lack a command producer and retain an exact internal producer-trigger gate.
+- Events with no command producer binding: **42**.
+- All events now carry specified owner, producer-origin, consumer, owner-transition, ordering/idempotency and failure/recovery contracts. Remaining unresolved bindings are runtime handler implementation and executed event-specific acceptance; 42 events also lack a command producer and retain an exact internal producer-trigger gate.
 - The command producer and event payload/consumer-transition/scenario-reference crosswalks are machine-enforced against the command/event/scenario registries; this is specification integrity, not semantic or runtime validation.
 - No event is dispatchable. No handler/consumer implementation, transaction execution, replay/restart test or independent review is claimed.
 
 ## 5. Decision and implementation boundary
 
-This matrix does not invent public command producers for the 37 non-command events, change event names or payloads, promote dispatch status, select a runtime topology, or authorize production implementation. Their exact trusted ingress/internal triggers are specified in the companion trigger matrices. Consumer/owner-transition entries are proposed contracts pending owner review and runtime validation. Where an event requires an owner-reserved product, platform or authority decision, the dependency remains explicit for the owner.
+This matrix does not invent public command producers for the 42 non-command events, change event names or payloads, promote dispatch status, select a runtime topology, or authorize production implementation. Their exact trusted ingress/internal triggers are specified in the companion trigger matrices. Consumer/owner-transition entries are proposed contracts pending owner review and runtime validation. Where an event requires an owner-reserved product, platform or authority decision, the dependency remains explicit for the owner.

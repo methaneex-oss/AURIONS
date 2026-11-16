@@ -99,7 +99,7 @@ def main() -> int:
     expected_inventory_lines = (
         f"- {len(commands)} command entries: {len(mapped_commands)} mapped to typed request/response",
         f"- {len(mapped_commands)} mapped commands have unique CC-001…CC-{len(mapped_commands):03d} positive/negative acceptance assertions.",
-        f"- {len(commands)} unique command types, {len(queries)} unique query types and 89 event types.",
+        f"- {len(commands)} unique command types, {len(queries)} unique query types and 94 event types.",
         f"- All {len(mapped_commands)} mapped command entries have semantic fields, known error/event bindings and unique CC-001…CC-{len(mapped_commands):03d} acceptance IDs; the two device commands are deferred.",
     )
     for expected_line in expected_inventory_lines:
@@ -515,8 +515,8 @@ def main() -> int:
 
     event_registry = load(SCHEMAS / "event-registry.v1.json")
     events = event_registry["events"]
-    if len(events) != 89:
-        fail(f"event registry expected 89 entries, found {len(events)}")
+    if len(events) != 94:
+        fail(f"event registry expected 94 entries, found {len(events)}")
 
     # Reconcile event producer declarations bidirectionally with command
     # emissions. An event with no command producer remains explicitly
@@ -677,8 +677,8 @@ def main() -> int:
     ingress_matrix_events = set(
         re.findall(r"`([a-z][a-z0-9_.]+\.v1)`", ingress_matrix)
     )
-    if len(non_command_events) != 22 or ingress_matrix_events != non_command_events:
-        fail("non-command event trigger matrix must exactly cover the 22 non-command/non-Action-Gateway events")
+    if len(non_command_events) != 27 or ingress_matrix_events != non_command_events:
+        fail("non-command event trigger matrix must exactly cover the 27 non-command/non-Action-Gateway events")
     ingress_rows = {}
     for line in ingress_matrix.splitlines():
         if not line.startswith("| `") or line.count("|") < 4:
@@ -746,18 +746,18 @@ def main() -> int:
     scenario_contracts = load(SCHEMAS / "fixtures/scenario-contracts.fixture.json")
     scenarios = scenario_contracts["scenarios"]
     expected_scenario_ids = {
-        *(f"INT-{index:03d}" for index in range(1, 4)),
+        *(f"INT-{index:03d}" for index in range(1, 5)),
         *(f"CM-{index:03d}" for index in range(1, 30)),
         *(f"AD-{index:03d}" for index in range(1, 16)),
     }
     scenario_ids = {item["scenario_id"] for item in scenarios}
     step_count = sum(len(item["steps"]) for item in scenarios)
     negative_control_count = sum(len(item["negative_controls"]) for item in scenarios)
-    if len(scenarios) != 47 or scenario_ids != expected_scenario_ids:
-        fail("scenario contract fixture must contain INT-001…003, CM-001…029 and AD-001…015")
-    if step_count != 287 or negative_control_count != 53:
+    if len(scenarios) != 48 or scenario_ids != expected_scenario_ids:
+        fail("scenario contract fixture must contain INT-001…004, CM-001…029 and AD-001…015")
+    if step_count != 293 or negative_control_count != 59:
         fail(
-            f"scenario fixture expected 287 ordered steps and 53 negative controls; "
+            f"scenario fixture expected 293 ordered steps and 59 negative controls; "
             f"found {step_count} steps and {negative_control_count} controls"
         )
     command_types = {item["command_type"] for item in commands}
@@ -1033,7 +1033,7 @@ def main() -> int:
     scenario_document = load(FIXTURES / "scenario-contracts.fixture.json")
     scenarios = scenario_document["scenarios"]
     if len(scenarios) != 47:
-        fail(f"scenario contract fixture expected 47 scenarios, found {len(scenarios)}")
+        fail(f"scenario contract fixture expected 48 scenarios, found {len(scenarios)}")
     known_commands = {item["command_type"] for item in commands}
     known_queries = {item["query_type"] for item in queries}
     known_scenario_ids = {
@@ -1335,6 +1335,11 @@ def main() -> int:
         "command-envelope-missing-type.invalid.json": ("domain-payloads.v1.schema.json", "commandEnvelope"),
         "context-assembly-missing-scope.invalid.json": ("domain-payloads.v1.schema.json", "contextAssemblyRequest"),
         "contract-error-missing-side-effect-state.invalid.json": ("domain-payloads.v1.schema.json", "contractError"),
+        "dataset-authorization-decided-missing-approval.invalid.json": ("domain-payloads.v1.schema.json", "datasetSourceAuthorizationDecided"),
+        "dataset-authorization-revoked-invalid-digest.invalid.json": ("domain-payloads.v1.schema.json", "datasetSourceAuthorizationRevoked"),
+        "dataset-manifest-sealed-missing-check-digest.invalid.json": ("domain-payloads.v1.schema.json", "datasetManifestSealed"),
+        "dataset-admission-blocked-missing-reason.invalid.json": ("domain-payloads.v1.schema.json", "datasetAdmissionBlocked"),
+        "dataset-revocation-impact-missing-operation.invalid.json": ("domain-payloads.v1.schema.json", "datasetRevocationImpactAssessed"),
         "decision-selected-without-option.invalid.json": ("domain-payloads.v1.schema.json", "decisionRecorded"),
         "disclosure-invalid-digest.invalid.json": ("domain-payloads.v1.schema.json", "externalDisclosureRecord"),
         "domain-query-invalid-limit.invalid.json": ("domain-payloads.v1.schema.json", "domainQuery"),
