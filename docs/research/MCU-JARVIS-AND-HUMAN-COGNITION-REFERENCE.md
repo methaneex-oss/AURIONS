@@ -130,6 +130,17 @@ These pathways may influence one another, but they are not interchangeable. PR-1
 
 Do not encode equations such as "hippocampus = database", "prefrontal cortex = planner", "amygdala = emotion engine" or "dopamine = reward score" as literal architecture mappings. Biological regions participate in overlapping, recurrent networks; their functions depend on connections, task, timescale and state. Software components should be separated for clear ownership, testability, persistence and security—not because the brain has a similarly named region.
 
+### 4.3 Training an AURIONS-owned model from random initialization is feasible, but scale is decisive
+
+A randomly initialized model is not an "empty model" that already understands language. Its parameters begin without learned linguistic competence. The training objective, architecture, tokenizer, data distribution, amount of data, optimization schedule and compute budget determine what it can learn. A small model can be trained from scratch for a narrow distribution or task; that does not establish broad language competence or general intelligence.
+
+Evidence:
+- Kaplan et al. (2020), [Scaling Laws for Neural Language Models](https://arxiv.org/abs/2001.08361), found empirical power-law relationships between language-model loss, model size, dataset size and training compute. Model size alone is not a substitute for sufficient data and compute.
+- Hoffmann et al. (2022), [Training Compute-Optimal Large Language Models](https://arxiv.org/abs/2203.15556), trained more than 400 models from 70 million to over 16 billion parameters on 5–500 billion tokens. Their compute-optimal 70-billion-parameter Chinchilla model used 1.4 trillion tokens. The often-quoted approximately 20 training tokens per parameter is a summary of that study's fitted regime, not a universal law or automatic target for every small model.
+- Eldan & Li (2023), [TinyStories: How Small Can Language Models Be and Still Speak Coherent English?](https://arxiv.org/abs/2305.07759), showed that models below 10 million parameters could generate coherent short stories on a deliberately narrow synthetic story distribution. The dataset was generated using GPT-3.5/GPT-4, so this is evidence that small models can learn a constrained distribution—not a recommended AURIONS corpus and not evidence of broad independent intelligence.
+
+**Engineering conclusion:** Training AURIONS' own model from random initialization is technically possible. The realistic first target must be a measured, deliberately bounded capability. A model with too little suitable data or compute will remain weak regardless of how clean its code is. Do not select a parameter count from intuition; first define target tasks, inspect licensed corpus volume/quality, benchmark target training hardware, estimate token throughput and energy/cost, then select a scale whose full training/evaluation cycle can be completed reproducibly. Reuse of open-source training software or tokenizer algorithms is distinct from importing pretrained model weights. Keep local inference/offline operation independent of approved remote training compute.
+
 ## 5. Research-derived design questions already answerable without owner input
 
 - Use provenance-bearing episodic records and derived knowledge with explicit lineage.
@@ -164,3 +175,7 @@ These are engineering recommendations derived from the cited research and existi
 14. [Cross-domain fMRI meta-analysis of predictive processing](https://pmc.ncbi.nlm.nih.gov/articles/PMC11339134/) — *Human Brain Mapping* (2024), DOI 10.1002/hbm.26817.
 15. [Rethinking Predictive Processing](https://www.annualreviews.org/content/journals/10.1146/annurev-neuro-102124-031410) — *Annual Review of Neuroscience* (2026), DOI 10.1146/annurev-neuro-102124-031410.
 
+
+16. [Scaling Laws for Neural Language Models](https://arxiv.org/abs/2001.08361) — Kaplan et al. (2020).
+17. [Training Compute-Optimal Large Language Models](https://arxiv.org/abs/2203.15556) — Hoffmann et al., NeurIPS (2022).
+18. [TinyStories: How Small Can Language Models Be and Still Speak Coherent English?](https://arxiv.org/abs/2305.07759) — Eldan & Li (2023).
