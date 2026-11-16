@@ -71,12 +71,13 @@ The event registry now contains 89 entries. All new events remain design-only/no
 ## 5. Explicitly unresolved scope and authority
 
 These are not builder choices:
+- The primary model is AURIONS-owned and intended to start from randomly initialized parameters; pretrained third-party weights or a hosted commercial LLM are not the system's brain. Model architecture, size, tokenizer, training objective and data/compute choices remain engineering design and feasibility work.
 - First permitted Android action/capability remains owner-reserved.
-- D-02 Option B was selected on 2026-11-16: the first release includes bounded selective synchronization between the cloud and offline-mobile runtimes. Exact domain/field allowlists, local-only classes, conflict/deletion/recovery semantics and executable SY evidence remain open; unrestricted replication and cross-context authority transfer are not approved.
+- D-02 Option B was selected on 2026-11-16: the first release includes bounded selective synchronization between the cloud and offline-mobile runtimes. Exact domain/field allowlists, secure runtime/device enrollment and revocation, local-only classes, conflict/deletion/recovery semantics and executable SY evidence remain open; unrestricted replication and cross-context authority transfer are not approved.
 - Target Android device selection and empirical Termux/SQLite/permission/lifecycle/resource evidence remain outstanding.
 - Cloud key provider, recovery custodian and production recovery policy remain unselected.
 - The first-release command/query subset remains a builder proposal pending owner acceptance.
-- `device.pair` and `device.revoke` remain deferred to the later multi-device phase.
+- The general `device.pair` and `device.revoke` registry commands remain deferred. This does not remove the D-02 prerequisite for a secure, owner-authorized runtime/device enrollment and revocation mechanism; an explicit bootstrap contract or equivalent must be designed and tested before selective synchronization is implemented.
 
 ## 6. Evidence and remaining BR-008 work
 
