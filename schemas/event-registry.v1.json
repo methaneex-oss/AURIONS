@@ -2416,9 +2416,9 @@
     },
     "candidate.activated.v1": {
       "event_version": "1.0",
-      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateLifecycle",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateActivated",
       "fixture_refs": [
-        "schemas/fixtures/domain-payloads.fixture.json#/evolutionCandidateLifecycle"
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionCandidateActivated"
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
@@ -2454,9 +2454,9 @@
     },
     "candidate.rolled_back.v1": {
       "event_version": "1.0",
-      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateLifecycle",
+      "payload_schema_ref": "schemas/domain-payloads.v1.schema.json#/$defs/evolutionCandidateRolledBack",
       "fixture_refs": [
-        "schemas/fixtures/domain-payloads.fixture.json#/evolutionCandidateLifecycle"
+        "schemas/fixtures/domain-payloads.fixture.json#/evolutionCandidateRolledBack"
       ],
       "dispatch_status": "design_only_not_dispatchable",
       "unresolved_bindings": [
