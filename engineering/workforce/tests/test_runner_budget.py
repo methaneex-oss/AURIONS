@@ -66,6 +66,27 @@ class RunnerBudgetTests(unittest.TestCase):
         self.assertEqual(_available_prompt_budget(12000, 3072, 5281), 2209)
         self.assertEqual(_available_prompt_budget(7000, 2048, 5281, 1000), 2233)
 
+    def test_minimum_completion_floor_allows_short_final_request(self):
+        from workforce.agents.runner import _available_prompt_budget
+        self.assertEqual(
+            _available_prompt_budget(7000, 2048, 5281, 0, 256),
+            4952,
+        )
+
+    def test_near_exhaustion_uses_reduced_completion_cap_without_losing_prompt(self):
+        with patch.dict("os.environ", {"GROQ_API_KEY": "test-key-only"}, clear=True):
+            worker = Worker(self.root, "lead_builder", [], 2, 2048, 24000)
+        messages, _ = worker.build_messages("small task", [])
+        prompt_estimate = _prompt_token_estimate(messages[:2])
+        available_completion = 1845
+        worker.total_tokens = worker.max_total_tokens - prompt_estimate - available_completion
+        with patch("workforce.agents.runner.httpx.post", return_value=self.response(100)) as provider:
+            result = worker.run("small task", [])
+        payload = provider.call_args.kwargs["json"]
+        self.assertEqual(payload["max_completion_tokens"], available_completion)
+        self.assertEqual(result["calls"], 1)
+        self.assertEqual(result["total_tokens"], worker.total_tokens)
+
     def test_live_worker_budget_and_preflight_share_the_same_calculation(self):
         from workforce.agents.runner import _available_prompt_budget
         expected = _available_prompt_budget(7000, 1536, 24000)
