@@ -2867,6 +2867,10 @@
         "restore_artifact_sha256": {
           "type": "string",
           "pattern": "^[a-f0-9]{64}$"
+        },
+        "restored_artifact_ref": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },
@@ -6356,6 +6360,680 @@
           "$ref": "#/$defs/uuid"
         }
       }
+    },
+    "datasetSourceAuthorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorization_id",
+        "owner_ref",
+        "source_ref",
+        "source_content_sha256",
+        "source_origin",
+        "authorization_basis",
+        "license_or_terms_ref",
+        "license_or_terms_digest",
+        "permitted_purposes",
+        "training_permission",
+        "memory_retention_permission",
+        "private_data_classification",
+        "owner_scope",
+        "valid_from",
+        "expires_at",
+        "policy_version_ref",
+        "status",
+        "revoked_at",
+        "revocation_ref",
+        "created_at",
+        "record_digest"
+      ],
+      "properties": {
+        "authorization_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "owner_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_content_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_origin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "acquisition_method",
+            "origin_ref",
+            "acquired_at"
+          ],
+          "properties": {
+            "acquisition_method": {
+              "type": "string",
+              "minLength": 1
+            },
+            "origin_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "acquired_at": {
+              "$ref": "#/$defs/timestamp"
+            }
+          }
+        },
+        "rights_holder_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "authorization_basis": {
+          "enum": [
+            "license",
+            "contract",
+            "public_domain_determination",
+            "explicit_owner_authorization",
+            "statutory_exception"
+          ]
+        },
+        "license_or_terms_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "license_or_terms_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "permitted_purposes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "foundation_pretraining",
+              "instruction_sft",
+              "preference_training",
+              "outcome_training",
+              "evaluation"
+            ]
+          }
+        },
+        "training_permission": {
+          "enum": [
+            "allow",
+            "deny"
+          ]
+        },
+        "memory_retention_permission": {
+          "enum": [
+            "allow",
+            "deny"
+          ]
+        },
+        "private_data_classification": {
+          "enum": [
+            "public",
+            "private",
+            "personal",
+            "sensitive",
+            "confidential"
+          ]
+        },
+        "private_data_authorization_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "owner_scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "owner_ref",
+            "project_ref",
+            "model_family_ref",
+            "dataset_scope_ref"
+          ],
+          "properties": {
+            "owner_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "project_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model_family_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "dataset_scope_ref": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "valid_from": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "active",
+            "expired",
+            "revoked",
+            "denied",
+            "superseded"
+          ]
+        },
+        "revoked_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revocation_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "supersedes_authorization_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "record_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "private_data_classification": {
+                "enum": [
+                  "private",
+                  "personal",
+                  "sensitive",
+                  "confidential"
+                ]
+              }
+            },
+            "required": [
+              "private_data_classification"
+            ]
+          },
+          "then": {
+            "required": [
+              "private_data_authorization_ref"
+            ],
+            "properties": {
+              "private_data_authorization_ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "revoked"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "revoked_at",
+              "revocation_ref"
+            ],
+            "properties": {
+              "revoked_at": {
+                "$ref": "#/$defs/timestamp"
+              },
+              "revocation_ref": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "training_permission": {
+                "const": "allow"
+              }
+            },
+            "required": [
+              "training_permission"
+            ]
+          },
+          "then": {
+            "properties": {
+              "permitted_purposes": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "datasetManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dataset_manifest_id",
+        "schema_version",
+        "owner_ref",
+        "model_family_ref",
+        "training_purpose",
+        "model_generation_ref",
+        "tokenizer_artifact_ref",
+        "included_sources",
+        "excluded_sources",
+        "preprocessing_pipeline_ref",
+        "preprocessing_config_digest",
+        "deduplication_report_ref",
+        "quality_report_ref",
+        "language_domain_classification_ref",
+        "curriculum_config_ref",
+        "curriculum_config_digest",
+        "splits",
+        "rights_policy_snapshot_ref",
+        "rights_policy_snapshot_digest",
+        "authorization_evaluated_at",
+        "created_at",
+        "manifest_digest",
+        "lifecycle",
+        "derived_artifact_refs"
+      ],
+      "properties": {
+        "dataset_manifest_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "schema_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        },
+        "owner_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_family_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "training_purpose": {
+          "enum": [
+            "foundation_pretraining",
+            "instruction_sft",
+            "preference_training",
+            "outcome_training",
+            "evaluation"
+          ]
+        },
+        "model_generation_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tokenizer_artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "included_sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_ref",
+              "source_content_sha256",
+              "authorization_id",
+              "authorization_record_digest",
+              "license_or_terms_digest",
+              "source_artifact_ref",
+              "transformation_lineage_refs"
+            ],
+            "properties": {
+              "source_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_content_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "authorization_id": {
+                "$ref": "#/$defs/uuid"
+              },
+              "authorization_record_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "license_or_terms_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "source_artifact_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "transformation_lineage_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "excluded_sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_ref",
+              "reason"
+            ],
+            "properties": {
+              "source_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reason": {
+                "enum": [
+                  "unknown_rights",
+                  "denied",
+                  "expired",
+                  "revoked",
+                  "incompatible_license",
+                  "private_without_authorization",
+                  "duplicate",
+                  "low_quality",
+                  "evaluation_contamination",
+                  "scope_mismatch",
+                  "content_digest_mismatch"
+                ]
+              }
+            }
+          }
+        },
+        "preprocessing_pipeline_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "preprocessing_config_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "deduplication_report_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "quality_report_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language_domain_classification_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "curriculum_config_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "curriculum_config_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "splits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "train",
+            "validation",
+            "held_out"
+          ],
+          "properties": {
+            "train": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "split_ref",
+                "digest"
+              ],
+              "properties": {
+                "split_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            },
+            "validation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "split_ref",
+                "digest"
+              ],
+              "properties": {
+                "split_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            },
+            "held_out": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "split_ref",
+                "digest"
+              ],
+              "properties": {
+                "split_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            }
+          }
+        },
+        "rights_policy_snapshot_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rights_policy_snapshot_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "authorization_evaluated_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "manifest_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "lifecycle": {
+          "enum": [
+            "sealed",
+            "superseded",
+            "quarantined",
+            "revoked_impact_pending"
+          ]
+        },
+        "derived_artifact_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "evolutionCandidateActivated": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/evolutionCandidateLifecycle"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "active"
+            },
+            "approval_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "candidate_artifact_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "learning_evaluation_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "learning_evaluation_digest": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "evolution_evaluation_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evolution_evaluation_digest": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "pointer_revision": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "state",
+            "approval_ref",
+            "candidate_artifact_sha256",
+            "learning_evaluation_ref",
+            "learning_evaluation_digest",
+            "evolution_evaluation_ref",
+            "evolution_evaluation_digest",
+            "pointer_revision"
+          ]
+        }
+      ]
+    },
+    "evolutionCandidateRolledBack": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/evolutionCandidateLifecycle"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "rolled_back"
+            },
+            "approval_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "candidate_artifact_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "rollback_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "previous_candidate_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "restored_artifact_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "restore_artifact_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "pointer_revision": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "state",
+            "approval_ref",
+            "candidate_artifact_sha256",
+            "rollback_ref",
+            "previous_candidate_ref",
+            "restored_artifact_ref",
+            "restore_artifact_sha256",
+            "pointer_revision"
+          ]
+        }
+      ]
     }
   }
 }
