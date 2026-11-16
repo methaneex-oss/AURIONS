@@ -1446,6 +1446,6 @@ The owner selected dual runtime with selective domain synchronization. Both runt
 No action is selected or authorized. Defer selection until target Android device, Termux/runtime baseline, OS permissions and local execution lifecycle are empirically validated. Only the concrete Android action path is blocked.
 
 ### D-04 — First-release command/query subset: BUILDER PROPOSAL PENDING OWNER ACCEPTANCE
-The builder must present an exact registry-derived subset covering the complete cognitive loop, governed interaction boundary and reproducible training/evaluation workflow. Unselected entries remain design-only/non-dispatchable. Registry presence does not authorize dispatch.
+The builder's exact registry-derived P0/P1 subset proposal is recorded in [First-Release Command/Query Scope and Gap Analysis §12](FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md). The PR-19/PR-20 model-candidate lifecycle design is specified in [the candidate lifecycle crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md). The crosswalk identifies payload, DDL and validator amendments still required before implementation. Unselected entries remain design-only/non-dispatchable. Registry presence does not authorize dispatch.
 
 D-01 and D-02 are accepted/selected; D-03 is staged; D-04 remains pending owner acceptance. Planning exit, first implementation milestone authorization, PR readiness and merge remain separate decisions.
