@@ -1285,3 +1285,17 @@ The prior CI failure was an exact inventory mismatch (validator expected 248; fi
 **Evidence boundary:** CI verifies planning schemas, fixture/registry consistency, governance document integrity, structural work-package graph constraints, host SQLite DDL/migration smoke checks and Android probe syntax. It does not execute AURIONS runtime handlers, cognitive behaviour, cross-store saga recovery, target Android/Termux behaviour, C++/Python conformance or independent security tests. The 47 scenarios remain specified, not executed.
 
 **Disposition:** The CM-022…CM-029 specification-coverage gap is closed at the builder/CI level. BR-004 remains OPEN for runtime execution and behavioural evidence after implementation authorization. BR-008 remains OPEN for independent semantic review of event consumers/owner transitions, cross-store saga and transaction semantics, target/toolchain validation and exact-final-revision independent review. The broader builder pre-review remains NOT READY until the remaining builder-owned audit is completed. Owner-reserved topology, first permitted Android action, product acceptance and planning-exit decisions remain unresolved/pending; no implementation authorization or merge is implied.
+
+
+## Documentation audit continuation — 2026-11-16
+
+The builder continued the existing PR #2 documentation audit after the owner decisions and prior command/query inventory work. This addendum supplements the historical 2026-11-12/13 findings; it does not rewrite their historical status snapshots.
+
+- Verified the branch and PR remained on the existing `docs/complete-system-architecture` branch at the handoff HEAD before making documentation-only commits.
+- Added the PR-19/PR-20 candidate lifecycle crosswalk. The current contracts contain the individual learning, worker, artifact, evaluation, approval and evolution concepts but do not yet enforce the complete identity chain. The crosswalk records the missing experiment/attempt/evaluation links, candidate identity binding, active pointer/history and exact approval digest conditions.
+- Added MCU J.A.R.V.I.S. and neuroscience research. Official MCU canon is separated from fictional extrapolation; neuroscience findings are separated from engineering recommendations. No brain-region-to-software-module mapping is asserted.
+- Corrected stale D-02 no-sync/undecided statements in current architecture/planning documents. D-02 Option B is selected; exact field allowlists, local-only classes, conflict/deletion/recovery semantics and SY execution remain open.
+- Corrected stale schema/persistence summaries: 54 command records (52 mapped, two deferred), 29 queries, 89 events, nine top-level JSON Schemas, and 17 DDL files (three base schemas plus 14 additive migrations, including events migration v6).
+- Clarified that learning.update.accepted.v1 is an internal Learning-supervisor event produced after consuming an exact approval.decided.v1 decision. The generic approval.request/approval.decide API is the owner-facing decision surface; no separate learning.accept command is needed.
+
+**Disposition:** Documentation contradictions identified in this bounded pass were corrected. The PR-19/PR-20 crosswalk remains a design proposal until the corresponding machine-readable payload, DDL and validator amendments are integrated and checked. This audit does not authorize implementation, model training, candidate activation, PR merge or planning exit. No manual workflow dispatch or rerun was initiated; configured push automation may run when its path filters match.
