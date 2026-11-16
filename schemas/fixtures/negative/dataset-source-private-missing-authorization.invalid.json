@@ -1,0 +1,37 @@
+{
+  "authorization_id": "b1400000-0000-4000-8000-000000000001",
+  "owner_ref": "owner:primary",
+  "source_ref": "source:licensed-corpus:1",
+  "source_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_origin": {
+    "acquisition_method": "licensed_repository_export",
+    "origin_ref": "source-origin:fixture:1",
+    "acquired_at": "2026-11-16T20:00:00Z"
+  },
+  "rights_holder_ref": "rights-holder:fixture",
+  "authorization_basis": "license",
+  "license_or_terms_ref": "license:fixture:compatible-v1",
+  "license_or_terms_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "permitted_purposes": [
+    "foundation_pretraining"
+  ],
+  "training_permission": "allow",
+  "memory_retention_permission": "deny",
+  "private_data_classification": "private",
+  "private_data_authorization_ref": null,
+  "owner_scope": {
+    "owner_ref": "owner:primary",
+    "project_ref": "project:aurions",
+    "model_family_ref": "model-family:aurions-foundation",
+    "dataset_scope_ref": "dataset-scope:foundation-v1"
+  },
+  "valid_from": "2026-11-16T20:00:00Z",
+  "expires_at": null,
+  "policy_version_ref": "policy:training-data-v1",
+  "status": "active",
+  "revoked_at": null,
+  "revocation_ref": null,
+  "created_at": "2026-11-16T20:00:00Z",
+  "supersedes_authorization_id": null,
+  "record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+}
