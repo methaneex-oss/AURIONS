@@ -4,9 +4,9 @@
 
 ## 1. Product purpose
 
-The first usable release is a persistent, adaptive personal intelligence system available through concurrent cloud operation and offline-capable mobile operation. Both deployment contexts use the same authoritative cognitive architecture and versioned contracts. The mobile runtime must complete its required local workflows without cloud connectivity. The system can converse, retain and retrieve relevant experiences, understand bounded objectives in their relevant situations, reason about evidence-supported possible means, interact only through applicable authority boundaries, observe consequences and use evidence in later related interactions. Means are not limited to device capabilities, registered tools or platform adapters.
+AURIONS is a trainable AI system with an evolving cognitive architecture, not a personal-assistant product, chatbot or thin LLM wrapper. Conversation is one possible interface, not the system's identity. The first usable release is a persistent, adaptive system available through concurrent cloud operation and offline-capable mobile operation. Both deployment contexts use the same authoritative cognitive architecture and versioned contracts. The mobile runtime must complete its required local workflows without cloud connectivity. AURIONS must acquire and use experience, retain and retrieve evidence, understand bounded objectives in relevant situations, reason about evidence-supported possible means, interact only through applicable authority boundaries, observe consequences, and improve through both experience-dependent adaptation and controlled model training. Means are not limited to device capabilities, registered tools or platform adapters.
 
-It is a first working system, not a finished general intelligence, unrestricted autonomous agent, multi-device ecosystem or proof of general learning.
+It is an early trainable system, not finished general intelligence, an unrestricted autonomous agent, a multi-device ecosystem or proof of general intelligence. Learning and training claims must be bounded by reproducible evidence.
 
 The governing principle remains:
 
@@ -18,7 +18,7 @@ The release must demonstrate interacting mechanisms and durable state changes. I
 
 **Target user:** The owner operating AURIONS through the first CLI interface, with concurrent cloud and offline-capable mobile runtime targets. The initial mobile engineering baseline is the supported Termux environment on the target Android device; a native Android UI is not yet selected.
 
-**Primary job:** Help the owner carry a bounded task across interactions and process restarts: understand the requested outcome, represent relevant entities and situation, retain context, retrieve evidence, form and track a plan, select among currently evidenced and authorized means (which may be non-device or human-mediated), record what happened and use that experience later.
+**Primary job:** Acquire, represent and retain experience; build and revise evidence-backed knowledge; predict and evaluate outcomes; improve reusable processing and model parameters through controlled learning; and apply those improvements to later objectives. The CLI is the first interface for inspecting and interacting with this evolving system.
 
 The system must remain useful when remote services are unavailable. Remote model/provider use is optional and governed by data disclosure and spending policy.
 
@@ -116,8 +116,8 @@ The system must remain useful when remote services are unavailable. Remote model
 | Governance | Required baseline | Execution-boundary enforcement, audit and owner authority |
 | Resource limits | Required baseline | Measured values and platform limitations documented |
 | Proactive autonomy | Architectural requirement; narrow first-release task execution only | No unrestricted background activity |
-| Model training/fine-tuning | Not required to claim first release works | Training infrastructure and evaluation are separate work |
-| General learning improvement | Not claimed by the feedback workflow | Requires held-out evaluation described in architecture |
+| Model training/fine-tuning | Required at a bounded, reproducible baseline | At least one real parameter-update experiment, versioned candidate artifact, frozen baseline and leakage-controlled held-out evaluation; training may run locally where feasible or on explicitly approved capable hardware, but local inference and operation must not depend on remote training |
+| General learning improvement | No broad/general improvement claim from one experiment | Report measured results only for evaluated tasks and held-out distributions; separate experience-dependent adaptation from model-weight changes |
 | Offline-capable mobile runtime | Required concurrently with cloud operation; local cognition, persistence, situation understanding and governed interactions available in the validated local context must work without cloud availability | The CLI remains the first user-facing interface. A native Android UI is not selected; mobile UI technology and core boundary remain engineering decisions subject to platform validation |
 | Cloud runtime | Required concurrently with offline-capable mobile operation; uses the same cognitive architecture/contracts and independently enforces owner, provider, disclosure and operation policy | Cloud availability does not authorize mobile-local operations or imply automatic cross-runtime state synchronization |
 | Voice, camera and continuous sensing | Excluded from first release | Separate permissions, privacy and feasibility gates |
@@ -130,7 +130,7 @@ The system must remain useful when remote services are unavailable. Remote model
 The first usable release does not promise:
 
 - Human-level or general intelligence.
-- A fully trained or self-improving model.
+- A finished, generally intelligent or unbounded self-improving model; bounded training and evaluation are required, but automatic production activation is not.
 - Autonomous modification of its own production code or protected governance.
 - Unrestricted shell, device, account, network or filesystem access.
 - Always-on microphone, camera, location or sensor monitoring.
@@ -165,8 +165,10 @@ The release is accepted only when the following scenarios pass in both required 
 | PR-16 | Cloud and mobile builds implement compatible versioned cognitive/application contracts without becoming separate intelligence designs | Shared contract fixtures and compatibility tests against both runtime builds |
 | PR-17 | Offline-mobile workflows complete with network disabled; cloud unavailability does not block local cognition, persistence, discovery or authorized local execution | Network-isolation test, local persistence/restart test and authorized/denied local operation traces |
 | PR-18 | Cloud runtime cannot authorize or execute a mobile-local operation, and neither runtime silently assumes the other's local state | Negative cross-boundary authorization tests and state-ownership assertions |
+| PR-19 | A bounded training run produces a new, versioned model candidate from an identified baseline using a provenance-tracked dataset and reproducible configuration | Dataset manifest, split/leakage checks, training configuration, baseline/candidate hashes and checkpoint provenance |
+| PR-20 | Candidate evaluation uses a frozen baseline and leakage-controlled held-out data; activation is separately authorized and rollback is verified | Held-out metrics, task-specific regression results, candidate quarantine, approval record, activation/rollback trace and proof that training loss alone cannot activate a model |
 
-Passing PR-11 demonstrates experience-dependent feedback, not general learning improvement. Any stronger learning claim requires the held-out evaluation standard in the architecture document.
+Passing PR-11 demonstrates experience-dependent feedback, not model training. PR-19 and PR-20 separately verify a real model-parameter update and its held-out evaluation/activation boundary. Neither one experiment nor a lower training loss establishes general learning improvement.
 
 Numerical performance thresholds for latency, memory, storage and battery are intentionally deferred until baselines are measured on the target device. Acceptance must still report actual measurements and resource limitations; absence of a threshold does not permit omission of measurement.
 
