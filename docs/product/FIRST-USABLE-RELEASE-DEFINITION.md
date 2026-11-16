@@ -89,11 +89,15 @@ The system must remain useful when remote services are unavailable. Remote model
 
 **Expected result:** The complete feedback path is demonstrated: experience → representation/context → persistence → retrieval → later reasoning. This proves persistent feedback and use of experience, not by itself general learning improvement.
 
-### Workflow G — Train and evaluate a model candidate
+### Workflow G — Train and evaluate an AURIONS-owned model candidate
+
+**Model-ownership invariant:** The primary model is owned and trained under AURIONS control; AURIONS is not a thin wrapper around a hosted commercial model. The initial model baseline uses an AURIONS-controlled architecture/configuration with randomly initialized parameters. Pretrained third-party weights or a hosted third-party LLM are not silently substituted as the system's brain. Architecture size, tokenizer, training objective, dataset composition and compute placement remain engineering choices subject to feasibility evidence. Any proposal to import pretrained weights or make external model inference a core dependency requires a separate explicit owner decision.
+
+Online research is source acquisition, not automatic model training. Retrieved material retains source, time, provenance, trust, sensitivity and licensing/data-use metadata. It may enter a training dataset only after curation and data-use approval; retrieval alone never changes model weights.
 
 1. AURIONS selects an explicitly approved training dataset with provenance, version and declared data-use scope.
 2. The training pipeline creates non-overlapping training, validation and held-out evaluation partitions and checks for leakage.
-3. A bounded worker runs a reproducible training configuration against an identified baseline model or adapter.
+3. A bounded worker trains the AURIONS-owned model from its declared initialization or a prior AURIONS-owned checkpoint. The initial baseline is randomly initialized, with architecture, tokenizer, configuration and initialization provenance versioned.
 4. The worker returns a versioned candidate artifact, metrics, configuration and provenance; it cannot modify the active model or authoritative cognitive state.
 5. The evaluation path compares the candidate with the frozen baseline on held-out tasks and relevant regression controls.
 6. Candidate activation requires the applicable approval and compatibility checks; failed or regressive candidates remain quarantined and can be discarded.
@@ -116,7 +120,7 @@ The system must remain useful when remote services are unavailable. Remote model
 
 | Capability | First-release scope | Boundary |
 |---|---|---|
-| Local conversation | Required | Local model through replaceable inference interface |
+| Local conversation | Required | AURIONS-owned model through a replaceable local inference runtime; no hosted third-party model is a required dependency |
 | Experience persistence | Required | Durable committed records across restart |
 | Memory retrieval | Required | Provenance-aware retrieval; vector DB not required |
 | Context and representation | Required at a testable baseline | Must not collapse into untraceable prompt assembly |
@@ -128,7 +132,7 @@ The system must remain useful when remote services are unavailable. Remote model
 | Governance | Required baseline | Execution-boundary enforcement, audit and owner authority |
 | Resource limits | Required baseline | Measured values and platform limitations documented |
 | Proactive autonomy | Architectural requirement; narrow first-release task execution only | No unrestricted background activity |
-| Model training/fine-tuning | Required at a bounded, reproducible baseline | At least one real parameter-update experiment, versioned candidate artifact, frozen baseline and leakage-controlled held-out evaluation; training may run locally where feasible or on explicitly approved capable hardware, but local inference and operation must not depend on remote training |
+| AURIONS-owned model training | Required at a bounded, reproducible baseline | Initial model uses randomly initialized parameters and AURIONS-controlled architecture/configuration; at least one real parameter-update experiment, versioned candidate artifact, frozen baseline and leakage-controlled held-out evaluation. Training may use local resources or explicitly approved cloud/remote compute with approved data access; local inference and offline operation must not depend on remote training |
 | General learning improvement | No broad/general improvement claim from one experiment | Report measured results only for evaluated tasks and held-out distributions; separate experience-dependent adaptation from model-weight changes |
 | Offline-capable mobile runtime | Required concurrently with cloud operation; local cognition, persistence, situation understanding and governed interactions available in the validated local context must work without cloud availability | The CLI remains the first user-facing interface. A native Android UI is not selected; mobile UI technology and core boundary remain engineering decisions subject to platform validation |
 | Cloud runtime | Required concurrently with offline-capable mobile operation; uses the same cognitive architecture/contracts and independently enforces owner, provider, disclosure and operation policy | Cloud availability does not authorize mobile-local operations. D-02 selects bounded synchronization of explicitly approved durable domains; no unrestricted replication or authority transfer |
@@ -177,7 +181,7 @@ The release is accepted only when the following scenarios pass in both required 
 | PR-16 | Cloud and mobile builds implement compatible versioned cognitive/application contracts without becoming separate intelligence designs | Shared contract fixtures and compatibility tests against both runtime builds |
 | PR-17 | Offline-mobile workflows complete with network disabled; cloud unavailability does not block local cognition, persistence, discovery or authorized local execution | Network-isolation test, local persistence/restart test and authorized/denied local operation traces |
 | PR-18 | Cloud runtime cannot authorize or execute a mobile-local operation, and neither runtime silently assumes the other's local state | Negative cross-boundary authorization tests and state-ownership assertions |
-| PR-19 | A bounded training run produces a new, versioned model candidate from an identified baseline using a provenance-tracked dataset and reproducible configuration | Dataset manifest, split/leakage checks, training configuration, baseline/candidate hashes and checkpoint provenance |
+| PR-19 | A bounded training run produces a new, versioned candidate for the AURIONS-owned model, starting from its declared random initialization or a prior AURIONS-owned checkpoint; imported pretrained third-party weights are not the default baseline | Model/architecture and tokenizer versions, initialization provenance, dataset manifest, split/leakage checks, training configuration, baseline/candidate hashes and checkpoint provenance |
 | PR-20 | Candidate evaluation uses a frozen baseline and leakage-controlled held-out data; activation is separately authorized and rollback is verified | Held-out metrics, task-specific regression results, candidate quarantine, approval record, activation/rollback trace and proof that training loss alone cannot activate a model |
 
 Passing PR-11 demonstrates experience-dependent feedback, not model training. PR-19 and PR-20 separately verify a real model-parameter update and its held-out evaluation/activation boundary. Neither one experiment nor a lower training loss establishes general learning improvement.
@@ -186,7 +190,7 @@ Numerical performance thresholds for latency, memory, storage and battery are in
 
 ## 7. Operational and safety constraints
 
-- The offline-mobile runtime must remain locally useful and independent of cloud availability. The cloud runtime is a concurrent first-release deployment target, not merely an optional inference provider. Remote inference or external services receive only the minimum authorized context.
+- The offline-mobile runtime must remain locally useful and independent of cloud availability. The cloud runtime is a concurrent first-release deployment target and supports approved online research/data acquisition and capable training compute where needed. Remote inference is not a required dependency or the primary model; any external inference provider remains optional, task-scoped and subject to explicit owner approval and data-disclosure policy.
 - The owner remains the authority for permissions and protected changes.
 - The R0–R5 risk model, exact-operation approval binding, authenticated owner session, expiry, revocation, replay protection and durable audit remain mandatory.
 - The model, Python workers and integrations cannot grant permissions or directly mutate authoritative live cognitive state.
@@ -204,7 +208,7 @@ These items cannot be silently decided by the architecture author or implementat
 2. **Deployment: OWNER DECISION — cloud and offline mobile concurrently.** The first-release plan must deliver both as first-class targets; offline mobile must not depend on cloud availability. Both use shared versioned contracts and the same authoritative cognitive-core implementation/semantics. **D-02 OWNER DECISION — OPTION B SELECTED (2026-11-16):** both contexts are full runtimes with bounded selective synchronization of explicitly approved durable domain changes. This supersedes the earlier no-sync proposal. The exact field-level allowlists, local-only classes, conflict/deletion/recovery semantics and executable SY acceptance cases remain builder-owned design gates before implementation. A cloud plan cannot authorize a mobile-local action. CLI deployment context(s) and exact process topology remain engineering details to validate. See [Cloud and Offline-Mobile Runtime Topology Decision](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md).
 3. **Foundational interaction model and Android realization:** The examples discussed by the owner (such as opening apps, adjusting volume and handling files) are illustrative scenarios only. They do not define or limit the general model of possible means, nor preselect the first permitted action. The foundational architecture must define objective-led understanding of relevant situations, entities, actors, resources, evidence and context-dependent means. Android observation, discovery and OS permission integration are one realization beneath that model. The capability model must not be a hardcoded catalogue of owner examples. The first end-to-end Android action-gateway acceptance scenario remains an owner decision.
 4. **Target-device performance thresholds:** Establish after repeatable baseline measurements.
-5. **Specific inference model/runtime configuration:** Preserve model independence and validate actual device feasibility; existing basic inference is not sufficient performance evidence.
+5. **AURIONS-owned model implementation details:** Preserve the owner-selected direction to build/train AURIONS' own model from randomly initialized parameters. Model architecture/size, tokenizer, training objective, local inference engine and resource profile remain engineering choices requiring measured feasibility evidence. No pretrained third-party model is selected as the primary model.
 6. **Any additional first-release capability:** Must be justified against the primary workflow and must not displace mandatory acceptance criteria.
 7. **Cloud/mobile state continuity:** Resolved at topology level by D-02 (Option B). The first release includes bounded selective synchronization for explicitly allowlisted durable domains. The initial candidate domains are experiences/provenance, representations, memory, evidence-backed knowledge/belief revisions, objectives/derived goals and approved immutable model-version references. Raw/sensitive observations, transient context, plans/task checkpoints, device capabilities, permissions, credentials, approval secrets, operation dispatch state and governance authority remain local by default. Field-level classification, per-aggregate conflict/deletion/recovery rules and executable SY tests remain open before implementation.
 
