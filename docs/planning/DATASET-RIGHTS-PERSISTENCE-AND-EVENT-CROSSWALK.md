@@ -1,8 +1,8 @@
 # AURIONS — Dataset Rights Persistence and Trusted-Event Crosswalk
 
-- **Status:** Builder technical design proposal derived from MD-16 and the Dataset Source Rights and Training Authorization Contract.
+- **Status:** Builder technical contract integrated into schemas, event registry/matrices, proposed governance v5 and memory v9 migrations, and INT-004. Runtime enforcement and host execution of the two new migrations remain unverified.
 - **Authority:** MD-16 in [Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md); normative model requirements in [Initial Engineering Specification §27](INITIAL-ENGINEERING-SPECIFICATION.md).
-- **Current machine baseline:** `datasetSourceAuthorization` and `datasetManifest` JSON Schema definitions, positive fixtures, six negative controls and validator cross-binding checks are present. This document specifies the next persistence/event work; it does not claim those layers exist.
+- **Current machine baseline:** Source authorization and manifest schemas, five event-specific payload schemas, positive fixtures, eleven dataset-rights negative controls, validator cross-binding, five registered events, both event matrices and INT-004 are present. Governance v5 and memory v9 DDL contracts and SQLite smoke assertions are added; execution of the new migrations remains pending.
 - **Boundary:** No new public commands, dispatch permission, corpus-ingestion permission, worker execution, training, model activation, implementation authorization or planning-exit approval is created here.
 
 ## 1. Authority and storage boundaries
@@ -17,9 +17,9 @@ The data-rights path crosses three existing SQLite authority boundaries. Each st
 
 The existing store-local outbox rule remains mandatory: a governance mutation commits with the governance outbox; a memory mutation commits with the memory outbox; the event archive receives each envelope asynchronously. No cross-file foreign key, distributed transaction or synchronous central-archive dependency is implied.
 
-## 2. Governance persistence proposal
+## 2. Governance persistence contract — migration v5
 
-Add an additive governance migration only after schema and event contracts are reviewed against the current base schema and migrations.
+`schemas/persistence/aurion_governance.migration_v5.sql` adds immutable authorization versions and append-only revocation records. It uses the existing governance approval-request table and governance-local outbox. No cross-store foreign key is introduced.
 
 ### 2.1 Immutable authorization versions
 
@@ -48,7 +48,7 @@ The effective authorization check is: exact authorization version exists; its re
 
 Do not update a grant in place to erase its prior state. The effective revoked state is derived from the immutable revocation record and the authorization-version history. If the payload representation needs a post-revocation snapshot, it must reference the prior grant and revocation evidence without mutating historical bytes.
 
-## 3. Memory persistence proposal
+## 3. Memory persistence contract — migration v9
 
 Add an additive memory migration only after the dataset payloads, artifact ownership and query projections are reconciled.
 
@@ -111,14 +111,14 @@ The event registry currently has 89 design-only events and the ingress matrix ac
 
 ## 6. Migration ordering and acceptance gates
 
-Do not create SQL migrations until the current table definitions, artifact ownership, query projections and event semantics have been reconciled. The intended dependency order is:
+The schema/event contract and persistence design stages have now been encoded in the current planning artifacts. The remaining sequence is:
 
-1. Complete payload schemas, fixtures and validator semantic checks (initial schema/fixture layer is now present).
-2. Complete trusted event payloads, registry entries, producer/consumer rows, ingress triggers and scenario references.
-3. Add governance migration for immutable authorization versions, append-only revocation evidence and governance-local outbox enforcement.
-4. Add memory migration for sealed manifests, source membership/exclusions/splits and derived-artifact impact lineage with memory-local outbox enforcement.
-5. Determine whether the existing events-store operation/step/recovery schema can represent the revocation-impact saga without a new migration; add one only if a concrete missing durable field/table is demonstrated.
-6. Add executable SQL positive/negative invariants, store-local transaction/outbox probes, cross-store crash/replay tests and target-device compatibility evidence.
+1. **Completed as specification:** payload schemas, fixtures, validator cross-binding and five event-specific negative controls.
+2. **Completed as specification:** five trusted event payloads, registry entries, producer/consumer rows, ingress triggers and INT-004 references.
+3. **DDL added:** governance migration v5 defines immutable authorization versions, append-only revocation evidence and use of the governance-local outbox.
+4. **DDL added:** memory migration v9 defines sealed manifests, source membership/exclusions/splits and derived-artifact impact lineage with memory-local outbox enforcement.
+5. **No events migration added:** the existing events-store operation/step/recovery schema already represents the saga operation, ordered steps and recovery journal; add an events migration only if later tests identify a concrete missing durable field/table.
+6. **Tests added, not yet run:** SQL positive/negative invariants are added to the host DDL smoke script. Execute them before accepting these migrations; cross-store crash/replay tests and target-device compatibility evidence remain open.
 
 Required negative tests include unknown rights, denied/expired/revoked authorization, changed source or terms digest, purpose/owner/model-scope mismatch, private data without evidence, manifest tampering, worker source expansion, duplicate source identity with different bytes, replay after revocation and attempted resurrection from backup/sync.
 
@@ -127,7 +127,7 @@ Required negative tests include unknown rights, denied/expired/revoked authoriza
 - **Owner decision MD-16:** recorded and closed.
 - **Payload schema/fixtures:** initial machine definitions and positive/negative validation coverage are present.
 - **Activation/rollback lifecycle events:** state-specific payload schemas are present and event-registry bindings are updated.
-- **Persistence:** no dataset-rights migration is present; migration design remains outstanding.
-- **Trusted dataset-rights events:** proposed here, not yet registered or reconciled in all matrices.
+- **Persistence:** governance v5 and memory v9 DDL contracts are present; exact-head host execution is pending.
+- **Trusted dataset-rights events:** five events are registered and reconciled across both event matrices and INT-004.
 - **Runtime:** no source authorization, dataset sealing, worker admission or revocation-impact handler is implemented or validated.
 - **Dispatch/training:** all registries remain design-only/non-dispatchable; no corpus ingestion or training is authorized by this document.
