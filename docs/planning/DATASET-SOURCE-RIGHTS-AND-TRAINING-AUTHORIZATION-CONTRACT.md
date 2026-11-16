@@ -112,3 +112,8 @@ These are planned acceptance cases until machine fixtures and executable handler
 - **Machine contracts:** initial JSON Schema definitions, positive/negative fixtures and validator cross-binding checks are present for source authorization and dataset manifests; state-specific activation/rollback event schemas are also bound in the event registry. Dataset-rights persistence, authorization/revocation/sealing/admission/impact event definitions, event matrices and runtime enforcement remain open.
 - **Runtime:** no dataset-rights enforcement, worker admission or revocation-impact handler is implemented or validated.
 - **Gate:** do not admit nontrivial/ambiguous sources or begin training until the machine contracts and authorization enforcement are implemented and verified under the separately authorized implementation milestone.
+
+
+## Current machine-contract status — 2026-11-16
+
+The dataset-rights contract now has five event-specific payload definitions and fixtures: authorization decided, authorization revoked, manifest sealed, admission blocked and revocation impact assessed. All five events are registered as trusted non-command internal events and are bound to the event producer/consumer matrix, ingress-trigger matrix and integrated scenario INT-004. Five event-specific negative controls supplement the six existing source/manifest negative controls. This is machine-contract specification only; durable governance and memory persistence, worker/supervisor enforcement, executable revocation recovery and training authorization remain unimplemented. No nontrivial corpus ingestion or training is authorized by these documents.

@@ -12,10 +12,10 @@ The open-world architecture now has a machine-readable design contract surface f
 Current branch inventory:
 - 54 command entries: 52 mapped to typed request/response, owning aggregate/store, semantic transition, owner/actor authorization, idempotency, deadline/cancellation, side-effect/reconciliation, error and event bindings; two multi-device commands remain deferred.
 - 29 read-only query entries: typed input/response/result schemas, owner scope, classification/redaction, consistency, ordering/cursor, freshness/cache and acceptance assertions.
-- 89 event entries: each has a payload-schema and fixture reference; all remain design-only/non-dispatchable.
+- 94 event entries: each has a payload-schema and fixture reference; all remain design-only/non-dispatchable.
 - 52 mapped commands have unique CC-001…CC-052 positive/negative acceptance assertions.
 - 29 queries have unique QCC-001…QCC-029 positive/negative assertions and explicit read-only invariants.
-- 89 reusable domain-payload schema definitions, 81 named positive domain fixtures and 29 negative controls are present in the current source corpus. Event, command and query schema/fixture reference checks are enforced in CI.
+- 89 reusable domain-payload schema definitions, 92 named positive domain fixtures and 46 negative controls are present in the current source corpus. Event, command and query schema/fixture reference checks are enforced in CI.
 
 These are design and structural-integrity facts. They do not establish runtime handler/consumer correctness, executable cognitive scenarios, target-platform behaviour, security enforcement or production readiness.
 
@@ -66,7 +66,7 @@ The following semantic mismatches identified during builder analysis have been r
 - `self_model.update.propose` emits `self_model.update.proposed.v1` with explicit proposed status.
 - Objective revision has a dedicated `objective.revised.v1` event and a successor-revision fixture.
 
-The event registry now contains 89 entries. All new events remain design-only/non-dispatchable until owning handlers and consumers are implemented and tested.
+The event registry now contains 94 entries. All new events remain design-only/non-dispatchable until owning handlers and consumers are implemented and tested.
 
 ## 5. Explicitly unresolved scope and authority
 
@@ -82,15 +82,15 @@ These are not builder choices:
 ## 6. Evidence and remaining BR-008 work
 
 Machine-enforced CI currently checks:
-- 54 unique command types, 29 unique query types and 89 event types.
+- 54 unique command types, 29 unique query types and 94 event types.
 - All 52 mapped command entries have semantic fields, known error/event bindings and unique CC-001…CC-052 acceptance IDs; the two device commands are deferred.
 - All 29 queries have owner scope, classification/redaction, consistency, ordering/cursor, limits/freshness and unique QCC-001…QCC-029 assertions; all remain read-only.
 - Every event payload-schema and fixture reference resolves and each referenced fixture validates against its declared payload schema.
 - Command and query request/response/result fixture references are validated against their declared schemas. The event producer/consumer matrix is checked bidirectionally against command producer bindings, payload schema definition names, intended consumer/owner-transition summaries and scenario coverage references.
 - Governance integrity, host SQLite base/migration smoke checks and Android probe shell syntax.
 
-The 89 event entries now carry producer-origin/trigger, owning-component, consumer-contract, owner-transition, ordering/idempotency, failure/recovery and scenario-reference specifications. This is a proposed contract, not evidence that runtime consumers exist. 52 events have command producer bindings; 37 have no command producer. Fifteen Action Gateway lifecycle events have exact internal state-transition triggers; the other 22 non-command events have exact trusted-ingress/internal producer triggers. All 37 events without command producers remain non-command origins; no public command was invented. The following remain unverified and keep BR-008 OPEN:
-- Independent semantic review of all 89 proposed event consumer/owner-transition contracts, independent review and owner acceptance of the 37 non-command producer-trigger specifications, and cross-store saga/transaction ownership.
+The 94 event entries now carry producer-origin/trigger, owning-component, consumer-contract, owner-transition, ordering/idempotency, failure/recovery and scenario-reference specifications. This is a proposed contract, not evidence that runtime consumers exist. 52 events have command producer bindings; 42 have no command producer. Fifteen Action Gateway lifecycle events have exact internal state-transition triggers; the other 27 non-command events have exact trusted-ingress/internal producer triggers. All 37 events without command producers remain non-command origins; no public command was invented. The following remain unverified and keep BR-008 OPEN:
+- Independent semantic review of all 94 proposed event consumer/owner-transition contracts, independent review and owner acceptance of the 42 non-command producer-trigger specifications, and cross-store saga/transaction ownership.
 - Production handler implementation and executable command/query/event tests, including authorization, redaction, concurrency, idempotency, crash/restart, replay and no-blind-retry assertions.
 - Execute all 39 INT/CM/AD scenario specifications with deterministic fakes, durable-state assertions, unseen controls and pre-registered learning acceptance metrics. The fixture corpus is specified and CI-validated, not executed.
 - The learning-update acceptance event exists, but the canonical public acceptance/activation command and its relationship to the separate evolution activation path remain unresolved.
@@ -125,15 +125,15 @@ Exact revision `4e509a194f206c52d41fda1f6d3b3599bc5c0375` passed GitHub Actions 
 
 ## BR-008 builder increment — exact event producer matrix parity (2026-11-12)
 
-The schema validator now compares producer origin, exact trigger contract and owner-transition contract field-for-field between the event registry and both trigger matrices. Coverage is exact: 15 Action Gateway internal events plus 23 other non-command events. All 89 event entries now retain only the unresolved runtime-handler and event-specific-acceptance-execution gates.
+The schema validator now compares producer origin, exact trigger contract and owner-transition contract field-for-field between the event registry and both trigger matrices. Coverage is exact: 15 Action Gateway internal events plus 27 other non-command events. All 94 event entries now retain only the unresolved runtime-handler and event-specific-acceptance-execution gates.
 
 Exact HEAD 2f4218c669ced79920af16ff122e5ab7080124b4 passed CI run [43323863934](https://github.com/methaneex-oss/AURIONS/actions/runs/43323863934). This closes specification parity only; owner acceptance, runtime handlers and executed event behaviour remain open.
 
 
 ## BR-004/BR-008 builder increment — open-world scenario and evidence-count reconciliation (2026-11-13)
 
-The current integrated scenario corpus now contains **47 specifications**: INT-001…INT-003, CM-001…CM-029 and AD-001…AD-015. The fixture contains **287 ordered steps and 53 negative controls**. CM-022…CM-029 are individually instantiated with concrete command/event transitions, durable assertions, negative controls, restart/replay, concurrency, fault and held-out controls. The schema validator enforces the exact inventory/counts and concrete command/event requirements. The event registry's acceptance-scenario references were recomputed from the full fixture; the current mismatch count is zero.
+The current integrated scenario corpus now contains **48 specifications**: INT-001…INT-004, CM-001…CM-029 and AD-001…AD-015. The fixture contains **293 ordered steps and 59 negative controls**. CM-022…CM-029 are individually instantiated with concrete command/event transitions, durable assertions, negative controls, restart/replay, concurrency, fault and held-out controls. The schema validator enforces the exact inventory/counts and concrete command/event requirements. The event registry's acceptance-scenario references were recomputed from the full fixture; the current mismatch count is zero.
 
-The 37 events without command producers remain intentionally non-command events: 15 Action Gateway state-transition events and 22 other trusted-ingress/internal producer events. This is a trigger-origin classification, not a missing-command defect and not a reason to invent public commands.
+The 37 events without command producers remain intentionally non-command events: 15 Action Gateway state-transition events and 27 other trusted-ingress/internal producer events. This is a trigger-origin classification, not a missing-command defect and not a reason to invent public commands.
 
 **Evidence boundary:** The scenario fixture and event-reference consistency are machine-checkable specifications. They do not execute runtime behaviour. Event consumer semantics, cross-store saga behaviour, target SQLite/Android validation, C++ conformance, independent review and owner decisions remain separate gates. The current revision must pass CI before the new fixture increment is considered validated.

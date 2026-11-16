@@ -31,9 +31,9 @@ This directory contains the canonical planning mirror, technical contracts, owne
 - [Command/Query Registry](../../schemas/command-query-registry.v1.json) — 54 command records (52 mapped, two deferred) and 29 query records; all remain design-only/non-dispatchable.
 - [Query Semantics and Security Contract Matrix](QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md) — per-query scope, classification/redaction, consistency, ordering/cursor, freshness/cache and resource-budget rules.
 - [Query Projection and Persistence Reconciliation](QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md) — proposed source/derivation mapping for all 310 query result fields; SQL handlers and behavioural projection tests remain open.
-- [Event Registry](../../schemas/event-registry.v1.json) — 89 design-only event contracts.
-- [Event Producer and Consumer Semantics Matrix](EVENT-PRODUCER-AND-CONSUMER-SEMANTICS-MATRIX.md) — producer origins, owner transitions, consumer contracts, ordering/idempotency and failure/recovery for all 89 events.
-- [Event Ingress and Internal Producer Trigger Matrix](EVENT-INGRESS-AND-INTERNAL-PRODUCER-TRIGGER-MATRIX.md) — exact internal/trusted-ingress triggers for 37 events without command producers: 15 Action Gateway lifecycle events and 22 other non-command events.
+- [Event Registry](../../schemas/event-registry.v1.json) — 94 design-only event contracts.
+- [Event Producer and Consumer Semantics Matrix](EVENT-PRODUCER-AND-CONSUMER-SEMANTICS-MATRIX.md) — producer origins, owner transitions, consumer contracts, ordering/idempotency and failure/recovery for all 94 events.
+- [Event Ingress and Internal Producer Trigger Matrix](EVENT-INGRESS-AND-INTERNAL-PRODUCER-TRIGGER-MATRIX.md) — exact internal/trusted-ingress triggers for 42 events without command producers: 15 Action Gateway lifecycle events and 27 other non-command events.
 - [Operation Lifecycle Transition Matrix](OPERATION-LIFECYCLE-TRANSITION-MATRIX.md) — Action Gateway lifecycle predecessor, trigger and effect constraints.
 - [Store-Local Outbox and Cross-Store Saga Matrix](STORE-LOCAL-OUTBOX-AND-CROSS-STORE-SAGA-MATRIX.md) — per-store transactional outboxes and the three explicitly specified cross-store evolution sagas.
 - [Error Handler Contract Matrix](ERROR-HANDLER-CONTRACT-MATRIX.md) — 35-code seed registry, 13 category-owned handler contracts and code-specific recovery assertions.
@@ -41,7 +41,7 @@ This directory contains the canonical planning mirror, technical contracts, owne
 ## Schemas, fixtures and validation
 
 - [Schema and fixture index](../../schemas/README.md) — schema source and validation inventory.
-- [Integrated Scenario Contract Fixture](../../schemas/fixtures/scenario-contracts.fixture.json) — **47 design specifications**: INT-001…003, CM-001…029 and AD-001…015; **287 ordered steps and 53 negative controls**. These are not executed runtime tests and confer no execution authority.
+- [Integrated Scenario Contract Fixture](../../schemas/fixtures/scenario-contracts.fixture.json) — **48 design specifications**: INT-001…004, CM-001…029 and AD-001…015; **293 ordered steps and 59 negative controls**. These are not executed runtime tests and confer no execution authority.
 - [Scenario Contract JSON Schema](../../schemas/scenario-contracts.v1.schema.json) — validates scenario shape and non-executable status.
 - [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) — maps cognitive/world/interaction/platform responsibilities to state ownership, persistence, contracts, work packages and scenario evidence.
 - [Android/Termux Target Validation Protocol](../platform/ANDROID-TERMUX-TARGET-VALIDATION-PROTOCOL.md) — read-only target collector and required empirical validation.
