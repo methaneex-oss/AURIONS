@@ -100,7 +100,7 @@ The complete owner-selected wording is maintained in [Model Architecture and Tra
 - Historical wording in source records remains for provenance; superseded proposals must not be treated as current authority.
 - If a decision changes, update the source decision register first, then reconcile this matrix, product definition, architecture, contracts, roadmap and tests.
 
-**Current disposition:** IN PROGRESS. D-01 accepted; D-02 Option B selected; D-03 staged; D-04 remains a builder proposal pending owner acceptance. The bounded cloud/mobile sync design, model-candidate lifecycle crosswalk, repository consistency, executable validation, exact-head independent review and owner planning-exit approval remain open.
+**Current disposition:** IN PROGRESS. D-01 accepted; D-02 Option B selected; D-03 staged; D-04 exact §12 command/query classification owner-accepted on 2026-11-17. The bounded cloud/mobile sync design, model-candidate lifecycle crosswalk, repository consistency, runtime/target executable validation, exact-head independent review and owner planning-exit approval remain open.
 
 
 ## 6. D-04 — First-release command/query subset: OWNER-ACCEPTED (2026-11-17)
