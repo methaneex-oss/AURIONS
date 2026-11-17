@@ -24,6 +24,8 @@ SQLite database files are never copied or replicated. Only versioned domain chan
 
 The allowlist is positive and versioned. Unknown domains, fields, nested paths, schema versions or allowlist versions are rejected and quarantined; absence from the list never means allowed.
 
+**Owner-acceptance gate (hard stop):** the machine allowlist currently has status `builder_proposal_not_owner_accepted`. Its `default_paths` and `conditional_paths` describe a candidate policy, not an enabled export entitlement. Until the owner explicitly accepts the exact field paths, conditional rules and classification version, every domain/field remains export-disabled. An implementation must fail closed and quarantine attempted changes; it must not treat presence in `default_paths` as permission to synchronize. D-02 Option B selects the topology, not this detailed field policy.
+
 | Domain | Default synchronized field paths | Conditional fields | Excluded by default |
 |---|---|---|---|
 | Experience/provenance | experience_id, source_type, observed_at, recorded_at, provenance.source_kind, provenance.external_origin, capture_method, capture_limitations, retention_class | provenance.source_ref, actor_ref and device_ref only when the referenced identity is owner-scoped and separately classified OWNER_PRIVATE; content_ref only for an explicitly selected aggregate with an approved encrypted artifact reference | Raw observation content, audio/video/image bytes, precise location, third-party identifiers, unredacted source payloads |
