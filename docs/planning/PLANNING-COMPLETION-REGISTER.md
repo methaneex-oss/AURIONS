@@ -902,3 +902,10 @@ The builder reconciled the latest machine-contract evidence against the persiste
 - **Still open:** runtime export/receiver handlers, authenticated peer enrollment and key lifecycle, owner/domain acceptance of conditional field classifications, C++/Python canonicalization parity, SY execution, crash/replay/concurrency/restore tests and cloud/Android/Termux target validation.
 
 PR #2 remains open, draft and unmerged. No runtime implementation, training, command dispatch, candidate activation, planning exit or merge authority is inferred.
+
+## 2026-11-17 builder continuation — D-02 persistence schema closure
+
+- Added proposed Memory migration v10 for local-only selective synchronization persistence: export ledger/history, destination inbox receipts, quarantine evidence, peer acknowledgements and monotonic checkpoints, causal-gap history, conflict records/resolutions, tombstones/peer receipts and restore-frontier events. The source outbox is referenced by the export ledger but is not conflated with peer transport state.
+- Extended `scripts/validate_sqlite_ddl.py` to execute the 21-file three-store chain and exercise the v10 constraints: export transition ordering, acknowledgement binding, inbox idempotency, checkpoint monotonicity, causal-gap resolution, conflict revision checks, tombstone receipts, restore-frontier gating and append-only evidence.
+- Updated the persistence README, D-02 contract and store-local saga matrix. Host CI must pass on the exact new head before this schema layer can be marked host-validated. Runtime handlers, authenticated peer/key lifecycle, owner acceptance of field classifications, C++/Python conformance, SY execution and Android/Termux/crash-recovery validation remain open.
+- This is a planning/schema-contract increment only. It does not authorize runtime sync, dispatch, training, activation, planning exit or PR merge.

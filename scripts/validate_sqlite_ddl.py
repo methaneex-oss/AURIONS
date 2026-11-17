@@ -173,6 +173,108 @@ def expect_integrity_error(
     raise AssertionError(f"{label}: invalid row was accepted")
 
 
+
+def test_sync_persistence(db: sqlite3.Connection) -> None:
+    """Validate durable D-02 transport state and append-only lifecycle constraints."""
+    expected_tables = {
+        "sync_export_ledger", "sync_export_events", "sync_inbox_receipts",
+        "sync_quarantined_envelopes", "sync_peer_acknowledgements",
+        "sync_peer_checkpoints", "sync_causal_gap_events", "sync_conflict_records",
+        "sync_conflict_resolutions", "sync_tombstone_records",
+        "sync_tombstone_peer_receipts", "sync_restore_events",
+    }
+    actual = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if not expected_tables <= actual:
+        raise AssertionError(f"memory v10: missing sync tables {sorted(expected_tables-actual)}")
+    source, target = bytes([101])*16, bytes([102])*16
+    change, export_id, outbox_id = bytes([103])*16, bytes([104])*16, bytes([105])*16
+    db.execute(
+        "INSERT INTO outbox(outbox_id,message_id,destination,envelope_json,state,created_at_ms) VALUES(?,?,?,?,?,?)",
+        (outbox_id,bytes([106])*16,"event-archive","{}","pending",10),
+    )
+    db.execute(
+        """INSERT INTO sync_export_ledger
+        (export_id,owner_ref,source_runtime_id,target_runtime_id,change_id,aggregate_type,
+         aggregate_id,base_revision,aggregate_revision,source_sequence,schema_version,
+         allowlist_version,payload_digest,envelope_digest,outbox_id,created_at_ms)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (export_id,"owner-1",source,target,change,"memory_record","mem-1",1,2,1,
+         "sync.v2","allowlist.v1","a"*64,"b"*64,outbox_id,11),
+    )
+    db.execute("INSERT INTO sync_export_events VALUES(?,?,?,?,?,?)",
+               (bytes([107])*16,export_id,1,"queued","c"*64,12))
+    db.execute("INSERT INTO sync_export_events VALUES(?,?,?,?,?,?)",
+               (bytes([108])*16,export_id,2,"exported","d"*64,13))
+    expect_integrity_error(db,"invalid export transition",
+        "INSERT INTO sync_export_events VALUES(?,?,?,?,?,?)",
+        (bytes([109])*16,export_id,3,"queued","e"*64,14))
+    db.execute("INSERT INTO sync_peer_acknowledgements VALUES(?,?,?,?,?,?,?)",
+        (bytes([110])*16,export_id,target,change,"a"*64,"f"*64,15))
+    expect_integrity_error(db,"peer acknowledgement digest mismatch",
+        "INSERT INTO sync_peer_acknowledgements VALUES(?,?,?,?,?,?,?)",
+        (bytes([111])*16,export_id,target,change,"0"*64,"f"*64,16))
+    db.execute("INSERT INTO sync_export_events VALUES(?,?,?,?,?,?)",
+        (bytes([112])*16,export_id,3,"acknowledged","1"*64,17))
+    db.execute(
+        """INSERT INTO sync_inbox_receipts
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([113])*16,source,target,change,"owner-1","memory_record","mem-1",1,2,
+         "a"*64,"applied","2"*64,18,19),
+    )
+    expect_integrity_error(db,"duplicate inbox identity",
+        "INSERT INTO sync_inbox_receipts VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (bytes([114])*16,source,target,change,"owner-1","memory_record","mem-1",1,2,
+         "a"*64,"applied","2"*64,20,21))
+    db.execute("INSERT INTO sync_quarantined_envelopes VALUES(?,?,?,?,?,?,?)",
+        (bytes([115])*16,source,change,"0"*64,"identity_digest_mismatch","quarantine:1",22))
+    db.execute("INSERT INTO sync_peer_checkpoints VALUES(?,?,?,?,?,?,?)",
+        (bytes([116])*16,target,"memory-stream",2,change,"3"*64,23))
+    expect_integrity_error(db,"non-monotonic peer checkpoint",
+        "INSERT INTO sync_peer_checkpoints VALUES(?,?,?,?,?,?,?)",
+        (bytes([117])*16,target,"memory-stream",1,None,"4"*64,24))
+    gap=bytes([118])*16
+    db.execute("INSERT INTO sync_causal_gap_events VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+        (bytes([119])*16,gap,1,"owner-1","memory_record","mem-1",source,
+         bytes([120])*16,bytes([121])*16,"opened",None,25))
+    db.execute("INSERT INTO sync_causal_gap_events VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+        (bytes([122])*16,gap,2,"owner-1","memory_record","mem-1",source,
+         bytes([120])*16,bytes([121])*16,"resolved","resolution:1",26))
+    expect_integrity_error(db,"causal gap cannot reopen",
+        "INSERT INTO sync_causal_gap_events VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+        (bytes([123])*16,gap,3,"owner-1","memory_record","mem-1",source,
+         bytes([120])*16,bytes([121])*16,"opened",None,27))
+    conflict=bytes([124])*16
+    db.execute("INSERT INTO sync_conflict_records VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (conflict,"owner-1","memory_record","mem-1",source,target,bytes([125])*16,
+         bytes([126])*16,1,2,3,1,"allowlist.v1","classification.v1",28))
+    db.execute("INSERT INTO sync_conflict_resolutions VALUES(?,?,?,?,?,?,?,?)",
+        (bytes([127])*16,conflict,1,"owner-1","approval:1","5"*64,4,29))
+    expect_integrity_error(db,"stale conflict revision",
+        "INSERT INTO sync_conflict_resolutions VALUES(?,?,?,?,?,?,?,?)",
+        (bytes([128])*16,conflict,2,"owner-1","approval:2","6"*64,5,30))
+    tombstone=bytes([129])*16
+    db.execute("INSERT INTO sync_tombstone_records VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+        (tombstone,bytes([130])*16,"owner-1","memory_record","mem-1",4,source,
+         bytes([131])*16,"retention.v1",1000,31))
+    db.execute("INSERT INTO sync_tombstone_peer_receipts VALUES(?,?,?,?,?)",
+        (bytes([132])*16,tombstone,target,"7"*64,32))
+    restore=bytes([133])*16
+    db.execute("INSERT INTO sync_restore_events VALUES(?,?,?,?,?,?,?,?,?)",
+        (bytes([134])*16,restore,1,source,"backup:1","started",5,0,33))
+    db.execute("INSERT INTO sync_restore_events VALUES(?,?,?,?,?,?,?,?,?)",
+        (bytes([135])*16,restore,2,source,"backup:1","replaying",5,3,34))
+    expect_integrity_error(db,"restore before tombstone frontier",
+        "INSERT INTO sync_restore_events VALUES(?,?,?,?,?,?,?,?,?)",
+        (bytes([136])*16,restore,3,source,"backup:1","reconciled",5,4,35))
+    db.execute("INSERT INTO sync_restore_events VALUES(?,?,?,?,?,?,?,?,?)",
+        (bytes([137])*16,restore,3,source,"backup:1","reconciled",5,5,36))
+    expect_integrity_error(db,"immutable export ledger",
+        "UPDATE sync_export_ledger SET owner_ref='owner-2' WHERE export_id=?",(export_id,))
+    expect_integrity_error(db,"append-only inbox receipt",
+        "DELETE FROM sync_inbox_receipts WHERE receipt_id=?",(bytes([113])*16,))
+    check_database("memory v10 sync persistence smoke",db)
+
+
 def test_memory() -> None:
     db = execute_chain("memory", [
         "aurion_memory.base.sql",
@@ -184,6 +286,7 @@ def test_memory() -> None:
         "aurion_memory.migration_v7.sql",
         "aurion_memory.migration_v8.sql",
         "aurion_memory.migration_v9.sql",
+        "aurion_memory.migration_v10.sql",
     ])
     require_columns(db, "objective_records", {
         "objective_id", "owner_ref", "version", "success_evidence_json"
@@ -772,6 +875,7 @@ def test_memory() -> None:
     )
     db.commit()
     check_database("memory dataset-rights smoke insert", db)
+    test_sync_persistence(db)
     db.close()
 
 
@@ -1275,9 +1379,9 @@ def main() -> int:
     test_events()
     test_governance()
     print(
-        f"PASS: all three SQLite stores and twenty ordered DDL files executed; "
+        f"PASS: all three SQLite stores and twenty-one ordered DDL files executed; "
         f"SQLite {sqlite3.sqlite_version}; FK/integrity checks passed; "
-        "memory v4 interaction/objective, v8 model-lineage/pointer and v9 dataset-manifest/source-membership/seal/admission/revocation-impact invariants; "
+        "memory v4 interaction/objective, v8 model-lineage/pointer, v9 dataset-rights and v10 selective-sync persistence invariants; "
         "event v3/v4/v5/v6 saga/outbox invariants; and governance v2/v3/v4/v5 approval, source-authorization and append-only revocation invariants passed."
     )
     print(
