@@ -66,9 +66,9 @@ Each gate must be either passed or explicitly staged by the owner with a bounded
 
 ## 3. Builder completion and independent-review handoff
 
-The builder must finish the remaining repository-wide semantic audit, reconcile all artifacts to one exact HEAD, publish the final builder self-review and verify the full CI result. The independent reviewer must then review that exact HEAD, not a previous revision.
+The builder has completed the D-02 schema/host-invariant increment and reconciled the principal planning, persistence, model-lifecycle, topology, command/query, event and work-package crosswalks. The latest exact-head validation before this packet refresh was [run 44175253865](https://github.com/methaneex-oss/AURIONS/actions/runs/44175253865) on `0cd5da71dec13b1469cbdc2d9aaee6cad1d8d41c`; all nine workflow steps passed, including the 21-file SQLite chain. The final packet/register refresh is documentation-only and receives its own automatic PR CI.
 
-The current planning branch is not yet declared planning-complete. The D-02 schema/15-SY specification increment and the exact-head 21-file host SQLite run (run 44174936993) close the builder-owned D-02 persistence-schema and host-invariant increment. They do not close runtime, peer-trust, target-platform, independent-review or owner-approval gates.
+The builder self-review is not an independent semantic/security review. The independent reviewer must review the final exact PR head, including D-04 classification, 94 event producer/consumer contracts, 42 non-command triggers, query semantics/security, persistence ownership and work-package readiness. The planning branch is not yet declared planning-complete. Runtime, peer-trust, target-platform, C++/Python, supply-chain, executed SY and owner-approval gates remain open or explicitly staged.
 
 ## 4. Planning-exit authorization record
 
@@ -91,3 +91,17 @@ No implementation starts until the owner explicitly approves that milestone. PR 
 - The failed first attempt [44174795063](https://github.com/methaneex-oss/AURIONS/actions/runs/44174795063) exposed a literal escaped-newline defect in one v10 trigger. The SQL was corrected without weakening validation; the subsequent run above passed.
 - Builder schema work is complete for the v10 persistence increment. The remaining D-02 gates are owner/domain classification acceptance, authenticated peer/key lifecycle, runtime export/receiver/recovery enforcement, C++/Python conformance, executed SY fault/replay/concurrency/restore tests and cloud/Android/Termux evidence.
 - D-03 remains staged by owner. D-04 exact P0/P1 command/query acceptance remains pending; no implicit acceptance is inferred from general “proceed” instructions. Independent review of the final exact PR head and explicit owner planning-exit approval remain separate gates. Implementation authorization and PR merge remain ungranted.
+
+
+## 5. Consolidated owner actions still required — no prior decisions reopened
+
+The following already-recorded decisions are not being re-asked: D-01 accepted PR-01…PR-20; D-02 Option B selected; D-03 first Android action staged; MD-01…MD-16 all selected. They remain binding.
+
+1. **D-02 field-level acceptance:** accept or explicitly stage the exact versioned default-deny field-path classifications and conditional paths in `CLOUD-MOBILE-SELECTIVE-SYNC-CONTRACT.md` and `schemas/sync-field-allowlist.d02.v1.json`. The owner's selected domain direction (durable experience/provenance, representations, memory, evidence-backed knowledge/belief revisions, objectives/derived goals and governed model-version references) is preserved. Raw sensitive observations, transient context, plans/tasks/checkpoints, capabilities, permissions, credentials, approvals, dispatch state and governance authority remain local by default. The exact nested field paths/conditions are still a builder proposal, not silently promoted to owner acceptance.
+2. **D-04 exact registry classification:** accept or reject the exact §12 classification: 27 P0 public/owner-facing commands; 14 P0 internal/protected commands; 9 conditional P1 commands; 2 internal maintenance/optional commands; 2 deferred commands; and 29 queries classified as 18 P0 read-only, 6 conditional P1 and 5 internal diagnostics. The six required consistency checks in §12 must remain satisfied. Acceptance does not make any entry dispatchable.
+3. **D-03:** retain the already-recorded staged status until a target Android device/runtime is selected and validated; no action or permission is selected here.
+4. **External evidence gates:** explicitly stage, with responsible owner and implementation restrictions, target Android/Termux, C++/Python conformance, dependency/SBOM/license/vulnerability review, production key custody and lifecycle, runtime crash/replay/restore/concurrency and executed SY acceptance. Host CI does not substitute for these.
+5. **Independent review:** an independent reviewer must review the exact final PR head and resolve findings. The builder cannot self-approve this gate.
+6. **Planning exit:** after independent review, record explicit owner approval against the exact PR head, accepted D-04 scope, D-02 field-policy disposition, D-03 staged status, external gates/staging restrictions and a named first implementation milestone. Planning-exit approval is not implementation authorization; implementation and PR merge remain separate decisions.
+
+**Builder-proposed first implementation milestone for owner consideration:** M0 — WP-00 repository/build foundation and WP-01 shared contracts/schema baseline only. Exit evidence: reproducible host C++ build and CTest, pinned toolchain/dependencies, schema/fixture validation, contract ownership/compatibility checks, offline build instructions and supply-chain inventory. Exclusions: runtime command dispatch, Android action, sync runtime, model training, candidate activation and production key custody. This is a proposal, not authorization.
