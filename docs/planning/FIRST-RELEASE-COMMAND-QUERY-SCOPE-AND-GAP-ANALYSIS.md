@@ -250,6 +250,8 @@ These are internal/protected transitions needed for the WP-13 governed-evolution
 - Protected candidate lifecycle: `evolution.candidate.activate`, `evolution.candidate.rollback`.
 - Owner-governed approval lifecycle: `approval.request`, `approval.decide`, `approval.revoke`.
 
+`learning.candidate.evaluate` remains only in the public P0 group above; it is not repeated in this protected group. The distinct `evolution.candidate.evaluate` is protected internal.
+
 `learning.candidate.evaluate` is classified once as a P0 public/owner-facing request for the held-out model-training evaluation required by PR-20. `evolution.candidate.evaluate` is a separate P0 internal/protected governed evolution-candidate evaluation in WP-13; the two are not interchangeable. The learning evaluation is deliberately not duplicated in the protected-command list. Activation and rollback require exact owner/governance authorization, immutable artifact identity, verified evaluation and rollback readiness. The current generic evolution action schema requires candidate and proposal identifiers; the mapping from a trained learning artifact/evaluation to those identifiers and the exact approval digest is not yet proven. That crosswalk remains a blocking D-04 item. No model or worker may approve, activate or roll back its own candidate.
 
 ### P0 read-only query proposal
@@ -274,7 +276,7 @@ The owner-governed `approval.*` commands above may also support a separately app
 
 - `context.invalidate` is internal context-lifecycle maintenance, not a public command.
 - `memory.retrieve` is not a separate public command in this proposal; provenance-aware retrieval is represented by `memory.search` unless an auditable state-changing retrieval workflow is proven necessary.
-- `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect` and `decision.inspect` are owner-scoped internal diagnostic queries, not part of the first-release user-facing query surface. `memory.search` is a P0 read-only query and is not repeated in this diagnostic category.
+- `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect` and `decision.inspect` are owner-scoped internal diagnostic queries, not part of the first-release user-facing query surface. `memory.search` remains only in the P0 read-only query group above.
 - `device.pair` and `device.revoke` remain deferred; broad device handoff, voice, continuous sensing and broad external integrations remain outside first release.
 
 ### Registry-wide accounting
