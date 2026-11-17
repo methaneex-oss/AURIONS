@@ -1,6 +1,6 @@
 # AURIONS — Planning Exit Owner Decision Packet
 
-- **Status:** Partially resolved by owner decisions dated 2026-11-16; planning exit not approved.
+- **Status:** Owner product/model decisions recorded; builder schema/contract reconciliation and exact-head host validation current through 2026-11-17; planning exit not approved pending remaining owner gates and independent review.
 - **Branch:** `docs/complete-system-architecture`
 - **Authority:** `INITIAL-ENGINEERING-SPECIFICATION.md`, the First Usable Release Definition, and the Project Directorship and Team Operating Standard remain authoritative.
 - **Purpose:** Consolidate only decisions that the builder cannot make without changing product scope, personal authority, risk tolerance or owner intent.
@@ -16,7 +16,7 @@ The proposal defines AURIONS as a trainable AI system with an evolving cognitive
 
 **Owner decision: ACCEPTED — 2026-11-16.** The owner accepted PR-01…PR-20 as the first-release product baseline. This is not implementation or validation evidence.
 
-**Consequence:** The accepted PR-01…PR-20 baseline may be used by WP-15 as the product contract, subject to D-02 field-classification/peer-trust/persistence/runtime gates, D-04 command/query acceptance, external evidence gates and implementation authorization.
+**Consequence:** The accepted PR-01…PR-20 baseline may be used by WP-15 as the product contract, subject to D-02 field-classification/peer-trust/runtime/target gates, D-04 command/query acceptance, external evidence gates and implementation authorization.
 
 ### D-02 — Cloud/mobile cognitive-history continuity: OPTION B SELECTED
 
@@ -32,7 +32,7 @@ The proposal defines AURIONS as a trainable AI system with an evolving cognitive
 
 **Non-negotiable boundary in every option:** Device-local permissions, credentials, approval secrets and authority over local effects remain local. Shared contracts never grant cross-context authority.
 
-**Owner decision: OPTION B SELECTED — 2026-11-16.** Proceed with dual runtime and selective domain synchronization. The builder has now recorded a default-deny field-path proposal, syncChange v2 and event-specific tombstone/conflict schemas, and SY-001…SY-015 design specifications. Owner/domain acceptance of exact field classifications and conditional paths, authenticated peer enrollment/revocation, durable sync persistence, runtime enforcement and executed target evidence remain required before sync implementation.
+**Owner decision: OPTION B SELECTED — 2026-11-16.** Proceed with dual runtime and selective domain synchronization. The builder has recorded the default-deny field-path proposal, syncChange v2 and event-specific tombstone/conflict schemas, SY-001…SY-015 specifications, and Memory migration v10 for local export/inbox/acknowledgement/checkpoint/causal-gap/conflict/tombstone/restore persistence. The 21-file three-store DDL chain passed exact-head host CI on 2026-11-17 (run 44174936993, SQLite 3.46.1). Owner/domain acceptance of exact field classifications and conditional paths, authenticated peer enrollment/revocation, runtime enforcement, C++/Python conformance and executed cloud/Android target evidence remain required before sync implementation.
 
 ### D-03 — Select the first permitted Android local action
 
@@ -68,7 +68,7 @@ Each gate must be either passed or explicitly staged by the owner with a bounded
 
 The builder must finish the remaining repository-wide semantic audit, reconcile all artifacts to one exact HEAD, publish the final builder self-review and verify the full CI result. The independent reviewer must then review that exact HEAD, not a previous revision.
 
-The current planning branch is not yet declared planning-complete. The D-02 schema/15-SY specification increment and its preceding-base CI run do not close runtime, target-platform, independent-review or owner-approval gates.
+The current planning branch is not yet declared planning-complete. The D-02 schema/15-SY specification increment and the exact-head 21-file host SQLite run (run 44174936993) close the builder-owned D-02 persistence-schema and host-invariant increment. They do not close runtime, peer-trust, target-platform, independent-review or owner-approval gates.
 
 ## 4. Planning-exit authorization record
 
@@ -82,3 +82,12 @@ Planning exit is a separate owner decision after the final builder review and in
 6. The exact first implementation milestone, allowed work packages, acceptance criteria and exclusions.
 
 No implementation starts until the owner explicitly approves that milestone. PR #2 remains draft/open/unmerged until separately authorized.
+
+
+## 2026-11-17 exact-head builder evidence update
+
+- PR #2 exact head at this validation point: `235f03552e1ce1d0e26ba1f146b4127ddf1e7fb6`.
+- Automatic workflow [44174936993](https://github.com/methaneex-oss/AURIONS/actions/runs/44174936993) passed all nine steps. It executed 21 ordered DDL files across the three stores on host SQLite 3.46.1, with FK/integrity checks and Memory v10 sync-persistence invariants. Schema/fixture, governance, work-package traceability and Android probe shell syntax steps also passed.
+- The failed first attempt [44174795063](https://github.com/methaneex-oss/AURIONS/actions/runs/44174795063) exposed a literal escaped-newline defect in one v10 trigger. The SQL was corrected without weakening validation; the subsequent run above passed.
+- Builder schema work is complete for the v10 persistence increment. The remaining D-02 gates are owner/domain classification acceptance, authenticated peer/key lifecycle, runtime export/receiver/recovery enforcement, C++/Python conformance, executed SY fault/replay/concurrency/restore tests and cloud/Android/Termux evidence.
+- D-03 remains staged by owner. D-04 exact P0/P1 command/query acceptance remains pending; no implicit acceptance is inferred from general “proceed” instructions. Independent review of the final exact PR head and explicit owner planning-exit approval remain separate gates. Implementation authorization and PR merge remain ungranted.
