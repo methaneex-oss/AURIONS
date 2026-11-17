@@ -169,7 +169,7 @@
             "uniqueItems": true,
             "items": {
               "type": "string",
-              "pattern": "^(INT|CM|AD)-[0-9]{3}$"
+              "pattern": "^(INT|CM|AD|SY)-[0-9]{3}$"
             }
           },
           "specification_status": {
