@@ -101,3 +101,10 @@ The complete owner-selected wording is maintained in [Model Architecture and Tra
 - If a decision changes, update the source decision register first, then reconcile this matrix, product definition, architecture, contracts, roadmap and tests.
 
 **Current disposition:** IN PROGRESS. D-01 accepted; D-02 Option B selected; D-03 staged; D-04 remains a builder proposal pending owner acceptance. The bounded cloud/mobile sync design, model-candidate lifecycle crosswalk, repository consistency, executable validation, exact-head independent review and owner planning-exit approval remain open.
+
+
+## 6. D-04 — First-release command/query subset: OWNER-ACCEPTED (2026-11-17)
+
+The owner accepted the exact registry-derived §12 classification on the builder's recommendation, without changes: 27 P0 public/owner-facing commands; 14 P0 internal/protected commands; 9 conditional P1 commands; 2 internal maintenance/optional commands; 2 deferred commands; and 29 queries comprising 18 P0 read-only, 6 conditional P1 and 5 internal diagnostics. The exact identifiers and classification rationale are maintained in [First-Release Command/Query Scope and Gap Analysis §12](FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md).
+
+**Authority boundary:** This is owner acceptance of the first-release scope classification only. Every entry remains `design_only_not_dispatchable` until its own aggregate/store/event mapping, command/query contract, authorization and privacy rules, handler implementation, and executable acceptance evidence pass. The six technical gates listed in §12 remain open readiness work. This decision does not authorize runtime dispatch, implementation, an Android action, training, candidate activation, PR readiness, planning exit or merge.
