@@ -1,6 +1,6 @@
 # First-Release Command/Query Scope and Gap Analysis
 
-**Status:** Builder analysis; D-01 accepted and D-02 Option B selected on 2026-11-16; D-04 subset remains pending owner acceptance. No registry entry is dispatchable and this is not implementation authorization.  
+**Status:** Builder technical analysis; D-01 accepted, D-02 Option B selected, and D-04 exact §12 command/query classification owner-accepted on 2026-11-17. No registry entry is dispatchable and this is not implementation authorization.  
 **Applies to:** BR-001 and BR-002 in the 2026-11-12 main-builder pre-review audit.  
 **Source revision examined:** PR #2 branch `docs/complete-system-architecture`, head `8884f51b82c350d9a0db98af9903c44e2a44231c`.  
 **Source artifacts:** `docs/product/FIRST-USABLE-RELEASE-DEFINITION.md`, `docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md`, `docs/architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md`, and `schemas/command-query-registry.v1.json`.
@@ -9,7 +9,7 @@
 
 BR-001/BR-002 must be closed against the accepted first-release workflows, not by attempting to make every catalogued interface dispatchable. D-01 accepted PR-01…PR-20 and D-02 selected Option B on 2026-11-16. This document identifies the minimum command/query surface implied by that baseline, separates required interfaces from owner-dependent interfaces, and records the gaps between that surface and the current registry.
 
-This is a builder proposal for the D-04 command/query subset. The product definition was accepted under D-01, and Option B was selected under D-02. The exact D-04 list remains pending owner acceptance. These mappings do not select the first Android action, authorize implementation, or make any registry entry dispatchable.
+This document records the builder's technical analysis supporting D-04. The owner accepted the exact §12 classification on 2026-11-17. Acceptance is limited to first-release scope classification; it does not approve each handler contract, select the first Android action, authorize implementation, or make any registry entry dispatchable.
 
 The governing architecture remains objective- and situation-centred. An objective is not a derived goal; a plan is not an objective; a proposal is not authorization; an affordance hypothesis is not a capability grant; a provider receipt is not an observed outcome.
 
@@ -78,7 +78,7 @@ P0 means required to support the workflow contract in the proposed first release
 ### 3.5 Excluded from first-release dispatch
 
 - `device.pair` and `device.revoke`: remain deferred multi-device operations.
-- Unrestricted self-model/evolution activation and protected policy/value changes are excluded from first-release dispatch. The bounded training/evaluation path required by PR-19/PR-20 is in scope: `learning.experiment.submit` and `learning.candidate.evaluate` are P0 candidates for reproducible parameter-update experiments, held-out evaluation and candidate quarantine. `learning.update.propose` is a P0 candidate for evidence-linked experience-dependent adaptation. Candidate activation/rollback remains separately governed; exact lifecycle and approval linkage must be traced before D-04 is finalized. All remain design-only/non-dispatchable pending owner acceptance and implementation gates.
+- Unrestricted self-model/evolution activation and protected policy/value changes are excluded from first-release dispatch. The bounded training/evaluation path required by PR-19/PR-20 is in scope: `learning.experiment.submit` and `learning.candidate.evaluate` are P0 candidates for reproducible parameter-update experiments, held-out evaluation and candidate quarantine. `learning.update.propose` is a P0 candidate for evidence-linked experience-dependent adaptation. Candidate activation/rollback remains separately governed; exact lifecycle and approval linkage must be traced before D-04 is finalized. All remain design-only/non-dispatchable pending their implementation and verification gates.
 - Any command or query whose owner, aggregate, data scope, semantics or per-entry acceptance evidence remains unresolved.
 
 ## 4. Foundational open-world command/query gaps
@@ -107,7 +107,7 @@ Corresponding proposed query surface:
 | `interaction.inspect` | Interaction control | Return proposal/authorization/dispatch states as distinct fields |
 | `interaction.outcome.inspect` | Outcome subsystem | Return observed evidence and evaluation separately |
 
-The command/query names and bindings are now present in `command-query-registry.v1.json`, with the command transitions in `COMMAND-TRANSITION-AND-RECOVERY-CONTRACT-MATRIX.md` and query semantics in `QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md`. They remain `design_only_not_dispatchable` pending owner acceptance of first-release scope and handler-level implementation/tests. Do not infer that every event should have a public command, or that a query should expose internal records wholesale.
+The command/query names and bindings are now present in `command-query-registry.v1.json`, with the command transitions in `COMMAND-TRANSITION-AND-RECOVERY-CONTRACT-MATRIX.md` and query semantics in `QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md`. They remain `design_only_not_dispatchable` pending handler-level implementation/tests and their individual security/verification gates; D-04 scope acceptance does not enable dispatch. Do not infer that every event should have a public command, or that a query should expose internal records wholesale.
 
 ## 5. Mandatory per-query contract baseline
 
@@ -212,12 +212,12 @@ These are bounded source-level cross-reference checks executed against retrieved
 
 ## 11. Owner-decision reconciliation — 2026-11-16
 
-D-01 is accepted; D-02 Option B is selected; D-03 is staged; D-04 remains pending owner acceptance. The registry contains 54 command records and 29 query records; exact proposed identifiers must be derived from the registry at the final planning HEAD, not stale prose. No entry becomes dispatchable by inclusion in a proposal. The first-release subset must include the full bounded training path: reproducible experiment submission, worker budgets/cancellation, immutable artifact provenance, held-out evaluation, quarantine and separately governed activation/rollback. The registry includes `learning.experiment.submit`, `learning.candidate.evaluate` and `learning.update.propose`; their dependencies and PR-19/PR-20 lifecycle coverage remain to be proven. Option B's candidate domains are durable experience/provenance, representations, memory and evidence-backed beliefs, objectives/derived goals, and approved immutable model-version references. Sensitive raw observations, transient context, execution checkpoints, local capabilities, permissions, credentials, approvals and governance authority remain local by default. Field-level classification and executable SY tests remain open.
+D-01 is accepted; D-02 Option B is selected; D-03 is staged; D-04's exact §12 classification was owner-accepted on 2026-11-17. The registry contains 54 command records and 29 query records; exact proposed identifiers must be derived from the registry at the final planning HEAD, not stale prose. No entry becomes dispatchable by inclusion in a proposal. The first-release subset must include the full bounded training path: reproducible experiment submission, worker budgets/cancellation, immutable artifact provenance, held-out evaluation, quarantine and separately governed activation/rollback. The registry includes `learning.experiment.submit`, `learning.candidate.evaluate` and `learning.update.propose`; their dependencies and PR-19/PR-20 lifecycle coverage remain to be proven. Option B's candidate domains are durable experience/provenance, representations, memory and evidence-backed beliefs, objectives/derived goals, and approved immutable model-version references. Sensitive raw observations, transient context, execution checkpoints, local capabilities, permissions, credentials, approvals and governance authority remain local by default. Field-level classification and executable SY tests remain open.
 
 
 ## 12. D-04 exact first-release subset proposal — 2026-11-16
 
-This section supersedes older unresolved owner-decision wording in §§8–9 where it conflicts with D-01/D-02. D-04 remains a builder recommendation pending owner acceptance. This is a proposed first-release interface classification, not dispatch authorization.
+This section supersedes older unresolved owner-decision wording in §§8–9 where it conflicts with D-01/D-02. D-04 exact classification was owner-accepted on 2026-11-17. This is the accepted first-release interface classification, not dispatch authorization.
 
 ### Synchronization boundary
 
@@ -250,7 +250,7 @@ These are internal/protected transitions needed for the WP-13 governed-evolution
 - Protected candidate lifecycle: `evolution.candidate.activate`, `evolution.candidate.rollback`.
 - Owner-governed approval lifecycle: `approval.request`, `approval.decide`, `approval.revoke`.
 
-`learning.candidate.evaluate` is the held-out model-training evaluation required by PR-20. `evolution.candidate.evaluate` is the governed evolution-candidate evaluation in WP-13; the two are not interchangeable. Activation and rollback require exact owner/governance authorization, immutable artifact identity, verified evaluation and rollback readiness. The current generic evolution action schema requires candidate and proposal identifiers; the mapping from a trained learning artifact/evaluation to those identifiers and the exact approval digest is not yet proven. That crosswalk remains a blocking D-04 item. No model or worker may approve, activate or roll back its own candidate.
+`learning.candidate.evaluate` is classified once as a P0 public/owner-facing request for the held-out model-training evaluation required by PR-20. `evolution.candidate.evaluate` is a separate P0 internal/protected governed evolution-candidate evaluation in WP-13; the two are not interchangeable. The learning evaluation is deliberately not duplicated in the protected-command list. Activation and rollback require exact owner/governance authorization, immutable artifact identity, verified evaluation and rollback readiness. The current generic evolution action schema requires candidate and proposal identifiers; the mapping from a trained learning artifact/evaluation to those identifiers and the exact approval digest is not yet proven. That crosswalk remains a blocking D-04 item. No model or worker may approve, activate or roll back its own candidate.
 
 ### P0 read-only query proposal
 
@@ -274,15 +274,15 @@ The owner-governed `approval.*` commands above may also support a separately app
 
 - `context.invalidate` is internal context-lifecycle maintenance, not a public command.
 - `memory.retrieve` is not a separate public command in this proposal; provenance-aware retrieval is represented by `memory.search` unless an auditable state-changing retrieval workflow is proven necessary.
-- `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect` and `decision.inspect` are owner-scoped internal diagnostic queries, not part of the first-release user-facing query surface.
+- `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect` and `decision.inspect` are owner-scoped internal diagnostic queries, not part of the first-release user-facing query surface. `memory.search` is a P0 read-only query and is not repeated in this diagnostic category.
 - `device.pair` and `device.revoke` remain deferred; broad device handoff, voice, continuous sensing and broad external integrations remain outside first release.
 
 ### Registry-wide accounting
 
-The above classification accounts for the complete current registry without making entries dispatchable:
+The following disjoint classification accounts for every registry identifier exactly once, without making entries dispatchable:
 
-- **54 command records:** 27 P0 public/owner-facing; 14 P0 internal or owner-governed; 9 conditional P1; 2 internal maintenance/optional; 2 deferred.
-- **29 query records:** 18 P0 read-only; 6 conditional P1; 5 internal diagnostic.
+- **54 command records:** 27 P0 public/owner-facing; 14 P0 internal or owner-governed (6 cognitive-cycle + 8 protected lifecycle); 9 conditional P1; 2 internal maintenance/optional; 2 deferred. `learning.candidate.evaluate` is counted only in the public P0 group.
+- **29 query records:** 18 P0 read-only; 6 conditional P1; 5 internal diagnostic. `memory.search` is counted only in the P0 read-only group.
 
 All registry entries remain `design_only_not_dispatchable` until their own implementation and verification gates pass. Registry inclusion, P0 classification or owner approval of D-04 does not itself enable dispatch.
 
@@ -295,4 +295,4 @@ All registry entries remain `design_only_not_dispatchable` until their own imple
 5. Reconcile P0/P1 query privacy/redaction, cursor/snapshot semantics, limits and freshness against actual handlers; add executable positive/negative read-only tests.
 6. Preserve `design_only_not_dispatchable` for every registry entry until its own implementation and verification gates pass; scope acceptance alone never enables dispatch.
 
-**Builder recommendation and owner disposition (2026-11-17): ACCEPTED.** The owner accepted this exact classification on the builder's recommendation: P0 public, internal cognitive-cycle and owner-governed lifecycle subsets; P1 conditional; internal diagnostics/maintenance non-public; and the two device-pairing entries deferred. The six technical gates above remain mandatory before affected entries can become dispatch-ready. Acceptance does not make any entry dispatchable or authorize implementation, Android action, training, candidate activation or governance operations.
+**Builder recommendation and owner disposition (2026-11-17): ACCEPTED.** The owner accepted the exact classification and counts on the builder's recommendation. This final identifier-level reconciliation removes the two duplicate category placements without changing the accepted category counts: `learning.candidate.evaluate` is public P0 only; `memory.search` is P0 query only. The six technical gates above remain mandatory before affected entries can become dispatch-ready. Acceptance does not make any entry dispatchable or authorize implementation, Android action, training, candidate activation or governance operations.
