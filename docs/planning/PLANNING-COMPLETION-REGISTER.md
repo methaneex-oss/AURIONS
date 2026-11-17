@@ -22,6 +22,14 @@ Older dated audit entries that refer to PR-01…PR-18 or describe WP-14 as optio
 
 **Evidence boundary:** These are documentation and structural-validation changes only. No cognitive runtime, training worker, dataset pipeline, model update, target-device training run or held-out improvement has been implemented or verified. Implementation authorization remains separate from this reconciliation.
 
+**Superseding owner-decision and builder-audit update — 2026-11-17**
+
+- **D-04 is OWNER-ACCEPTED.** The owner accepted the exact §12 first-release command/query classification on the builder's recommendation. Earlier dated entries below that say D-04 acceptance was pending are historical snapshots and are superseded by this later decision.
+- A subsequent identifier-level audit found two duplicate placements in §12: `learning.candidate.evaluate` appeared in both public P0 and protected lifecycle; `memory.search` appeared in both P0 read-only and internal diagnostics. The corrected disjoint classification preserves the accepted totals: 27 public P0 commands; 14 internal/protected P0 commands (6 cognitive-cycle + 8 protected lifecycle); 9 conditional P1 commands; 2 internal maintenance/optional commands; 2 deferred commands; 18 P0 read-only queries; 6 conditional P1 queries; 5 internal diagnostic queries. The learning evaluation is public P0 only; the evolution evaluation remains protected internal; memory.search is P0 read-only only.
+- The exact-head workflow [44177860099](https://github.com/methaneex-oss/AURIONS/actions/runs/44177860099) passed all nine steps on the prior documentation head `6e977c7019189128e1eb612d1d2aba6041f68ebd`. The later disjoint-classification and cross-document reconciliation commits require their own automatic CI; the prior run is not represented as validation of those later commits.
+- Memory migration v10 and the 21-file three-store DDL chain remain host-validated on the prior exact head. This does not establish Android/Termux, runtime handlers, actual SQL projections, crash/replay/restore/concurrency behaviour, C++/Python conformance or executed SY scenarios.
+- All 54 command records and 29 query records remain design-only/non-dispatchable. D-02 exact field-path policy remains a separate owner/domain gate; D-03 remains staged. Independent review of the eventual exact PR head and explicit planning-exit approval remain outstanding. No implementation, training, dispatch, candidate activation or merge authority is granted.
+
 ## 1. Completion semantics
 
 Every planning layer has exactly one status:
