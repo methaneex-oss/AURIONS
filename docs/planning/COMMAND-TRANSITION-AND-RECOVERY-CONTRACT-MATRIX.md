@@ -1,7 +1,7 @@
 # Command Transition, Authority and Recovery Contract Matrix
 
-**Status:** Builder contract proposal; no owner-approved first-release API scope and no runtime dispatch authorization.  
-**Scope:** BR-001 — 52 mapped command entries. The two device pairing/revocation entries remain deferred.  
+**Status:** Builder contract proposal; D-04 first-release command subset was owner-accepted on 2026-11-17. This does not approve individual handler contracts or authorize runtime dispatch.  
+**Scope:** BR-001 — 52 mapped command entries. The two device pairing/revocation entries remain deferred. The owner-approved D-04 classification assigns 27 P0 public/owner-facing, 14 P0 internal/protected, 9 conditional P1 and 2 internal maintenance/optional commands; all remain non-dispatchable.  
 **Normative distinction:** A command requests a domain transition. Acceptance is not completion; a proposal is not authorization; a provider receipt is not an observed outcome.
 
 **Operation lifecycle reference:** The exact internal Action Gateway event triggers and predecessor-state boundaries are specified in [OPERATION-LIFECYCLE-TRANSITION-MATRIX.md](OPERATION-LIFECYCLE-TRANSITION-MATRIX.md). They remain design-only and require runtime implementation and executed recovery evidence.
