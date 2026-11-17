@@ -27,15 +27,15 @@ The allowlist is positive and versioned. Unknown domains, fields, nested paths, 
 | Domain | Default synchronized field paths | Conditional fields | Excluded by default |
 |---|---|---|---|
 | Experience/provenance | experience_id, source_type, observed_at, recorded_at, provenance.source_kind, provenance.external_origin, capture_method, capture_limitations, retention_class | provenance.source_ref, actor_ref and device_ref only when the referenced identity is owner-scoped and separately classified OWNER_PRIVATE; content_ref only for an explicitly selected aggregate with an approved encrypted artifact reference | Raw observation content, audio/video/image bytes, precise location, third-party identifiers, unredacted source payloads |
-| Representation | representation_id, experience_id, representation_type, method_id, method_version, uncertainty, source_refs, created_at and revision lineage | content paths only after each nested path has a typed schema, explicit classification and allowlist entry | Unclassified or arbitrary nested content objects; raw source material |
+| Representation | representation_id, experience_id, representation_type, method_id, method_version, source_refs, created_at and revision lineage (`revision_number`, `supersedes_revision_id`) | Exact `content.*` or `uncertainty.*` leaf paths only after each nested path has a typed schema, explicit classification and allowlist entry | `content` and `uncertainty` objects as whole values; unclassified nested paths; raw source material |
 | Memory | memory_id, memory_type, status, created_at, updated_at, retention_until, deleted_at | summary and content_ref only when the owner explicitly selects that memory aggregate for synchronization and its fields pass classification and retention checks | Raw memory bytes, embeddings, retrieval scores and unselected memory content |
 | Knowledge | knowledge_id, domain, status, created_at, updated_at | proposition only for an explicitly selected owner-scoped knowledge item; source-derived classification follows the strictest source | Unselected propositions, source payloads and security-restricted evidence |
-| Evidence | evidence_id, source_experience_id, evidence_type, observed_at, recorded_at | source_ref and reliability only when the exact source reference is owner-scoped and the field classification permits transfer | Raw evidence content, protected source documents and third-party private data |
+| Evidence references (not standalone evidence records) | `beliefRevision.evidence_refs` carries only owner-scoped, non-content evidence reference identifiers when each exact path is allowed | Any standalone evidence metadata requires a separately approved domain/schema and allowlist revision; it is not part of D-02 v1 | Raw evidence content, source documents, reliability assertions and third-party private data |
 | Belief revisions | belief_id, knowledge_id, revision_id, revision_number, epistemic_status, confidence, evidence_refs, created_at | revision_reason only when the owner selects the exact belief and the text passes classification/redaction | Unselected belief content and raw evidence |
 | Objectives/goals | objective_id, owner_ref, version, status, created_at; goal_id, revision, state, priority, objective_id, objective_version, created_at | objective statement, success_evidence, goal description and reason_ref only for owner-selected aggregates; constraints, assumptions and uncertainty only after typed nested schemas and path allowlists exist | Arbitrary constraint objects, unclassified intent text, local plans and task execution state |
 | Immutable model-version references | artifact_id, artifact_kind, schema_version, media_type, byte_size, sha256, owner_id, provenance producer_id/source_refs, lineage parent_artifact_refs/derived_from, retention_class, lifecycle, created_at | Transfer of artifact bytes only through a separate explicit artifact-transfer authorization and integrity-verified resumable protocol | storage_ref values, local paths, active-pointer mutation, candidate activation, training credentials and worker state |
 
-The field paths above are a builder proposal for the bounded Option B subset. A field is not eligible merely because it appears in a domain schema. The owning domain must classify it, the exact path must be present in the versioned allowlist, and the transfer must pass the authorization and retention rules below.
+The field paths above are a builder proposal for the bounded Option B subset. Evidence is reference-only through an approved belief/knowledge revision; there is no standalone `evidence` synchronization domain in v1. The exact machine-readable default/conditional/excluded paths are in [`schemas/sync-field-allowlist.d02.v1.json`](../../schemas/sync-field-allowlist.d02.v1.json). A field is not eligible merely because it appears in a domain schema. The owning domain must classify it, the exact path must be present in the versioned allowlist, and the transfer must pass authorization and retention rules below.
 
 Arbitrary object fields are not safe to synchronize as a whole. In the current schemas, representation.content, representation.uncertainty, goal.constraints, objective.constraints, objective.uncertainty and entity attributes are generic objects. Those fields remain excluded until they have typed nested schemas and field-level classifications. This is a concrete schema gap, not permission to serialize the whole object.
 
@@ -63,7 +63,7 @@ A remote change can update only the allowlisted domain aggregate. It cannot crea
 
 ## 4. Required change envelope
 
-The existing syncChange definition is only a preliminary v1 shape. It is insufficient as the final Option B contract. Before implementation, introduce a versioned sync envelope with these required semantic fields:
+The machine-readable `syncChange` definition now encodes the D-02 v2 envelope fields in `schemas/domain-payloads.v1.schema.json`. The `source_device_id` property is optional metadata (and may be null); `source_runtime_id` and `target_runtime_id` are mandatory. The schema binds base/result aggregate revisions, sorted unique field paths, allowlist/classification/retention-policy versions, authorization reference, encryption/signature profile and key-version references, SHA-256 payload digest and tombstone metadata. The exact cryptographic profile and key-rotation mechanism remain unselected implementation/security work.
 
 | Field | Required meaning |
 |---|---|
@@ -72,19 +72,19 @@ The existing syncChange definition is only a preliminary v1 shape. It is insuffi
 | source_runtime_id / target_runtime_id | Explicit cloud/mobile runtime identities; source_device_id is optional metadata for a physical device, not a substitute for runtime identity |
 | domain / aggregate_id | Exact allowlisted owner-scoped aggregate |
 | schema_version / allowlist_version / classification_policy_version | Exact versions used to validate and project the payload |
-| base_aggregate_version / aggregate_version | Expected predecessor and resulting aggregate revision |
+| base_aggregate_version / aggregate_version | Expected predecessor and resulting aggregate revision; the source change must advance beyond its base |
 | causal_parent_ids | Exact prior change identities on which this revision causally depends |
 | field_paths | Sorted, unique set of transferred paths; every path must be a subset of the selected domain/version allowlist |
 | payload_hash | SHA-256 of the canonical projected payload, checked before application |
-| encrypted_payload_ref / encryption metadata | Authenticated encrypted payload reference, encryption profile and key-version reference; key material never travels in the envelope |
-| authorization_ref | Exact owner/domain/field-path authorization when the classification requires it |
+| encrypted_payload_ref / encryption metadata | Authenticated encrypted payload reference plus `encryption_profile_id` and `encryption_key_version_ref`; key material never travels in the envelope. A tombstone carries no encrypted content payload |
+| authorization_ref | Exact owner/domain/field-path authorization when the classification requires it; null only when the selected paths do not require additional per-aggregate consent |
 | retention_class / retention_policy_version | Retention decision and policy version applied to this change |
 | tombstone / deletion_id | Explicit deletion semantics; tombstones carry no content payload |
 | idempotency_key / created_at | Stable replay identity and source event time |
 
 The envelope must be signed by an authenticated source runtime and bound to the authenticated destination and owner. The receiver validates signature, peer identity, owner scope, policy/allowlist versions, schema compatibility, payload digest, field paths, retention and causality before mutation. The exact cryptographic profile and key-rotation mechanism must be selected in the security implementation design; do not invent a cipher or treat a key reference as key material.
 
-A critical existing-schema defect: syncChange currently requires source_device_id. The cloud runtime is not necessarily a physical device. The v2 contract must require source_runtime_id and make source_device_id optional. It must also add the base revision, destination runtime, allowlist/policy versions, field paths, classification/authorization evidence and signature/integrity metadata. The existing generic payload_hash minLength rule must become an exact digest format.
+Event-specific payload schemas now distinguish ordinary `syncChange`, `syncTombstoneChange`, pending `syncConflictDetectedRecord` and `syncConflictResolvedRecord`. Tombstones require an explicit deletion ID/revision, retention-policy version, causal parents and authorization reference, with no content field paths or encrypted content reference. Conflict resolution binds both source change IDs, the common base, local/remote runtime and aggregate revisions, expected conflict revision, authenticated actor/approval reference, resolution digest and appended resolution reference. These are schema-level constraints, not proof that handlers enforce them.
 
 ## 5. Causality, revisions and conflict resolution
 
@@ -98,7 +98,7 @@ No last-writer-wins rule is permitted for owner cognitive state.
 - A merge is automatic only for an explicitly declared commutative field/operation with a deterministic, versioned merge rule. No free-form representation, memory, belief, objective or goal text is auto-merged.
 - Conflict resolution requires an authenticated owner decision bound to the exact conflict ID, both source revision/change IDs, expected conflict revision, chosen resolution and current policy. Append a new revision; retain both original revisions and the resolution lineage.
 
-The current syncConflictRecord shape is insufficient for this proof. Its next version must include owner/runtime scope, both change IDs, common base revision, local/remote aggregate revisions, causal ancestry, conflict revision, resolution actor/approval evidence and a digest of the exact resolution. A resolution reference alone is not enough to prove which revisions were resolved.
+The machine-readable `syncConflictRecord` now records owner/domain/aggregate scope, both source change IDs, common base, local/remote runtime and aggregate revisions, version references, causal parents, conflict revision and policy versions. The pending and resolved event-specific schemas enforce distinct `resolution_state` values; the resolved schema additionally requires the expected conflict revision, actor/approval references, resolution digest, resolution policy and immutable successor reference. The schema does not authenticate the actor or approval; runtime trust/governance enforcement remains open.
 
 ## 6. Deletion, retention and tombstone propagation
 
@@ -128,7 +128,7 @@ Deletion of source material and the impact of that material on trained model wei
 
 ## 8. Acceptance scenarios required for D-02
 
-The following SY cases are the minimum first-release acceptance set. They are proposed here; they are not yet present in the current 48-scenario machine fixture corpus and must be added with exact event bindings and negative controls before D-02 is marked implementation-ready.
+The following 15 SY cases are the minimum first-release acceptance set. All are now present as machine-readable design specifications in `schemas/fixtures/scenario-contracts.fixture.json`, each with five ordered steps, two negative controls, restart/replay, concurrency, fault and held-out controls. The full corpus contains 63 scenarios, 368 ordered steps and 89 scenario negative controls. They remain unexecuted specifications, not runtime evidence.
 
 | Scenario | Required proof |
 |---|---|
@@ -157,9 +157,9 @@ Acceptance requires deterministic state assertions, event/outbox/inbox counts, r
 - Add runtime identity and peer-authentication bindings. Cloud/mobile runtime identity must not be inferred from a physical device ID.
 - Add exact payload digest/signature verification and authorization/retention policy version checks.
 - Add durable per-store sync inbox, export ledger, peer acknowledgement, aggregate checkpoint and tombstone propagation state, with local transaction boundaries and recovery invariants.
-- Bind sync.change.exported.v1, sync.change.applied.v1, sync.tombstone.applied.v1, sync.conflict.detected.v1 and sync.conflict.resolved.v1 to the SY scenario set. Their current event registry acceptance_scenario_refs are empty.
+- The five sync events and the deletion lifecycle events now have event-specific payload schemas/fixtures where applicable, and their `acceptance_scenario_refs` are derived from and match the 15 SY scenario steps.
 - Add negative fixtures for unknown fields, local-only field injection, owner/runtime mismatch, missing authorization, unknown allowlist/policy version, stale base revision, conflicting sibling changes, same-ID/different-digest replay and tombstone resurrection.
-- Add the 15 SY scenarios to the canonical machine scenario corpus and validator; current event/schema CI does not prove synchronization behaviour.
+- The 15 SY scenarios are now in the canonical machine corpus and exact inventory/step/negative-control/event-reference checks; CI validates specification structure only and does not prove synchronization behaviour.
 - Validate the design against the selected Android/Termux target and the cloud runtime. No database-file replication is permitted.
 
 ## 10. Closure boundary
@@ -167,5 +167,5 @@ Acceptance requires deterministic state assertions, event/outbox/inbox counts, r
 - D-02 Option B is owner-selected.
 - This document specifies a bounded builder-proposed first-release domain/field policy, authority boundary, causality, conflict, deletion, retention, replay and recovery semantics.
 - The current machine syncChange/syncConflictRecord schemas do not yet encode the required v2 fields. The five sync events have no command producers and currently have empty acceptance scenario references; their internal trigger definitions are present.
-- The current scenario corpus has no SY scenarios. No synchronization runtime, inbox/outbox application, peer authentication, conflict resolver or deletion propagation has been implemented or executed.
-- Therefore D-02's topology decision is resolved, but its detailed machine contract and executable acceptance remain IN PROGRESS. This document does not authorize implementation or change the owner-selected Option B scope.
+- The canonical machine scenario corpus contains SY-001…SY-015 (63 scenarios, 368 steps, 89 scenario negative controls); each remains `specified_not_executed` with `execution_authority: none`.
+- Therefore D-02's topology and builder-proposed machine specification are recorded, but peer-trust/bootstrap implementation, durable sync persistence, runtime handlers, executed SY fault/recovery tests and cloud/Android target conformance remain IN PROGRESS. This document does not authorize implementation or change the owner-selected Option B scope.

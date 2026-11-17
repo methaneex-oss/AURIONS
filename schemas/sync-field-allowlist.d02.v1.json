@@ -1,0 +1,234 @@
+{
+  "registry_id": "aurions.d02-cloud-mobile-field-allowlist",
+  "registry_version": "1.0",
+  "status": "builder_proposal_not_owner_accepted",
+  "allowlist_version": "d02-cloud-mobile.v1",
+  "classification_policy_version": "d02-classification.v1",
+  "scope": "First-release cloud/mobile runtime pair only; not general multi-device replication or authority transfer.",
+  "default_policy": "deny",
+  "domains": {
+    "experience": {
+      "default_paths": [
+        "capture_limitations",
+        "capture_method",
+        "experience_id",
+        "observed_at",
+        "provenance.external_origin",
+        "provenance.source_kind",
+        "recorded_at",
+        "retention_class",
+        "source_type"
+      ],
+      "conditional_paths": [
+        "content_ref",
+        "provenance.actor_ref",
+        "provenance.device_ref",
+        "provenance.source_ref"
+      ],
+      "excluded_paths": [
+        "audio_bytes",
+        "image_bytes",
+        "precise_location",
+        "raw_observation",
+        "unredacted_source_payload",
+        "video_bytes"
+      ],
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/experienceObserved"
+      ]
+    },
+    "representation": {
+      "default_paths": [
+        "created_at",
+        "experience_id",
+        "method_id",
+        "method_version",
+        "representation_id",
+        "representation_type",
+        "source_refs"
+      ],
+      "conditional_paths": [
+        "content.*",
+        "uncertainty.*"
+      ],
+      "excluded_paths": [
+        "arbitrary_content_object",
+        "raw_source_material"
+      ],
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/representationCreated",
+        "schemas/domain-payloads.v1.schema.json#/$defs/representationRevised"
+      ]
+    },
+    "memory": {
+      "default_paths": [
+        "created_at",
+        "deleted_at",
+        "memory_id",
+        "memory_type",
+        "retention_until",
+        "status",
+        "updated_at"
+      ],
+      "conditional_paths": [
+        "content_ref",
+        "summary"
+      ],
+      "excluded_paths": [
+        "embeddings",
+        "last_accessed_at",
+        "raw_memory_bytes",
+        "retrieval_scores"
+      ],
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/memoryRecord"
+      ]
+    },
+    "knowledge": {
+      "default_paths": [
+        "created_at",
+        "domain",
+        "knowledge_id",
+        "status",
+        "updated_at"
+      ],
+      "conditional_paths": [
+        "proposition"
+      ],
+      "excluded_paths": [
+        "raw_source_payload",
+        "security_restricted_evidence"
+      ],
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/knowledgeItem"
+      ]
+    },
+    "belief": {
+      "default_paths": [
+        "belief_id",
+        "confidence",
+        "created_at",
+        "epistemic_status",
+        "evidence_refs",
+        "knowledge_id",
+        "revision_id",
+        "revision_number"
+      ],
+      "conditional_paths": [
+        "revision_reason"
+      ],
+      "excluded_paths": [
+        "evidence_content",
+        "unselected_belief_content"
+      ],
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/beliefRevision"
+      ]
+    },
+    "objective": {
+      "default_paths": [
+        "created_at",
+        "objective_id",
+        "owner_ref",
+        "status",
+        "version"
+      ],
+      "conditional_paths": [
+        "assumptions.*",
+        "constraints.*",
+        "statement",
+        "success_evidence",
+        "uncertainty.*"
+      ],
+      "excluded_paths": [
+        "local_plans",
+        "unclassified_intent_text"
+      ],
+      "schema_refs": [
+        "schemas/world-interaction.v1.schema.json#/$defs/objective"
+      ]
+    },
+    "goal": {
+      "default_paths": [
+        "created_at",
+        "goal_id",
+        "objective_id",
+        "objective_version",
+        "priority",
+        "revision",
+        "state"
+      ],
+      "conditional_paths": [
+        "constraints.*",
+        "description",
+        "reason_ref"
+      ],
+      "excluded_paths": [
+        "task_execution_state"
+      ],
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision"
+      ]
+    },
+    "model_version_reference": {
+      "default_paths": [
+        "artifact_id",
+        "artifact_kind",
+        "byte_size",
+        "created_at",
+        "lifecycle",
+        "lineage.derived_from",
+        "lineage.parent_artifact_refs",
+        "media_type",
+        "owner_id",
+        "provenance.producer_id",
+        "provenance.source_refs",
+        "retention_class",
+        "schema_version",
+        "sha256"
+      ],
+      "conditional_paths": [],
+      "excluded_paths": [
+        "active_pointer",
+        "artifact_bytes",
+        "candidate_activation",
+        "local_paths",
+        "storage_ref",
+        "training_credentials",
+        "worker_state"
+      ],
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/artifactManifest"
+      ]
+    }
+  },
+  "cross_domain_local_only": [
+    "owner_authentication_secrets",
+    "approval_nonces",
+    "session_tokens",
+    "private_keys",
+    "key_bytes",
+    "android_os_permissions",
+    "app_grants",
+    "device_credentials",
+    "hardware_identifiers",
+    "governance_authority",
+    "command_dispatch_state",
+    "provider_receipts",
+    "active_operations",
+    "task_checkpoints",
+    "worker_jobs",
+    "cancellation_state",
+    "device_action_results",
+    "local_outbox_inbox_rows",
+    "peer_keys",
+    "transport_checkpoints",
+    "recovery_journals"
+  ],
+  "notes": [
+    "Evidence remains reference-only within evidence_refs on approved knowledge/belief revisions; no standalone evidence-content or evidence-record domain is exported by this v1 allowlist.",
+    "Arbitrary nested objects are excluded until a typed sub-schema and explicit leaf-path classification are added.",
+    "Numeric sensitivity values are not mapped to PUBLIC/OWNER_PRIVATE/SENSITIVE/SECURITY_RESTRICTED without an authoritative mapping; such fields are ineligible by default.",
+    "Encryption/signature profile identifiers and key-version references are metadata placeholders; no cipher or production key custody scheme is selected here."
+  ]
+}

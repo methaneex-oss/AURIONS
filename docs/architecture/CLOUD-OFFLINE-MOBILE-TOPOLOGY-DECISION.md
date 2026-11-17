@@ -1,6 +1,6 @@
 # AURIONS — Cloud and Offline-Mobile Runtime Topology Decision
 
-- **Status:** Owner selected Option B on 2026-11-16; the bounded builder-proposed synchronization semantics are specified in [Cloud/Mobile Selective Synchronization Contract](CLOUD-MOBILE-SELECTIVE-SYNC-CONTRACT.md). Machine schemas, SY scenarios and executable acceptance remain IN PROGRESS.
+- **Status:** Owner selected Option B on 2026-11-16; the bounded builder-proposed field-path contract, machine schemas and 15 SY scenario specifications are now recorded in [Cloud/Mobile Selective Synchronization Contract](CLOUD-MOBILE-SELECTIVE-SYNC-CONTRACT.md). Peer-trust/persistence implementation, target validation and executable acceptance remain IN PROGRESS.
 - **Decision authority:** Builder owns the technical topology proposal. Owner approval is required only if the selected topology changes the product's cross-context continuity or first-release synchronization scope. This document does not reinterpret the approved deployment direction.
 - **Related owner decision:** Cloud operation and offline-capable mobile operation are concurrent first-release targets. Offline mobile must remain functional without cloud availability. Both contexts use shared versioned contracts and the authoritative cognitive-core implementation.
 - **Scope clarification:** D-02 selects bounded cloud/mobile selective synchronization for first release. General multi-device synchronization and seamless handoff remain excluded; this decision supersedes earlier no-sync wording in the product proposal.

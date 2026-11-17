@@ -27,7 +27,7 @@
     },
     "scenarios": {
       "type": "array",
-      "minItems": 39,
+      "minItems": 63,
       "items": {
         "$ref": "#/$defs/scenario"
       }
@@ -134,7 +134,7 @@
       "properties": {
         "scenario_id": {
           "type": "string",
-          "pattern": "^(?:INT|CM|AD)-[0-9]{3}$"
+          "pattern": "^(?:INT|CM|AD|SY)-[0-9]{3}$"
         },
         "title": {
           "type": "string",

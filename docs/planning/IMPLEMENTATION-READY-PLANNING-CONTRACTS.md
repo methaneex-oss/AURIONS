@@ -256,11 +256,13 @@ Every event body MUST validate against exactly one versioned payload schema befo
 | `self_model.updated.v1` | `selfModelUpdated` |
 | `evolution.proposed.v1` / `evolution.candidate.evaluated.v1` | `evolutionProposed` / `evolutionCandidateLifecycle` |
 | `candidate.activated.v1` / `candidate.rolled_back.v1` | `evolutionCandidateLifecycle` |
-| `sync.change.exported.v1` / `sync.change.applied.v1` / `sync.tombstone.applied.v1` | `syncChange` |
+| `sync.change.exported.v1` / `sync.change.applied.v1` | `syncChange` v2 |
+| `sync.tombstone.applied.v1` | `syncTombstoneChange` |
+| `sync.conflict.detected.v1` | `syncConflictDetectedRecord` |
+| `sync.conflict.resolved.v1` | `syncConflictResolvedRecord` |
 | `artifact.registered.v1` / `artifact.quarantined.v1` / `artifact.deleted.v1` | `artifactManifest` |
 | `disclosure.recorded.v1` | `externalDisclosureRecord` |
 | `retention.deletion.requested.v1` / `retention.deletion.completed.v1` | `retentionDeletionEvent` |
-| `sync.conflict.detected.v1` / `sync.conflict.resolved.v1` | `syncConflictRecord` |
 | `task.control.requested.v1` | `taskControlRequest` |
 | `task.run.transitioned.v1` | `taskRunTransition` |
 | `worker.job.requested.v1` / `worker.job.progressed.v1` / `worker.job.completed.v1` / `worker.job.failed.v1` | `workerRequest` / `workerProgress` / `workerResult` / `workerFailure` |
@@ -610,34 +612,18 @@ Before implementation approval:
 - Record query plans and target-device timings for representative retrieval and writes.
 - DDL is not approved merely because it parses or passes host smoke tests; semantic invariants and target failure/recovery tests must pass.
 
-## 9. Multi-device synchronization and deletion protocol
+## 9. D-02 cloud/mobile selective synchronization contract
 
-### 9.1 Domain classification
-Each record type declares: authoritative device/store, whether sync is allowed, sensitivity, encryption requirement, conflict policy, retention, deletion policy and whether it may be exported to a remote relay. Default is local-only.
+The single normative builder technical proposal for owner-selected D-02 Option B is [Cloud/Mobile Selective Synchronization Contract](../architecture/CLOUD-MOBILE-SELECTIVE-SYNC-CONTRACT.md). That document defines the bounded first-release cloud/mobile field-path allowlist, named classification/local-only rules, runtime-local authority boundary, versioned change envelope, causal revisions, duplicate/replay handling, explicit conflict resolution, tombstone/deletion/retention semantics, offline queueing and crash recovery.
 
-Governance approvals and secrets are not blindly synchronized. Device trust is managed by owner-authorized pairing and revocation. A device cannot create owner approval on behalf of another device.
+The machine-readable counterpart is:
+- `schemas/sync-field-allowlist.d02.v1.json` — versioned, default-deny field-path policy; evidence travels only as references within approved belief/knowledge revisions, not as a separate evidence payload domain.
+- `schemas/domain-payloads.v1.schema.json` and `schemas/fixtures/domain-payloads.fixture.json` — `syncChange` v2, event-specific tombstone and conflict-detected/resolved shapes, with positive fixtures.
+- `schemas/event-registry.v1.json` — event-specific payload/fixture bindings and acceptance references derived from the 15 SY scenarios.
+- `schemas/fixtures/scenario-contracts.fixture.json` — SY-001…SY-015, each specified with ordered steps, negative controls and restart/concurrency/fault/held-out controls. The corpus now contains 63 specifications, 368 ordered steps and 89 scenario negative controls.
 
-### 9.2 Change envelope
-A sync change contains change ID, domain/type/schema version, owner ID, source device ID, aggregate ID, aggregate version, causal parents/vector metadata where required, creation time, payload hash, encrypted payload reference, tombstone flag, retention class and idempotency key. Transport authenticates both devices and verifies authorization at destination.
+These artifacts remain builder-proposed specifications. They are not implementation, runtime evidence or expanded owner authorization. Open gates remain: owner/domain acceptance of field classifications and conditional paths; authenticated runtime enrollment/signing-key binding/revocation; authoritative persistence for inboxes, export cursors, acknowledgements, causal gaps, conflicts and tombstones; runtime enforcement/recovery handlers; C++/Python conformance; and actual Android/Termux plus cloud fault/replay testing. SQLite database/WAL/SHM/backup replication and transfer of local permission, approval, governance or execution authority are prohibited.
 
-### 9.3 Conflict handling
-- Single-writer domains reject concurrent writes from non-authoritative devices.
-- Multi-writer domains require explicit domain merge functions and deterministic tests.
-- Last-write-wins is prohibited for beliefs, approvals, permissions, deletion and consequential task state.
-- Conflicts are retained as conflict records with both versions and provenance; no evidence is silently discarded.
-- Task handoff uses lease/ownership epoch and operation receipts. A stale device cannot resume after lease revocation.
-- Duplicate changes are acknowledged idempotently; out-of-order changes are buffered or rejected pending causal predecessors.
-
-### 9.4 Offline devices and deletion
-- Deletion creates a signed tombstone with owner, object/domain ID, deletion epoch, causal/version metadata and timestamp.
-- Active indexes and retrieval visibility are removed locally immediately.
-- Tombstones are retained until all authorized devices acknowledge or are revoked, plus the defined safety retention interval.
-- Offline devices receive tombstones on reconnect before accepting new writes for affected objects.
-- A device behind a deletion epoch cannot reintroduce the deleted record; its conflicting payload is quarantined and audited.
-- Future backups exclude deleted records. Historical backups expire within 30 days of deletion.
-- Restore must replay tombstones before exposing restored content.
-- If an offline device cannot be reached, UI must disclose pending deletion propagation and allow owner revocation.
-- Deletion audit retains only minimal metadata and must not preserve deleted content.
 
 ## 10. Test catalogue and release acceptance
 
@@ -730,14 +716,7 @@ These tests protect the governing architecture rule: mechanisms are engineered; 
 - CAP-003: contradictory capability-use evidence creates a scoped knowledge revision without erasing history.
 - CAP-004: a new schema-compatible capability descriptor is represented without a hardcoded task-to-action branch.
 - NHC-001 through NHC-016: execute the no-hardcoding and capability-extensibility regression checks defined in Section 10.7.
-- SY-001: duplicate sync envelope applies once.
-- SY-002: out-of-order causal change is buffered/rejected safely.
-- SY-003: conflict retains both versions and provenance.
-- SY-004: tombstone reaches online device and removes active retrieval.
-- SY-005: offline stale device cannot resurrect deleted content.
-- SY-006: restore replays tombstones before exposing content.
-- SY-007: revoked device cannot sync or execute.
-- SY-008: direct SQLite file replication is absent.
+- SY-001…SY-015: the D-02 cloud/mobile acceptance cases in [Cloud/Mobile Selective Synchronization Contract](../architecture/CLOUD-MOBILE-SELECTIVE-SYNC-CONTRACT.md), covering allowlisted projection, local-only rejection, owner/runtime isolation, duplicate replay, identity/digest mismatch, offline queue/reconnect, concurrent revisions, stale ancestor replay, tombstone precedence/retention, crash after destination commit, unknown contract versions, authenticated owner conflict resolution, model-reference non-activation and no authority transfer. These are design specifications, not executed runtime tests.
 
 ### 10.6 Local cognitive/action acceptance subset (not the full dual-context release)
 This local cognitive/action acceptance subset is necessary but is not, by itself, acceptance of the complete first release. The complete first release must also pass the cloud/offline-mobile integration acceptance protocol PR-15 through PR-18 in the product definition and canonical roadmap. The local subset is accepted only when:

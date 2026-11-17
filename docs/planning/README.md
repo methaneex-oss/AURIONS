@@ -42,7 +42,8 @@ This directory contains the canonical planning mirror, technical contracts, owne
 ## Schemas, fixtures and validation
 
 - [Schema and fixture index](../../schemas/README.md) — schema source and validation inventory.
-- [Integrated Scenario Contract Fixture](../../schemas/fixtures/scenario-contracts.fixture.json) — **48 design specifications**: INT-001…004, CM-001…029 and AD-001…015; **293 ordered steps and 59 negative controls**. These are not executed runtime tests and confer no execution authority.
+- [D-02 cloud/mobile field allowlist](../../schemas/sync-field-allowlist.d02.v1.json) — builder-proposed versioned field-path policy; default-deny and not runtime enforcement.
+- [Integrated Scenario Contract Fixture](../../schemas/fixtures/scenario-contracts.fixture.json) — **63 design specifications**: INT-001…004, CM-001…029, AD-001…015 and SY-001…015; **368 ordered steps and 89 scenario negative controls**. These are not executed runtime tests and confer no execution authority.
 - [Scenario Contract JSON Schema](../../schemas/scenario-contracts.v1.schema.json) — validates scenario shape and non-executable status.
 - [Cognitive and Capability Contract Matrix](../architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md) — maps cognitive/world/interaction/platform responsibilities to state ownership, persistence, contracts, work packages and scenario evidence.
 - [Android/Termux Target Validation Protocol](../platform/ANDROID-TERMUX-TARGET-VALIDATION-PROTOCOL.md) — read-only target collector and required empirical validation.

@@ -772,15 +772,16 @@ def main() -> int:
         *(f"INT-{index:03d}" for index in range(1, 5)),
         *(f"CM-{index:03d}" for index in range(1, 30)),
         *(f"AD-{index:03d}" for index in range(1, 16)),
+        *(f"SY-{index:03d}" for index in range(1, 16)),
     }
     scenario_ids = {item["scenario_id"] for item in scenarios}
     step_count = sum(len(item["steps"]) for item in scenarios)
     negative_control_count = sum(len(item["negative_controls"]) for item in scenarios)
-    if len(scenarios) != 48 or scenario_ids != expected_scenario_ids:
-        fail("scenario contract fixture must contain INT-001…004, CM-001…029 and AD-001…015")
-    if step_count != 293 or negative_control_count != 59:
+    if len(scenarios) != 63 or scenario_ids != expected_scenario_ids:
+        fail("scenario contract fixture must contain INT-001…004, CM-001…029, AD-001…015 and SY-001…015")
+    if step_count != 368 or negative_control_count != 89:
         fail(
-            f"scenario fixture expected 293 ordered steps and 59 negative controls; "
+            f"scenario fixture expected 368 ordered steps and 89 negative controls; "
             f"found {step_count} steps and {negative_control_count} controls"
         )
     command_types = {item["command_type"] for item in commands}
@@ -1073,8 +1074,8 @@ def main() -> int:
     # Validate integrated scenario contracts as design fixtures, not runtime tests.
     scenario_document = load(FIXTURES / "scenario-contracts.fixture.json")
     scenarios = scenario_document["scenarios"]
-    if len(scenarios) != 48:
-        fail(f"scenario contract fixture expected 48 scenarios, found {len(scenarios)}")
+    if len(scenarios) != 63:
+        fail(f"scenario contract fixture expected 63 scenarios, found {len(scenarios)}")
     known_commands = {item["command_type"] for item in commands}
     known_queries = {item["query_type"] for item in queries}
     known_scenario_ids = {
@@ -1119,6 +1120,7 @@ def main() -> int:
         *(f"INT-{number:03d}" for number in range(1, 5)),
         *(f"CM-{number:03d}" for number in range(1, 30)),
         *(f"AD-{number:03d}" for number in range(1, 16)),
+        *(f"SY-{number:03d}" for number in range(1, 16)),
     }
     if scenario_ids != required_scenario_ids:
         fail(
@@ -1272,6 +1274,116 @@ def main() -> int:
     # named reusable definition, not merely parsed as JSON.
     domain_schema = schema_docs["domain-payloads.v1.schema.json"]
     domain_fixture = load(FIXTURES / "domain-payloads.fixture.json")
+    if len(domain_schema.get("$defs", {})) != 103:
+        fail(f"expected 103 reusable domain payload definitions, found {len(domain_schema.get('$defs', {}))}")
+    if len(domain_fixture) != 95:
+        fail(f"expected 95 positive domain payload fixtures, found {len(domain_fixture)}")
+
+    # The D-02 field-path allowlist is a versioned machine contract, not prose-only policy.
+    sync_allowlist = load(SCHEMAS / "sync-field-allowlist.d02.v1.json")
+    if sync_allowlist.get("allowlist_version") != "d02-cloud-mobile.v1":
+        fail("D-02 field allowlist version mismatch")
+    if sync_allowlist.get("classification_policy_version") != "d02-classification.v1":
+        fail("D-02 classification policy version mismatch")
+    if sync_allowlist.get("default_policy") != "deny":
+        fail("D-02 field allowlist must be default-deny")
+    sync_domains = sync_allowlist.get("domains", {})
+    sync_def = domain_schema["$defs"]["syncChange"]
+    if set(sync_domains) != set(sync_def["properties"]["domain"].get("enum", [])):
+        fail("D-02 allowlist domains do not match syncChange domain enum")
+    # Each allowed domain names the canonical payload schemas that own its field paths.
+    world_schema = schema_docs["world-interaction.v1.schema.json"]
+    allowed_source_schemas = {
+        "domain-payloads.v1.schema.json": domain_schema,
+        "world-interaction.v1.schema.json": world_schema,
+    }
+    for domain_name, rule in sync_domains.items():
+        schema_refs = rule.get("schema_refs", [])
+        if not schema_refs:
+            fail(f"D-02 {domain_name}: missing source payload schema references")
+        source_properties = set()
+        for schema_ref in schema_refs:
+            if "#/$defs/" not in schema_ref:
+                fail(f"D-02 {domain_name}: invalid source schema reference {schema_ref!r}")
+            schema_file, definition_name = schema_ref.split("#/$defs/", 1)
+            filename = schema_file.rsplit("/", 1)[-1]
+            source_schema = allowed_source_schemas.get(filename)
+            if source_schema is None or definition_name not in source_schema.get("$defs", {}):
+                fail(f"D-02 {domain_name}: unresolved source schema reference {schema_ref!r}")
+            source_properties.update(
+                source_schema["$defs"][definition_name].get("properties", {}).keys()
+            )
+        for path_group in ("default_paths", "conditional_paths"):
+            for field_path in rule.get(path_group, []):
+                root_field = field_path.split(".", 1)[0]
+                if root_field not in source_properties:
+                    fail(f"D-02 {domain_name}: {field_path!r} has no source payload property")
+        for path_group in ("default_paths", "conditional_paths", "excluded_paths", "schema_refs"):
+            paths = rule.get(path_group, [])
+            if paths != sorted(set(paths)):
+                fail(f"D-02 {domain_name}.{path_group} must be sorted and unique")
+            if any("*" in path and not path.endswith(".*") for path in paths):
+                fail(f"D-02 {domain_name}.{path_group} has an invalid wildcard path")
+        excluded = set(rule.get("excluded_paths", []))
+        if excluded.intersection(rule.get("default_paths", [])):
+            fail(f"D-02 {domain_name}: an excluded path is also default-allowlisted")
+    sync_required = set(sync_def.get("required", []))
+    for required_field in (
+        "base_aggregate_version", "source_runtime_id", "target_runtime_id",
+        "source_sequence", "allowlist_version", "classification_policy_version",
+        "causal_parent_ids", "field_paths", "authorization_ref",
+        "retention_policy_version", "encryption_profile_id",
+        "encryption_key_version_ref", "signature_profile_id", "signature_ref",
+    ):
+        if required_field not in sync_required:
+            fail(f"syncChange missing D-02 v2 field {required_field}")
+    if "source_device_id" in sync_required:
+        fail("syncChange must not require a physical source_device_id for cloud runtimes")
+    sync_change = domain_fixture["syncChange"]
+    if sync_change["schema_version"].split(".", 1)[0] != "2":
+        fail("syncChange fixture must use v2 envelope semantics")
+    if sync_change["allowlist_version"] != sync_allowlist["allowlist_version"]:
+        fail("syncChange fixture allowlist version mismatch")
+    if sync_change["classification_policy_version"] != sync_allowlist["classification_policy_version"]:
+        fail("syncChange fixture classification-policy version mismatch")
+    if sync_change["base_aggregate_version"] >= sync_change["aggregate_version"]:
+        fail("syncChange fixture does not advance beyond its base aggregate revision")
+    if sync_change["field_paths"] != sorted(set(sync_change["field_paths"])):
+        fail("syncChange field_paths must be sorted and unique")
+    allowed = set(sync_domains[sync_change["domain"]]["default_paths"])
+    conditional = set(sync_domains[sync_change["domain"]]["conditional_paths"])
+    def path_allowed(path, paths):
+        return path in paths or any(
+            item.endswith(".*") and path.startswith(item[:-1])
+            for item in paths
+        )
+    unknown_paths = [
+        path for path in sync_change["field_paths"]
+        if not path_allowed(path, allowed)
+        and not (sync_change["authorization_ref"] and path_allowed(path, conditional))
+    ]
+    if unknown_paths:
+        fail(f"syncChange fixture contains paths outside D-02 allowlist: {unknown_paths}")
+    if sync_change["tombstone"] or sync_change["tombstone_metadata"] is not None:
+        fail("ordinary syncChange fixture must not carry tombstone metadata")
+    tombstone = domain_fixture["syncTombstoneChange"]
+    if not tombstone["tombstone"] or tombstone["field_paths"] or tombstone["encrypted_payload_ref"] is not None:
+        fail("syncTombstoneChange must carry no content field paths or encrypted content payload")
+    if tombstone["tombstone_metadata"]["retention_policy_version"] != sync_change["retention_policy_version"]:
+        fail("sync tombstone must bind a retention-policy version")
+    conflict = domain_fixture["syncConflictDetectedRecord"]
+    if conflict["resolution_state"] != "pending" or conflict["local_change_id"] == conflict["remote_change_id"]:
+        fail("detected sync conflict must preserve two distinct pending source changes")
+    resolved_conflict = domain_fixture["syncConflictResolvedRecord"]
+    if resolved_conflict["resolution_state"] != "resolved" or not resolved_conflict["approval_ref"] or not resolved_conflict["resolution_digest"]:
+        fail("resolved sync conflict must bind explicit owner approval and resolution digest")
+    if events["sync.tombstone.applied.v1"]["payload_schema_ref"] != "schemas/domain-payloads.v1.schema.json#/$defs/syncTombstoneChange":
+        fail("sync tombstone event must reference its event-specific schema")
+    if events["sync.conflict.detected.v1"]["payload_schema_ref"] != "schemas/domain-payloads.v1.schema.json#/$defs/syncConflictDetectedRecord":
+        fail("sync conflict-detected event must reference its event-specific schema")
+    if events["sync.conflict.resolved.v1"]["payload_schema_ref"] != "schemas/domain-payloads.v1.schema.json#/$defs/syncConflictResolvedRecord":
+        fail("sync conflict-resolved event must reference its event-specific schema")
+
     for name, payload in domain_fixture.items():
         if name not in domain_schema["$defs"]:
             fail(f"domain fixture {name}: no same-named schema definition")

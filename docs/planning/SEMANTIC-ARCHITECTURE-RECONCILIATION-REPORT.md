@@ -15,7 +15,7 @@ Current branch inventory:
 - 94 event entries: each has a payload-schema and fixture reference; all remain design-only/non-dispatchable.
 - 52 mapped commands have unique CC-001…CC-052 positive/negative acceptance assertions.
 - 29 queries have unique QCC-001…QCC-029 positive/negative assertions and explicit read-only invariants.
-- 100 reusable domain-payload schema definitions, 92 named positive domain fixtures and 46 negative controls are present in the current source corpus. Event, command and query schema/fixture reference checks are enforced in CI.
+- 103 reusable domain-payload schema definitions, 95 named positive domain fixtures and 46 negative controls are present in the current source corpus. Event, command and query schema/fixture reference checks are enforced in CI.
 
 These are design and structural-integrity facts. They do not establish runtime handler/consumer correctness, executable cognitive scenarios, target-platform behaviour, security enforcement or production readiness.
 
@@ -73,7 +73,7 @@ The event registry now contains 94 entries. All new events remain design-only/no
 These are not builder choices:
 - The primary model is AURIONS-owned and intended to start from randomly initialized parameters; pretrained third-party weights or a hosted commercial LLM are not the system's brain. Model architecture, size, tokenizer, training objective and data/compute choices remain engineering design and feasibility work.
 - First permitted Android action/capability remains owner-reserved.
-- D-02 Option B was selected on 2026-11-16: the first release includes bounded selective synchronization between the cloud and offline-mobile runtimes. Exact domain/field allowlists, secure runtime/device enrollment and revocation, local-only classes, conflict/deletion/recovery semantics and executable SY evidence remain open; unrestricted replication and cross-context authority transfer are not approved.
+- D-02 Option B was selected on 2026-11-16: the first release includes bounded selective synchronization between the cloud and offline-mobile runtimes. The builder-proposed default-deny field-path allowlist, v2 change/conflict/tombstone schemas and 15 machine-readable SY specifications are now recorded. Owner/domain field-classification acceptance, secure runtime/device enrollment and revocation, sync-specific persistence, runtime enforcement and executed target evidence remain open; unrestricted replication and cross-context authority transfer are not approved.
 - Target Android device selection and empirical Termux/SQLite/permission/lifecycle/resource evidence remain outstanding.
 - Cloud key provider, recovery custodian and production recovery policy remain unselected.
 - The first-release command/query subset remains a builder proposal pending owner acceptance.
@@ -132,7 +132,7 @@ Exact HEAD 2f4218c669ced79920af16ff122e5ab7080124b4 passed CI run [43323863934](
 
 ## BR-004/BR-008 builder increment — open-world scenario and evidence-count reconciliation (2026-11-13)
 
-The current integrated scenario corpus now contains **48 specifications**: INT-001…INT-004, CM-001…CM-029 and AD-001…AD-015. The fixture contains **293 ordered steps and 59 negative controls**. CM-022…CM-029 are individually instantiated with concrete command/event transitions, durable assertions, negative controls, restart/replay, concurrency, fault and held-out controls. The schema validator enforces the exact inventory/counts and concrete command/event requirements. The event registry's acceptance-scenario references were recomputed from the full fixture; the current mismatch count is zero.
+The current integrated scenario corpus contains **63 specifications**: INT-001…INT-004, CM-001…CM-029, AD-001…AD-015 and SY-001…SY-015. The fixture contains **368 ordered steps and 89 scenario negative controls**. The SY entries are specifications only; they have not been executed against a synchronization runtime. CM-022…CM-029 are individually instantiated with concrete command/event transitions, durable assertions, negative controls, restart/replay, concurrency, fault and held-out controls. The schema validator enforces the exact inventory/counts and concrete command/event requirements. The event registry's acceptance-scenario references were recomputed from the full fixture; the current mismatch count is zero.
 
 The 42 events without command producers remain intentionally non-command events: 15 Action Gateway state-transition events and 27 other trusted-ingress/internal producer events. This is a trigger-origin classification, not a missing-command defect and not a reason to invent public commands.
 

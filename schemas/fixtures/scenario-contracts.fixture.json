@@ -7605,6 +7605,2082 @@
       },
       "execution_status": "specified_not_executed",
       "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-001",
+      "title": "SY-001 — Allowlisted projection",
+      "purpose": "Only exact versioned field paths are serialized; unknown and nested unlisted paths are rejected before export.",
+      "source_scenario_ids": [
+        "CM-018",
+        "CM-029"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange",
+        "event:sync.change.exported.v1"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Load the D-02 v1 positive allowlist and a belief revision containing both eligible and local-only fields.",
+          "contract_action": "fake:sync.load_allowlist",
+          "expected_transitions": [
+            "The source domain projector resolves the exact allowlist and policy version before reading candidate fields."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Unknown allowlist versions are denied by default."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Project only the approved belief metadata fields into the canonical envelope.",
+          "contract_action": "fake:sync.project_allowlisted_fields",
+          "expected_transitions": [
+            "The projected field_paths list is sorted, unique and a strict subset of the belief domain allowlist."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The serialized projection excludes revision_reason and evidence content."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Commit the exact projected change and export it to the authenticated target runtime.",
+          "contract_action": "fake:sync.export_projected_change",
+          "expected_transitions": [
+            "The source outbox and export ledger bind the same canonical payload digest and field-path list."
+          ],
+          "expected_events": [
+            "sync.change.exported.v1"
+          ],
+          "durable_assertions": [
+            "The event is emitted only after local commit; it does not imply remote application."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Inject an unknown nested representation path into a second candidate projection.",
+          "contract_action": "fake:sync.reject_unlisted_path",
+          "expected_transitions": [
+            "The second candidate is rejected before export because the nested path is not in the selected versioned allowlist."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No export ledger or event is created for the rejected candidate."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Inspect the exported envelope and source ledger after restart.",
+          "contract_action": "fake:sync.verify_projection",
+          "expected_transitions": [
+            "The persisted envelope reproduces the original sorted field paths and canonical digest."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The only exported values belong to the exact allowlist and named policy version."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-001-NC-001",
+          "injection": "Add representation.content.private_note to the field_paths list without a typed sub-schema and allowlist entry.",
+          "expected_disposition": "Reject before encryption/export; retain no serialized copy.",
+          "must_not_change": [
+            "Source aggregate content",
+            "Export ledger and event counts",
+            "Any destination aggregate"
+          ]
+        },
+        {
+          "control_id": "SY-001-NC-002",
+          "injection": "Use an unknown nested property with a valid payload hash but a known domain allowlist version.",
+          "expected_disposition": "Reject because digest validity does not confer field authorization.",
+          "must_not_change": [
+            "Source export receipt",
+            "Destination state",
+            "Owner or peer trust state"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Exported field_paths are sorted, unique and a subset of the domain/version allowlist.",
+          "Unknown nested paths cannot enter serialization even when the outer schema and digest are valid."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-002",
+      "title": "SY-002 — Local-only rejection",
+      "purpose": "Unclassified, SECURITY_RESTRICTED and local-only fields never enter an envelope or destination payload.",
+      "source_scenario_ids": [
+        "CM-029",
+        "AD-014"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Prepare an owner-scoped aggregate containing PUBLIC, OWNER_PRIVATE, SENSITIVE, SECURITY_RESTRICTED and unclassified fields.",
+          "contract_action": "fake:sync.classify_candidate_fields",
+          "expected_transitions": [
+            "Every leaf is classified by the owning domain policy; unknown numeric sensitivity mappings remain ineligible."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No field is treated as PUBLIC by missing metadata or numeric default."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Attempt to export the SECURITY_RESTRICTED, unclassified and runtime-local fields.",
+          "contract_action": "fake:sync.deny_local_only_fields",
+          "expected_transitions": [
+            "The export projection rejects the protected paths and records a minimal policy-denial result."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No payload bytes or field values are written to the outbox."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Attempt to export SENSITIVE paths without exact aggregate/field/purpose/destination/expiry authorization.",
+          "contract_action": "fake:sync.require_exact_authorization",
+          "expected_transitions": [
+            "The SENSITIVE paths are denied until exact owner authorization is verified."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "A broad domain toggle is insufficient."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Provide a valid exact-scope authorization for a separately eligible SENSITIVE field and re-project.",
+          "contract_action": "fake:sync.project_conditionally_authorized_field",
+          "expected_transitions": [
+            "Only the named field path is eligible; the envelope binds the authorization reference and policy version."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "This remains a design fake and grants no production authority."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Inspect serialized bytes and destination state for protected content.",
+          "contract_action": "fake:sync.verify_no_protected_egress",
+          "expected_transitions": [
+            "No local-only or unclassified value has crossed the boundary."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Only explicitly approved field paths appear in the canonical projected payload."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-002-NC-001",
+          "injection": "Mark an unclassified nested object as OWNER_PRIVATE without domain-owned classification evidence.",
+          "expected_disposition": "Reject; do not infer a classification from caller metadata.",
+          "must_not_change": [
+            "Outbox payload bytes",
+            "Destination state",
+            "Classification policy"
+          ]
+        },
+        {
+          "control_id": "SY-002-NC-002",
+          "injection": "Provide an authorization for one field, then include an additional SENSITIVE path.",
+          "expected_disposition": "Reject the entire projection or exclude the extra field deterministically; never broaden the authorization.",
+          "must_not_change": [
+            "Authorized field set",
+            "Approval scope",
+            "Export digest"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "SECURITY_RESTRICTED, unclassified and local-only fields never cross the boundary.",
+          "SENSITIVE field export requires exact owner authorization binding owner, aggregate, field paths, purpose, destination runtime, policy version and expiry."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-003",
+      "title": "SY-003 — Owner/runtime isolation",
+      "purpose": "An otherwise valid change for a different owner or an unpaired target runtime is rejected without existence disclosure.",
+      "source_scenario_ids": [
+        "CM-029",
+        "AD-014"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Enroll two isolated owner scopes and one valid cloud/mobile runtime pair using deterministic trust records.",
+          "contract_action": "fake:sync.initialize_owner_runtime_trust",
+          "expected_transitions": [
+            "The trust boundary binds each authenticated runtime to one owner and enrollment epoch."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Payload owner_id is not itself proof of owner identity."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Prepare an envelope for owner A but authenticate the sender under owner B.",
+          "contract_action": "fake:sync.reject_owner_mismatch",
+          "expected_transitions": [
+            "The receiver rejects the owner mismatch before payload decryption or lookup."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The response does not reveal whether the target aggregate exists."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Present a valid owner-A envelope to a target runtime absent from the owner's active enrollment set.",
+          "contract_action": "fake:sync.reject_unpaired_runtime",
+          "expected_transitions": [
+            "The receiver rejects the unpaired target runtime and leaves durable state unchanged."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "A known digest does not establish a trusted peer."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Replay the same envelope with an expired or revoked enrollment epoch.",
+          "contract_action": "fake:sync.reject_stale_peer_epoch",
+          "expected_transitions": [
+            "The trust adapter rejects the stale peer identity before applying the envelope."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The revocation epoch is read independently of caller payload data."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Verify both owner partitions and their receipts after restart.",
+          "contract_action": "fake:sync.verify_owner_partition_isolation",
+          "expected_transitions": [
+            "No cross-owner aggregate, receipt or identifier disclosure has occurred."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Owner scope and runtime enrollment remain independent of the schema-valid payload."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-003-NC-001",
+          "injection": "Change owner_id while retaining the original payload hash and signature context.",
+          "expected_disposition": "Reject owner-scope mismatch before aggregate lookup.",
+          "must_not_change": [
+            "Both owners' aggregates",
+            "Peer enrollment records",
+            "Existence-sensitive responses"
+          ]
+        },
+        {
+          "control_id": "SY-003-NC-002",
+          "injection": "Use a valid runtime identity that is not paired to the target owner.",
+          "expected_disposition": "Reject as untrusted peer without partial receipt or destination mutation.",
+          "must_not_change": [
+            "Target aggregate",
+            "Inbox receipt",
+            "Other owners' records"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Authenticated owner scope and runtime enrollment are verified independently of envelope fields.",
+          "An invalid owner/runtime cannot learn the existence or content of another owner’s aggregate."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-004",
+      "title": "SY-004 — Duplicate replay",
+      "purpose": "The same change ID and digest applied twice produces one mutation, one logical event and one durable receipt.",
+      "source_scenario_ids": [
+        "CM-018",
+        "CM-029"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange",
+        "event:sync.change.applied.v1"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Commit an allowlisted source aggregate revision and its outbox record atomically.",
+          "contract_action": "fake:sync.commit_source_change",
+          "expected_transitions": [
+            "One immutable change ID, canonical digest and scoped idempotency key are committed."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No network operation occurs while holding the source SQLite write transaction."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Export the committed envelope to the enrolled destination runtime.",
+          "contract_action": "fake:sync.export_change",
+          "expected_transitions": [
+            "The source records an export ledger for this exact change ID and digest."
+          ],
+          "expected_events": [
+            "sync.change.exported.v1"
+          ],
+          "durable_assertions": [
+            "Export is distinct from remote application."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Apply the envelope to the destination and commit aggregate, inbox receipt and event/outbox in one transaction.",
+          "contract_action": "fake:sync.apply_once",
+          "expected_transitions": [
+            "The destination advances the aggregate exactly once and commits one receipt."
+          ],
+          "expected_events": [
+            "sync.change.applied.v1"
+          ],
+          "durable_assertions": [
+            "Aggregate revision and receipt are durable together."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Replay the identical envelope after the acknowledgement is deliberately lost.",
+          "contract_action": "fake:sync.return_existing_receipt",
+          "expected_transitions": [
+            "The receiver returns the original receipt without reapplying the domain mutation."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No second revision, event or outbox effect is created."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Inspect destination aggregate, receipt and event counts after restart.",
+          "contract_action": "fake:sync.assert_single_application",
+          "expected_transitions": [
+            "The stored state contains one applied change and one durable receipt."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Replay is idempotent across process restart."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-004-NC-001",
+          "injection": "Replay the same idempotency key and change ID with a different payload digest.",
+          "expected_disposition": "Quarantine as an identity/digest integrity conflict; do not apply.",
+          "must_not_change": [
+            "Original receipt",
+            "Destination revision",
+            "Event/outbox counts"
+          ]
+        },
+        {
+          "control_id": "SY-004-NC-002",
+          "injection": "Replay the same change under a different owner scope.",
+          "expected_disposition": "Reject; idempotency keys are scoped to authenticated owner/runtime context.",
+          "must_not_change": [
+            "Original receipt",
+            "Destination aggregate",
+            "Other owner partitions"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Identical change ID plus digest is applied once even under at-least-once delivery.",
+          "The destination aggregate, inbox receipt and applied event/outbox commit atomically."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-005",
+      "title": "SY-005 — Identity/digest mismatch",
+      "purpose": "The same change identity paired with a different canonical payload digest is quarantined and cannot overwrite the original receipt.",
+      "source_scenario_ids": [
+        "CM-018",
+        "CM-029"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Apply one valid change ID and digest and commit its destination receipt.",
+          "contract_action": "fake:sync.commit_original_identity",
+          "expected_transitions": [
+            "The destination stores the original identity-to-digest binding."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The original aggregate revision and receipt become durable together."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Deliver a second envelope reusing the change ID and idempotency key with different payload bytes and digest.",
+          "contract_action": "fake:sync.detect_identity_digest_mismatch",
+          "expected_transitions": [
+            "The receiver detects a collision/integrity conflict before mutation."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No conflict is treated as a legitimate successor revision."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Quarantine the malformed envelope and record a minimal security diagnostic.",
+          "contract_action": "fake:sync.quarantine_mismatch",
+          "expected_transitions": [
+            "The invalid envelope is quarantined without revealing original protected payload details."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The original receipt is neither returned to another identity nor overwritten."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Replay the original exact envelope.",
+          "contract_action": "fake:sync.replay_original",
+          "expected_transitions": [
+            "The receiver returns the original receipt idempotently."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The correct original payload remains authoritative."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Inspect durable state and audit records.",
+          "contract_action": "fake:sync.verify_identity_digest_binding",
+          "expected_transitions": [
+            "There is one original applied mutation and one quarantined mismatched envelope."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No second applied event or aggregate revision exists."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-005-NC-001",
+          "injection": "Reuse a change ID with a digest differing by one byte.",
+          "expected_disposition": "Quarantine the second envelope; preserve original identity binding.",
+          "must_not_change": [
+            "Original aggregate",
+            "Original receipt",
+            "Applied event count"
+          ]
+        },
+        {
+          "control_id": "SY-005-NC-002",
+          "injection": "Change a field path but retain the prior payload digest.",
+          "expected_disposition": "Reject digest verification before payload projection is applied.",
+          "must_not_change": [
+            "Destination projection",
+            "Idempotency record",
+            "Audit integrity"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "A change ID has exactly one canonical payload digest within its owner scope.",
+          "Digest mismatch is never interpreted as new content or a last-writer-wins update."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-006",
+      "title": "SY-006 — Offline queue/reconnect",
+      "purpose": "A locally committed eligible change survives offline operation and reconciles after reconnect without loss or duplicate application.",
+      "source_scenario_ids": [
+        "CM-018",
+        "CM-029"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange",
+        "event:sync.change.exported.v1",
+        "event:sync.change.applied.v1"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Disconnect the mobile runtime from cloud while leaving local cognition and persistence available.",
+          "contract_action": "fake:sync.enter_offline_mode",
+          "expected_transitions": [
+            "Network unavailability changes sync status only; it does not block local domain transactions."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Offline mobile workflows remain independent of cloud reachability."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Commit an eligible local aggregate revision while offline.",
+          "contract_action": "fake:sync.commit_offline_change",
+          "expected_transitions": [
+            "The local aggregate and its outbound change/outbox record commit atomically."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The state is labelled locally committed but not exported or reconciled."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Reconnect and validate peer identity, schema, allowlist, classification and retention versions.",
+          "contract_action": "fake:sync.reconcile_peer_on_reconnect",
+          "expected_transitions": [
+            "The pending outbox change becomes exportable only after all trust and policy checks pass."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "A revoked or stale peer remains denied."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Export and apply the same change to the cloud destination.",
+          "contract_action": "fake:sync.export_and_apply_after_reconnect",
+          "expected_transitions": [
+            "The source export and destination apply are separately and durably recorded."
+          ],
+          "expected_events": [
+            "sync.change.exported.v1",
+            "sync.change.applied.v1"
+          ],
+          "durable_assertions": [
+            "Destination receipt binds the same change ID and digest."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Restart both runtimes and reconcile receipts/checkpoints.",
+          "contract_action": "fake:sync.verify_reconciled_state",
+          "expected_transitions": [
+            "Both contexts report reconciled only after the required receipts and conflict/deletion checks are satisfied."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No cross-context continuity claim is made before reconciliation."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-006-NC-001",
+          "injection": "Reconnect with an unknown allowlist or classification-policy version.",
+          "expected_disposition": "Quarantine the queued change and keep cross-context state unreconciled.",
+          "must_not_change": [
+            "Local committed source data",
+            "Destination aggregate",
+            "Peer trust state"
+          ]
+        },
+        {
+          "control_id": "SY-006-NC-002",
+          "injection": "Drop the destination acknowledgement after commit and replay the same outbox message.",
+          "expected_disposition": "Return the existing destination receipt and do not duplicate the applied revision.",
+          "must_not_change": [
+            "Destination aggregate version",
+            "Applied receipt count",
+            "Outbox identity"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Local mobile operations remain available while cloud is unreachable.",
+          "A change is not reported as cross-context reconciled until destination durable receipt and policy checks succeed."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-007",
+      "title": "SY-007 — Concurrent revisions",
+      "purpose": "Two sibling revisions based on the same aggregate predecessor create an explicit conflict; neither silently wins.",
+      "source_scenario_ids": [
+        "CM-010",
+        "CM-029"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncConflictDetectedRecord",
+        "event:sync.conflict.detected.v1"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Create cloud and mobile changes against the same owner aggregate base revision.",
+          "contract_action": "fake:sync.create_sibling_revisions",
+          "expected_transitions": [
+            "Both immutable change IDs bind the same common_base_version and distinct runtime provenance."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Neither revision is discarded or rewritten."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Apply the first branch to its local authoritative projection.",
+          "contract_action": "fake:sync.apply_first_branch",
+          "expected_transitions": [
+            "The first local branch advances its own aggregate revision."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Its source change and provenance remain immutable."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Receive the second branch from the other runtime.",
+          "contract_action": "fake:sync.detect_concurrent_sibling",
+          "expected_transitions": [
+            "The receiver detects concurrent siblings and creates a durable conflict record."
+          ],
+          "expected_events": [
+            "sync.conflict.detected.v1"
+          ],
+          "durable_assertions": [
+            "Both version references, change IDs, runtimes and common base are recorded."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Attempt to resolve automatically by timestamp, arrival order or higher numeric version.",
+          "contract_action": "fake:sync.reject_implicit_conflict_winner",
+          "expected_transitions": [
+            "The resolver refuses implicit winner selection and leaves the conflict pending."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The aggregate's conflicted projection is not presented as reconciled."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Query both retained branches and the pending conflict record.",
+          "contract_action": "fake:sync.verify_conflict_retention",
+          "expected_transitions": [
+            "Both immutable source revisions and the conflict record remain durably queryable."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No evidence-bearing cognitive state is silently discarded."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-007-NC-001",
+          "injection": "Offer latest timestamp or highest version number as the sole winner criterion.",
+          "expected_disposition": "Reject implicit winner and preserve both source revisions.",
+          "must_not_change": [
+            "Either source revision",
+            "Conflict record",
+            "Reconciled projection"
+          ]
+        },
+        {
+          "control_id": "SY-007-NC-002",
+          "injection": "Replay a conflicting branch after the conflict record has advanced.",
+          "expected_disposition": "Require current conflict/aggregate revision checks; do not overwrite the conflict history.",
+          "must_not_change": [
+            "Conflict revision",
+            "Both branches",
+            "Resolution audit"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Concurrent sibling revisions preserve both versions and provenance.",
+          "No last-write-wins resolution is permitted for owner cognitive state."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-008",
+      "title": "SY-008 — Stale ancestor replay",
+      "purpose": "An ancestor change already represented by a descendant cannot overwrite or rewind the destination aggregate.",
+      "source_scenario_ids": [
+        "CM-018",
+        "CM-029"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Apply source change 20 followed by its causally dependent descendant 21.",
+          "contract_action": "fake:sync.apply_ancestor_and_descendant",
+          "expected_transitions": [
+            "The destination frontier advances to the descendant with both receipts retained."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Causal ancestry and aggregate versions are persisted."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Replay the already applied ancestor with its original digest.",
+          "contract_action": "fake:sync.classify_stale_ancestor",
+          "expected_transitions": [
+            "The receiver recognizes the change as an ancestor in the durable causal history."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The replay is a no-op and returns the original receipt."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Attempt to apply the ancestor as a patch against the descendant projection.",
+          "contract_action": "fake:sync.reject_ancestor_overwrite",
+          "expected_transitions": [
+            "The receiver does not rewrite current state or decrement the aggregate version."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No descendant field is overwritten by stale content."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Restart and replay both ancestor and descendant messages in reverse delivery order.",
+          "contract_action": "fake:sync.recover_causal_frontier",
+          "expected_transitions": [
+            "The receiver uses causal ancestry and receipts rather than wall-clock order."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Final projection remains at the descendant revision."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Inspect causal frontier and aggregate digest.",
+          "contract_action": "fake:sync.verify_no_rewind",
+          "expected_transitions": [
+            "The causal frontier and current aggregate digest match the descendant."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Replayed ancestry cannot cause state regression."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-008-NC-001",
+          "injection": "Deliver an ancestor with a later wall-clock timestamp than its descendant.",
+          "expected_disposition": "Treat the timestamp as diagnostic only; preserve the causal descendant.",
+          "must_not_change": [
+            "Current aggregate revision",
+            "Causal frontier",
+            "Applied receipts"
+          ]
+        },
+        {
+          "control_id": "SY-008-NC-002",
+          "injection": "Delete an ancestor receipt before its supported replay horizon expires.",
+          "expected_disposition": "Reject compaction or retain an equivalent identity/digest tombstone.",
+          "must_not_change": [
+            "Deduplication evidence",
+            "Causal ancestry",
+            "Current aggregate"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Causal order and aggregate revisions dominate wall-clock timestamp.",
+          "An applied ancestor cannot overwrite a descendant or be re-applied as a new change."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-009",
+      "title": "SY-009 — Tombstone precedence",
+      "purpose": "An owner-authorized tombstone is applied before older changes and suppresses stale replay/restore resurrection.",
+      "source_scenario_ids": [
+        "CM-010",
+        "AD-014"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncTombstoneChange",
+        "event:retention.deletion.requested.v1",
+        "event:sync.tombstone.applied.v1"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Accept an exact owner-scoped deletion request for an allowlisted aggregate.",
+          "contract_action": "fake:retention.accept_deletion_request",
+          "expected_transitions": [
+            "A deletion job and tombstone intent are committed with the exact target and policy version."
+          ],
+          "expected_events": [
+            "retention.deletion.requested.v1"
+          ],
+          "durable_assertions": [
+            "The tombstone carries no deleted content."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Remove the target from active local visibility and commit the monotonic deletion revision.",
+          "contract_action": "fake:retention.commit_tombstone",
+          "expected_transitions": [
+            "The source active retrieval index excludes the deleted aggregate."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Local visibility is removed at the source transaction boundary."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Apply the tombstone at the online peer and commit the acknowledgement.",
+          "contract_action": "fake:sync.apply_tombstone",
+          "expected_transitions": [
+            "The destination records the deletion revision and acknowledges durable application."
+          ],
+          "expected_events": [
+            "sync.tombstone.applied.v1"
+          ],
+          "durable_assertions": [
+            "Tombstone metadata and applied receipt commit atomically."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Replay an older content change and restore an older backup snapshot.",
+          "contract_action": "fake:sync.reject_stale_content_after_tombstone",
+          "expected_transitions": [
+            "Both stale payloads are rejected or remain quarantined."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The deletion frontier is checked before visibility."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Query both runtimes after restart.",
+          "contract_action": "fake:sync.verify_tombstone_precedence",
+          "expected_transitions": [
+            "Deleted content remains absent from active retrieval on both contexts."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "A tombstone cannot be lost through ordinary replay or restart."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-009-NC-001",
+          "injection": "Apply a pre-deletion change after a tombstone with a later deletion revision.",
+          "expected_disposition": "Reject/quarantine the stale change without recreating active rows.",
+          "must_not_change": [
+            "Deleted aggregate",
+            "Active indexes",
+            "Tombstone revision"
+          ]
+        },
+        {
+          "control_id": "SY-009-NC-002",
+          "injection": "Restore a backup without the current authoritative tombstone set.",
+          "expected_disposition": "Keep restored content quarantined; fail closed on visibility.",
+          "must_not_change": [
+            "Live retrieval",
+            "Deletion lineage",
+            "Backup restore status"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "A deletion tombstone has precedence over older content revisions and backup snapshots.",
+          "Deleted content is not reintroduced into active indexes or retrieval."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-010",
+      "title": "SY-010 — Tombstone retention",
+      "purpose": "Tombstones remain available until peer acknowledgements and the supported retry/backup restore horizon are both satisfied.",
+      "source_scenario_ids": [
+        "CM-010",
+        "CM-018",
+        "AD-014"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncTombstoneChange",
+        "event:retention.deletion.requested.v1",
+        "event:sync.tombstone.applied.v1",
+        "event:retention.deletion.completed.v1"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Create and apply a tombstone while one authorized peer remains offline.",
+          "contract_action": "fake:retention.start_pending_propagation",
+          "expected_transitions": [
+            "Deletion remains propagation-pending because a required peer acknowledgement is absent."
+          ],
+          "expected_events": [
+            "retention.deletion.requested.v1"
+          ],
+          "durable_assertions": [
+            "No deletion-completed event is emitted."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Attempt to compact or purge tombstone metadata before the peer acknowledges and replay horizon expires.",
+          "contract_action": "fake:retention.deny_early_tombstone_compaction",
+          "expected_transitions": [
+            "The tombstone is retained with minimal metadata sufficient to suppress resurrection."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Unknown replay/backup horizon never defaults to immediate expiry."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Reconnect the peer and apply the tombstone at the destination.",
+          "contract_action": "fake:sync.apply_retained_tombstone",
+          "expected_transitions": [
+            "The destination commits tombstone state and a durable acknowledgement."
+          ],
+          "expected_events": [
+            "sync.tombstone.applied.v1"
+          ],
+          "durable_assertions": [
+            "A transport acknowledgement alone is insufficient."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Advance the deterministic clock beyond the configured retry/backup restore horizon and verify every active peer/store acknowledgement.",
+          "contract_action": "fake:retention.verify_all_completion_conditions",
+          "expected_transitions": [
+            "The retention coordinator confirms all peer acknowledgements and the policy horizon."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No active authorized peer remains outstanding."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Complete the deletion job and retain only permitted minimal audit metadata.",
+          "contract_action": "fake:retention.complete_after_safe_horizon",
+          "expected_transitions": [
+            "The job reaches completed state only after all preconditions hold."
+          ],
+          "expected_events": [
+            "retention.deletion.completed.v1"
+          ],
+          "durable_assertions": [
+            "Deleted content is not retained in the audit payload."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-010-NC-001",
+          "injection": "Expire a tombstone while a peer is offline and still authorized.",
+          "expected_disposition": "Reject compaction; retain the tombstone until ack or authoritative revocation plus policy horizon.",
+          "must_not_change": [
+            "Tombstone metadata",
+            "Deletion state",
+            "Stale-replay protection"
+          ]
+        },
+        {
+          "control_id": "SY-010-NC-002",
+          "injection": "Emit deletion.completed when only a transport ack exists but destination commit receipt is missing.",
+          "expected_disposition": "Do not complete; require durable destination receipt.",
+          "must_not_change": [
+            "Deletion completion status",
+            "Peer acknowledgement ledger",
+            "Retention audit"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Tombstone compaction requires all required durable acknowledgements and policy-defined replay/backup horizon.",
+          "Deletion completion is not asserted while an authorized offline peer remains outstanding."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-011",
+      "title": "SY-011 — Crash after destination commit",
+      "purpose": "A replay after a crash/lost acknowledgement returns the original durable receipt without a second destination mutation.",
+      "source_scenario_ids": [
+        "CM-018",
+        "CM-029"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange",
+        "event:sync.change.applied.v1"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Deliver an authenticated allowlisted change to the destination and begin one local transaction.",
+          "contract_action": "fake:sync.begin_destination_apply",
+          "expected_transitions": [
+            "The destination validates owner, peer, schema, allowlist, field paths, digest and causality."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No state is written before all validations pass."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Commit the aggregate revision, inbox receipt and applied event/outbox atomically.",
+          "contract_action": "fake:sync.commit_destination_apply",
+          "expected_transitions": [
+            "The destination transaction commits one new aggregate version and receipt."
+          ],
+          "expected_events": [
+            "sync.change.applied.v1"
+          ],
+          "durable_assertions": [
+            "Aggregate, receipt and event/outbox have one durable transaction boundary."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Crash after commit but before source acknowledgement reaches the source outbox.",
+          "contract_action": "fake:sync.inject_lost_ack_after_commit",
+          "expected_transitions": [
+            "The source retains the original change as unacknowledged; destination state remains committed."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The crash window is represented as remote-commit/source-ack uncertainty."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Restart both runtimes and replay the exact original change ID and digest.",
+          "contract_action": "fake:sync.replay_after_destination_commit",
+          "expected_transitions": [
+            "Destination returns the already committed receipt idempotently."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No second event, outbox record or aggregate revision is produced."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Reconcile source export ledger and destination receipt.",
+          "contract_action": "fake:sync.verify_commit_reconciliation",
+          "expected_transitions": [
+            "Both sides record the same durable change identity and digest as reconciled."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The recovery does not invent a new semantic change."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-011-NC-001",
+          "injection": "Retry with a newly generated change ID after an uncertain destination commit.",
+          "expected_disposition": "Reconcile the original identity first; do not produce a duplicate semantic update.",
+          "must_not_change": [
+            "Destination aggregate",
+            "Original receipt",
+            "Source outbox identity"
+          ]
+        },
+        {
+          "control_id": "SY-011-NC-002",
+          "injection": "Delete the destination receipt before the source replay horizon expires.",
+          "expected_disposition": "Retain or compact equivalent key+digest evidence; never reapply the change.",
+          "must_not_change": [
+            "Deduplication evidence",
+            "Aggregate revision",
+            "Event/outbox counts"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Crash-after-commit replay returns the original receipt with no second mutation.",
+          "Receipt and aggregate update are committed atomically at the destination."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-012",
+      "title": "SY-012 — Unknown contract version",
+      "purpose": "Unknown schema, allowlist or classification-policy versions are quarantined without partial application.",
+      "source_scenario_ids": [
+        "CM-018",
+        "CM-029"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Prepare valid changes using the currently supported schema, allowlist and classification-policy versions.",
+          "contract_action": "fake:sync.prepare_known_contract_versions",
+          "expected_transitions": [
+            "The baseline envelope passes contract negotiation and field projection."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Version support is explicit and independently recorded."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Change schema_version to an unknown major version and send the envelope.",
+          "contract_action": "fake:sync.reject_unknown_schema_version",
+          "expected_transitions": [
+            "The receiver quarantines the envelope before parsing or applying unknown semantics."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No partial state or fallback to an older parser occurs."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Repeat with an unknown allowlist_version and classification_policy_version.",
+          "contract_action": "fake:sync.reject_unknown_policy_versions",
+          "expected_transitions": [
+            "The receiver denies the change because the exact projection/policy semantics are unavailable."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "A matching payload hash does not authorize an unknown policy."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Reconnect after the required contract version becomes available through an authorized update.",
+          "contract_action": "fake:sync.negotiate_supported_contract",
+          "expected_transitions": [
+            "The envelope is revalidated against an explicitly supported version; any schema transform is deterministic and recorded."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No implicit lossy downgrade or policy reinterpretation occurs."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Inspect quarantine and apply receipts.",
+          "contract_action": "fake:sync.verify_no_partial_apply",
+          "expected_transitions": [
+            "Rejected version envelopes have no aggregate mutation or applied receipt."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "The only applied change is one fully negotiated and verified envelope."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-012-NC-001",
+          "injection": "Replace an unknown version with the nearest supported version without a migration/negotiation record.",
+          "expected_disposition": "Quarantine; never guess compatibility.",
+          "must_not_change": [
+            "Destination aggregate",
+            "Quarantine provenance",
+            "Policy-version record"
+          ]
+        },
+        {
+          "control_id": "SY-012-NC-002",
+          "injection": "Apply fields under a new allowlist using an older receiver's permissive schema.",
+          "expected_disposition": "Reject unknown allowlist version before field mutation.",
+          "must_not_change": [
+            "Destination projection",
+            "Applied receipt",
+            "Schema compatibility state"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Unknown schema, allowlist and classification-policy versions are rejected without partial application.",
+          "Compatibility is explicit and version-negotiated; no silent downgrade or guessed transform."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-013",
+      "title": "SY-013 — Owner conflict resolution",
+      "purpose": "Conflict resolution is authenticated and binds both source revisions, the exact conflict revision and an immutable resolution digest.",
+      "source_scenario_ids": [
+        "CM-010",
+        "CM-029"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncConflictDetectedRecord",
+        "payload:syncConflictResolvedRecord",
+        "event:sync.conflict.detected.v1",
+        "event:sync.conflict.resolved.v1"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Create two concurrent sibling revisions and persist the pending conflict record.",
+          "contract_action": "fake:sync.persist_pending_conflict",
+          "expected_transitions": [
+            "The conflict record binds owner, aggregate, common base, both change IDs, runtimes and conflict revision."
+          ],
+          "expected_events": [
+            "sync.conflict.detected.v1"
+          ],
+          "durable_assertions": [
+            "Both source revisions remain immutable."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Prepare an authenticated owner resolution bound to the exact conflict ID, both digests and expected conflict revision.",
+          "contract_action": "fake:sync.prepare_owner_conflict_resolution",
+          "expected_transitions": [
+            "The resolution authorization binds the exact current conflict and chosen disposition."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Resolution authority is external to the model and payload."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Reject a stale or mismatched resolution attempt.",
+          "contract_action": "fake:sync.reject_stale_resolution",
+          "expected_transitions": [
+            "The current conflict remains pending; no branch is discarded."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Expected conflict revision and both source digests are checked."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Commit the accepted resolution as a new successor revision with immutable lineage.",
+          "contract_action": "fake:sync.commit_owner_resolution",
+          "expected_transitions": [
+            "The resolved conflict record includes actor, approval reference, resolution kind, expected conflict revision and digest."
+          ],
+          "expected_events": [
+            "sync.conflict.resolved.v1"
+          ],
+          "durable_assertions": [
+            "Neither original branch is rewritten; resolution is append-only."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Replay the same resolution and inspect the final lineage.",
+          "contract_action": "fake:sync.verify_resolution_replay",
+          "expected_transitions": [
+            "The original resolution receipt is returned and all three revision records remain available."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No second resolution or mutation occurs."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-013-NC-001",
+          "injection": "Resolve a conflict using an approval bound to another conflict ID or different source revision digest.",
+          "expected_disposition": "Reject without advancing conflict revision.",
+          "must_not_change": [
+            "Both source revisions",
+            "Pending conflict",
+            "Approval audit"
+          ]
+        },
+        {
+          "control_id": "SY-013-NC-002",
+          "injection": "Attempt owner conflict resolution using model output or remote runtime assertion alone.",
+          "expected_disposition": "Require authenticated owner approval; model output cannot grant resolution authority.",
+          "must_not_change": [
+            "Owner governance state",
+            "Conflict resolution state",
+            "Local action authority"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "A resolution binds both exact source revisions and the expected conflict revision.",
+          "Resolution is append-only, owner-authorized and idempotent; original branches remain preserved."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-014",
+      "title": "SY-014 — Model reference is not activation",
+      "purpose": "An approved immutable model-version reference may synchronize, but active model pointers and activation/rollback authority remain local.",
+      "source_scenario_ids": [
+        "CM-029",
+        "AD-014"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange",
+        "event:sync.change.exported.v1",
+        "event:sync.change.applied.v1"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Prepare an immutable model artifact manifest with verified digest, provenance, lineage and approved owner scope.",
+          "contract_action": "fake:sync.prepare_immutable_model_reference",
+          "expected_transitions": [
+            "The export projection includes only allowed immutable reference metadata."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No storage_ref, model bytes, training dataset or worker credential is included."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Export the approved reference to the authenticated peer.",
+          "contract_action": "fake:sync.export_model_reference",
+          "expected_transitions": [
+            "The source records the exact reference digest and destination."
+          ],
+          "expected_events": [
+            "sync.change.exported.v1"
+          ],
+          "durable_assertions": [
+            "Reference synchronization does not imply candidate approval or activation."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Apply the reference in the destination artifact-reference domain.",
+          "contract_action": "fake:sync.apply_model_reference",
+          "expected_transitions": [
+            "The destination records the immutable reference with provenance but no active-pointer mutation."
+          ],
+          "expected_events": [
+            "sync.change.applied.v1"
+          ],
+          "durable_assertions": [
+            "The reference is inspectable but not executable or active."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Attempt to include model bytes, storage_ref, candidate activation or active pointer fields.",
+          "contract_action": "fake:sync.reject_model_authority_and_bytes",
+          "expected_transitions": [
+            "The exporter rejects the extra content/authority fields."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No model artifact bytes or authority state cross the boundary."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Inspect candidate, active pointer and approval stores on both runtimes.",
+          "contract_action": "fake:sync.verify_reference_only",
+          "expected_transitions": [
+            "Neither runtime's candidate activation, active pointer or rollback history changed."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "A later activation requires its own exact local owner approval."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-014-NC-001",
+          "injection": "Synchronize a model-version reference with active_pointer=true or activation command metadata.",
+          "expected_disposition": "Reject the authority-bearing field set; preserve local active state.",
+          "must_not_change": [
+            "Active candidate pointer",
+            "Approval/activation records",
+            "Artifact bytes"
+          ]
+        },
+        {
+          "control_id": "SY-014-NC-002",
+          "injection": "Use an approved artifact reference as proof that the receiving runtime may activate it.",
+          "expected_disposition": "Require independent local activation/evaluation/approval contract.",
+          "must_not_change": [
+            "Destination active pointer",
+            "Owner approval ledger",
+            "Candidate lifecycle"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Immutable model reference sync cannot activate, select or roll back a model.",
+          "Model bytes, training data, credentials, active pointers and approval state remain local by default."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
+    },
+    {
+      "scenario_id": "SY-015",
+      "title": "SY-015 — No authority transfer",
+      "purpose": "A remote domain update cannot create local OS permission, governance approval or action-dispatch authority.",
+      "source_scenario_ids": [
+        "AD-014",
+        "CM-029"
+      ],
+      "contract_refs": [
+        "WP-15",
+        "payload:syncChange",
+        "event:sync.change.applied.v1"
+      ],
+      "initial_state": [
+        "Create isolated owner-scoped cloud and offline-mobile runtime stores; never share or mount SQLite database/WAL/SHM files.",
+        "Freeze the runtime identities, peer trust, owner scope, schema/allowlist/classification/retention policy versions and aggregate revisions for deterministic replay.",
+        "Initialize all transport, clocks, stores and authority fakes in default-deny mode; no production credential or dispatch authority is available."
+      ],
+      "deterministic_fakes": {
+        "clock": "Deterministic monotonic clock with independently controlled offline/reconnect and retention-horizon advancement.",
+        "inference": "Not used; synchronization acceptance must not depend on model output.",
+        "stores": "Isolated memory, governance and event stores with transaction snapshots, durable receipts and crash/fault injection.",
+        "provider": "Authenticated in-memory cloud/mobile peer transport with controllable duplication, reordering, disconnection, loss and corruption.",
+        "authority": "Independent owner-scope, runtime-enrollment, revocation and local-device authorization fakes; default deny."
+      },
+      "steps": [
+        {
+          "step_id": "S01",
+          "trigger": "Prepare a valid allowlisted cloud-originated objective or memory change for the enrolled mobile runtime.",
+          "contract_action": "fake:sync.prepare_remote_domain_change",
+          "expected_transitions": [
+            "The change is scoped to a durable domain aggregate and contains no local authority fields."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Peer identity and owner scope are authenticated independently."
+          ]
+        },
+        {
+          "step_id": "S02",
+          "trigger": "Apply the change through the destination owning-domain API.",
+          "contract_action": "fake:sync.apply_remote_domain_state",
+          "expected_transitions": [
+            "The mobile domain state is updated through its local transaction and durable receipt."
+          ],
+          "expected_events": [
+            "sync.change.applied.v1"
+          ],
+          "durable_assertions": [
+            "The change cannot address permission, approval or dispatch state."
+          ]
+        },
+        {
+          "step_id": "S03",
+          "trigger": "Present a remote proposal that requests an Android operation without local OS permission and AURIONS approval.",
+          "contract_action": "fake:sync.deny_remote_action_proposal",
+          "expected_transitions": [
+            "The local Action Gateway denies the proposal using local permission and governance checks."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "Remote state cannot supply either missing authority."
+          ]
+        },
+        {
+          "step_id": "S04",
+          "trigger": "Attempt to add permission grant, approval nonce, session token or operation state to a sync envelope.",
+          "contract_action": "fake:sync.reject_authority_fields",
+          "expected_transitions": [
+            "The field allowlist rejects all authority-bearing fields before mutation."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "No remote action is dispatched."
+          ]
+        },
+        {
+          "step_id": "S05",
+          "trigger": "Inspect local permissions, governance approvals and dispatch receipts.",
+          "contract_action": "fake:sync.verify_authority_isolation",
+          "expected_transitions": [
+            "All local authority and dispatch state remains unchanged despite successful domain synchronization."
+          ],
+          "expected_events": [],
+          "durable_assertions": [
+            "A domain update is not a capability grant or operation authorization."
+          ]
+        }
+      ],
+      "negative_controls": [
+        {
+          "control_id": "SY-015-NC-001",
+          "injection": "Include a local permission or approval assertion as a nested property in the synchronized payload.",
+          "expected_disposition": "Reject unallowlisted authority data; require local boundary evaluation.",
+          "must_not_change": [
+            "OS permission state",
+            "Governance approval state",
+            "Dispatch records"
+          ]
+        },
+        {
+          "control_id": "SY-015-NC-002",
+          "injection": "Attempt to dispatch solely from a cloud-originated proposal with no local authorization.",
+          "expected_disposition": "Deny and record a local denial; do not infer permission from remote history.",
+          "must_not_change": [
+            "Action execution state",
+            "Local approval ledger",
+            "Device permissions"
+          ]
+        }
+      ],
+      "restart_replay_controls": [
+        "Crash before the owning-store transaction commits; recovery must show no partial aggregate, event or receipt mutation.",
+        "Crash after destination commit but before source acknowledgement; replay must return the exact durable receipt without a second mutation or event."
+      ],
+      "concurrency_controls": [
+        "Race two changes against the same expected aggregate revision and require explicit causal or conflict handling; never select a winner by wall-clock time.",
+        "Race peer revocation, retention invalidation or a tombstone with an inbound change; protected state remains fail-closed."
+      ],
+      "fault_controls": [
+        "Inject network loss, lost acknowledgement, process death and transaction failure at each durable boundary; distinguish uncommitted, committed, applied and reconciled states.",
+        "Inject malformed digest, unknown schema/allowlist/classification version and unavailable peer-trust state; reject or quarantine without protected mutation."
+      ],
+      "held_out_controls": [
+        "Repeat the invariant with a fresh owner-scoped aggregate ID and different non-sensitive fixture values.",
+        "Add a previously unseen nested field or domain; it remains denied until a separately reviewed allowlist version admits it."
+      ],
+      "acceptance_thresholds": {
+        "hard_invariants": [
+          "Remote domain changes never create local permissions, approvals or dispatch authority.",
+          "Local action authorization is independently evaluated at the device execution boundary."
+        ],
+        "learning_metric_rule": "Not applicable; these cases validate synchronization and authority boundaries, not learning improvement.",
+        "evidence_requirement": "Record implementation revision, allowlist and policy versions, fixture hash, canonical payload digest, field paths, peer/runtime identities, event/outbox/inbox/receipt counts, durable before/after snapshots, fault injection, restart/replay result and expected/actual disposition. This is an evidence specification, not evidence of execution."
+      },
+      "execution_status": "specified_not_executed",
+      "execution_authority": "none"
     }
   ]
 }

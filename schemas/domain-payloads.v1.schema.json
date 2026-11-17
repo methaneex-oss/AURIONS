@@ -1700,14 +1700,29 @@
         "domain",
         "schema_version",
         "owner_id",
-        "source_device_id",
         "aggregate_id",
         "aggregate_version",
         "created_at",
         "payload_hash",
+        "encrypted_payload_ref",
         "tombstone",
         "retention_class",
-        "idempotency_key"
+        "retention_policy_version",
+        "idempotency_key",
+        "base_aggregate_version",
+        "source_runtime_id",
+        "target_runtime_id",
+        "source_sequence",
+        "allowlist_version",
+        "classification_policy_version",
+        "causal_parent_ids",
+        "field_paths",
+        "authorization_ref",
+        "encryption_profile_id",
+        "encryption_key_version_ref",
+        "signature_profile_id",
+        "signature_ref",
+        "tombstone_metadata"
       ],
       "properties": {
         "change_id": {
@@ -1715,18 +1730,31 @@
         },
         "domain": {
           "type": "string",
-          "minLength": 1
+          "enum": [
+            "experience",
+            "representation",
+            "memory",
+            "knowledge",
+            "belief",
+            "objective",
+            "goal",
+            "model_version_reference"
+          ]
         },
         "schema_version": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[1-9][0-9]*\\.[0-9]+$"
         },
         "owner_id": {
           "type": "string",
           "minLength": 1
         },
         "source_device_id": {
-          "$ref": "#/$defs/uuid"
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
         },
         "aggregate_id": {
           "$ref": "#/$defs/reference"
@@ -1737,8 +1765,10 @@
         },
         "causal_parent_ids": {
           "type": "array",
+          "uniqueItems": true,
           "items": {
-            "$ref": "#/$defs/uuid"
+            "type": "string",
+            "format": "uuid"
           }
         },
         "created_at": {
@@ -1746,17 +1776,14 @@
         },
         "payload_hash": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[a-fA-F0-9]{64}$"
         },
         "encrypted_payload_ref": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/reference"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
         },
         "tombstone": {
           "type": "boolean"
@@ -1768,8 +1795,163 @@
         "idempotency_key": {
           "type": "string",
           "minLength": 1
+        },
+        "base_aggregate_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_runtime_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "target_runtime_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "allowlist_version": {
+          "const": "d02-cloud-mobile.v1"
+        },
+        "classification_policy_version": {
+          "const": "d02-classification.v1"
+        },
+        "field_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "authorization_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "retention_policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "encryption_profile_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "encryption_key_version_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signature_profile_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signature_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tombstone_metadata": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "deletion_id",
+            "deletion_revision",
+            "deleted_at",
+            "retention_policy_version",
+            "causal_parent_ids",
+            "authorization_ref"
+          ],
+          "properties": {
+            "deletion_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "deletion_revision": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "deleted_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "retention_policy_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "causal_parent_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "authorization_ref": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "tombstone": {
+                "const": true
+              }
+            },
+            "required": [
+              "tombstone"
+            ]
+          },
+          "then": {
+            "properties": {
+              "tombstone_metadata": {
+                "type": "object"
+              },
+              "encrypted_payload_ref": {
+                "type": "null"
+              },
+              "field_paths": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tombstone": {
+                "const": false
+              }
+            },
+            "required": [
+              "tombstone"
+            ]
+          },
+          "then": {
+            "properties": {
+              "tombstone_metadata": {
+                "type": "null"
+              },
+              "encrypted_payload_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "field_paths": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "discoveryRequest": {
       "type": "object",
@@ -3210,13 +3392,24 @@
       "required": [
         "conflict_id",
         "domain",
+        "owner_id",
         "aggregate_id",
+        "local_change_id",
+        "remote_change_id",
+        "common_base_version",
+        "local_runtime_id",
+        "remote_runtime_id",
+        "local_aggregate_version",
+        "remote_aggregate_version",
         "local_version_ref",
         "remote_version_ref",
-        "causal_parent_refs",
+        "causal_parent_ids",
+        "conflict_revision",
         "conflict_kind",
         "resolution_state",
-        "detected_at"
+        "detected_at",
+        "allowlist_version",
+        "classification_policy_version"
       ],
       "properties": {
         "conflict_id": {
@@ -3225,7 +3418,16 @@
         },
         "domain": {
           "type": "string",
-          "minLength": 1
+          "enum": [
+            "experience",
+            "representation",
+            "memory",
+            "knowledge",
+            "belief",
+            "objective",
+            "goal",
+            "model_version_reference"
+          ]
         },
         "aggregate_id": {
           "type": "string",
@@ -3248,14 +3450,16 @@
         },
         "conflict_kind": {
           "type": "string",
-          "minLength": 1
+          "enum": [
+            "concurrent_revision",
+            "base_revision_mismatch"
+          ]
         },
         "resolution_state": {
+          "type": "string",
           "enum": [
-            "detected",
-            "pending_owner",
-            "merged",
-            "rejected"
+            "pending",
+            "resolved"
           ]
         },
         "detected_at": {
@@ -3272,6 +3476,85 @@
               "type": "null"
             }
           ]
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "local_change_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "remote_change_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "common_base_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "local_runtime_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "remote_runtime_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "local_aggregate_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "remote_aggregate_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "causal_parent_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "conflict_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "allowlist_version": {
+          "const": "d02-cloud-mobile.v1"
+        },
+        "classification_policy_version": {
+          "const": "d02-classification.v1"
+        },
+        "expected_conflict_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "resolution_actor_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approval_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolution_digest": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "resolution_kind": {
+          "type": "string",
+          "enum": [
+            "merged",
+            "selected_local",
+            "selected_remote",
+            "rejected"
+          ]
+        },
+        "resolution_policy_version": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },
@@ -7319,6 +7602,112 @@
           "$ref": "#/$defs/timestamp"
         }
       }
+    },
+    "syncTombstoneChange": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/syncChange"
+        },
+        {
+          "type": "object",
+          "required": [
+            "tombstone",
+            "tombstone_metadata",
+            "field_paths",
+            "encrypted_payload_ref"
+          ],
+          "properties": {
+            "tombstone": {
+              "const": true
+            },
+            "field_paths": {
+              "maxItems": 0
+            },
+            "encrypted_payload_ref": {
+              "type": "null"
+            },
+            "tombstone_metadata": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "syncConflictDetectedRecord": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/syncConflictRecord"
+        },
+        {
+          "type": "object",
+          "required": [
+            "resolution_state"
+          ],
+          "properties": {
+            "resolution_state": {
+              "const": "pending"
+            }
+          }
+        }
+      ]
+    },
+    "syncConflictResolvedRecord": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/syncConflictRecord"
+        },
+        {
+          "type": "object",
+          "required": [
+            "resolution_state",
+            "expected_conflict_revision",
+            "resolution_actor_ref",
+            "approval_ref",
+            "resolution_digest",
+            "resolution_kind",
+            "resolution_policy_version",
+            "resolution_ref"
+          ],
+          "properties": {
+            "resolution_state": {
+              "const": "resolved"
+            },
+            "expected_conflict_revision": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "resolution_actor_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "approval_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "resolution_digest": {
+              "type": "string",
+              "pattern": "^[a-fA-F0-9]{64}$"
+            },
+            "resolution_kind": {
+              "type": "string",
+              "enum": [
+                "merged",
+                "selected_local",
+                "selected_remote",
+                "rejected"
+              ]
+            },
+            "resolution_policy_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "resolution_ref": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
     }
   }
 }

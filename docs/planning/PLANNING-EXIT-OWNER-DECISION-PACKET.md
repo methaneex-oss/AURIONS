@@ -16,7 +16,7 @@ The proposal defines AURIONS as a trainable AI system with an evolving cognitive
 
 **Owner decision: ACCEPTED — 2026-11-16.** The owner accepted PR-01…PR-20 as the first-release product baseline. This is not implementation or validation evidence.
 
-**Consequence:** The accepted PR-01…PR-20 baseline may be used by WP-15 as the product contract, subject to detailed D-02 synchronization contracts, D-04 command/query acceptance, external evidence gates and implementation authorization.
+**Consequence:** The accepted PR-01…PR-20 baseline may be used by WP-15 as the product contract, subject to D-02 field-classification/peer-trust/persistence/runtime gates, D-04 command/query acceptance, external evidence gates and implementation authorization.
 
 ### D-02 — Cloud/mobile cognitive-history continuity: OPTION B SELECTED
 
@@ -32,7 +32,7 @@ The proposal defines AURIONS as a trainable AI system with an evolving cognitive
 
 **Non-negotiable boundary in every option:** Device-local permissions, credentials, approval secrets and authority over local effects remain local. Shared contracts never grant cross-context authority.
 
-**Owner decision: OPTION B SELECTED — 2026-11-16.** Proceed with dual runtime and selective domain synchronization. Exact field-level allowlists, classification, conflict, deletion and recovery semantics remain required before sync implementation.
+**Owner decision: OPTION B SELECTED — 2026-11-16.** Proceed with dual runtime and selective domain synchronization. The builder has now recorded a default-deny field-path proposal, syncChange v2 and event-specific tombstone/conflict schemas, and SY-001…SY-015 design specifications. Owner/domain acceptance of exact field classifications and conditional paths, authenticated peer enrollment/revocation, durable sync persistence, runtime enforcement and executed target evidence remain required before sync implementation.
 
 ### D-03 — Select the first permitted Android local action
 
@@ -68,7 +68,7 @@ Each gate must be either passed or explicitly staged by the owner with a bounded
 
 The builder must finish the remaining repository-wide semantic audit, reconcile all artifacts to one exact HEAD, publish the final builder self-review and verify the full CI result. The independent reviewer must then review that exact HEAD, not a previous revision.
 
-The current planning branch is not yet declared planning-complete. The scenario specification increment and its CI run do not close runtime, target-platform, independent-review or owner-approval gates.
+The current planning branch is not yet declared planning-complete. The D-02 schema/15-SY specification increment and its preceding-base CI run do not close runtime, target-platform, independent-review or owner-approval gates.
 
 ## 4. Planning-exit authorization record
 

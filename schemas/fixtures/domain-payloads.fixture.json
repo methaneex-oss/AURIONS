@@ -391,19 +391,41 @@
   },
   "syncChange": {
     "change_id": "ae000000-0000-4000-8000-000000000001",
-    "domain": "fixture-domain",
-    "schema_version": "1.0",
+    "domain": "belief",
+    "schema_version": "2.0",
     "owner_id": "owner:primary",
-    "source_device_id": "71000000-0000-4000-8000-000000000001",
-    "aggregate_id": "fixture-aggregate",
-    "aggregate_version": 1,
-    "causal_parent_ids": [],
-    "created_at": "2026-11-11T08:00:08Z",
+    "aggregate_id": "belief:fixture:7",
+    "aggregate_version": 3,
+    "created_at": "2026-11-17T09:00:00Z",
     "payload_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "encrypted_payload_ref": "artifact:encrypted-fixture:1",
+    "encrypted_payload_ref": "ciphertext-ref:sync-change-fixture-1",
     "tombstone": false,
-    "retention_class": "fixture-only",
-    "idempotency_key": "fixture-sync-change-1"
+    "retention_class": "owner_private",
+    "retention_policy_version": "retention-policy:d02-v1",
+    "idempotency_key": "fixture-sync-change-1",
+    "base_aggregate_version": 2,
+    "source_runtime_id": "72000000-0000-4000-8000-000000000001",
+    "target_runtime_id": "72000000-0000-4000-8000-000000000002",
+    "source_sequence": 8,
+    "allowlist_version": "d02-cloud-mobile.v1",
+    "classification_policy_version": "d02-classification.v1",
+    "causal_parent_ids": [
+      "72000000-0000-4000-8000-000000000008"
+    ],
+    "field_paths": [
+      "belief_id",
+      "created_at",
+      "epistemic_status",
+      "knowledge_id",
+      "revision_id",
+      "revision_number"
+    ],
+    "authorization_ref": null,
+    "encryption_profile_id": "encryption-profile:design-placeholder",
+    "encryption_key_version_ref": "key-version-ref:fixture-only",
+    "signature_profile_id": "signature-profile:design-placeholder",
+    "signature_ref": "signature-ref:fixture-only",
+    "tombstone_metadata": null
   },
   "discoveryRequest": {
     "discovery_id": "af000000-0000-4000-8000-000000000001",
@@ -798,16 +820,26 @@
   "syncConflictRecord": {
     "conflict_id": "b0300000-0000-4000-8000-000000000001",
     "domain": "belief",
-    "aggregate_id": "belief:1",
-    "local_version_ref": "belief:revision:2",
-    "remote_version_ref": "belief:revision:3",
-    "causal_parent_refs": [
-      "belief:revision:1"
+    "owner_id": "owner:primary",
+    "aggregate_id": "belief:fixture:7",
+    "local_change_id": "ae000000-0000-4000-8000-000000000011",
+    "remote_change_id": "ae000000-0000-4000-8000-000000000012",
+    "common_base_version": 2,
+    "local_runtime_id": "72000000-0000-4000-8000-000000000001",
+    "remote_runtime_id": "72000000-0000-4000-8000-000000000002",
+    "local_aggregate_version": 3,
+    "remote_aggregate_version": 3,
+    "local_version_ref": "belief-revision:local:3",
+    "remote_version_ref": "belief-revision:remote:3",
+    "causal_parent_ids": [
+      "72000000-0000-4000-8000-000000000010"
     ],
+    "conflict_revision": 1,
     "conflict_kind": "concurrent_revision",
-    "resolution_state": "pending_owner",
-    "detected_at": "2026-11-11T08:04:00Z",
-    "resolution_ref": null
+    "resolution_state": "pending",
+    "detected_at": "2026-11-17T09:02:00Z",
+    "allowlist_version": "d02-cloud-mobile.v1",
+    "classification_policy_version": "d02-classification.v1"
   },
   "workerRequest": {
     "job_id": "b0400000-0000-4000-8000-000000000001",
@@ -1694,5 +1726,100 @@
     "disposition": "manual_review",
     "findings_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "assessed_at": "2026-11-16T19:20:00Z"
+  },
+  "syncTombstoneChange": {
+    "change_id": "ae000000-0000-4000-8000-000000000002",
+    "domain": "memory",
+    "schema_version": "2.0",
+    "owner_id": "owner:primary",
+    "aggregate_id": "memory:fixture:9",
+    "aggregate_version": 4,
+    "created_at": "2026-11-17T09:00:00Z",
+    "payload_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "encrypted_payload_ref": null,
+    "tombstone": true,
+    "retention_class": "owner_private",
+    "retention_policy_version": "retention-policy:d02-v1",
+    "idempotency_key": "fixture-sync-tombstone-1",
+    "base_aggregate_version": 3,
+    "source_runtime_id": "72000000-0000-4000-8000-000000000001",
+    "target_runtime_id": "72000000-0000-4000-8000-000000000002",
+    "source_sequence": 9,
+    "allowlist_version": "d02-cloud-mobile.v1",
+    "classification_policy_version": "d02-classification.v1",
+    "causal_parent_ids": [
+      "72000000-0000-4000-8000-000000000008"
+    ],
+    "field_paths": [],
+    "authorization_ref": null,
+    "encryption_profile_id": "encryption-profile:design-placeholder",
+    "encryption_key_version_ref": "key-version-ref:fixture-only",
+    "signature_profile_id": "signature-profile:design-placeholder",
+    "signature_ref": "signature-ref:fixture-only",
+    "tombstone_metadata": {
+      "deletion_id": "b0200000-0000-4000-8000-000000000002",
+      "deletion_revision": 4,
+      "deleted_at": "2026-11-17T09:01:00Z",
+      "retention_policy_version": "retention-policy:d02-v1",
+      "causal_parent_ids": [
+        "72000000-0000-4000-8000-000000000009"
+      ],
+      "authorization_ref": "owner-approval:deletion-fixture-1"
+    }
+  },
+  "syncConflictDetectedRecord": {
+    "conflict_id": "b0300000-0000-4000-8000-000000000001",
+    "domain": "belief",
+    "owner_id": "owner:primary",
+    "aggregate_id": "belief:fixture:7",
+    "local_change_id": "ae000000-0000-4000-8000-000000000011",
+    "remote_change_id": "ae000000-0000-4000-8000-000000000012",
+    "common_base_version": 2,
+    "local_runtime_id": "72000000-0000-4000-8000-000000000001",
+    "remote_runtime_id": "72000000-0000-4000-8000-000000000002",
+    "local_aggregate_version": 3,
+    "remote_aggregate_version": 3,
+    "local_version_ref": "belief-revision:local:3",
+    "remote_version_ref": "belief-revision:remote:3",
+    "causal_parent_ids": [
+      "72000000-0000-4000-8000-000000000010"
+    ],
+    "conflict_revision": 1,
+    "conflict_kind": "concurrent_revision",
+    "resolution_state": "pending",
+    "detected_at": "2026-11-17T09:02:00Z",
+    "allowlist_version": "d02-cloud-mobile.v1",
+    "classification_policy_version": "d02-classification.v1"
+  },
+  "syncConflictResolvedRecord": {
+    "conflict_id": "b0300000-0000-4000-8000-000000000001",
+    "domain": "belief",
+    "owner_id": "owner:primary",
+    "aggregate_id": "belief:fixture:7",
+    "local_change_id": "ae000000-0000-4000-8000-000000000011",
+    "remote_change_id": "ae000000-0000-4000-8000-000000000012",
+    "common_base_version": 2,
+    "local_runtime_id": "72000000-0000-4000-8000-000000000001",
+    "remote_runtime_id": "72000000-0000-4000-8000-000000000002",
+    "local_aggregate_version": 3,
+    "remote_aggregate_version": 3,
+    "local_version_ref": "belief-revision:local:3",
+    "remote_version_ref": "belief-revision:remote:3",
+    "causal_parent_ids": [
+      "72000000-0000-4000-8000-000000000010"
+    ],
+    "conflict_revision": 1,
+    "conflict_kind": "concurrent_revision",
+    "resolution_state": "resolved",
+    "detected_at": "2026-11-17T09:02:00Z",
+    "allowlist_version": "d02-cloud-mobile.v1",
+    "classification_policy_version": "d02-classification.v1",
+    "expected_conflict_revision": 1,
+    "resolution_actor_ref": "owner:authenticated-session:fixture",
+    "approval_ref": "approval:sync-conflict-resolution:fixture",
+    "resolution_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "resolution_kind": "merged",
+    "resolution_policy_version": "conflict-policy:d02-v1",
+    "resolution_ref": "belief-revision:resolved:4"
   }
 }
