@@ -150,22 +150,28 @@ The following 15 SY cases are the minimum first-release acceptance set. All are 
 
 Acceptance requires deterministic state assertions, event/outbox/inbox counts, restart/replay, concurrency and fault injection. A document-only scenario statement is not executed evidence.
 
-## 9. Required machine-contract changes before implementation
+## 9. Machine-contract status before implementation
 
-- Add syncChange v2 and syncConflictRecord v2 definitions; retain compatibility only through explicit version negotiation.
-- Add a versioned domain/field-path allowlist and a classification-policy registry. Do not encode arbitrary nested object fields as syncable.
-- Add runtime identity and peer-authentication bindings. Cloud/mobile runtime identity must not be inferred from a physical device ID.
-- Add exact payload digest/signature verification and authorization/retention policy version checks.
-- Add durable per-store sync inbox, export ledger, peer acknowledgement, aggregate checkpoint and tombstone propagation state, with local transaction boundaries and recovery invariants.
-- The five sync events and the deletion lifecycle events now have event-specific payload schemas/fixtures where applicable, and their `acceptance_scenario_refs` are derived from and match the 15 SY scenario steps.
-- Add negative fixtures for unknown fields, local-only field injection, owner/runtime mismatch, missing authorization, unknown allowlist/policy version, stale base revision, conflicting sibling changes, same-ID/different-digest replay and tombstone resurrection.
-- The 15 SY scenarios are now in the canonical machine corpus and exact inventory/step/negative-control/event-reference checks; CI validates specification structure only and does not prove synchronization behaviour.
-- Validate the design against the selected Android/Termux target and the cloud runtime. No database-file replication is permitted.
+The D-02 machine specification has advanced beyond the initial contract draft. The following artifacts are now specified and present:
+
+- The `syncChange` v2 envelope and `syncConflictRecord` definitions are present in `schemas/domain-payloads.v1.schema.json`. The event-specific `syncTombstoneChange`, `syncConflictDetectedRecord` and `syncConflictResolvedRecord` definitions and positive payload examples are also present.
+- The versioned default-deny field allowlist is present in `schemas/sync-field-allowlist.d02.v1.json` as `d02-cloud-mobile.v1`. It covers eight synchronized domains and lists default, conditional and excluded paths plus cross-domain local-only classes. It references `d02-classification.v1`; that version reference is not, by itself, a complete field-classification registry or owner acceptance.
+- The five synchronization events have payload-schema and fixture references. Their nonempty `acceptance_scenario_refs` match the SY scenario steps that emit them.
+- SY-001…SY-015 are present in `schemas/fixtures/scenario-contracts.fixture.json`. The complete corpus contains 63 specifications, 368 ordered steps and 89 scenario negative controls. The 15 SY scenarios each contain explicit negative controls and restart/replay, concurrency, fault and held-out controls.
+- The SY negative controls cover unlisted fields, local-only and unclassified data, overbroad authorization, owner/runtime mismatch, duplicate/digest mismatch, unknown policy versions, stale and concurrent revisions, tombstone replay/retention, conflict approval misbinding, model-reference activation and attempted authority transfer. They are behavioral test specifications, not executed tests. The separate schema-negative payload fixture set currently has only limited sync-specific coverage; static payload fixtures do not substitute for runtime authentication, replay or fault tests.
+
+The following work remains before implementation:
+
+- Complete the versioned field-classification policy and authoritative mapping for every eligible field path. Owner/domain acceptance is still required for conditional paths, exact SENSITIVE-field authorization and treatment of numeric sensitivity values that lack an authoritative named-class mapping. Missing or unknown classification remains deny-by-default.
+- Complete peer bootstrap, authenticated runtime enrollment, pairing and revocation, signature verification, cryptographic-profile selection and signing/encryption key lifecycle. The envelope carries identity and profile/key-version references; this does not prove those controls exist or work.
+- Define durable synchronization persistence and transaction ownership in the three independent stores. The current 20-file SQLite DDL chain has generic store-local outboxes, but it does not yet define the per-runtime sync inbox/idempotency receipts, export ledger, peer acknowledgements, causal-gap/checkpoint records, durable conflict state, tombstone frontier or backup/restore propagation state required here.
+- Implement and verify export projection, exact authorization/classification/retention checks, signature and digest validation, receiver admission, idempotent receipts, conflict handling, tombstone precedence and crash/replay recovery. No runtime handler or durable sync behavior is established by the schema fixtures.
+- Verify canonical serialization and digest parity across C++ and Python, then execute the SY fault, restart/replay, concurrency, deletion/restore and recovery cases against the cloud runtime and the selected Android/Termux SQLite target.
 
 ## 10. Closure boundary
 
 - D-02 Option B is owner-selected.
-- This document specifies a bounded builder-proposed first-release domain/field policy, authority boundary, causality, conflict, deletion, retention, replay and recovery semantics.
-- The current machine syncChange/syncConflictRecord schemas do not yet encode the required v2 fields. The five sync events have no command producers and currently have empty acceptance scenario references; their internal trigger definitions are present.
-- The canonical machine scenario corpus contains SY-001…SY-015 (63 scenarios, 368 steps, 89 scenario negative controls); each remains `specified_not_executed` with `execution_authority: none`.
-- Therefore D-02's topology and builder-proposed machine specification are recorded, but peer-trust/bootstrap implementation, durable sync persistence, runtime handlers, executed SY fault/recovery tests and cloud/Android target conformance remain IN PROGRESS. This document does not authorize implementation or change the owner-selected Option B scope.
+- This document specifies the bounded builder-proposed first-release domain/field policy, authority boundary, causality, conflict, deletion, retention, replay and recovery semantics.
+- The v2 change/conflict payload definitions, event-specific tombstone and conflict payload definitions, positive payload examples and versioned default-deny field allowlist are present in the machine-readable schema set.
+- The five sync events have nonempty acceptance-scenario references that match the SY-001…SY-015 machine scenario steps. The 15 SY scenarios remain `specified_not_executed` with `execution_authority: none`.
+- Durable per-runtime synchronization persistence, complete classification-policy authority, authenticated peer lifecycle/key management, runtime projection and receiver handlers, C++/Python conformance, executed SY fault/recovery tests and cloud/Android target conformance remain IN PROGRESS. This document does not authorize implementation or change the owner-selected D-02 Option B scope.
