@@ -45,7 +45,7 @@ CREATE TABLE dataset_source_authorizations (
 CREATE INDEX idx_dataset_authorizations_source
   ON dataset_source_authorizations(owner_ref,source_ref,source_content_sha256,created_at_ms DESC);
 CREATE INDEX idx_dataset_authorizations_scope
-  ON dataset_source_authorizations(owner_ref,model_family_ref,dataset_scope_ref,decision_state,valid_from_ms,expires_at_ms);
+  ON dataset_source_authorizations(owner_ref,model_family_ref,dataset_scope_ref,status,valid_from_ms,expires_at_ms);
 
 CREATE TRIGGER dataset_source_authorizations_no_update
 BEFORE UPDATE ON dataset_source_authorizations
