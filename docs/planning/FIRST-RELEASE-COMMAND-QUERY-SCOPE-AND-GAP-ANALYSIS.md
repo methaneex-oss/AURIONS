@@ -275,7 +275,7 @@ The owner-governed `approval.*` commands above may also support a separately app
 ### Internal maintenance, diagnostics and deferred entries
 
 - `context.invalidate` is internal context-lifecycle maintenance, not a public command.
-- `memory.retrieve` is not a separate public command in this proposal; provenance-aware retrieval is represented by `memory.search` unless an auditable state-changing retrieval workflow is proven necessary.
+- `memory.retrieve` is not a separate public command in this proposal; provenance-aware retrieval is represented by the P0 memory query unless an auditable state-changing retrieval workflow is proven necessary.
 - `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect` and `decision.inspect` are owner-scoped internal diagnostic queries, not part of the first-release user-facing query surface.
 
 `memory.search` is classified only as a P0 read-only query above; it is not an internal diagnostic entry.
