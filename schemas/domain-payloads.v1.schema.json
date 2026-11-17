@@ -2949,7 +2949,19 @@
         "proposal_id",
         "state",
         "artifact_ref",
-        "occurred_at"
+        "occurred_at",
+        "candidate_artifact_sha256",
+        "learning_update_id",
+        "experiment_id",
+        "attempt_id",
+        "learning_evaluation_id",
+        "learning_evaluation_ref",
+        "learning_evaluation_digest",
+        "evolution_evaluation_id",
+        "evolution_evaluation_ref",
+        "evolution_evaluation_digest",
+        "evaluation_status",
+        "evaluation_ref"
       ],
       "properties": {
         "candidate_id": {
@@ -2975,15 +2987,8 @@
           "minLength": 1
         },
         "evaluation_ref": {
-          "anyOf": [
-            {
-              "type": "string",
-              "minLength": 1
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "type": "string",
+          "minLength": 1
         },
         "approval_ref": {
           "anyOf": [
@@ -3053,6 +3058,33 @@
         "restored_artifact_ref": {
           "type": "string",
           "minLength": 1
+        },
+        "learning_update_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "experiment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "learning_evaluation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "evolution_evaluation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "evaluation_status": {
+          "enum": [
+            "passed",
+            "failed",
+            "inconclusive"
+          ]
         }
       }
     },
@@ -7250,6 +7282,9 @@
             "pointer_revision": {
               "type": "integer",
               "minimum": 1
+            },
+            "evaluation_status": {
+              "const": "passed"
             }
           },
           "required": [
@@ -7303,6 +7338,9 @@
             "pointer_revision": {
               "type": "integer",
               "minimum": 1
+            },
+            "evaluation_status": {
+              "const": "passed"
             }
           },
           "required": [
