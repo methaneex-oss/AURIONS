@@ -41,7 +41,7 @@ CREATE TABLE dataset_manifest_sources (
   authorization_record_digest TEXT NOT NULL CHECK(length(authorization_record_digest)=64 AND authorization_record_digest NOT GLOB '*[^0-9a-f]*'),
   license_or_terms_digest TEXT NOT NULL CHECK(length(license_or_terms_digest)=64 AND license_or_terms_digest NOT GLOB '*[^0-9a-f]*'),
   source_artifact_ref TEXT NOT NULL CHECK(length(source_artifact_ref)>0),
-  transformation_lineage_refs_json TEXT NOT NULL CHECK(json_valid(transformation_lineage_json) AND json_type(transformation_lineage_json)='array'),
+  transformation_lineage_refs_json TEXT NOT NULL CHECK(json_valid(transformation_lineage_refs_json) AND json_type(transformation_lineage_refs_json)='array'),
   owner_ref TEXT NOT NULL CHECK(length(owner_ref)>0),
   model_family_ref TEXT NOT NULL CHECK(length(model_family_ref)>0),
   PRIMARY KEY(manifest_id,source_ref)
