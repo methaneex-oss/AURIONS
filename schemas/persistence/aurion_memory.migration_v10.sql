@@ -98,7 +98,14 @@ WHEN NOT EXISTS (
 )
 BEGIN SELECT RAISE(ABORT,'sync_peer_acknowledgements.export_mismatch'); END;
 
-CREATE TRIGGER sync_export_events_ack_requires_receipt\nBEFORE INSERT ON sync_export_events\nWHEN NEW.state='acknowledged' AND NOT EXISTS (\n  SELECT 1 FROM sync_peer_acknowledgements a WHERE a.export_id=NEW.export_id\n)\nBEGIN SELECT RAISE(ABORT,'sync_export_events.acknowledgement_required'); END;\n\nCREATE TABLE sync_peer_checkpoints (
+CREATE TRIGGER sync_export_events_ack_requires_receipt
+BEFORE INSERT ON sync_export_events
+WHEN NEW.state='acknowledged' AND NOT EXISTS (
+  SELECT 1 FROM sync_peer_acknowledgements a WHERE a.export_id=NEW.export_id
+)
+BEGIN SELECT RAISE(ABORT,'sync_export_events.acknowledgement_required'); END;
+
+CREATE TABLE sync_peer_checkpoints (
   checkpoint_id BLOB PRIMARY KEY CHECK(length(checkpoint_id)=16),
   peer_runtime_id BLOB NOT NULL CHECK(length(peer_runtime_id)=16),
   stream_ref TEXT NOT NULL CHECK(length(stream_ref)>0),
