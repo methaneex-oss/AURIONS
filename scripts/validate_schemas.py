@@ -811,6 +811,14 @@ def main() -> int:
         path.read_text(encoding="utf-8") for path in catalogue_sources
     )
     catalogue_ids = set(re.findall(r"\b[A-Z]{2,4}-\d{3}\b", catalogue_text))
+    model_decision_text = (
+        ROOT / "docs/planning/MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md"
+    ).read_text(encoding="utf-8")
+    owner_decision_ids = set(re.findall(r"\bMD-\d{2}\b", model_decision_text))
+    work_package_text = (
+        ROOT / "docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md"
+    ).read_text(encoding="utf-8")
+    work_package_ids = set(re.findall(r"\bWP-\d{2}\b", work_package_text))
     source_scenario_sources = (
         ROOT / "docs/architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md",
         ROOT / "docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md",
@@ -866,6 +874,12 @@ def main() -> int:
                 event_type = reference.split(":", 1)[1]
                 if not event_type or event_type not in events:
                     fail(f"{scenario_id}: unknown event reference {event_type!r}")
+            elif reference.startswith("MD-"):
+                if reference not in owner_decision_ids:
+                    fail(f"{scenario_id}: unknown owner-decision reference {reference!r}")
+            elif reference.startswith("WP-"):
+                if reference not in work_package_ids:
+                    fail(f"{scenario_id}: unknown work-package reference {reference!r}")
             elif reference in command_types or reference in query_types or reference in events:
                 continue
             elif reference.startswith("catalogue:"):
