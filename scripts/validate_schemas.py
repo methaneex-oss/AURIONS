@@ -1301,7 +1301,7 @@ def main() -> int:
         schema_refs = rule.get("schema_refs", [])
         if not schema_refs:
             fail(f"D-02 {domain_name}: missing source payload schema references")
-        source_properties = set()
+        source_definitions = []
         for schema_ref in schema_refs:
             if "#/$defs/" not in schema_ref:
                 fail(f"D-02 {domain_name}: invalid source schema reference {schema_ref!r}")
@@ -1310,20 +1310,64 @@ def main() -> int:
             source_schema = allowed_source_schemas.get(filename)
             if source_schema is None or definition_name not in source_schema.get("$defs", {}):
                 fail(f"D-02 {domain_name}: unresolved source schema reference {schema_ref!r}")
-            source_properties.update(
-                source_schema["$defs"][definition_name].get("properties", {}).keys()
-            )
+            source_definitions.append((source_schema, definition_name))
+
+        def resolve_sync_schema_node(node, source_schema):
+            seen_refs = set()
+            while isinstance(node, dict) and "$ref" in node:
+                reference = node["$ref"]
+                if not reference.startswith("#/$defs/"):
+                    return None
+                referenced_name = reference[len("#/$defs/"):]
+                if referenced_name in seen_refs:
+                    return None
+                seen_refs.add(referenced_name)
+                node = source_schema.get("$defs", {}).get(referenced_name)
+                if node is None:
+                    return None
+            return node
+
+        def has_exact_typed_sync_path(source_schema, definition_name, field_path):
+            node = source_schema["$defs"][definition_name]
+            parts = field_path.split(".")
+            for part in parts:
+                node = resolve_sync_schema_node(node, source_schema)
+                if not isinstance(node, dict):
+                    return False
+                properties = node.get("properties", {})
+                if part not in properties:
+                    return False
+                node = properties[part]
+            node = resolve_sync_schema_node(node, source_schema)
+            if not isinstance(node, dict):
+                return False
+            field_type = node.get("type")
+            field_types = set(field_type) if isinstance(field_type, list) else {field_type}
+            if "object" in field_types:
+                return False
+            if field_type is None and ("properties" in node or node.get("additionalProperties") is True):
+                return False
+            for variant_key in ("oneOf", "anyOf", "allOf"):
+                variants = node.get(variant_key, [])
+                if any(isinstance(variant, dict) and variant.get("type") == "object" for variant in variants):
+                    return False
+            return True
+
         for path_group in ("default_paths", "conditional_paths"):
             for field_path in rule.get(path_group, []):
-                root_field = field_path.split(".", 1)[0]
-                if root_field not in source_properties:
-                    fail(f"D-02 {domain_name}: {field_path!r} has no source payload property")
+                if "*" in field_path:
+                    fail(f"D-02 {domain_name}: wildcard path {field_path!r} is not an exact field allowlist entry")
+                if not any(
+                    has_exact_typed_sync_path(source_schema, definition_name, field_path)
+                    for source_schema, definition_name in source_definitions
+                ):
+                    fail(f"D-02 {domain_name}: {field_path!r} is not an exact typed source-schema path")
         for path_group in ("default_paths", "conditional_paths", "excluded_paths", "schema_refs"):
             paths = rule.get(path_group, [])
             if paths != sorted(set(paths)):
                 fail(f"D-02 {domain_name}.{path_group} must be sorted and unique")
-            if any("*" in path and not path.endswith(".*") for path in paths):
-                fail(f"D-02 {domain_name}.{path_group} has an invalid wildcard path")
+            if any("*" in path for path in paths):
+                fail(f"D-02 {domain_name}.{path_group} must not contain wildcard paths")
         excluded = set(rule.get("excluded_paths", []))
         if excluded.intersection(rule.get("default_paths", [])):
             fail(f"D-02 {domain_name}: an excluded path is also default-allowlisted")
@@ -1353,10 +1397,8 @@ def main() -> int:
     allowed = set(sync_domains[sync_change["domain"]]["default_paths"])
     conditional = set(sync_domains[sync_change["domain"]]["conditional_paths"])
     def path_allowed(path, paths):
-        return path in paths or any(
-            item.endswith(".*") and path.startswith(item[:-1])
-            for item in paths
-        )
+        # Conditional authorization is exact-path only; wildcard expansion is forbidden.
+        return path in paths
     unknown_paths = [
         path for path in sync_change["field_paths"]
         if not path_allowed(path, allowed)
