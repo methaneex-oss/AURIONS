@@ -862,6 +862,10 @@ def main() -> int:
                 payload_name = reference.split(":", 1)[1]
                 if payload_name not in domain_payload_defs | world_payload_defs:
                     fail(f"{scenario_id}: unknown payload reference {payload_name}")
+            elif reference.startswith("event:"):
+                event_type = reference.split(":", 1)[1]
+                if not event_type or event_type not in events:
+                    fail(f"{scenario_id}: unknown event reference {event_type!r}")
             elif reference in command_types or reference in query_types or reference in events:
                 continue
             elif reference.startswith("catalogue:"):
