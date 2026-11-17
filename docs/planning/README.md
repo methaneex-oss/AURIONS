@@ -14,7 +14,8 @@ This directory contains the canonical planning mirror, technical contracts, owne
 ## Product, architecture and roadmap
 
 - [First Usable Release Definition](../product/FIRST-USABLE-RELEASE-DEFINITION.md) — owner-accepted PR-01…PR-20 first-release baseline (2026-11-16).
-- [Cloud and Offline-Mobile Runtime Topology Decision](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md) — records D-02 Option B selected; detailed selective-sync contracts remain in progress.
+- [Cloud and Offline-Mobile Runtime Topology Decision](../architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md) — records D-02 Option B selected.
+- [Cloud/Mobile Selective Synchronization Contract](../architecture/CLOUD-MOBILE-SELECTIVE-SYNC-CONTRACT.md) — bounded field allowlists, local-only classes, causal revisions, conflicts, deletion/retention, offline replay and the machine/runtime gaps for D-02.
 - [Canonical Implementation Roadmap](CANONICAL-IMPLEMENTATION-ROADMAP.md) — WP-00…WP-16 sequence and dependency boundaries.
 - [Work-Package Traceability and Exit Matrix](WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md) — owners, inputs/outputs, acceptance, recovery evidence and external gates.
 - [First-Release Acceptance Traceability Matrix](FIRST-RELEASE-ACCEPTANCE-TRACEABILITY-MATRIX.md) — traces PR-01…PR-20 to contracts, work packages, scenarios and evidence.

@@ -1,6 +1,6 @@
 # AURIONS — Cloud and Offline-Mobile Runtime Topology Decision
 
-- **Status:** Owner selected Option B on 2026-11-16; detailed synchronization contracts remain IN PROGRESS.
+- **Status:** Owner selected Option B on 2026-11-16; the bounded builder-proposed synchronization semantics are specified in [Cloud/Mobile Selective Synchronization Contract](CLOUD-MOBILE-SELECTIVE-SYNC-CONTRACT.md). Machine schemas, SY scenarios and executable acceptance remain IN PROGRESS.
 - **Decision authority:** Builder owns the technical topology proposal. Owner approval is required only if the selected topology changes the product's cross-context continuity or first-release synchronization scope. This document does not reinterpret the approved deployment direction.
 - **Related owner decision:** Cloud operation and offline-capable mobile operation are concurrent first-release targets. Offline mobile must remain functional without cloud availability. Both contexts use shared versioned contracts and the authoritative cognitive-core implementation.
 - **Scope clarification:** D-02 selects bounded cloud/mobile selective synchronization for first release. General multi-device synchronization and seamless handoff remain excluded; this decision supersedes earlier no-sync wording in the product proposal.
@@ -66,8 +66,12 @@ Under selected Option B, first-release acceptance must prove:
 
 Product acceptance PR-15 through PR-18 applies. Option B additionally requires executable SY tests for each synchronized aggregate/domain. These tests must prove allowlist enforcement; local-only data and authority rejection; idempotent outbox delivery and replay; causal revision handling and explicit conflicts; deletion tombstones and retention; offline queuing/reconciliation; and crash/restart recovery.
 
-## 7. Current disposition
+## 7. Detailed synchronization contract
 
-**OWNER DECISION: OPTION B SELECTED — 2026-11-16.** WP-15 must include bounded selective synchronization. Exact field-level allowlists, local-only classes, version/causality metadata, conflicts, deletion, offline replay, idempotency, retention, crash recovery and executable SY cases remain pre-implementation gates.
+The bounded field-level allowlist, classification rules, local-only classes, runtime identity, causal revisions, conflicts, tombstone/deletion propagation, retention, offline replay and recovery semantics are specified in the [Cloud/Mobile Selective Synchronization Contract](CLOUD-MOBILE-SELECTIVE-SYNC-CONTRACT.md). This is a builder technical proposal within selected Option B, not an additional owner decision.
+
+## 8. Current disposition
+
+**OWNER DECISION: OPTION B SELECTED — 2026-11-16.** WP-15 must include bounded selective synchronization. The detailed builder proposal now defines those semantics. Remaining pre-implementation gates are the syncChange/syncConflictRecord v2 machine schemas, versioned allowlist/classification registry, durable sync inbox/export/ack/checkpoint/tombstone persistence, exact event-to-SY scenario bindings, 15 machine-readable SY scenarios, and executable target-runtime fault/recovery evidence.
 
 The selected topology is resolved at the option level. WP-15's detailed state-continuity contracts are not yet implementation-ready. This does not authorize implementation.
