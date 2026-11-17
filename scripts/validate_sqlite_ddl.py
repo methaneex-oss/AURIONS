@@ -730,10 +730,12 @@ def test_memory() -> None:
     db.execute(
         """INSERT INTO dataset_manifests
         (manifest_id,schema_version,owner_ref,model_family_ref,training_purpose,
-         model_generation_ref,tokenizer_artifact_ref,manifest_artifact_ref,manifest_digest,
-         rights_policy_snapshot_ref,rights_policy_snapshot_digest,authorization_evaluated_at_ms,
-         created_at_ms)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+         model_generation_ref,tokenizer_artifact_ref,manifest_artifact_ref,preprocessing_pipeline_ref,
+         preprocessing_config_digest,deduplication_report_ref,quality_report_ref,
+         language_domain_classification_ref,curriculum_config_ref,curriculum_config_digest,
+         rights_policy_snapshot_ref,rights_policy_snapshot_digest,manifest_digest,lifecycle,
+         derived_artifact_refs_json,authorization_evaluated_at_ms,created_at_ms)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (bad_manifest,"1.0","owner-dataset","model-family","foundation_pretraining",
          "generation-1","artifact:tokenizer","artifact:manifest:bad","pipeline:v1","1"*64,
          "dedup:v1","quality:v1","language:v1","curriculum:v1","2"*64,
@@ -743,7 +745,7 @@ def test_memory() -> None:
         """INSERT INTO dataset_manifest_sources
         (manifest_id,source_ref,source_content_sha256,authorization_id,
          authorization_record_digest,license_or_terms_digest,source_artifact_ref,
-         transformation_lineage_json,owner_ref,model_family_ref)
+         transformation_lineage_refs_json,owner_ref,model_family_ref)
         VALUES (?,?,?,?,?,?,?,?,?,?)""",
         (bad_manifest,"source:bad","3"*64,bytes([35])*16,"4"*64,"5"*64,
          "artifact:source:bad","[]","owner-dataset","model-family"),
