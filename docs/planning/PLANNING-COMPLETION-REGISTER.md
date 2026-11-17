@@ -883,3 +883,22 @@ The preceding D-02 CI attempt ([run 44043226423](https://github.com/methaneex-os
 The selective-sync contract and topology decision were reconciled to distinguish present machine specifications from remaining implementation gates. The versioned allowlist, v2 change/conflict/tombstone payload definitions, five event-to-SY acceptance bindings and SY-001…SY-015 design cases are present. The twenty-file DDL chain contains generic local outboxes, but no dedicated per-runtime sync inbox/receipt, export ledger, peer-acknowledgement, causal-gap/checkpoint, conflict, tombstone-frontier or restore-propagation persistence. Peer trust/key lifecycle, runtime handlers, C++/Python canonicalization conformance and executed cloud/Android fault-recovery acceptance remain open.
 
 The exact-head validation cited above is for `b010d378`. The subsequent documentation-only topology reconciliation at `0132b655` is a distinct branch revision and requires its own automatic PR validation. All SY cases remain `specified_not_executed` with `execution_authority: none`; no implementation, dispatch, training, planning exit or merge authority is inferred.
+
+## 2026-11-17 builder continuation — D-02 persistence ownership and documentation reconciliation
+
+The builder reconciled the latest machine-contract evidence against the persistence and model-lifecycle documentation. This continuation remains planning/schema-contract work only.
+
+### Completed
+
+- Corrected `schemas/persistence/README.md`: it now cites the latest successful full schema/DDL workflow for the unchanged machine-contract baseline, removes a literal template placeholder, and distinguishes host SQLite validation from target/runtime evidence.
+- Corrected `docs/planning/PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md`: it records the schema-valid negative UUIDv5 candidate-ID mismatch fixture and both canonical RFC 8785/SHA-256 activation/rollback digest vectors as present and host-validated. Runtime recomputation and authenticated owner-approval verification remain open.
+- Expanded the D-02 selective-sync contract and store-local saga matrix with a builder-proposed ownership allocation for durable transport state. The memory store owns export history, inbox receipts, quarantine evidence, peer acknowledgements, causal-gap events, conflicts/resolutions, tombstones/peer receipts and restore-frontier events. The generic memory outbox remains distinct from peer export tracking; the events store remains the archive/recovery coordinator; governance remains authoritative for owner authorization and any future peer-trust decisions. No cross-file foreign keys, key material replication or distributed ACID transaction is proposed.
+
+### Evidence and remaining work
+
+- Latest successful full schema/DDL workflow for the unchanged machine-contract inputs: [44101385804](https://github.com/methaneex-oss/AURIONS/actions/runs/44101385804), on `096daf6727534a1943816fbcca67c526a42e3c27`. It passed all nine steps and executed the then-current twenty-file DDL chain on host SQLite 3.46.1, including candidate identity/digest fixture checks and Governance v5/Memory v9 invariants.
+- The subsequent documentation-only commits `2c68ee629e525ca2c07fddf461e1e4cb396c2610`, `c1168db3bf94bb76f3fd67475b45c400cc4d2538`, `a56713eaab7bb26bfbeb383fa68a2ce384a73142` and `3d33da7238180a1b5b11fdf279db78abdf9a15d3` do not change schemas, fixtures, DDL or workflow code. No workflow run is currently recorded for those documentation-only commits; run 44101385804 is not described as exact-current-head CI.
+- **Still builder-owned:** add the dedicated memory-store D-02 synchronization persistence migration and host smoke invariants, then reconcile the ordered migration count and validation documentation. The current twenty-file DDL chain does not yet contain the proposed sync tables.
+- **Still open:** runtime export/receiver handlers, authenticated peer enrollment and key lifecycle, owner/domain acceptance of conditional field classifications, C++/Python canonicalization parity, SY execution, crash/replay/concurrency/restore tests and cloud/Android/Termux target validation.
+
+PR #2 remains open, draft and unmerged. No runtime implementation, training, command dispatch, candidate activation, planning exit or merge authority is inferred.
