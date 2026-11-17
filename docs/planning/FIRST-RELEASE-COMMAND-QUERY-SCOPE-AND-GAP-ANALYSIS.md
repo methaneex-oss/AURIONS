@@ -286,13 +286,13 @@ The above classification accounts for the complete current registry without maki
 
 All registry entries remain `design_only_not_dispatchable` until their own implementation and verification gates pass. Registry inclusion, P0 classification or owner approval of D-04 does not itself enable dispatch.
 
-### Required before D-04 can be accepted
+### Remaining technical gates before any classified entry can become dispatch-ready
 
 1. Verify the complete 54-command/29-query classification against the registry at the final planning HEAD; preserve the counts and explicit disposition of every identifier.
 2. Map every P0 entry to its aggregate, store, event, command/query semantics and acceptance scenario.
 3. Complete the PR-19/PR-20 candidate lifecycle crosswalk: learning experiment artifact → candidate/evolution proposal identifiers → held-out evaluation → exact owner approval → activation → verified rollback. Do not assume the generic evolution IDs or approval digest bind correctly until proven by schemas and executable cases.
 4. Complete per-entry positive/negative, owner-isolation, idempotency, concurrency, crash/recovery and resource-bound tests for all P0 commands.
 5. Reconcile P0/P1 query privacy/redaction, cursor/snapshot semantics, limits and freshness against actual handlers; add executable positive/negative read-only tests.
-6. Obtain owner acceptance of this exact classification. Until then, all registry entries remain `design_only_not_dispatchable`.
+6. Preserve `design_only_not_dispatchable` for every registry entry until its own implementation and verification gates pass; scope acceptance alone never enables dispatch.
 
-**Builder recommendation:** accept the P0 public, internal cognitive-cycle and owner-governed lifecycle subsets after the six checks above; keep P1 conditional, internal diagnostics/maintenance non-public, and the two device-pairing entries deferred. This retains the full cognitive loop and the bounded trainable-model path without turning the entire registry into an enabled API.
+**Builder recommendation and owner disposition (2026-11-17): ACCEPTED.** The owner accepted this exact classification on the builder's recommendation: P0 public, internal cognitive-cycle and owner-governed lifecycle subsets; P1 conditional; internal diagnostics/maintenance non-public; and the two device-pairing entries deferred. The six technical gates above remain mandatory before affected entries can become dispatch-ready. Acceptance does not make any entry dispatchable or authorize implementation, Android action, training, candidate activation or governance operations.
