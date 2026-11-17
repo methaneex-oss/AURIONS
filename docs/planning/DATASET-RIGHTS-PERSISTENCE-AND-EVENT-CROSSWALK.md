@@ -1,8 +1,8 @@
 # AURIONS — Dataset Rights Persistence and Trusted-Event Crosswalk
 
-- **Status:** Builder technical contract integrated into schemas, event registry/matrices, proposed governance v5 and memory v9 migrations, and INT-004. Runtime enforcement and host execution of the two new migrations remain unverified.
+- **Status:** Builder technical contract integrated into schemas, event registry/matrices, governance v5 and memory v9 migrations, and INT-004. Exact-head host SQLite execution passed in run 44035128973; runtime enforcement and target-device/cross-store fault validation remain open.
 - **Authority:** MD-16 in [Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md); normative model requirements in [Initial Engineering Specification §27](INITIAL-ENGINEERING-SPECIFICATION.md).
-- **Current machine baseline:** Source authorization and manifest schemas, five event-specific payload schemas, positive fixtures, eleven dataset-rights negative controls, validator cross-binding, five registered events, both event matrices and INT-004 are present. Governance v5 and memory v9 DDL contracts and SQLite smoke assertions are added; execution of the new migrations remains pending.
+- **Current machine baseline:** Source authorization and manifest schemas, five event-specific payload schemas, positive fixtures, eleven dataset-rights negative controls, validator cross-binding, five registered events, both event matrices and INT-004 are present. Governance v5 and memory v9 DDL contracts and SQLite smoke assertions passed exact-head run 44035128973 (20 ordered DDL files, host SQLite 3.46.1).
 - **Boundary:** No new public commands, dispatch permission, corpus-ingestion permission, worker execution, training, model activation, implementation authorization or planning-exit approval is created here.
 
 ## 1. Authority and storage boundaries
@@ -72,9 +72,9 @@ Authorization IDs are references into governance storage and deliberately have n
 
 Proposed logical record: `dataset_revocation_impacts`, owned by memory because it describes the effect on memory-owned dataset and model artifacts. It binds an exact revocation ID/digest to the affected manifest, experiment, attempt, checkpoint, candidate/evaluation artifact references, observed influence, uncertainty, disposition and evidence. Historical manifests and experiment records are not rewritten.
 
-## 4. Trusted internal event proposal
+## 4. Registered trusted internal event contracts
 
-These are event proposals, not public commands. The existing generic `approval.request`, `approval.decide` and `approval.revoke` governance path remains the owner-facing decision surface where an owner decision is required. No `dataset.authorize`, `dataset.revoke` or other new public command is introduced by this design.
+The five event definitions below are registered as design-only/non-dispatchable trusted internal events. They are not public commands. The existing generic `approval.request`, `approval.decide` and `approval.revoke` governance path remains the owner-facing decision surface where an owner decision is required. No `dataset.authorize`, `dataset.revoke` or other new public command is introduced by this design.
 
 | Proposed event | Trusted producer | Owning store | Required transition |
 |---|---|---|---|
@@ -84,18 +84,9 @@ These are event proposals, not public commands. The existing generic `approval.r
 | `dataset.admission.blocked.v1` | Learning/worker supervisor at pre-dispatch revalidation | Memory or worker-owned store according to the actual admission aggregate | Record exact manifest/source/authorization mismatch and deny dispatch; never ask the worker to decide rights |
 | `dataset.revocation.impact.assessed.v1` | Trusted revocation-impact coordinator after required owning-store findings are reconciled | Events coordinator, with memory-owned impact evidence | Record affected artifacts, uncertainty and governed disposition; do not claim automatic removal from model weights |
 
-Before adding these event types to `event-registry.v1.json`, reconcile each event with all of the following:
+The five dataset-rights events are already reconciled across payload schemas/fixtures, event-registry entries, producer/consumer rows, ingress-trigger rows and integrated scenario INT-004. The exact-head validator checks the 94-event registry against the producer/consumer matrix and checks the 27 non-Action-Gateway non-command triggers against the ingress matrix. The current inventory is 94 events: 52 have exact command-producer bindings; 42 have no command producer binding (15 Action Gateway lifecycle transitions and 27 other trusted/internal triggers). All 94 remain design-only/non-dispatchable. This is structural reconciliation, not independent semantic acceptance or runtime validation.
 
-1. Event payload schema and positive/negative fixture.
-2. Exact `producer_origin`, owning component/store, trigger contract and consumer contracts.
-3. Event Producer/Consumer Semantics Matrix row.
-4. Event Ingress and Internal Producer Trigger Matrix row.
-5. Store-local outbox and cross-store saga matrix.
-6. Event-registry summary counts and validator invariants.
-7. Acceptance scenario references, including denied/expired/revoked grants, admission denial and revocation impact.
-8. Idempotency, causal ordering, crash/replay, poison-event handling and recovery behavior.
-
-The event registry currently has 89 design-only events and the ingress matrix accounts for 37 events without command producers. Adding these five proposals changes those inventories and all derived counts; do not add only the registry entries and leave the matrices/validator stale.
+Before runtime implementation, preserve and test for every event: payload schema and fixture; exact producer origin, owning store, trigger and consumer; producer/consumer and ingress matrix parity; outbox/saga semantics; idempotency and causal ordering; and crash/replay, poison-event and recovery behavior. Independent semantic review and owner acceptance of the 42 non-command trigger specifications remain outstanding.
 
 ## 5. Revocation sequence and fail-closed behavior
 
@@ -118,7 +109,7 @@ The schema/event contract and persistence design stages have now been encoded in
 3. **DDL added:** governance migration v5 defines immutable authorization versions, append-only revocation evidence and use of the governance-local outbox.
 4. **DDL added:** memory migration v9 defines sealed manifests, source membership/exclusions/splits and derived-artifact impact lineage with memory-local outbox enforcement.
 5. **No events migration added:** the existing events-store operation/step/recovery schema already represents the saga operation, ordered steps and recovery journal; add an events migration only if later tests identify a concrete missing durable field/table.
-6. **Tests added, not yet run:** SQL positive/negative invariants are added to the host DDL smoke script. Execute them before accepting these migrations; cross-store crash/replay tests and target-device compatibility evidence remain open.
+6. **Host SQLite smoke executed:** exact-head PR run [44035128973](https://github.com/methaneex-oss/AURIONS/actions/runs/44035128973) on commit `99552edca1bc6174d7ec76ee75b03bdd2ca15caa` passed all nine workflow steps and executed the complete 20-file three-store DDL chain on host SQLite 3.46.1, including governance v5 and memory v9 dataset-rights assertions. Cross-store crash/replay, target-device compatibility and runtime-handler evidence remain open.
 
 Required negative tests include unknown rights, denied/expired/revoked authorization, changed source or terms digest, purpose/owner/model-scope mismatch, private data without evidence, manifest tampering, worker source expansion, duplicate source identity with different bytes, replay after revocation and attempted resurrection from backup/sync.
 
@@ -127,7 +118,7 @@ Required negative tests include unknown rights, denied/expired/revoked authoriza
 - **Owner decision MD-16:** recorded and closed.
 - **Payload schema/fixtures:** initial machine definitions and positive/negative validation coverage are present.
 - **Activation/rollback lifecycle events:** state-specific payload schemas are present and event-registry bindings are updated.
-- **Persistence:** governance v5 and memory v9 DDL contracts are present; exact-head host execution is pending.
+- **Persistence:** governance v5 and memory v9 DDL contracts passed exact-head host SQLite execution in run 44035128973; target Android/Termux behavior, cross-store crash/replay and runtime enforcement remain unverified.
 - **Trusted dataset-rights events:** five events are registered and reconciled across both event matrices and INT-004.
 - **Runtime:** no source authorization, dataset sealing, worker admission or revocation-impact handler is implemented or validated.
 - **Dispatch/training:** all registries remain design-only/non-dispatchable; no corpus ingestion or training is authorized by this document.
