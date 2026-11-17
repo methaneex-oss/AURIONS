@@ -6525,7 +6525,8 @@
         "baseline_artifact_sha256",
         "dataset_manifest_sha256",
         "evaluation_protocol_sha256",
-        "report_digest"
+        "report_digest",
+        "report_artifact_ref"
       ],
       "properties": {
         "evaluation_id": {
@@ -6604,6 +6605,10 @@
         "report_digest": {
           "type": "string",
           "pattern": "^[a-f0-9]{64}$"
+        },
+        "report_artifact_ref": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },
