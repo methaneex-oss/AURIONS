@@ -15,7 +15,7 @@ Current branch inventory:
 - 94 event entries: each has a payload-schema and fixture reference; all remain design-only/non-dispatchable.
 - 52 mapped commands have unique CC-001…CC-052 positive/negative acceptance assertions.
 - 29 queries have unique QCC-001…QCC-029 positive/negative assertions and explicit read-only invariants.
-- 103 reusable domain-payload schema definitions, 95 named positive domain fixtures and 46 negative controls are present in the current source corpus. Event, command and query schema/fixture reference checks are enforced in CI.
+- 103 reusable domain-payload schema definitions, 95 named positive domain fixtures and 48 negative controls are present in the current source corpus. The D-04 owner-accepted command/query scope registry is also machine-readable and its exact membership is checked against the live command/query registry in CI.
 
 These are design and structural-integrity facts. They do not establish runtime handler/consumer correctness, executable cognitive scenarios, target-platform behaviour, security enforcement or production readiness.
 
@@ -73,10 +73,10 @@ The event registry now contains 94 entries. All new events remain design-only/no
 These are not builder choices:
 - The primary model is AURIONS-owned and intended to start from randomly initialized parameters; pretrained third-party weights or a hosted commercial LLM are not the system's brain. Model architecture, size, tokenizer, training objective and data/compute choices remain engineering design and feasibility work.
 - First permitted Android action/capability remains owner-reserved.
-- D-02 Option B was selected on 2026-11-16: the first release includes bounded selective synchronization between the cloud and offline-mobile runtimes. The builder-proposed default-deny field-path allowlist, v2 change/conflict/tombstone schemas and 15 machine-readable SY specifications are now recorded. Owner/domain field-classification acceptance, secure runtime/device enrollment and revocation, sync-specific persistence, runtime enforcement and executed target evidence remain open; unrestricted replication and cross-context authority transfer are not approved.
+- D-02 Option B was selected on 2026-11-16: the first release includes bounded selective synchronization between the cloud and offline-mobile runtimes. The builder-proposed default-deny field-path allowlist, v2 change/conflict/tombstone schemas, Memory v10 transport persistence and 15 machine-readable SY specifications are recorded. The exact field paths/conditions remain `builder_proposal_not_owner_accepted`; all D-02 domain export remains disabled until owner acceptance. Secure runtime/device enrollment and revocation, runtime enforcement, C++/Python conformance and executed target evidence remain open; unrestricted replication and cross-context authority transfer are not approved.
 - Target Android device selection and empirical Termux/SQLite/permission/lifecycle/resource evidence remain outstanding.
 - Cloud key provider, recovery custodian and production recovery policy remain unselected.
-- The first-release command/query subset remains a builder proposal pending owner acceptance.
+- D-04: the owner accepted the exact §12 command/query scope on 2026-11-17 (27/14/9/2/2 command groups and 18/6/5 query groups). The machine-readable scope registry is exhaustive against all 54 command and 29 query records. Acceptance is scope-only; every mapped command and all queries remain design-only/non-dispatchable, and two device commands remain deferred.
 - The general `device.pair` and `device.revoke` registry commands remain deferred. This does not remove the D-02 prerequisite for a secure, owner-authorized runtime/device enrollment and revocation mechanism; an explicit bootstrap contract or equivalent must be designed and tested before selective synchronization is implemented.
 
 ## 6. Evidence and remaining BR-008 work
@@ -137,3 +137,10 @@ The current integrated scenario corpus contains **63 specifications**: INT-001�
 The 42 events without command producers remain intentionally non-command events: 15 Action Gateway state-transition events and 27 other trusted-ingress/internal producer events. This is a trigger-origin classification, not a missing-command defect and not a reason to invent public commands.
 
 **Evidence boundary:** The scenario fixture and event-reference consistency are machine-checkable specifications. They do not execute runtime behaviour. Event consumer semantics, cross-store saga behaviour, target SQLite/Android validation, C++ conformance, independent review and owner decisions remain separate gates. The current revision must pass CI before the new fixture increment is considered validated.
+
+
+## 7. Current exact-head verification and authority status — 2026-11-17
+
+- Exact PR #2 head `d1212cdb919bebfc977da6a1c14b3beef09388fe` passed all nine automatic workflow steps in [run 44182835494](https://github.com/methaneex-oss/AURIONS/actions/runs/44182835494). The run passed 10 Draft 2020-12 schemas, 9 paired registry/fixture checks, 95 positive domain payloads, 48 schema-negative controls, one semantic candidate-ID mismatch control, two candidate-operation digest vectors, 35 recovery assertions, governance checks, 17 work packages/62 dependency edges, the 21-file SQLite 3.46.1 chain including Memory v10 and Android probe shell syntax.
+- D-04 exact scope is owner-accepted and CI-enforced; it grants no dispatch authority. D-02 Option B is owner-selected but its detailed field allowlist is not accepted and no domain export is enabled. D-03 remains staged.
+- No independent review has been submitted against this PR head; the historical re-review does not cover it. Planning exit and implementation authorization remain unapproved. Runtime, target-platform, C++/Python, security and executed scenario evidence remain open.
