@@ -647,7 +647,6 @@ def test_memory() -> None:
 
     validate_query_projection_source_columns("aurion_memory.db", db)
     check_database("memory smoke insert", db)
-    db.close()
 
 
     require_columns(db, "dataset_manifests", {
@@ -771,6 +770,9 @@ def test_memory() -> None:
         (bytes([36])*16,bad_manifest,"owner-dataset","model-family","foundation_pretraining",
          "admitted",None,bytes([35])*16,"policy:v1","job:bad","[]",16),
     )
+    db.commit()
+    check_database("memory dataset-rights smoke insert", db)
+    db.close()
 
 
 def test_events() -> None:
