@@ -1760,6 +1760,8 @@ def main() -> int:
         "worker-result-missing-attempt.invalid.json": ("domain-payloads.v1.schema.json", "workerResult"),
         "learning-evaluation-missing-lineage.invalid.json": ("domain-payloads.v1.schema.json", "learningCandidateEvaluationRequest"),
         "candidate-activation-missing-approval.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActionRequest"),
+        "candidate-activated-evaluation-not-passed.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActivated"),
+        "candidate-rolled-back-evaluation-not-passed.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateRolledBack"),
         "candidate-rollback-missing-reference.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActionRequest"),
         "candidate-activated-missing-evaluation.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActivated"),
         "candidate-rolled-back-missing-restore-digest.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateRolledBack"),
