@@ -928,3 +928,11 @@ PR #2 remains open, draft and unmerged. No runtime implementation, training, com
 - Owner gates still requiring explicit disposition: D-02 exact nested field-path classifications/conditional rules; D-04 exact §12 command/query classification; external evidence staging and restrictions; and planning-exit approval after independent review of the exact final PR head.
 - Proposed first implementation milestone for owner consideration only: M0 WP-00 + WP-01 (repository/build foundation and shared contract/schema baseline), excluding runtime dispatch, Android action, sync runtime, training, activation and production key custody. This is not implementation authorization.
 - PR #2 remains draft/open/unmerged. No dispatch, training, candidate activation, implementation authorization or merge is inferred.
+
+
+## 2026-11-17 owner decision — D-04 accepted
+
+- **D-04 — First-release command/query subset: OWNER ACCEPTED.** On 2026-11-17 the owner accepted the exact §12 classification on the builder's recommendation, without changes: 27 P0 public/owner-facing commands; 14 P0 internal/protected commands; 9 conditional P1 commands; 2 internal maintenance/optional commands; 2 deferred commands; and 29 queries (18 P0 read-only, 6 conditional P1, 5 internal diagnostics).
+- The authoritative identifier-level classification is [First-Release Command/Query Scope and Gap Analysis §12](FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md). This supersedes earlier dated statements that D-04 acceptance was pending.
+- **No dispatch authority is granted.** All entries remain `design_only_not_dispatchable` until their own contract, authorization, implementation and executable verification gates pass. The six technical gates in §12 remain open readiness work.
+- D-04 acceptance does not approve D-02 exact nested field-path policy, select an Android action (D-03 remains staged), approve planning exit, authorize implementation/training/candidate activation, mark PR #2 ready, or authorize merge. Independent review and explicit planning-exit approval remain separate gates.
