@@ -86,10 +86,11 @@ MD-16 now has machine-readable source/manifest schemas, five event-specific payl
 - The existing events-store operation/step/recovery tables represent the revocation-impact saga; no additional events-store migration is currently justified.
 - SQLite smoke assertions for the new governance and memory records, append-only behavior, complete manifest sealing and admission without a seal are added to the host DDL validator.
 
+**Exact-head host evidence:** Workflow run [44035128973](https://github.com/methaneex-oss/AURIONS/actions/runs/44035128973) on commit `99552edca1bc6174d7ec76ee75b03bdd2ca15caa` passed all nine workflow steps and executed the complete 20-file SQLite DDL chain on host SQLite 3.46.1, including the new governance v5 and memory v9 invariants. This is host DDL smoke evidence only; it does not establish target-device compatibility or runtime enforcement.
+
 **Still missing before nontrivial corpus ingestion or training:**
 
-1. Execute the current 20-file SQLite chain on host SQLite and validate the new governance v5 and memory v9 migrations; prior host evidence covers the previous 18-file chain only.
-2. Implement and verify authorization checks at acquisition, dataset construction, artifact registration and immediately before worker dispatch. Workers must receive immutable, non-expandable source scope and cannot authorize themselves.
+1. Implement and verify authorization checks at acquisition, dataset construction, artifact registration and immediately before worker dispatch. Workers must receive immutable, non-expandable source scope and cannot authorize themselves.
 3. Make final admission fail closed for unknown, denied, expired, revoked, digest-mismatched, out-of-scope or unavailable governance state, independent of event-relay delay.
 4. Implement revocation impact assessment over dependent manifests, experiments, checkpoints, candidates, backups and synchronized copies. Preserve unknown training influence explicitly; do not claim automatic unlearning.
 5. Add cross-store crash/replay, outbox relay, worker cancellation, restore and target-device SQLite tests.
