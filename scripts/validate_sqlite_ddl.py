@@ -1275,9 +1275,10 @@ def main() -> int:
     test_events()
     test_governance()
     print(
-        f"PASS: all three SQLite stores and eighteen ordered DDL files executed; "
+        f"PASS: all three SQLite stores and twenty ordered DDL files executed; "
         f"SQLite {sqlite3.sqlite_version}; FK/integrity checks passed; "
-        "memory v4/v5/v6/v7/v8 model-lineage/pointer, event v3/v4/v5/v6 and governance v2/v3/v4 outbox/objective/approval/query-projection/saga-ledger smoke invariants passed."
+        "memory v4 interaction/objective, v8 model-lineage/pointer and v9 dataset-manifest/source-membership/seal/admission/revocation-impact invariants; "
+        "event v3/v4/v5/v6 saga/outbox invariants; and governance v2/v3/v4/v5 approval, source-authorization and append-only revocation invariants passed."
     )
     print(
         "LIMIT: host smoke validation only; Android/Termux baseline, crash/restore, "
