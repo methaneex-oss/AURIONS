@@ -841,3 +841,14 @@ The builder resumed from the live branch head `6636f5177e429fef6908577c4d0f84447
 ### Evidence boundary
 
 The workflow proves host-side structural/schema/fixture/governance/traceability and SQLite DDL smoke validation at the exact branch head. It does not prove runtime rights enforcement, training, candidate activation, cross-store crash safety, target-device compatibility, executable scenario behavior, independent review or owner acceptance. All command/query/event entries remain design-only/non-dispatchable. PR #2 remains open, draft and unmerged. D-04, planning exit, implementation planning exit and implementation authorization remain distinct gates.
+
+
+## 2026-11-17 builder continuation — candidate identity and approval digest fixtures
+
+The PR-19/PR-20 lifecycle crosswalk's remaining fixture-only gaps have been addressed in the machine validation contract:
+
+- Added a schema-valid negative candidate identity fixture. It preserves valid UUID syntax and all required fields but deliberately supplies a candidate ID that does not equal the canonical UUIDv5 derived from owner reference, proposal ID and artifact SHA-256. The validator checks the schema and then explicitly proves the semantic mismatch.
+- Added canonical activation and rollback approval-operation vectors. Each fixture pins the semantic operation fields, RFC 8785 JSON Canonicalization Scheme, and expected SHA-256. The host validator recomputes the digest and enforces the exact field set, action and expected hash.
+- Updated the lifecycle crosswalk and schema README to distinguish semantic identity rejection from schema-invalid fixtures and to document the digest field coverage.
+
+These are deterministic host-side contract fixtures only. They do not implement runtime candidate identity checks, authenticated approval verification, owner/session authentication, operation authorization, saga execution or C++/Python conformance. CI validation at the resulting exact commit is required before these additions are marked host-validated. Existing command/query/event registries remain design-only/non-dispatchable; D-04, planning exit and implementation authorization remain separate owner gates.

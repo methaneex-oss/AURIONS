@@ -7,6 +7,7 @@ readiness.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import uuid
@@ -28,6 +29,28 @@ def load(path: Path):
 
 def fail(message: str) -> None:
     raise AssertionError(message)
+
+
+
+def canonical_jcs_fixture_bytes(value) -> bytes:
+    """Serialize the restricted ASCII/integer fixture subset using RFC 8785 rules."""
+    def check(item) -> None:
+        if isinstance(item, float):
+            fail("candidate operation digest fixtures must not contain floating-point values")
+        if isinstance(item, str) and not item.isascii():
+            fail("candidate operation digest fixtures use ASCII strings for deterministic JCS vectors")
+        if isinstance(item, dict):
+            for key, child in item.items():
+                if not isinstance(key, str) or not key.isascii():
+                    fail("candidate operation digest fixture keys must be ASCII strings")
+                check(child)
+        elif isinstance(item, list):
+            for child in item:
+                check(child)
+    check(value)
+    return json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("utf-8")
 
 
 def main() -> int:
@@ -1343,6 +1366,52 @@ def main() -> int:
     if model_proposal["proposal_id"] != identity_fixture["proposal_id"] or model_proposal["candidate_artifact_sha256"] != identity_fixture["artifact_sha256"]:
         fail("model candidate proposal identity fixture changed its proposal/artifact binding")
 
+    identity_mismatch = load(FIXTURES / "negative" / "candidate-identity-mismatch.semantic.json")
+    validate(
+        identity_mismatch,
+        {"$ref": f"{domain_schema['$id']}#/$defs/modelCandidateIdentityFixture"},
+        "semantic candidate identity mismatch fixture",
+    )
+    mismatch_expected_id = str(uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        "aurions:candidate:v1:"
+        f"{identity_mismatch['owner_ref']}:{identity_mismatch['proposal_id']}:"
+        f"{identity_mismatch['artifact_sha256']}",
+    ))
+    if identity_mismatch["candidate_id"] == mismatch_expected_id:
+        fail("semantic candidate identity mismatch fixture unexpectedly matches canonical UUIDv5")
+    if identity_mismatch["candidate_id"] == identity_fixture["candidate_id"]:
+        fail("semantic candidate identity mismatch fixture must differ from the positive candidate")
+
+    operation_digest_fixtures = load(FIXTURES / "candidate-operation-digests.fixture.json")
+    operation_fields = {
+        "activation": {
+            "schema_version", "owner_ref", "operation_id", "action", "target_mechanism",
+            "candidate_id", "proposal_id", "candidate_artifact_ref", "candidate_artifact_sha256",
+            "learning_evaluation_ref", "learning_evaluation_digest",
+            "evolution_evaluation_ref", "evolution_evaluation_digest",
+            "expected_active_pointer_revision", "previous_candidate_ref",
+            "policy_version_ref", "scope", "expires_at",
+        },
+        "rollback": {
+            "schema_version", "owner_ref", "operation_id", "action", "target_mechanism",
+            "candidate_id", "proposal_id", "candidate_artifact_ref", "candidate_artifact_sha256",
+            "previous_candidate_ref", "previous_artifact_ref", "previous_artifact_sha256",
+            "expected_active_pointer_revision", "policy_version_ref", "scope", "expires_at",
+        },
+    }
+    expected_actions = {"activation": "candidate.activate", "rollback": "candidate.rollback"}
+    for fixture_name, expected_action in expected_actions.items():
+        entry = operation_digest_fixtures.get(fixture_name, {})
+        operation = entry.get("operation", {})
+        if set(operation) != operation_fields[fixture_name]:
+            fail(f"{fixture_name} operation digest fixture has missing or unexpected fields")
+        if operation.get("action") != expected_action:
+            fail(f"{fixture_name} operation digest fixture has the wrong action")
+        actual_digest = hashlib.sha256(canonical_jcs_fixture_bytes(operation)).hexdigest()
+        if actual_digest != entry.get("expected_sha256"):
+            fail(f"{fixture_name} operation digest fixture does not match its RFC 8785 SHA-256")
+
     # Additional focused positive fixtures.
     for fixture_name, definition in [
         ("decision-recorded.fixture.json", "decisionRecorded"),
@@ -1439,7 +1508,9 @@ def main() -> int:
         f"PASS: {len(schema_docs)} Draft 2020-12 schemas; "
         f"{len(pairs)} paired registry/fixture checks; "
         f"{len(domain_fixture)} positive domain payloads; "
-        f"{len(negative_cases)} negative controls; "
+        f"{len(negative_cases)} schema-negative controls; "
+        "1 semantic candidate-identity mismatch control; "
+        "2 canonical candidate operation-digest vectors; "
         f"{len(recovery_rows)} code-specific recovery assertions."
     )
     return 0

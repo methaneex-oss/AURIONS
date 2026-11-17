@@ -1,0 +1,49 @@
+{
+  "canonicalization": "RFC 8785 JSON Canonicalization Scheme",
+  "digest_algorithm": "SHA-256",
+  "note": "Deterministic contract vectors only. These fixtures do not constitute authenticated owner approvals or prove runtime verification.",
+  "activation": {
+    "operation": {
+      "schema_version": 1,
+      "owner_ref": "owner:primary",
+      "operation_id": "b1000000-0000-4000-8000-000000000001",
+      "action": "candidate.activate",
+      "target_mechanism": "primary_model",
+      "candidate_id": "1382f55e-c9ea-5c6b-9ff9-27a49907a40c",
+      "proposal_id": "e0000000-0000-4000-8000-000000000001",
+      "candidate_artifact_ref": "artifact:model-candidate:1",
+      "candidate_artifact_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+      "learning_evaluation_ref": "artifact:learning-evaluation:1",
+      "learning_evaluation_digest": "7777777777777777777777777777777777777777777777777777777777777777",
+      "evolution_evaluation_ref": "artifact:evolution-evaluation:1",
+      "evolution_evaluation_digest": "6666666666666666666666666666666666666666666666666666666666666666",
+      "expected_active_pointer_revision": 3,
+      "previous_candidate_ref": "candidate:previous:1",
+      "policy_version_ref": "policy:aurions:v1",
+      "scope": "owner:primary/mechanism:primary_model",
+      "expires_at": "2026-11-18T12:00:00Z"
+    },
+    "expected_sha256": "e7805b34a4912df71134e602d3180abe63a05fb53371234eb3ebbf33e8021eeb"
+  },
+  "rollback": {
+    "operation": {
+      "schema_version": 1,
+      "owner_ref": "owner:primary",
+      "operation_id": "b2000000-0000-4000-8000-000000000001",
+      "action": "candidate.rollback",
+      "target_mechanism": "primary_model",
+      "candidate_id": "1382f55e-c9ea-5c6b-9ff9-27a49907a40c",
+      "proposal_id": "e0000000-0000-4000-8000-000000000001",
+      "candidate_artifact_ref": "artifact:model-candidate:1",
+      "candidate_artifact_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+      "previous_candidate_ref": "candidate:previous:1",
+      "previous_artifact_ref": "artifact:model-baseline:previous",
+      "previous_artifact_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+      "expected_active_pointer_revision": 4,
+      "policy_version_ref": "policy:aurions:v1",
+      "scope": "owner:primary/mechanism:primary_model",
+      "expires_at": "2026-11-18T12:05:00Z"
+    },
+    "expected_sha256": "376a057613770f56e918ad6930ed0b6886cf05456fa81d61da436b266981b15d"
+  }
+}
