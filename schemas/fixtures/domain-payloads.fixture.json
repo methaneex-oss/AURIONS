@@ -1411,7 +1411,8 @@
     "baseline_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "dataset_manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
     "evaluation_protocol_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-    "report_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    "report_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "report_artifact_ref": "artifact:learning-evaluation:1"
   },
   "selfModelUpdateProposed": {
     "self_model_revision_id": "a7000000-0000-4000-8000-000000000002",
