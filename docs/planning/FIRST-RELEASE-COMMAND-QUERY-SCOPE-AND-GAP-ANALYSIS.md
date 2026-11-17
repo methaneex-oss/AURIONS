@@ -276,7 +276,9 @@ The owner-governed `approval.*` commands above may also support a separately app
 
 - `context.invalidate` is internal context-lifecycle maintenance, not a public command.
 - `memory.retrieve` is not a separate public command in this proposal; provenance-aware retrieval is represented by `memory.search` unless an auditable state-changing retrieval workflow is proven necessary.
-- `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect` and `decision.inspect` are owner-scoped internal diagnostic queries, not part of the first-release user-facing query surface. `memory.search` remains only in the P0 read-only query group above.
+- `prediction.inspect`, `appraisal.inspect`, `attention.inspect`, `reasoning.inspect` and `decision.inspect` are owner-scoped internal diagnostic queries, not part of the first-release user-facing query surface.
+
+`memory.search` is classified only as a P0 read-only query above; it is not an internal diagnostic entry.
 - `device.pair` and `device.revoke` remain deferred; broad device handoff, voice, continuous sensing and broad external integrations remain outside first release.
 
 ### Registry-wide accounting
