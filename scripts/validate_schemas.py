@@ -91,6 +91,7 @@ def main() -> int:
         ("fixtures/capability-descriptor.fixture.json", "capability-descriptor-body.v1.schema.json"),
         ("fixtures/world-interaction.fixture.json", "world-interaction.v1.schema.json"),
         ("fixtures/scenario-contracts.fixture.json", "scenario-contracts.v1.schema.json"),
+        ("first-release-command-query-scope.d04.v1.json", "first-release-command-query-scope.d04.v1.schema.json"),
     ]
     for instance_path, schema_name in pairs:
         validate(load(SCHEMAS / instance_path), schema_docs[schema_name], instance_path)
@@ -136,6 +137,66 @@ def main() -> int:
         fail("proposed DDL mapped-command count differs from mapped command inventory")
     if len(queries) != 29 or len({item["query_type"] for item in queries}) != 29:
         fail("query registry must contain 29 unique query types")
+
+    # D-04 is an owner-accepted inventory decision, not merely a prose count.
+    # Validate its six command groups and three query groups as a disjoint,
+    # exhaustive partition of the live registry while preserving non-dispatch.
+    d04_scope = load(SCHEMAS / "first-release-command-query-scope.d04.v1.json")
+    if d04_scope.get("status") != "owner_accepted_scope_only" or d04_scope.get("owner_decision") != "D-04":
+        fail("D-04 scope registry does not preserve its owner-accepted scope-only status")
+    command_groups = d04_scope.get("commands", {})
+    command_group_counts = {
+        "p0_public_owner_facing": 27,
+        "p0_internal_protected": 14,
+        "p1_conditional": 9,
+        "internal_maintenance_optional": 2,
+        "deferred": 2,
+    }
+    command_members = []
+    for group, expected_count in command_group_counts.items():
+        members = command_groups.get(group)
+        if not isinstance(members, list) or len(members) != expected_count or len(members) != len(set(members)):
+            fail(f"D-04 command group {group} must contain exactly {expected_count} unique entries")
+        command_members.extend(members)
+    if len(command_members) != len(set(command_members)):
+        fail("D-04 command groups overlap")
+    command_registry_names = {item["command_type"] for item in commands}
+    if set(command_members) != command_registry_names:
+        fail(
+            "D-04 command scope differs from command registry: "
+            f"missing={sorted(command_registry_names - set(command_members))}; "
+            f"extra={sorted(set(command_members) - command_registry_names)}"
+        )
+    command_by_name = {item["command_type"]: item for item in commands}
+    for name in command_groups["deferred"]:
+        if command_by_name[name].get("dispatch_status") != "deferred_by_scope":
+            fail(f"D-04 deferred command {name} is not marked deferred_by_scope")
+    for name in set(command_members) - set(command_groups["deferred"]):
+        if command_by_name[name].get("dispatch_status") != "design_only_not_dispatchable":
+            fail(f"D-04 command {name} must remain design_only_not_dispatchable")
+
+    query_groups = d04_scope.get("queries", {})
+    query_group_counts = {"p0_read_only": 18, "p1_conditional": 6, "internal_diagnostic": 5}
+    query_members = []
+    for group, expected_count in query_group_counts.items():
+        members = query_groups.get(group)
+        if not isinstance(members, list) or len(members) != expected_count or len(members) != len(set(members)):
+            fail(f"D-04 query group {group} must contain exactly {expected_count} unique entries")
+        query_members.extend(members)
+    if len(query_members) != len(set(query_members)):
+        fail("D-04 query groups overlap")
+    query_registry_names = {item["query_type"] for item in queries}
+    if set(query_members) != query_registry_names:
+        fail(
+            "D-04 query scope differs from query registry: "
+            f"missing={sorted(query_registry_names - set(query_members))}; "
+            f"extra={sorted(set(query_members) - query_registry_names)}"
+        )
+    query_by_name = {item["query_type"]: item for item in queries}
+    if any(query_by_name[name].get("read_only") is not True for name in query_members):
+        fail("D-04 query inventory contains a non-read-only query")
+    if any(item.get("dispatch_status") != "design_only_not_dispatchable" for item in queries):
+        fail("D-04 queries must all remain design_only_not_dispatchable")
     command_matrix_path = ROOT / "docs/planning/COMMAND-TRANSITION-AND-RECOVERY-CONTRACT-MATRIX.md"
     if not command_matrix_path.is_file():
         fail("missing per-command transition and recovery contract matrix")
@@ -172,6 +233,7 @@ def main() -> int:
             "aurion_memory.migration_v5.sql", "aurion_memory.migration_v6.sql",
             "aurion_memory.migration_v7.sql",
             "aurion_memory.migration_v8.sql", "aurion_memory.migration_v9.sql",
+            "aurion_memory.migration_v10.sql",
         ],
         "aurion_events.db": [
             "aurion_events.base.sql", "aurion_events.migration_v2.sql",
@@ -1520,6 +1582,77 @@ def main() -> int:
     if model_proposal["proposal_id"] != identity_fixture["proposal_id"] or model_proposal["candidate_artifact_sha256"] != identity_fixture["artifact_sha256"]:
         fail("model candidate proposal identity fixture changed its proposal/artifact binding")
 
+    # PR-19/PR-20 is one identity chain: worker completion -> held-out learning
+    # evaluation -> proposal/candidate -> evolution evaluation -> activation and
+    # rollback operation digests. Independent fixture fragments are insufficient.
+    experiment = domain_fixture["learningExperimentCompleted"]
+    evaluation_request = domain_fixture["learningCandidateEvaluationRequest"]
+    learning_evaluation = domain_fixture["learningCandidateEvaluated"]
+    lifecycle = domain_fixture["evolutionCandidateLifecycle"]
+    activation = domain_fixture["evolutionCandidateActivated"]
+    rollback = domain_fixture["evolutionCandidateRolledBack"]
+    lineage_fields = ("learning_update_id", "experiment_id", "attempt_id")
+    for field in lineage_fields:
+        expected_value = experiment[field]
+        if evaluation_request[field] != expected_value or learning_evaluation[field] != expected_value or model_proposal[field] != expected_value:
+            fail(f"PR-19/PR-20 candidate chain changed {field}")
+    for label, record in (("learning evaluation request", evaluation_request), ("learning evaluation", learning_evaluation)):
+        if record["candidate_artifact_ref"] != experiment["candidate_artifact_ref"] or record["candidate_artifact_sha256"] != experiment["candidate_artifact_sha256"]:
+            fail(f"PR-19/PR-20 {label} is not bound to the exact worker candidate artifact")
+    for field in ("baseline_artifact_ref", "dataset_manifest_ref", "evaluation_protocol_ref"):
+        if evaluation_request[field] != learning_evaluation[field]:
+            fail(f"PR-20 evaluation request/result changed {field}")
+    for field in ("baseline_artifact_sha256", "dataset_manifest_sha256", "evaluation_protocol_sha256"):
+        if evaluation_request[field] != learning_evaluation[field]:
+            fail(f"PR-20 evaluation request/result changed {field}")
+    if learning_evaluation["status"] != "passed" or not learning_evaluation.get("report_artifact_ref"):
+        fail("PR-20 candidate fixture must bind a passing held-out report artifact")
+    if identity_fixture["artifact_sha256"] != experiment["candidate_artifact_sha256"]:
+        fail("canonical candidate identity is not derived from the trained artifact digest")
+    if model_proposal["candidate_artifact_ref"] != experiment["candidate_artifact_ref"]:
+        fail("evolution proposal does not reference the exact trained candidate artifact")
+    if model_proposal["learning_evaluation_id"] != learning_evaluation["evaluation_id"]:
+        fail("evolution proposal does not reference the exact learning evaluation ID")
+    if model_proposal["evaluation_ref"] != learning_evaluation["report_artifact_ref"]:
+        fail("evolution proposal does not reference the held-out learning evaluation report")
+    if model_proposal["evidence_refs"].count(learning_evaluation["report_artifact_ref"]) != 1:
+        fail("evolution proposal must retain the exact held-out evaluation report as evidence")
+
+    candidate_shared_fields = (
+        "candidate_id", "proposal_id", "artifact_ref", "candidate_artifact_sha256",
+        "learning_update_id", "experiment_id", "attempt_id",
+        "learning_evaluation_id", "learning_evaluation_ref", "learning_evaluation_digest",
+        "evolution_evaluation_id", "evolution_evaluation_ref", "evolution_evaluation_digest",
+        "evaluation_ref", "evaluation_status",
+    )
+    expected_candidate_values = {
+        "candidate_id": identity_fixture["candidate_id"],
+        "proposal_id": model_proposal["proposal_id"],
+        "artifact_ref": experiment["candidate_artifact_ref"],
+        "candidate_artifact_sha256": experiment["candidate_artifact_sha256"],
+        "learning_update_id": experiment["learning_update_id"],
+        "experiment_id": experiment["experiment_id"],
+        "attempt_id": experiment["attempt_id"],
+        "learning_evaluation_id": learning_evaluation["evaluation_id"],
+        "learning_evaluation_ref": learning_evaluation["report_artifact_ref"],
+        "learning_evaluation_digest": learning_evaluation["report_digest"],
+        "evolution_evaluation_id": lifecycle["evolution_evaluation_id"],
+        "evolution_evaluation_ref": lifecycle["evolution_evaluation_ref"],
+        "evolution_evaluation_digest": lifecycle["evolution_evaluation_digest"],
+        "evaluation_ref": lifecycle["evaluation_ref"],
+        "evaluation_status": "passed",
+    }
+    if lifecycle["state"] != "evaluated":
+        fail("candidate lifecycle baseline fixture must be evaluated before activation")
+    for label, record in (("evaluation lifecycle", lifecycle), ("activation", activation), ("rollback", rollback)):
+        for field in candidate_shared_fields:
+            if record.get(field) != expected_candidate_values[field]:
+                fail(f"PR-19/PR-20 {label} changed candidate lineage field {field}")
+    if activation["state"] != "active" or activation.get("approval_ref") is None or activation.get("pointer_revision", 0) < 1:
+        fail("candidate activation fixture is missing its approval/state/pointer evidence")
+    if rollback["state"] != "rolled_back" or rollback.get("approval_ref") is None or rollback.get("rollback_ref") is None:
+        fail("candidate rollback fixture is missing its separate approval/rollback evidence")
+
     identity_mismatch = load(FIXTURES / "negative" / "candidate-identity-mismatch.semantic.json")
     validate(
         identity_mismatch,
@@ -1562,9 +1695,29 @@ def main() -> int:
             fail(f"{fixture_name} operation digest fixture has missing or unexpected fields")
         if operation.get("action") != expected_action:
             fail(f"{fixture_name} operation digest fixture has the wrong action")
+        if operation.get("candidate_id") != identity_fixture["candidate_id"] or operation.get("proposal_id") != model_proposal["proposal_id"]:
+            fail(f"{fixture_name} operation digest does not bind the canonical proposal/candidate identity")
+        if operation.get("candidate_artifact_ref") != experiment["candidate_artifact_ref"] or operation.get("candidate_artifact_sha256") != experiment["candidate_artifact_sha256"]:
+            fail(f"{fixture_name} operation digest does not bind the exact trained artifact")
+        if operation.get("learning_evaluation_ref", learning_evaluation["report_artifact_ref"]) != learning_evaluation["report_artifact_ref"]:
+            fail(f"{fixture_name} operation digest does not bind the exact learning evaluation report")
+        if operation.get("learning_evaluation_digest", learning_evaluation["report_digest"]) != learning_evaluation["report_digest"]:
+            fail(f"{fixture_name} operation digest does not bind the exact learning evaluation digest")
+        if operation.get("evolution_evaluation_ref", lifecycle["evolution_evaluation_ref"]) != lifecycle["evolution_evaluation_ref"]:
+            fail(f"{fixture_name} operation digest does not bind the exact evolution evaluation")
+        if operation.get("evolution_evaluation_digest", lifecycle["evolution_evaluation_digest"]) != lifecycle["evolution_evaluation_digest"]:
+            fail(f"{fixture_name} operation digest does not bind the exact evolution evaluation digest")
         actual_digest = hashlib.sha256(canonical_jcs_fixture_bytes(operation)).hexdigest()
         if actual_digest != entry.get("expected_sha256"):
             fail(f"{fixture_name} operation digest fixture does not match its RFC 8785 SHA-256")
+        lifecycle_record = activation if fixture_name == "activation" else rollback
+        if operation.get("expected_active_pointer_revision") != lifecycle_record.get("pointer_revision"):
+            fail(f"{fixture_name} operation digest pointer revision differs from lifecycle evidence")
+        if operation.get("previous_candidate_ref") != lifecycle_record.get("previous_candidate_ref"):
+            fail(f"{fixture_name} operation digest previous candidate differs from lifecycle evidence")
+        if fixture_name == "rollback":
+            if operation.get("previous_artifact_ref") != rollback.get("restored_artifact_ref") or operation.get("previous_artifact_sha256") != rollback.get("restore_artifact_sha256"):
+                fail("rollback operation digest does not bind the exact restored artifact reference/digest")
 
     # Additional focused positive fixtures.
     for fixture_name, definition in [
