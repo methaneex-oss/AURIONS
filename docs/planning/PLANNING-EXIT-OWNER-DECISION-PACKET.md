@@ -4,7 +4,7 @@
 - **Branch:** `docs/complete-system-architecture`
 - **Authority:** `INITIAL-ENGINEERING-SPECIFICATION.md`, the First Usable Release Definition, and the Project Directorship and Team Operating Standard remain authoritative.
 - **Purpose:** Consolidate only decisions that the builder cannot make without changing product scope, personal authority, risk tolerance or owner intent.
-- **Boundary:** D-01 is accepted and D-02 Option B is selected. D-03 remains staged; D-04 remains pending owner acceptance. This packet does not approve planning exit, implementation, PR merge or a concrete Android action.
+- **Boundary:** D-01 is accepted; D-02 Option B is selected; D-03 remains staged; D-04's exact §12 command/query classification was owner-accepted on 2026-11-17. This packet does not approve planning exit, implementation, PR merge or a concrete Android action.
 
 ## 1. Decisions required before planning exit
 
@@ -46,7 +46,7 @@ The product proposal requires one narrow, explicitly permitted, reversible local
 
 The current registries contain 54 command records (52 mapped and two deferred) and 29 read-only query records. Registry presence does not mean every command/query belongs in the first release or is dispatchable.
 
-**Builder proposal:** The registry-derived subset and exact identifiers are recorded in [First-Release Command/Query Scope and Gap Analysis §12](FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md). The PR-19/PR-20 lifecycle crosswalk is recorded in [the candidate lifecycle crosswalk](PR-19-PR-20-MODEL-CANDIDATE-LIFECYCLE-CROSSWALK.md); its payload/DDL/validator additions remain a pre-implementation contract-reconciliation task. **Owner acceptance remains pending.** Unselected entries remain design-only/non-dispatchable.
+**Owner decision: ACCEPTED — 2026-11-17.** The owner accepted the exact §12 registry classification on the builder's recommendation, without changes: 27 P0 public/owner-facing commands; 14 P0 internal/protected commands; 9 conditional P1 commands; 2 internal maintenance/optional commands; 2 deferred commands; and 29 queries comprising 18 P0 read-only, 6 conditional P1 and 5 internal diagnostics. The complete registry-derived identifiers and rationale remain in [First-Release Command/Query Scope and Gap Analysis §12](FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md). This is acceptance of scope classification only. It does not authorize dispatch, grant permissions, select an Android action, or waive entry-specific contract, security, implementation and verification gates. Unselected entries remain design-only/non-dispatchable.
 
 **Consequence:** Unselected entries remain design-only/non-dispatchable. No registry-wide dispatch enablement is implied.
 
@@ -98,7 +98,7 @@ No implementation starts until the owner explicitly approves that milestone. PR 
 The following already-recorded decisions are not being re-asked: D-01 accepted PR-01…PR-20; D-02 Option B selected; D-03 first Android action staged; MD-01…MD-16 all selected. They remain binding.
 
 1. **D-02 field-level acceptance:** accept or explicitly stage the exact versioned default-deny field-path classifications and conditional paths in `CLOUD-MOBILE-SELECTIVE-SYNC-CONTRACT.md` and `schemas/sync-field-allowlist.d02.v1.json`. The owner's selected domain direction (durable experience/provenance, representations, memory, evidence-backed knowledge/belief revisions, objectives/derived goals and governed model-version references) is preserved. Raw sensitive observations, transient context, plans/tasks/checkpoints, capabilities, permissions, credentials, approvals, dispatch state and governance authority remain local by default. The exact nested field paths/conditions are still a builder proposal, not silently promoted to owner acceptance.
-2. **D-04 exact registry classification:** accept or reject the exact §12 classification: 27 P0 public/owner-facing commands; 14 P0 internal/protected commands; 9 conditional P1 commands; 2 internal maintenance/optional commands; 2 deferred commands; and 29 queries classified as 18 P0 read-only, 6 conditional P1 and 5 internal diagnostics. The six required consistency checks in §12 must remain satisfied. Acceptance does not make any entry dispatchable.
+2. **D-04 — ACCEPTED 2026-11-17:** the exact §12 classification and counts are owner-approved. The six technical consistency/contract checks in §12 remain readiness gates before any affected entry can become dispatch-ready; they are not conditions that reverse or narrow the recorded scope acceptance.
 3. **D-03:** retain the already-recorded staged status until a target Android device/runtime is selected and validated; no action or permission is selected here.
 4. **External evidence gates:** explicitly stage, with responsible owner and implementation restrictions, target Android/Termux, C++/Python conformance, dependency/SBOM/license/vulnerability review, production key custody and lifecycle, runtime crash/replay/restore/concurrency and executed SY acceptance. Host CI does not substitute for these.
 5. **Independent review:** an independent reviewer must review the exact final PR head and resolve findings. The builder cannot self-approve this gate.
