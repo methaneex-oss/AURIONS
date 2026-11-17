@@ -2,7 +2,7 @@
 
 - **Status:** Builder-authored technical proposal; specified for owner review, not implemented or runtime-validated.
 - **Revision baseline:** `docs/complete-system-architecture` audited at `66a1a05659600f5261170d4318fd7b7d494e9524`; subsequent documentation consolidation is recorded in the current branch history.
-- **Authority:** Owner-accepted first-release product baseline PR-01…PR-20; D-04 command/query subset remains a builder proposal pending owner acceptance.
+- **Authority:** Owner-accepted first-release product baseline PR-01…PR-20; D-04 exact command/query subset was owner-accepted on 2026-11-17. This crosswalk remains a builder technical proposal, not runtime implementation or owner approval of lifecycle enforcement.
 - **Purpose:** Define one traceable, enforceable path from a model-training experiment to a governed active model artifact and a verifiable rollback.
 - **Model decision register:** [MD-01…MD-16 — Model Architecture and Training Owner Decisions](MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md).
 - **Boundary:** This document does not authorize training, worker dispatch, model activation, implementation, PR merge or planning exit. Existing registries remain design-only/non-dispatchable.
