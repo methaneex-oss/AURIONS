@@ -65,6 +65,10 @@ Review the complete changed-file set returned by GitHub for the exact PR head. A
 - `schemas/capability-descriptor-body.v1.schema.json`
 - `schemas/domain-payloads.v1.schema.json`
 - all positive and negative schema fixtures under `schemas/fixtures/`
+- `schemas/first-release-command-query-scope.d04.v1.json` and its Draft 2020-12 schema
+- candidate lifecycle negative fixtures covering activation/rollback with non-passing evaluations
+- Memory migration v10 and its SQLite host validator/invariant checks
+- the D-04 command/query scope reconciliation and PR-19/PR-20 candidate identity/evaluation/digest validator changes
 - `docs/reviews/AUTHOR-SIDE-ARCHITECTURE-REVIEW.md`
 - `docs/reviews/INDEPENDENT-REVIEW-REQUEST.md`
 - `docs/reviews/INDEPENDENT-ARCHITECTURE-REVIEW-RE-REVIEW.md`
@@ -166,3 +170,29 @@ State whether the architecture is technically sound, aligned with the owner's re
 - Disclose any repository material you could not access or verify.
 
 The objective is not to approve the author's work. It is to determine whether the proposed architecture genuinely serves the system the owner wants to build.
+
+## Current independent-review handoff supplement — 2026-11-17
+
+This supplement updates the review brief for the live PR #2 revision. It does not replace the complete-review instructions above or preselect a verdict.
+
+### Owner decisions and authority boundaries to preserve
+
+- D-01 PR-01…PR-20 is owner-accepted.
+- D-02 Option B is owner-selected. The field allowlist remains a builder proposal (`builder_proposal_not_owner_accepted`). Its listed default/conditional paths are not enabled export entitlements; no domain export is authorized until the owner accepts exact paths, conditional rules and classification-policy version. This fail-closed gate is explicit in the selective-sync contract.
+- D-03 remains staged; no first Android local action is selected.
+- D-04's exact command/query classification was owner-accepted. A machine-readable registry now records the accepted 27/14/9/2/2 command and 18/6/5 query groups; CI checks that the groups are disjoint, exhaustive against the live registry and that every entry remains non-dispatchable.
+- MD-01…MD-16 remain the owner's selected model direction. Their selection does not authorize training, candidate activation or runtime implementation.
+
+### New machine-contract/fixture changes requiring independent challenge
+
+- The D-04 registry schema and validator exact-set check should be reviewed for completeness, future versioning and resistance to category drift.
+- The schema validator's SQLite table inventory now includes Memory migration v10; check it against the ordered DDL smoke validator and the authoritative migration sequence.
+- The PR-19/PR-20 synthetic fixtures now form a cross-checked lineage from worker experiment completion through held-out evaluation/report artifact, canonical candidate UUIDv5, evolution proposal and candidate lifecycle to activation/rollback digest vectors. Two negative fixtures require a passing evaluation for activation and rollback.
+- The fixtures contain synthetic `passed` states for testing schema/transition acceptance only. They do not represent a real training run, held-out improvement, owner approval, activation or rollback.
+- D-02 sync scenarios and persistence invariants remain specifications/host-side DDL checks, not executed cloud/mobile runtime behavior.
+
+### Review baseline and independence
+
+At the start of review, fetch PR #2 from GitHub, record the exact current head SHA and inspect the complete current changed-file set. Prior review record `docs/reviews/INDEPENDENT-ARCHITECTURE-REVIEW-RE-REVIEW.md` reviewed historical commit `238dc0f138a855a6f555c2c5c9bde8483df83fa2`; it is not a review of the live PR revision. Do not rely on builder summaries or this supplement as evidence in place of retrieving and checking the source. Preserve the independent report separately before comparing it with the author-side review.
+
+The reviewer must be different from the PR author and must not be the builder's self-review. A reviewer identity/team has not yet been verified or assigned; the review remains outstanding until an eligible independent reviewer submits a review against the exact live head.
