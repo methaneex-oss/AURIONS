@@ -1195,7 +1195,6 @@ def test_governance() -> None:
     db.commit()
     validate_query_projection_source_columns("aurion_governance.db", db)
     check_database("governance projection smoke", db)
-    db.close()
 
 
     require_columns(db, "dataset_source_authorizations", {
@@ -1213,10 +1212,20 @@ def test_governance() -> None:
     db.execute(
         """INSERT INTO approval_requests
         (request_id,operation_id,requester_id,operation_digest,operation_summary,risk_class,
-         data_categories_json,policy_version_ref,requested_at_ms,expires_at_ms,state)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+         data_categories_json,policy_version_ref,requested_at_ms,expires_at_ms,state,
+         owner_ref,owner_session_ref)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (approval_request_id,operation_id,"owner-dataset","a"*64,"dataset source authorization",
-         "R5",'["training_data"]',"policy:v1",1,100,"approved"),
+         "R5",'["training_data"]',"policy:v1",1,100,"pending",
+         "owner-dataset","owner-session:dataset"),
+    )
+    db.execute(
+        """INSERT INTO approval_decisions
+        (decision_id,request_id,authenticated_owner_ref,decision,approved_digest,
+         decided_at_ms,authentication_context_ref)
+        VALUES (?,?,?,?,?,?,?)""",
+        (bytes([45])*16,approval_request_id,"owner-dataset","approved","a"*64,2,
+         "owner-session:dataset"),
     )
     db.execute(
         """INSERT INTO dataset_source_authorizations
@@ -1231,14 +1240,14 @@ def test_governance() -> None:
         (authorization_id,1,"owner-dataset","source:one","b"*64,'{"acquisition_method":"licensed_repository_export","origin_ref":"source-origin:one","acquired_at":"2026-11-16T20:00:00Z"}',
          "rights-holder:one","license","license:one","c"*64,'["foundation_pretraining"]',
          "allow","deny","public",None,"project:one","model-family","dataset:one","policy:v1",
-         1,90,"active",None,None,approval_request_id,"decision:one",None,2,"d"*64),
+         1,90,"active",None,None,approval_request_id,"decision:dataset-approval",None,2,"d"*64),
     )
     db.execute(
         """INSERT INTO dataset_source_authorization_revocations
         (revocation_id,authorization_id,authorization_record_digest,owner_ref,actor_identity,
          approval_request_id,operation_id,reason_ref,policy_version_ref,revoked_at_ms,revocation_digest)
         VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
-        (bytes([44])*16,authorization_id,"d"*64,"owner-dataset","owner-session:one",
+        (bytes([44])*16,authorization_id,"d"*64,"owner-dataset","owner-session:dataset",
          approval_request_id,operation_id,"reason:withdrawn","policy:v1",3,"e"*64),
     )
     db.commit()
@@ -1252,6 +1261,9 @@ def test_governance() -> None:
         "DELETE FROM dataset_source_authorization_revocations WHERE authorization_id=?",
         (authorization_id,),
     )
+    db.commit()
+    check_database("governance dataset-rights smoke", db)
+    db.close()
 
 
 def main() -> int:
