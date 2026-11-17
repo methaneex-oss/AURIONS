@@ -47,13 +47,12 @@
         "representation_type",
         "source_refs"
       ],
-      "conditional_paths": [
-        "content.*",
-        "uncertainty.*"
-      ],
+      "conditional_paths": [],
       "excluded_paths": [
         "arbitrary_content_object",
-        "raw_source_material"
+        "content",
+        "raw_source_material",
+        "uncertainty"
       ],
       "schema_refs": [
         "schemas/domain-payloads.v1.schema.json#/$defs/representationCreated",
@@ -134,14 +133,14 @@
         "version"
       ],
       "conditional_paths": [
-        "assumptions.*",
-        "constraints.*",
         "statement",
-        "success_evidence",
-        "uncertainty.*"
+        "success_evidence"
       ],
       "excluded_paths": [
+        "assumptions",
+        "constraints",
         "local_plans",
+        "uncertainty",
         "unclassified_intent_text"
       ],
       "schema_refs": [
@@ -159,11 +158,11 @@
         "state"
       ],
       "conditional_paths": [
-        "constraints.*",
         "description",
         "reason_ref"
       ],
       "excluded_paths": [
+        "constraints",
         "task_execution_state"
       ],
       "schema_refs": [
@@ -229,6 +228,7 @@
     "Evidence remains reference-only within evidence_refs on approved knowledge/belief revisions; no standalone evidence-content or evidence-record domain is exported by this v1 allowlist.",
     "Arbitrary nested objects are excluded until a typed sub-schema and explicit leaf-path classification are added.",
     "Numeric sensitivity values are not mapped to PUBLIC/OWNER_PRIVATE/SENSITIVE/SECURITY_RESTRICTED without an authoritative mapping; such fields are ineligible by default.",
-    "Encryption/signature profile identifiers and key-version references are metadata placeholders; no cipher or production key custody scheme is selected here."
+    "Encryption/signature profile identifiers and key-version references are metadata placeholders; no cipher or production key custody scheme is selected here.",
+    "Wildcard paths do not authorize nested field export. Representation content/uncertainty, objective assumptions/constraints/uncertainty and goal constraints remain excluded until typed leaf schemas and exact classified paths are added in a later allowlist version."
   ]
 }
