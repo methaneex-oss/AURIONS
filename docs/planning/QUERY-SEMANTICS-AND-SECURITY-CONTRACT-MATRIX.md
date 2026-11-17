@@ -1,8 +1,8 @@
 # Query Semantics and Security Contract Matrix
 
-**Status:** Builder contract proposal; not owner-approved as a product/API release and not dispatchable.  
-**Scope:** BR-002 — all 29 query registry entries, including the foundational objective/world/means/interaction surface proposed by the open-world architecture.  
-**Authority boundary:** This document completes query-side semantic design where it can be determined from the existing architecture. It does not select the first Android action, settle cloud/mobile history topology, authorize implementation, or promote any query to runtime dispatch.
+**Status:** Builder contract proposal; D-04's 18 P0, 6 conditional P1 and 5 internal-diagnostic query scope was owner-accepted on 2026-11-17. This does not approve individual handler contracts or authorize runtime dispatch.  
+**Scope:** BR-002 — all 29 query registry entries, including the foundational objective/world/means/interaction surface. The owner-approved D-04 classification assigns 18 P0 read-only, 6 conditional P1 and 5 internal diagnostic queries; all remain non-dispatchable.  
+**Authority boundary:** This document completes query-side semantic design where it can be determined from the existing architecture. It does not select the first Android action, settle D-02 field-level policy, authorize implementation, or promote any query to runtime dispatch.
 
 **Projection boundary:** Field-to-storage source candidates and unmapped result fields are tracked in [Query Projection and Persistence Reconciliation](QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md). Registry schema presence is not proof of a valid SQL projection; all result fields, joins, aliases, owner filters and redaction remain unverified until the listed mappings are closed.
 
