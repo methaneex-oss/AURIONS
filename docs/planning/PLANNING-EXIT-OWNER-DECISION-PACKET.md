@@ -16,7 +16,7 @@ The proposal defines AURIONS as a trainable AI system with an evolving cognitive
 
 **Owner decision: ACCEPTED — 2026-11-16.** The owner accepted PR-01…PR-20 as the first-release product baseline. This is not implementation or validation evidence.
 
-**Consequence:** The accepted PR-01…PR-20 baseline may be used by WP-15 as the product contract, subject to D-02 field-classification/peer-trust/runtime/target gates, D-04 command/query acceptance, external evidence gates and implementation authorization.
+**Consequence:** The accepted PR-01…PR-20 baseline may be used by WP-15 as the product contract, subject to D-02 field-classification/peer-trust/runtime/target gates, the owner-accepted D-04 scope's per-entry technical gates, external evidence gates and implementation authorization.
 
 ### D-02 — Cloud/mobile cognitive-history continuity: OPTION B SELECTED
 
@@ -90,7 +90,7 @@ No implementation starts until the owner explicitly approves that milestone. PR 
 - Automatic workflow [44174936993](https://github.com/methaneex-oss/AURIONS/actions/runs/44174936993) passed all nine steps. It executed 21 ordered DDL files across the three stores on host SQLite 3.46.1, with FK/integrity checks and Memory v10 sync-persistence invariants. Schema/fixture, governance, work-package traceability and Android probe shell syntax steps also passed.
 - The failed first attempt [44174795063](https://github.com/methaneex-oss/AURIONS/actions/runs/44174795063) exposed a literal escaped-newline defect in one v10 trigger. The SQL was corrected without weakening validation; the subsequent run above passed.
 - Builder schema work is complete for the v10 persistence increment. The remaining D-02 gates are owner/domain classification acceptance, authenticated peer/key lifecycle, runtime export/receiver/recovery enforcement, C++/Python conformance, executed SY fault/replay/concurrency/restore tests and cloud/Android/Termux evidence.
-- D-03 remains staged by owner. D-04 exact P0/P1 command/query acceptance remains pending; no implicit acceptance is inferred from general “proceed” instructions. Independent review of the final exact PR head and explicit owner planning-exit approval remain separate gates. Implementation authorization and PR merge remain ungranted.
+- D-03 remains staged by owner. D-04 exact §12 command/query classification was owner-accepted on 2026-11-17; per-entry contract, security, handler and executable verification gates remain open. Independent review of the final exact PR head and explicit owner planning-exit approval remain separate gates. Implementation authorization and PR merge remain ungranted.
 
 
 ## 5. Consolidated owner actions still required — no prior decisions reopened
