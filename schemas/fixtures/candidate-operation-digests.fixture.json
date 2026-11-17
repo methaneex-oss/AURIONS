@@ -1,7 +1,7 @@
 {
   "canonicalization": "RFC 8785 JSON Canonicalization Scheme",
   "digest_algorithm": "SHA-256",
-  "note": "Deterministic contract vectors only. These fixtures do not constitute authenticated owner approvals or prove runtime verification.",
+  "note": "Deterministic contract vectors only. These fixtures do not constitute authenticated owner approvals or prove runtime verification. The linked model-candidate fixtures are synthetic contract examples only; their passed fixture states are not evidence of an actual training run, owner approval, model activation or rollback.",
   "activation": {
     "operation": {
       "schema_version": 1,
@@ -9,12 +9,12 @@
       "operation_id": "b1000000-0000-4000-8000-000000000001",
       "action": "candidate.activate",
       "target_mechanism": "primary_model",
-      "candidate_id": "1382f55e-c9ea-5c6b-9ff9-27a49907a40c",
+      "candidate_id": "fe29e442-5149-519a-aee4-a4fa10ed36c4",
       "proposal_id": "e0000000-0000-4000-8000-000000000001",
-      "candidate_artifact_ref": "artifact:model-candidate:1",
-      "candidate_artifact_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+      "candidate_artifact_ref": "artifact:candidate:1",
+      "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "learning_evaluation_ref": "artifact:learning-evaluation:1",
-      "learning_evaluation_digest": "7777777777777777777777777777777777777777777777777777777777777777",
+      "learning_evaluation_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "evolution_evaluation_ref": "artifact:evolution-evaluation:1",
       "evolution_evaluation_digest": "6666666666666666666666666666666666666666666666666666666666666666",
       "expected_active_pointer_revision": 3,
@@ -23,7 +23,7 @@
       "scope": "owner:primary/mechanism:primary_model",
       "expires_at": "2026-11-18T12:00:00Z"
     },
-    "expected_sha256": "e7805b34a4912df71134e602d3180abe63a05fb53371234eb3ebbf33e8021eeb"
+    "expected_sha256": "f8c68dff500f09bc7b80e8a105d50edbbf1e85adaa26b70cec69f607fb1488de"
   },
   "rollback": {
     "operation": {
@@ -32,10 +32,10 @@
       "operation_id": "b2000000-0000-4000-8000-000000000001",
       "action": "candidate.rollback",
       "target_mechanism": "primary_model",
-      "candidate_id": "1382f55e-c9ea-5c6b-9ff9-27a49907a40c",
+      "candidate_id": "fe29e442-5149-519a-aee4-a4fa10ed36c4",
       "proposal_id": "e0000000-0000-4000-8000-000000000001",
-      "candidate_artifact_ref": "artifact:model-candidate:1",
-      "candidate_artifact_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+      "candidate_artifact_ref": "artifact:candidate:1",
+      "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "previous_candidate_ref": "candidate:previous:1",
       "previous_artifact_ref": "artifact:model-baseline:previous",
       "previous_artifact_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
@@ -44,6 +44,6 @@
       "scope": "owner:primary/mechanism:primary_model",
       "expires_at": "2026-11-18T12:05:00Z"
     },
-    "expected_sha256": "376a057613770f56e918ad6930ed0b6886cf05456fa81d61da436b266981b15d"
+    "expected_sha256": "e8806a3cb8ac046dc08899d430e6b04293367fc2b7b9c677782c33856db6cc6d"
   }
 }
