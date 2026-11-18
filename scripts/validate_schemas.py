@@ -1350,6 +1350,65 @@ def main() -> int:
     if sync_allowlist.get("default_policy") != "deny":
         fail("D-02 field allowlist must be default-deny")
     sync_domains = sync_allowlist.get("domains", {})
+    # D-02 has a distinct path-to-classification policy registry. It remains a
+    # builder proposal; CI must never promote it to an export entitlement.
+    sync_policy = load(SCHEMAS / "sync-classification-policy.d02.v1.json")
+    validate(sync_policy, schema_docs["sync-classification-policy.d02.v1.schema.json"], "D-02 synchronization classification policy")
+    if sync_policy.get("status") != "builder_proposal_not_owner_accepted":
+        fail("D-02 classification policy must remain a builder proposal until owner acceptance")
+    if sync_policy.get("export_enabled") is not False or sync_policy.get("default_action") != "deny":
+        fail("D-02 classification policy must remain export-disabled and default-deny")
+    if sync_policy.get("policy_version") != sync_allowlist.get("classification_policy_version"):
+        fail("D-02 classification-policy registry version does not match field allowlist")
+    if sync_policy.get("allowlist_version") != sync_allowlist.get("allowlist_version"):
+        fail("D-02 classification-policy registry references a different allowlist")
+    policy_domains = sync_policy.get("domains", {})
+    if set(policy_domains) != set(sync_domains):
+        fail("D-02 classification-policy domain inventory differs from field allowlist")
+    classification_path_count = 0
+    for domain_name, allow_rule in sync_domains.items():
+        policy_rule = policy_domains[domain_name]
+        if policy_rule.get("schema_refs") != allow_rule.get("schema_refs"):
+            fail(f"D-02 {domain_name}: classification-policy schema refs differ from allowlist")
+        field_rules = policy_rule.get("fields", [])
+        rule_by_path = {item.get("path"): item for item in field_rules}
+        if len(rule_by_path) != len(field_rules):
+            fail(f"D-02 {domain_name}: duplicate classification-policy field path")
+        expected_groups = {
+            "proposed_default": set(allow_rule.get("default_paths", [])),
+            "conditional_proposal": set(allow_rule.get("conditional_paths", [])),
+            "local_only": set(allow_rule.get("excluded_paths", [])),
+        }
+        expected_all = set().union(*expected_groups.values())
+        if sum(len(group) for group in expected_groups.values()) != len(expected_all):
+            fail(f"D-02 {domain_name}: allowlist path groups overlap")
+        if set(rule_by_path) != expected_all:
+            fail(f"D-02 {domain_name}: classification-policy paths do not exactly cover allowlist paths")
+        for group_name, paths in expected_groups.items():
+            for field_path in paths:
+                item = rule_by_path[field_path]
+                if item.get("path_treatment") != group_name:
+                    fail(f"D-02 {domain_name}.{field_path}: policy treatment differs from allowlist group")
+                if group_name == "proposed_default":
+                    if item.get("classification") != "OWNER_PRIVATE" or item.get("per_aggregate_authorization_required") is not False or not item.get("conditions"):
+                        fail(f"D-02 {domain_name}.{field_path}: proposed defaults must be OWNER_PRIVATE with same-owner conditions")
+                elif group_name == "conditional_proposal":
+                    if item.get("classification") not in {"OWNER_PRIVATE", "SENSITIVE"} or item.get("per_aggregate_authorization_required") is not True or not item.get("conditions"):
+                        fail(f"D-02 {domain_name}.{field_path}: conditional field must require exact aggregate authorization")
+                else:
+                    if item.get("classification") not in {"SENSITIVE", "SECURITY_RESTRICTED"} or item.get("conditions") or item.get("per_aggregate_authorization_required") is not False:
+                        fail(f"D-02 {domain_name}.{field_path}: excluded field must remain local-only")
+                classification_path_count += 1
+    local_policy = sync_policy.get("cross_domain_local_only", [])
+    local_by_id = {item.get("identifier"): item for item in local_policy}
+    if len(local_by_id) != len(local_policy) or set(local_by_id) != set(sync_allowlist.get("cross_domain_local_only", [])):
+        fail("D-02 cross-domain local-only policy does not exactly match allowlist controls")
+    if any(item.get("classification") not in {"SENSITIVE", "SECURITY_RESTRICTED"} for item in local_policy):
+        fail("D-02 cross-domain local-only control has an invalid classification")
+    if sync_policy.get("unlisted_path_rule") != "deny_and_quarantine":
+        fail("D-02 unlisted path must fail closed")
+    if sync_policy.get("numeric_sensitivity_rule") != "no_authoritative_mapping; deny_and_quarantine":
+        fail("D-02 numeric sensitivity must not be inferred")
     sync_def = domain_schema["$defs"]["syncChange"]
     if set(sync_domains) != set(sync_def["properties"]["domain"].get("enum", [])):
         fail("D-02 allowlist domains do not match syncChange domain enum")
@@ -1820,7 +1879,8 @@ def main() -> int:
         f"{len(negative_cases)} schema-negative controls; "
         "1 semantic candidate-identity mismatch control; "
         "2 canonical candidate operation-digest vectors; "
-        f"{len(recovery_rows)} code-specific recovery assertions."
+        f"{len(recovery_rows)} code-specific recovery assertions; "
+        f"{classification_path_count} D-02 classified field paths plus {len(local_policy)} local-only controls."
     )
     return 0
 

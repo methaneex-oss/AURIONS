@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aurions:schemas:sync-classification-policy.d02.v1",
+  "title": "AURIONS D-02 synchronization field-classification policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "registry_id",
+    "registry_version",
+    "policy_version",
+    "allowlist_version",
+    "status",
+    "default_action",
+    "export_enabled",
+    "owner_acceptance",
+    "classification_order",
+    "domains",
+    "cross_domain_local_only",
+    "unlisted_path_rule",
+    "numeric_sensitivity_rule",
+    "source_classification_rule",
+    "public_field_rule",
+    "default_transfer_conditions",
+    "conditional_transfer_conditions",
+    "security_gate"
+  ],
+  "properties": {
+    "registry_id": {
+      "const": "aurions.d02-cloud-mobile-classification-policy"
+    },
+    "registry_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy_version": {
+      "const": "d02-classification.v1"
+    },
+    "allowlist_version": {
+      "const": "d02-cloud-mobile.v1"
+    },
+    "status": {
+      "const": "builder_proposal_not_owner_accepted"
+    },
+    "default_action": {
+      "const": "deny"
+    },
+    "export_enabled": {
+      "const": false
+    },
+    "owner_acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "accepted_at",
+        "accepted_revision"
+      ],
+      "properties": {
+        "status": {
+          "const": "pending"
+        },
+        "accepted_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accepted_revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "classification_order": {
+      "type": "array",
+      "const": [
+        "PUBLIC",
+        "OWNER_PRIVATE",
+        "SENSITIVE",
+        "SECURITY_RESTRICTED"
+      ]
+    },
+    "domains": {
+      "type": "object",
+      "minProperties": 8,
+      "additionalProperties": {
+        "$ref": "#/$defs/domainRule"
+      }
+    },
+    "cross_domain_local_only": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/localOnlyRule"
+      }
+    },
+    "unlisted_path_rule": {
+      "const": "deny_and_quarantine"
+    },
+    "numeric_sensitivity_rule": {
+      "const": "no_authoritative_mapping; deny_and_quarantine"
+    },
+    "source_classification_rule": {
+      "const": "strictest_source_or_derived_classification_wins"
+    },
+    "public_field_rule": {
+      "const": "no_v1_field_is_public_by_inference; explicit_owner_and_domain_classification_required"
+    },
+    "default_transfer_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "conditional_transfer_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "security_gate": {
+      "const": "authenticated_peer_and_owner_scope; validated_signing_and_encryption_profiles; key_version_and_revocation_check; retention_and_policy_version_check; fail_closed"
+    }
+  },
+  "$defs": {
+    "fieldRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "classification",
+        "path_treatment",
+        "rationale",
+        "conditions",
+        "per_aggregate_authorization_required"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+        },
+        "classification": {
+          "enum": [
+            "PUBLIC",
+            "OWNER_PRIVATE",
+            "SENSITIVE",
+            "SECURITY_RESTRICTED"
+          ]
+        },
+        "path_treatment": {
+          "enum": [
+            "proposed_default",
+            "conditional_proposal",
+            "local_only"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "per_aggregate_authorization_required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "domainRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_refs",
+        "fields"
+      ],
+      "properties": {
+        "schema_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/fieldRule"
+          }
+        }
+      }
+    },
+    "localOnlyRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identifier",
+        "classification",
+        "reason"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "minLength": 1
+        },
+        "classification": {
+          "enum": [
+            "SENSITIVE",
+            "SECURITY_RESTRICTED"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

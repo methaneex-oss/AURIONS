@@ -1,0 +1,1699 @@
+{
+  "registry_id": "aurions.d02-cloud-mobile-classification-policy",
+  "registry_version": "1.0",
+  "policy_version": "d02-classification.v1",
+  "allowlist_version": "d02-cloud-mobile.v1",
+  "status": "builder_proposal_not_owner_accepted",
+  "default_action": "deny",
+  "export_enabled": false,
+  "owner_acceptance": {
+    "status": "pending",
+    "accepted_at": null,
+    "accepted_revision": null
+  },
+  "classification_order": [
+    "PUBLIC",
+    "OWNER_PRIVATE",
+    "SENSITIVE",
+    "SECURITY_RESTRICTED"
+  ],
+  "domains": {
+    "experience": {
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/experienceObserved"
+      ],
+      "fields": [
+        {
+          "path": "audio_bytes",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "capture_limitations",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "capture_method",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "content_ref",
+          "classification": "SENSITIVE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Semantic or content-bearing field; eligible only under exact per-aggregate owner authorization and source-policy checks.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "experience_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "image_bytes",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "observed_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "precise_location",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "provenance.actor_ref",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Owner-scoped identity/provenance reference; exact referenced identity must be separately owner-classified.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "provenance.device_ref",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Owner-scoped identity/provenance reference; exact referenced identity must be separately owner-classified.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "provenance.external_origin",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "provenance.source_kind",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "provenance.source_ref",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Owner-scoped identity/provenance reference; exact referenced identity must be separately owner-classified.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "raw_observation",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "recorded_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "retention_class",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "source_type",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "unredacted_source_payload",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "video_bytes",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        }
+      ]
+    },
+    "representation": {
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/representationCreated",
+        "schemas/domain-payloads.v1.schema.json#/$defs/representationRevised"
+      ],
+      "fields": [
+        {
+          "path": "arbitrary_content_object",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "content",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "created_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "experience_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "method_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "method_version",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "raw_source_material",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "representation_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "representation_type",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "source_refs",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "uncertainty",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        }
+      ]
+    },
+    "memory": {
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/memoryRecord"
+      ],
+      "fields": [
+        {
+          "path": "content_ref",
+          "classification": "SENSITIVE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Semantic or content-bearing field; eligible only under exact per-aggregate owner authorization and source-policy checks.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "created_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "deleted_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "embeddings",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "last_accessed_at",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "memory_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "memory_type",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "raw_memory_bytes",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "retention_until",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "retrieval_scores",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "status",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "summary",
+          "classification": "SENSITIVE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Semantic or content-bearing field; eligible only under exact per-aggregate owner authorization and source-policy checks.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "updated_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        }
+      ]
+    },
+    "knowledge": {
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/knowledgeItem"
+      ],
+      "fields": [
+        {
+          "path": "created_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "domain",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "knowledge_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "proposition",
+          "classification": "SENSITIVE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Semantic or content-bearing field; eligible only under exact per-aggregate owner authorization and source-policy checks.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "raw_source_payload",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "security_restricted_evidence",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "status",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "updated_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        }
+      ]
+    },
+    "belief": {
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/beliefRevision"
+      ],
+      "fields": [
+        {
+          "path": "belief_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "confidence",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "created_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "epistemic_status",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "evidence_content",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "evidence_refs",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "knowledge_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "revision_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "revision_number",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "revision_reason",
+          "classification": "SENSITIVE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Semantic or content-bearing field; eligible only under exact per-aggregate owner authorization and source-policy checks.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "unselected_belief_content",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        }
+      ]
+    },
+    "objective": {
+      "schema_refs": [
+        "schemas/world-interaction.v1.schema.json#/$defs/objective"
+      ],
+      "fields": [
+        {
+          "path": "assumptions",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "constraints",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "created_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "local_plans",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "objective_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "owner_ref",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "statement",
+          "classification": "SENSITIVE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Semantic or content-bearing field; eligible only under exact per-aggregate owner authorization and source-policy checks.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "status",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "success_evidence",
+          "classification": "SENSITIVE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Semantic or content-bearing field; eligible only under exact per-aggregate owner authorization and source-policy checks.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "uncertainty",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "unclassified_intent_text",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "version",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        }
+      ]
+    },
+    "goal": {
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/goalRevision"
+      ],
+      "fields": [
+        {
+          "path": "constraints",
+          "classification": "SENSITIVE",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "created_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "description",
+          "classification": "SENSITIVE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Semantic or content-bearing field; eligible only under exact per-aggregate owner authorization and source-policy checks.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "goal_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "objective_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "objective_version",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "priority",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "reason_ref",
+          "classification": "SENSITIVE",
+          "path_treatment": "conditional_proposal",
+          "rationale": "Semantic or content-bearing field; eligible only under exact per-aggregate owner authorization and source-policy checks.",
+          "conditions": [
+            "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+            "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+            "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+            "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+            "payload_is_encrypted_and_integrity_verified_before_transport",
+            "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+          ],
+          "per_aggregate_authorization_required": true
+        },
+        {
+          "path": "revision",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "state",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "task_execution_state",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        }
+      ]
+    },
+    "model_version_reference": {
+      "schema_refs": [
+        "schemas/domain-payloads.v1.schema.json#/$defs/artifactManifest"
+      ],
+      "fields": [
+        {
+          "path": "active_pointer",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "artifact_bytes",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "artifact_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "artifact_kind",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "byte_size",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "candidate_activation",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "created_at",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "lifecycle",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "lineage.derived_from",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "lineage.parent_artifact_refs",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "local_paths",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "media_type",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "owner_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "provenance.producer_id",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "provenance.source_refs",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "retention_class",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "schema_version",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "sha256",
+          "classification": "OWNER_PRIVATE",
+          "path_treatment": "proposed_default",
+          "rationale": "Owner-scoped identity, provenance, lifecycle or version metadata; never PUBLIC by inference.",
+          "conditions": [
+            "same_authenticated_owner_on_both_runtimes",
+            "destination_runtime_is_enrolled_and_not_revoked",
+            "owner_has_enabled_the_exact_synchronized_domain",
+            "exact_allowlist_and_classification_policy_versions_are_supported",
+            "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+            "source_and_destination_retention_rules_allow_the_transfer",
+            "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+            "signature_digest_owner_scope_and_destination_binding_validate"
+          ],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "storage_ref",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "training_credentials",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        },
+        {
+          "path": "worker_state",
+          "classification": "SECURITY_RESTRICTED",
+          "path_treatment": "local_only",
+          "rationale": "Excluded from D-02 v1; no export is permitted until a later schema, policy version and owner decision explicitly replace this rule.",
+          "conditions": [],
+          "per_aggregate_authorization_required": false
+        }
+      ]
+    }
+  },
+  "cross_domain_local_only": [
+    {
+      "identifier": "active_operations",
+      "classification": "SENSITIVE",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "android_os_permissions",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "app_grants",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "approval_nonces",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "cancellation_state",
+      "classification": "SENSITIVE",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "command_dispatch_state",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "device_action_results",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "device_credentials",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "governance_authority",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "hardware_identifiers",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "key_bytes",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "local_outbox_inbox_rows",
+      "classification": "SENSITIVE",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "owner_authentication_secrets",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "peer_keys",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "private_keys",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "provider_receipts",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "recovery_journals",
+      "classification": "SENSITIVE",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "session_tokens",
+      "classification": "SECURITY_RESTRICTED",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "task_checkpoints",
+      "classification": "SENSITIVE",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "transport_checkpoints",
+      "classification": "SENSITIVE",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    },
+    {
+      "identifier": "worker_jobs",
+      "classification": "SENSITIVE",
+      "reason": "Runtime-local state or authority. Not included in synchronized domain payloads and cannot be enabled by a domain allowlist."
+    }
+  ],
+  "unlisted_path_rule": "deny_and_quarantine",
+  "numeric_sensitivity_rule": "no_authoritative_mapping; deny_and_quarantine",
+  "source_classification_rule": "strictest_source_or_derived_classification_wins",
+  "public_field_rule": "no_v1_field_is_public_by_inference; explicit_owner_and_domain_classification_required",
+  "default_transfer_conditions": [
+    "same_authenticated_owner_on_both_runtimes",
+    "destination_runtime_is_enrolled_and_not_revoked",
+    "owner_has_enabled_the_exact_synchronized_domain",
+    "exact_allowlist_and_classification_policy_versions_are_supported",
+    "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+    "source_and_destination_retention_rules_allow_the_transfer",
+    "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+    "signature_digest_owner_scope_and_destination_binding_validate"
+  ],
+  "conditional_transfer_conditions": [
+    "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+    "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+    "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+    "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+    "payload_is_encrypted_and_integrity_verified_before_transport",
+    "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+  ],
+  "security_gate": "authenticated_peer_and_owner_scope; validated_signing_and_encryption_profiles; key_version_and_revocation_check; retention_and_policy_version_check; fail_closed"
+}
