@@ -38,7 +38,12 @@
     "allowlist_version": {
       "const": "d02-cloud-mobile.v1"
     },
-    "status": {"enum":["builder_proposal_not_owner_accepted","owner_accepted_option_a_export_disabled"]},
+    "status": {
+      "enum": [
+        "builder_proposal_not_owner_accepted",
+        "owner_accepted_option_a_export_disabled"
+      ]
+    },
     "default_action": {
       "const": "deny"
     },
@@ -54,7 +59,12 @@
         "accepted_revision"
       ],
       "properties": {
-        "status": {"enum":["pending","accepted_option_a"]},
+        "status": {
+          "enum": [
+            "pending",
+            "accepted_option_a"
+          ]
+        },
         "accepted_at": {
           "type": [
             "string",
@@ -170,7 +180,82 @@
         "per_aggregate_authorization_required": {
           "type": "boolean"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "path_treatment": {
+                "const": "proposed_default"
+              }
+            },
+            "required": [
+              "path_treatment"
+            ]
+          },
+          "then": {
+            "properties": {
+              "conditions": {
+                "const": [
+                  "same_authenticated_owner_on_both_runtimes",
+                  "destination_runtime_is_enrolled_and_not_revoked",
+                  "owner_has_enabled_the_exact_synchronized_domain",
+                  "exact_allowlist_and_classification_policy_versions_are_supported",
+                  "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+                  "source_and_destination_retention_rules_allow_the_transfer",
+                  "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+                  "signature_digest_owner_scope_and_destination_binding_validate"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "path_treatment": {
+                "const": "conditional_proposal"
+              }
+            },
+            "required": [
+              "path_treatment"
+            ]
+          },
+          "then": {
+            "properties": {
+              "conditions": {
+                "const": [
+                  "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+                  "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+                  "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+                  "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+                  "payload_is_encrypted_and_integrity_verified_before_transport",
+                  "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "path_treatment": {
+                "const": "local_only"
+              }
+            },
+            "required": [
+              "path_treatment"
+            ]
+          },
+          "then": {
+            "properties": {
+              "conditions": {
+                "const": []
+              }
+            }
+          }
+        }
+      ]
     },
     "domainRule": {
       "type": "object",
