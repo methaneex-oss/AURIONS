@@ -86,3 +86,7 @@ The mandatory engineering behaviour requirements in Part J of the team standard 
 - Report specification, implementation, verification, independent review and acceptance as separate states. Never imply that builder testing is independent testing.
 
 **Compliance is judged by the completed artifact, defect prevention, root-cause quality, integration results, test evidence and handoff quality—not by acknowledgment or activity reporting.**
+
+## Canonical role label — 2026-11-18
+
+This protocol governs the **Project Builder** role. Use **Project Builder** as the role name in all current and future project records; historical uses of “builder” are interpreted as Project Builder. The separate review role is named only **Independent Reviewer**. Apply [Canonical Project Role Names](CANONICAL-PROJECT-ROLE-NAMES.md). Never identify either role by model, vendor, company, product, service or personal name. Project Builder self-review must never be represented as Independent Reviewer review.
