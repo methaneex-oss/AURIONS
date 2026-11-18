@@ -1350,12 +1350,14 @@ def main() -> int:
     if sync_allowlist.get("default_policy") != "deny":
         fail("D-02 field allowlist must be default-deny")
     sync_domains = sync_allowlist.get("domains", {})
-    # D-02 has a distinct path-to-classification policy registry. It remains a
-    # builder proposal; CI must never promote it to an export entitlement.
+    # D-02 allowlist and classification policy share the accepted scope status.
+    # Owner acceptance never grants an export entitlement or enables runtime sync.
     sync_policy = load(SCHEMAS / "sync-classification-policy.d02.v1.json")
     validate(sync_policy, schema_docs["sync-classification-policy.d02.v1.schema.json"], "D-02 synchronization classification policy")
     policy_status = sync_policy.get("status")
     owner_acceptance = sync_policy.get("owner_acceptance", {})
+    if sync_allowlist.get("status") != policy_status:
+        fail("D-02 allowlist and classification-policy owner disposition statuses differ")
     if policy_status == "builder_proposal_not_owner_accepted":
         if owner_acceptance.get("status") != "pending":
             fail("D-02 pending builder proposal has inconsistent owner-acceptance metadata")
@@ -1372,6 +1374,33 @@ def main() -> int:
         fail("D-02 classification-policy registry version does not match field allowlist")
     if sync_policy.get("allowlist_version") != sync_allowlist.get("allowlist_version"):
         fail("D-02 classification-policy registry references a different allowlist")
+    expected_default_conditions = {
+        "same_authenticated_owner_on_both_runtimes",
+        "destination_runtime_is_enrolled_and_not_revoked",
+        "owner_has_enabled_the_exact_synchronized_domain",
+        "exact_allowlist_and_classification_policy_versions_are_supported",
+        "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+        "source_and_destination_retention_rules_allow_the_transfer",
+        "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+        "signature_digest_owner_scope_and_destination_binding_validate",
+    }
+    expected_conditional_conditions = {
+        "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+        "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+        "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+        "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+        "payload_is_encrypted_and_integrity_verified_before_transport",
+        "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded",
+    }
+    default_conditions = sync_policy.get("default_transfer_conditions", [])
+    conditional_conditions = sync_policy.get("conditional_transfer_conditions", [])
+    if (set(default_conditions) != expected_default_conditions
+            or len(default_conditions) != len(expected_default_conditions)):
+        fail("D-02 default transfer conditions do not exactly match the accepted policy")
+    if (set(conditional_conditions) != expected_conditional_conditions
+            or len(conditional_conditions) != len(expected_conditional_conditions)):
+        fail("D-02 conditional transfer conditions do not exactly match the accepted policy")
+
     policy_domains = sync_policy.get("domains", {})
     if set(policy_domains) != set(sync_domains):
         fail("D-02 classification-policy domain inventory differs from field allowlist")
@@ -1400,11 +1429,19 @@ def main() -> int:
                 if item.get("path_treatment") != group_name:
                     fail(f"D-02 {domain_name}.{field_path}: policy treatment differs from allowlist group")
                 if group_name == "proposed_default":
-                    if item.get("classification") != "OWNER_PRIVATE" or item.get("per_aggregate_authorization_required") is not False or not item.get("conditions"):
-                        fail(f"D-02 {domain_name}.{field_path}: proposed defaults must be OWNER_PRIVATE with same-owner conditions")
+                    conditions = item.get("conditions", [])
+                    if (item.get("classification") != "OWNER_PRIVATE"
+                            or item.get("per_aggregate_authorization_required") is not False
+                            or set(conditions) != expected_default_conditions
+                            or len(conditions) != len(expected_default_conditions)):
+                        fail(f"D-02 {domain_name}.{field_path}: proposed defaults must be OWNER_PRIVATE with the exact accepted condition set")
                 elif group_name == "conditional_proposal":
-                    if item.get("classification") not in {"OWNER_PRIVATE", "SENSITIVE"} or item.get("per_aggregate_authorization_required") is not True or not item.get("conditions"):
-                        fail(f"D-02 {domain_name}.{field_path}: conditional field must require exact aggregate authorization")
+                    conditions = item.get("conditions", [])
+                    if (item.get("classification") not in {"OWNER_PRIVATE", "SENSITIVE"}
+                            or item.get("per_aggregate_authorization_required") is not True
+                            or set(conditions) != expected_conditional_conditions
+                            or len(conditions) != len(expected_conditional_conditions)):
+                        fail(f"D-02 {domain_name}.{field_path}: conditional field must require exact aggregate authorization and the exact accepted condition set")
                 else:
                     if item.get("classification") not in {"SENSITIVE", "SECURITY_RESTRICTED"} or item.get("conditions") or item.get("per_aggregate_authorization_required") is not False:
                         fail(f"D-02 {domain_name}.{field_path}: excluded field must remain local-only")
