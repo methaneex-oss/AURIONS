@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "output_artifact_refs": [
+    "artifact:candidate:1"
+  ],
+  "metrics": {
+    "held_out_score": 0.7
+  },
+  "environment_manifest": "artifact:environment:1",
+  "dataset_manifest": "artifact:dataset:1",
+  "code_revision": "commit:fixture",
+  "random_seed": 42,
+  "started_at": "2026-11-11T08:04:00Z",
+  "finished_at": "2026-11-11T08:06:00Z",
+  "learning_update_id": "90000000-0000-4000-8000-000000000001",
+  "experiment_id": "ad100000-0000-4000-8000-000000000001",
+  "attempt_id": "ad200000-0000-4000-8000-000000000001",
+  "configuration_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

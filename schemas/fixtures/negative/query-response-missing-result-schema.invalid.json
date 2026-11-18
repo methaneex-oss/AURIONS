@@ -1,0 +1,9 @@
+{
+  "query_id": "b0700000-0000-4000-8000-000000000001",
+  "query_type": "capability.search",
+  "query_version": "1.0",
+  "results": [],
+  "consistency": "local_committed",
+  "observed_at": "2026-11-11T08:10:00Z",
+  "has_more": false
+}

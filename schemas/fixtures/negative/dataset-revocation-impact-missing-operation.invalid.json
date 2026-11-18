@@ -1,0 +1,20 @@
+{
+  "impact_id": "d2000000-0000-4000-8000-000000000001",
+  "authorization_id": "b1400000-0000-4000-8000-000000000001",
+  "authorization_record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "owner_ref": "owner:primary",
+  "manifest_refs": [
+    "manifest:b1500000-0000-4000-8000-000000000001"
+  ],
+  "derived_artifact_refs": [
+    "artifact:checkpoint:1",
+    "artifact:candidate:1"
+  ],
+  "active_attempt_refs": [
+    "attempt:training:1"
+  ],
+  "influence_state": "unknown",
+  "disposition": "manual_review",
+  "findings_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "assessed_at": "2026-11-16T19:20:00Z"
+}

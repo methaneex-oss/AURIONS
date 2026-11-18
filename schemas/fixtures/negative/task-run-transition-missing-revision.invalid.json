@@ -1,0 +1,11 @@
+{
+  "task_run_id": "33000000-0000-4000-8000-000000000001",
+  "task_definition_ref": "task:definition:1",
+  "from_state": "running",
+  "to_state": "paused",
+  "previous_revision": 1,
+  "cause_type": "task_control",
+  "cause_ref": "command:task-pause:1",
+  "actor_ref": "owner:primary",
+  "occurred_at": "2026-11-11T08:10:00Z"
+}

@@ -1,0 +1,7 @@
+{
+  "error_id": "b0800000-0000-4000-8000-000000000001",
+  "error_code": "CAPABILITY_STALE",
+  "category": "precondition",
+  "retryable": false,
+  "occurred_at": "2026-11-11T08:08:02Z"
+}

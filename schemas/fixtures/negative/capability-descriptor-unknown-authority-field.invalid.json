@@ -1,0 +1,97 @@
+{
+  "descriptor_schema_version": "1.0",
+  "interface": {
+    "invocation_contract_ref": "urn:fixture:provider-alpha:invoke:1",
+    "input_schema_ref": "urn:fixture:provider-alpha:input:1",
+    "output_schema_ref": "urn:fixture:provider-alpha:output:1",
+    "transport": "fixture-adapter",
+    "provider_api_version": "1"
+  },
+  "preconditions": [
+    {
+      "predicate_ref": "urn:fixture:condition:resource-available",
+      "state": "unknown",
+      "scope": {
+        "fixture": "contract-validation"
+      },
+      "evidence_refs": []
+    }
+  ],
+  "effects": [
+    {
+      "effect_type": "provider-defined-effect",
+      "target_scope": "fixture-resource",
+      "impact": {
+        "description": "Fixture-only effect"
+      },
+      "data_access": [],
+      "side_effects": [],
+      "reversibility": "unknown"
+    }
+  ],
+  "platform_requirements": [],
+  "constraints": {
+    "availability": "unknown",
+    "fixture_only": true
+  },
+  "risk_facts": [
+    {
+      "fact_type": "effect-scope",
+      "value": "fixture-only",
+      "evidence_refs": []
+    }
+  ],
+  "execution": {
+    "timeout_ms": 1000,
+    "cancellation": "cooperative",
+    "idempotency": "unknown",
+    "retry_semantics": "after_reconciliation",
+    "uncertain_outcome_semantics": "Mark uncertain after dispatch without receipt; reconcile before retry."
+  },
+  "verification": {
+    "strategy": "fixture-verification-only",
+    "postconditions": [],
+    "evidence_sources": [],
+    "limitations": [
+      "This fixture is not a real Android capability or platform validation."
+    ]
+  },
+  "resource_profile": {
+    "estimates": {
+      "cpu": "unknown",
+      "memory": "unknown",
+      "storage": "unknown",
+      "network": "unknown",
+      "battery": "unknown",
+      "duration": "unknown"
+    },
+    "uncertainty": {
+      "basis": "No measurements; schema fixture only."
+    }
+  },
+  "lifecycle": {
+    "status": "discovered",
+    "first_discovered_at": "2026-11-11T00:00:00Z",
+    "last_verified_at": null,
+    "expires_at": null,
+    "invalidation_reason": null
+  },
+  "provenance": {
+    "source_id": "fixture.provider.alpha",
+    "discovery_method": "schema-fixture",
+    "evidence_refs": [],
+    "device_context": {
+      "fixture_only": true
+    },
+    "collector_version": "fixture-1",
+    "observed_at": "2026-11-11T00:00:00Z"
+  },
+  "extensions": {
+    "fixture_metadata": {
+      "not_for_production": true
+    }
+  },
+  "granted_permissions": [
+    "fixture.permission"
+  ]
+}

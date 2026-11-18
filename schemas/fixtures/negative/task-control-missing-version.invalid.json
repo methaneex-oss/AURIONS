@@ -1,0 +1,7 @@
+{
+  "task_run_id": "33000000-0000-4000-8000-000000000001",
+  "control_action": "pause",
+  "reason_ref": "reason:fixture",
+  "requested_at": "2026-11-11T08:09:00Z",
+  "deadline": "2026-11-11T08:10:00Z"
+}

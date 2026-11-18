@@ -1,0 +1,23 @@
+{
+  "experiment_id": "ad100000-0000-4000-8000-000000000001",
+  "hypothesis_ref": "hypothesis:2",
+  "baseline_artifact_ref": "artifact:baseline:2",
+  "dataset_manifest_ref": "artifact:dataset:2",
+  "candidate_artifact_ref": null,
+  "random_seed": 42,
+  "resource_budget": {
+    "cpu_ms": 60000,
+    "memory_bytes": 536870912
+  },
+  "requested_at": "2026-11-11T08:11:00Z",
+  "deadline": "2026-11-11T08:20:00Z",
+  "learning_update_id": "90000000-0000-4000-8000-000000000001",
+  "configuration_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "code_revision": "commit:fixture",
+  "dataset_split_ref": "artifact:dataset-split:1",
+  "training_manifest_ref": "artifact:training-manifest:1",
+  "initialization_method": "random_initialization",
+  "initialization_artifact_ref": "artifact:baseline:1",
+  "architecture_config_ref": "artifact:architecture:1",
+  "tokenizer_artifact_ref": "artifact:tokenizer:1"
+}

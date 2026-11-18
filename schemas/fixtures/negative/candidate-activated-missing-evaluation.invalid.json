@@ -1,0 +1,16 @@
+{
+  "candidate_id": "ae100000-0000-4000-8000-000000000001",
+  "proposal_id": "a8000000-0000-4000-8000-000000000001",
+  "state": "active",
+  "artifact_ref": "artifact:candidate:1",
+  "evaluation_ref": "evaluation:combined:1",
+  "approval_ref": "approval:activation:1",
+  "previous_candidate_ref": null,
+  "rollback_ref": null,
+  "occurred_at": "2026-11-11T08:02:00Z",
+  "candidate_artifact_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+  "learning_evaluation_ref": "evaluation:learning:1",
+  "learning_evaluation_digest": "7777777777777777777777777777777777777777777777777777777777777777",
+  "evolution_evaluation_ref": "evaluation:evolution:1",
+  "pointer_revision": 1
+}

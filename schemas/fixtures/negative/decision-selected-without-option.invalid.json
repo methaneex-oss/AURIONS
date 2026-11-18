@@ -1,0 +1,12 @@
+{
+  "decision_id": "5d2f4c90-7a6d-4e23-ae32-1b7d51e20a11",
+  "goal_id": null,
+  "plan_id": null,
+  "decision_type": "selected",
+  "rationale_ref": "urn:aurions:fixture:rationale:deferred-decision",
+  "uncertainty": {
+    "reason": "Required evidence is not yet available",
+    "confidence": null
+  },
+  "created_at": "2026-11-11T00:00:00Z"
+}

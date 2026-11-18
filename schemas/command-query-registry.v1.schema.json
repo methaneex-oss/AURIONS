@@ -1,0 +1,513 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "command-query-registry.v1.schema.json",
+  "title": "AURIONS command and query registry",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "registry_id": {
+      "const": "aurions.command-query-registry"
+    },
+    "registry_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "const": "design_baseline_not_dispatchable"
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "request_schema_source": {
+      "const": "schemas/domain-payloads.v1.schema.json"
+    },
+    "command_response_schema": {
+      "type": "string"
+    },
+    "query_response_schema": {
+      "type": "string"
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 45,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "command_type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+          },
+          "command_version": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+\\.[0-9]+$"
+          },
+          "request_schema": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "response_schema": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "owning_component": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aggregate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "persistence_stores": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "aurion_memory.db",
+                "aurion_events.db",
+                "aurion_governance.db"
+              ]
+            },
+            "description": "Authoritative stores whose durable state is changed by this command. Each store must commit its local state mutation and local outbox in one transaction. The central event archive is asynchronous unless the event store owns state or coordinates a multi-store saga."
+          },
+          "expected_revision_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "authorization_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "idempotency_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deadline_cancellation_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "side_effect_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error_code_bindings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "emitted_event_bindings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fixture_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dispatch_status": {
+            "enum": [
+              "design_only_not_dispatchable",
+              "deferred_by_scope"
+            ]
+          },
+          "unresolved_bindings": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "envelope_schema": {
+            "const": "schemas/domain-payloads.v1.schema.json#/$defs/commandEnvelope"
+          },
+          "table_bindings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "store": {
+                  "enum": [
+                    "aurion_memory.db",
+                    "aurion_events.db",
+                    "aurion_governance.db"
+                  ]
+                },
+                "tables": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "binding_role": {
+                  "enum": [
+                    "authoritative_write",
+                    "read_dependency",
+                    "async_archive"
+                  ],
+                  "description": "authoritative_write is in persistence_stores and commits its local outbox atomically; read_dependency is read-only and has no outbox write; async_archive is the event archive populated asynchronously from the authoritative store's outbox."
+                }
+              },
+              "required": [
+                "store",
+                "tables",
+                "binding_role"
+              ]
+            },
+            "description": "Tables referenced by the command, including read dependencies and central event-archive records. This is not an atomic transaction declaration; use persistence_stores and transaction_contract for write boundaries."
+          },
+          "aggregate_binding_status": {
+            "enum": [
+              "mapped_to_proposed_ddl_not_executed",
+              "deferred_by_scope"
+            ]
+          },
+          "acceptance_case_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^CC-[0-9]{3}$"
+          },
+          "transaction_contract": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Explicit single-store transactional-outbox or cross-store saga boundary. Never implies distributed ACID."
+          }
+        },
+        "required": [
+          "command_type",
+          "command_version",
+          "request_schema",
+          "response_schema",
+          "owning_component",
+          "aggregate",
+          "persistence_stores",
+          "expected_revision_contract",
+          "authorization_contract",
+          "idempotency_contract",
+          "deadline_cancellation_contract",
+          "side_effect_contract",
+          "error_code_bindings",
+          "emitted_event_bindings",
+          "fixture_refs",
+          "dispatch_status",
+          "unresolved_bindings",
+          "envelope_schema",
+          "table_bindings",
+          "aggregate_binding_status",
+          "transaction_contract"
+        ]
+      }
+    },
+    "queries": {
+      "type": "array",
+      "minItems": 21,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "query_type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+          },
+          "query_version": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+$"
+          },
+          "input_schema": {
+            "type": "string",
+            "minLength": 1
+          },
+          "response_schema": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result_item_schema": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owning_component": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aggregate": {
+            "type": "string",
+            "minLength": 1
+          },
+          "persistence_stores": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "aurion_memory.db",
+                "aurion_events.db",
+                "aurion_governance.db"
+              ]
+            }
+          },
+          "read_only": {
+            "const": true
+          },
+          "authorization_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "data_classification": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "redaction_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "consistency_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ordering_cursor_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "limits_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "freshness_cache_contract": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fixture_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dispatch_status": {
+            "const": "design_only_not_dispatchable"
+          },
+          "unresolved_bindings": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "envelope_schema": {
+            "const": "schemas/domain-payloads.v1.schema.json#/$defs/queryEnvelope"
+          },
+          "table_bindings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "store": {
+                  "enum": [
+                    "aurion_memory.db",
+                    "aurion_events.db",
+                    "aurion_governance.db"
+                  ]
+                },
+                "tables": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "binding_role": {
+                  "enum": [
+                    "read_projection"
+                  ],
+                  "description": "read_projection identifies a read-only query source; it never implies write ownership."
+                }
+              },
+              "required": [
+                "store",
+                "tables",
+                "binding_role"
+              ]
+            }
+          },
+          "aggregate_binding_status": {
+            "enum": [
+              "mapped_to_proposed_ddl_not_executed",
+              "runtime_state_with_event_history"
+            ]
+          },
+          "acceptance_case_id": {
+            "type": "string",
+            "pattern": "^QCC-[0-9]{3}$"
+          },
+          "acceptance_positive_assertion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "acceptance_negative_assertion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "read_only_invariant": {
+            "type": "string",
+            "minLength": 1
+          },
+          "projection_contract": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Explicit evidence boundary for query result projection. Must identify unresolved SELECT/source/alias/join semantics."
+          },
+          "projection_unresolved_fields": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Result schema fields with no direct, _json or _ms candidate column in the declared table bindings. These remain unresolved until explicit mapping."
+          },
+          "projection_resolved_fields": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Result fields with an explicit proposed source or derivation in the query projection reconciliation report. This is specification coverage, not runtime SQL verification."
+          }
+        },
+        "required": [
+          "query_type",
+          "query_version",
+          "input_schema",
+          "response_schema",
+          "result_item_schema",
+          "owning_component",
+          "aggregate",
+          "persistence_stores",
+          "read_only",
+          "authorization_contract",
+          "data_classification",
+          "redaction_contract",
+          "consistency_contract",
+          "ordering_cursor_contract",
+          "limits_contract",
+          "freshness_cache_contract",
+          "fixture_refs",
+          "dispatch_status",
+          "unresolved_bindings",
+          "envelope_schema",
+          "table_bindings",
+          "aggregate_binding_status",
+          "projection_contract",
+          "projection_unresolved_fields",
+          "projection_resolved_fields"
+        ]
+      }
+    },
+    "dispatch_invariant": {
+      "type": "string",
+      "minLength": 1
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mapped_command_types": {
+          "const": 52
+        },
+        "deferred_command_types": {
+          "const": 2
+        },
+        "query_types": {
+          "const": 29
+        },
+        "command_envelope_bindings": {
+          "const": 54
+        },
+        "query_envelope_bindings": {
+          "const": 29
+        },
+        "proposed_ddl_mapped_commands": {
+          "const": 52
+        },
+        "proposed_ddl_mapped_queries": {
+          "const": 29
+        }
+      },
+      "required": [
+        "mapped_command_types",
+        "deferred_command_types",
+        "query_types",
+        "command_envelope_bindings",
+        "query_envelope_bindings",
+        "proposed_ddl_mapped_commands",
+        "proposed_ddl_mapped_queries"
+      ]
+    }
+  },
+  "required": [
+    "registry_id",
+    "registry_version",
+    "status",
+    "source_refs",
+    "request_schema_source",
+    "command_response_schema",
+    "query_response_schema",
+    "commands",
+    "queries",
+    "dispatch_invariant",
+    "counts"
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aurions:schema:error-registry:1",
+  "title": "AURIONS extensible error-code registry",
+  "description": "Versioned identifiers and default recovery metadata. Registry defaults never replace the actual side-effect state observed for an individual attempt and are not executable behavioural rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "registry_id",
+    "registry_version",
+    "status",
+    "source_ref",
+    "entries"
+  ],
+  "properties": {
+    "registry_id": {
+      "const": "aurions.error-codes"
+    },
+    "registry_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "status": {
+      "enum": [
+        "seed",
+        "registered"
+      ]
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/errorRegistryEntry"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "errorRegistryEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "error_code",
+        "category",
+        "default_side_effect_state",
+        "default_retry_posture",
+        "recovery_action",
+        "owner_or_platform_intervention",
+        "description",
+        "status",
+        "handler_mapping_ref",
+        "fixture_refs",
+        "source_ref"
+      ],
+      "properties": {
+        "error_code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.-]*\\.[A-Z0-9_]+$"
+        },
+        "category": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.-]*$"
+        },
+        "default_side_effect_state": {
+          "enum": [
+            "not_dispatched",
+            "dispatched",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "default_retry_posture": {
+          "enum": [
+            "never",
+            "after_condition_change",
+            "after_backoff",
+            "safe_idempotent_retry",
+            "reconcile_before_retry",
+            "manual_intervention"
+          ]
+        },
+        "recovery_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner_or_platform_intervention": {
+          "enum": [
+            "none",
+            "platform_permission",
+            "owner_authorization",
+            "conditional",
+            "unresolved"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "seed",
+            "registered"
+          ]
+        },
+        "handler_mapping_ref": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fixture_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "registered"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "handler_mapping_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fixture_refs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

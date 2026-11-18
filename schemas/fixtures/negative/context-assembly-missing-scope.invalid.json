@@ -1,0 +1,9 @@
+{
+  "context_id": "31000000-0000-4000-8000-000000000001",
+  "input_refs": [
+    "experience:1"
+  ],
+  "requested_at": "2026-11-11T08:09:00Z",
+  "valid_until": null,
+  "uncertainty_policy": "preserve_conflicts"
+}

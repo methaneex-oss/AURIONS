@@ -1,0 +1,62 @@
+{
+  "manifest": {
+    "dataset_manifest_id": "b1500000-0000-4000-8000-000000000001",
+    "schema_version": "1.0",
+    "owner_ref": "owner:primary",
+    "model_family_ref": "model-family:aurions-foundation",
+    "training_purpose": "foundation_pretraining",
+    "model_generation_ref": "model-generation:initial",
+    "tokenizer_artifact_ref": "artifact:tokenizer:initial",
+    "included_sources": [
+      {
+        "source_ref": "source:licensed-corpus:1",
+        "source_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "authorization_id": "b1400000-0000-4000-8000-000000000001",
+        "authorization_record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "license_or_terms_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "source_artifact_ref": "artifact:source:licensed-corpus:1",
+        "transformation_lineage_refs": [
+          "transform:normalize-v1"
+        ]
+      }
+    ],
+    "excluded_sources": [
+      {
+        "source_ref": "source:unknown-rights:1",
+        "reason": "unknown_rights"
+      }
+    ],
+    "preprocessing_pipeline_ref": "pipeline:foundation-v1",
+    "preprocessing_config_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "deduplication_report_ref": "artifact:dedup-report:1",
+    "quality_report_ref": "artifact:quality-report:1",
+    "language_domain_classification_ref": "artifact:language-domain-report:1",
+    "curriculum_config_ref": "config:curriculum:foundation-v1",
+    "curriculum_config_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "splits": {
+      "train": {
+        "split_ref": "split:train:1",
+        "digest": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "validation": {
+        "split_ref": "split:validation:1",
+        "digest": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "held_out": {
+        "split_ref": "split:held-out:1",
+        "digest": "3333333333333333333333333333333333333333333333333333333333333333"
+      }
+    },
+    "rights_policy_snapshot_ref": "policy-snapshot:training-data:1",
+    "rights_policy_snapshot_digest": "4444444444444444444444444444444444444444444444444444444444444444",
+    "authorization_evaluated_at": "2026-11-16T20:01:00Z",
+    "created_at": "2026-11-16T20:02:00Z",
+    "manifest_digest": "5555555555555555555555555555555555555555555555555555555555555555",
+    "lifecycle": "sealed",
+    "derived_artifact_refs": [
+      "artifact:future-checkpoint:1"
+    ]
+  },
+  "sealed_at": "2026-11-16T19:05:00Z",
+  "supervisor_ref": "supervisor:dataset:1"
+}

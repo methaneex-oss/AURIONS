@@ -1,0 +1,14 @@
+{
+  "entity_id": "entity:invalid:no-provenance",
+  "identity_status": "confirmed",
+  "description": "Entity fixture without any supporting evidence.",
+  "first_observed_at": "2026-11-12T08:00:00Z",
+  "evidence_refs": [],
+  "scope": {
+    "context_ref": "situation:fixture:1",
+    "owner_ref": null,
+    "valid_from": null,
+    "valid_until": null
+  },
+  "attributes": {}
+}

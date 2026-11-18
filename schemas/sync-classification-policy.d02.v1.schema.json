@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aurions:schemas:sync-classification-policy.d02.v1",
+  "title": "AURIONS D-02 synchronization field-classification policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "registry_id",
+    "registry_version",
+    "policy_version",
+    "allowlist_version",
+    "status",
+    "default_action",
+    "export_enabled",
+    "owner_acceptance",
+    "classification_order",
+    "domains",
+    "cross_domain_local_only",
+    "unlisted_path_rule",
+    "numeric_sensitivity_rule",
+    "source_classification_rule",
+    "public_field_rule",
+    "default_transfer_conditions",
+    "conditional_transfer_conditions",
+    "security_gate"
+  ],
+  "properties": {
+    "registry_id": {
+      "const": "aurions.d02-cloud-mobile-classification-policy"
+    },
+    "registry_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy_version": {
+      "const": "d02-classification.v1"
+    },
+    "allowlist_version": {
+      "const": "d02-cloud-mobile.v1"
+    },
+    "status": {
+      "enum": [
+        "builder_proposal_not_owner_accepted",
+        "owner_accepted_option_a_export_disabled"
+      ]
+    },
+    "default_action": {
+      "const": "deny"
+    },
+    "export_enabled": {
+      "const": false
+    },
+    "owner_acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "accepted_at",
+        "accepted_revision"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "pending",
+            "accepted_option_a"
+          ]
+        },
+        "accepted_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accepted_revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "classification_order": {
+      "type": "array",
+      "const": [
+        "PUBLIC",
+        "OWNER_PRIVATE",
+        "SENSITIVE",
+        "SECURITY_RESTRICTED"
+      ]
+    },
+    "domains": {
+      "type": "object",
+      "minProperties": 8,
+      "additionalProperties": {
+        "$ref": "#/$defs/domainRule"
+      }
+    },
+    "cross_domain_local_only": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/localOnlyRule"
+      }
+    },
+    "unlisted_path_rule": {
+      "const": "deny_and_quarantine"
+    },
+    "numeric_sensitivity_rule": {
+      "const": "no_authoritative_mapping; deny_and_quarantine"
+    },
+    "source_classification_rule": {
+      "const": "strictest_source_or_derived_classification_wins"
+    },
+    "public_field_rule": {
+      "const": "no_v1_field_is_public_by_inference; explicit_owner_and_domain_classification_required"
+    },
+    "default_transfer_conditions": {
+      "const": [
+        "same_authenticated_owner_on_both_runtimes",
+        "destination_runtime_is_enrolled_and_not_revoked",
+        "owner_has_enabled_the_exact_synchronized_domain",
+        "exact_allowlist_and_classification_policy_versions_are_supported",
+        "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+        "source_and_destination_retention_rules_allow_the_transfer",
+        "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+        "signature_digest_owner_scope_and_destination_binding_validate"
+      ]
+    },
+    "conditional_transfer_conditions": {
+      "const": [
+        "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+        "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+        "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+        "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+        "payload_is_encrypted_and_integrity_verified_before_transport",
+        "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+      ]
+    },
+    "security_gate": {
+      "const": "authenticated_peer_and_owner_scope; validated_signing_and_encryption_profiles; key_version_and_revocation_check; retention_and_policy_version_check; fail_closed"
+    }
+  },
+  "$defs": {
+    "fieldRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "classification",
+        "path_treatment",
+        "rationale",
+        "conditions",
+        "per_aggregate_authorization_required"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+        },
+        "classification": {
+          "enum": [
+            "PUBLIC",
+            "OWNER_PRIVATE",
+            "SENSITIVE",
+            "SECURITY_RESTRICTED"
+          ]
+        },
+        "path_treatment": {
+          "enum": [
+            "proposed_default",
+            "conditional_proposal",
+            "local_only"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "per_aggregate_authorization_required": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "path_treatment": {
+                "const": "proposed_default"
+              }
+            },
+            "required": [
+              "path_treatment"
+            ]
+          },
+          "then": {
+            "properties": {
+              "conditions": {
+                "const": [
+                  "same_authenticated_owner_on_both_runtimes",
+                  "destination_runtime_is_enrolled_and_not_revoked",
+                  "owner_has_enabled_the_exact_synchronized_domain",
+                  "exact_allowlist_and_classification_policy_versions_are_supported",
+                  "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+                  "source_and_destination_retention_rules_allow_the_transfer",
+                  "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+                  "signature_digest_owner_scope_and_destination_binding_validate"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "path_treatment": {
+                "const": "conditional_proposal"
+              }
+            },
+            "required": [
+              "path_treatment"
+            ]
+          },
+          "then": {
+            "properties": {
+              "conditions": {
+                "const": [
+                  "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+                  "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+                  "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+                  "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+                  "payload_is_encrypted_and_integrity_verified_before_transport",
+                  "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "path_treatment": {
+                "const": "local_only"
+              }
+            },
+            "required": [
+              "path_treatment"
+            ]
+          },
+          "then": {
+            "properties": {
+              "conditions": {
+                "const": []
+              }
+            }
+          }
+        }
+      ]
+    },
+    "domainRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_refs",
+        "fields"
+      ],
+      "properties": {
+        "schema_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/fieldRule"
+          }
+        }
+      }
+    },
+    "localOnlyRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identifier",
+        "classification",
+        "reason"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "minLength": 1
+        },
+        "classification": {
+          "enum": [
+            "SENSITIVE",
+            "SECURITY_RESTRICTED"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

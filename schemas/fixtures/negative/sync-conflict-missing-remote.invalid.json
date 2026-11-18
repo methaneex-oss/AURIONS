@@ -1,0 +1,10 @@
+{
+  "conflict_id": "b0300000-0000-4000-8000-000000000001",
+  "domain": "belief",
+  "aggregate_id": "belief:1",
+  "local_version_ref": "belief:revision:2",
+  "causal_parent_refs": [],
+  "conflict_kind": "concurrent_revision",
+  "resolution_state": "pending_owner",
+  "detected_at": "2026-11-11T08:04:00Z"
+}

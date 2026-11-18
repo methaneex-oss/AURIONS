@@ -1,0 +1,16 @@
+{
+  "admission_id": "d1000000-0000-4000-8000-000000000001",
+  "owner_ref": "owner:primary",
+  "model_family_ref": "model-family:aurions-foundation",
+  "training_purpose": "foundation_pretraining",
+  "manifest_id": "b1500000-0000-4000-8000-000000000001",
+  "source_ref": "source:licensed-corpus:1",
+  "authorization_id": "b1400000-0000-4000-8000-000000000001",
+  "checked_at": "2026-11-16T19:11:00Z",
+  "policy_version_ref": "policy:training-data-v1",
+  "worker_job_ref": null,
+  "evidence_refs": [
+    "authorization:b1400000-0000-4000-8000-000000000001",
+    "revocation:dataset-source:1"
+  ]
+}

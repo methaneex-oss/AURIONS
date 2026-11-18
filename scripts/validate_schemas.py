@@ -1,0 +1,1940 @@
+#!/usr/bin/env python3
+"""Validate the checked-in AURIONS JSON Schema corpus and fixture expectations.
+
+This is a design-contract validation gate. It does not prove runtime handler
+semantics, C++/Python equivalence, authorization correctness, or production
+readiness.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+import uuid
+import sys
+from pathlib import Path
+
+from jsonschema import Draft202012Validator, FormatChecker
+from referencing import Registry, Resource
+
+ROOT = Path(__file__).resolve().parents[1]
+SCHEMAS = ROOT / "schemas"
+FIXTURES = SCHEMAS / "fixtures"
+
+
+def load(path: Path):
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def fail(message: str) -> None:
+    raise AssertionError(message)
+
+
+
+def canonical_jcs_fixture_bytes(value) -> bytes:
+    """Serialize the restricted ASCII/integer fixture subset using RFC 8785 rules."""
+    def check(item) -> None:
+        if isinstance(item, float):
+            fail("candidate operation digest fixtures must not contain floating-point values")
+        if isinstance(item, str) and not item.isascii():
+            fail("candidate operation digest fixtures use ASCII strings for deterministic JCS vectors")
+        if isinstance(item, dict):
+            for key, child in item.items():
+                if not isinstance(key, str) or not key.isascii():
+                    fail("candidate operation digest fixture keys must be ASCII strings")
+                check(child)
+        elif isinstance(item, list):
+            for child in item:
+                check(child)
+    check(value)
+    return json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("utf-8")
+
+
+def main() -> int:
+    schema_paths = sorted(SCHEMAS.glob("*.schema.json"))
+    schema_docs = {path.name: load(path) for path in schema_paths}
+    if not schema_docs:
+        fail("No top-level schema files found")
+
+    registry = Registry()
+    for name, schema in schema_docs.items():
+        if schema.get("$schema") != Draft202012Validator.META_SCHEMA["$id"]:
+            fail(f"{name}: missing or incorrect Draft 2020-12 dialect declaration")
+        Draft202012Validator.check_schema(schema)
+        resource = Resource.from_contents(schema)
+        schema_id = schema.get("$id", "")
+        if schema_id.startswith("urn:"):
+            registry = registry.with_resource(schema_id, resource)
+
+    def validate(instance, schema, label: str) -> None:
+        validator = Draft202012Validator(
+            schema, registry=registry, format_checker=FormatChecker()
+        )
+        errors = sorted(validator.iter_errors(instance), key=lambda e: list(e.path))
+        if errors:
+            detail = "; ".join(
+                f"{'/'.join(map(str, error.absolute_path)) or '<root>'}: {error.message}"
+                for error in errors[:5]
+            )
+            fail(f"{label}: {detail}")
+
+    # Core registries and their fixtures.
+    pairs = [
+        ("command-query-registry.v1.json", "command-query-registry.v1.schema.json"),
+        ("event-registry.v1.json", "event-registry.v1.schema.json"),
+        ("error-registry.v1.json", "error-registry.v1.schema.json"),
+        ("fixtures/error-handler-cases.fixture.json", "error-handler-fixtures.v1.schema.json"),
+        ("fixtures/message-envelope.fixture.json", "message-envelope.v1.schema.json"),
+        ("fixtures/capability-descriptor.fixture.json", "capability-descriptor-body.v1.schema.json"),
+        ("fixtures/world-interaction.fixture.json", "world-interaction.v1.schema.json"),
+        ("fixtures/scenario-contracts.fixture.json", "scenario-contracts.v1.schema.json"),
+        ("first-release-command-query-scope.d04.v1.json", "first-release-command-query-scope.d04.v1.schema.json"),
+    ]
+    for instance_path, schema_name in pairs:
+        validate(load(SCHEMAS / instance_path), schema_docs[schema_name], instance_path)
+
+    # Guard the safety status of design registries. Structural validity
+    # must never accidentally promote an incomplete contract to dispatchable.
+    command_registry = load(SCHEMAS / "command-query-registry.v1.json")
+    commands = command_registry["commands"]
+    queries = command_registry["queries"]
+    command_counts = command_registry.get("counts", {})
+    mapped_commands = [
+        item for item in commands
+        if item.get("dispatch_status") == "design_only_not_dispatchable"
+    ]
+    deferred_commands = [
+        item for item in commands
+        if item.get("dispatch_status") == "deferred_by_scope"
+    ]
+    expected_total = (
+        command_counts.get("mapped_command_types", -1)
+        + command_counts.get("deferred_command_types", -1)
+    )
+    if len(commands) != expected_total or len({item["command_type"] for item in commands}) != len(commands):
+        fail("command registry inventory differs from its declared mapped/deferred counts or contains duplicate types")
+    if len(mapped_commands) != command_counts.get("mapped_command_types"):
+        fail("mapped command count differs from registry inventory metadata")
+    semantic_report_path = ROOT / "docs/planning/SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md"
+    semantic_report = semantic_report_path.read_text(encoding="utf-8")
+    expected_inventory_lines = (
+        f"- {len(commands)} command entries: {len(mapped_commands)} mapped to typed request/response",
+        f"- {len(mapped_commands)} mapped commands have unique CC-001…CC-{len(mapped_commands):03d} positive/negative acceptance assertions.",
+        f"- {len(commands)} unique command types, {len(queries)} unique query types and 94 event types.",
+        f"- All {len(mapped_commands)} mapped command entries have semantic fields, known error/event bindings and unique CC-001…CC-{len(mapped_commands):03d} acceptance IDs; the two device commands are deferred.",
+    )
+    for expected_line in expected_inventory_lines:
+        if expected_line not in semantic_report:
+            fail(f"semantic architecture report has stale command/query inventory summary: {expected_line}")
+    if len(deferred_commands) != command_counts.get("deferred_command_types"):
+        fail("deferred command count differs from registry inventory metadata")
+    if command_counts.get("command_envelope_bindings") != len(commands):
+        fail("command envelope binding count differs from registry inventory")
+    if command_counts.get("proposed_ddl_mapped_commands") != len(mapped_commands):
+        fail("proposed DDL mapped-command count differs from mapped command inventory")
+    if len(queries) != 29 or len({item["query_type"] for item in queries}) != 29:
+        fail("query registry must contain 29 unique query types")
+
+    # D-04 is an owner-accepted inventory decision, not merely a prose count.
+    # Validate its six command groups and three query groups as a disjoint,
+    # exhaustive partition of the live registry while preserving non-dispatch.
+    d04_scope = load(SCHEMAS / "first-release-command-query-scope.d04.v1.json")
+    if d04_scope.get("status") != "owner_accepted_scope_only" or d04_scope.get("owner_decision") != "D-04":
+        fail("D-04 scope registry does not preserve its owner-accepted scope-only status")
+    command_groups = d04_scope.get("commands", {})
+    command_group_counts = {
+        "p0_public_owner_facing": 27,
+        "p0_internal_protected": 14,
+        "p1_conditional": 9,
+        "internal_maintenance_optional": 2,
+        "deferred": 2,
+    }
+    command_members = []
+    for group, expected_count in command_group_counts.items():
+        members = command_groups.get(group)
+        if not isinstance(members, list) or len(members) != expected_count or len(members) != len(set(members)):
+            fail(f"D-04 command group {group} must contain exactly {expected_count} unique entries")
+        command_members.extend(members)
+    if len(command_members) != len(set(command_members)):
+        fail("D-04 command groups overlap")
+    command_registry_names = {item["command_type"] for item in commands}
+    if set(command_members) != command_registry_names:
+        fail(
+            "D-04 command scope differs from command registry: "
+            f"missing={sorted(command_registry_names - set(command_members))}; "
+            f"extra={sorted(set(command_members) - command_registry_names)}"
+        )
+    command_by_name = {item["command_type"]: item for item in commands}
+    for name in command_groups["deferred"]:
+        if command_by_name[name].get("dispatch_status") != "deferred_by_scope":
+            fail(f"D-04 deferred command {name} is not marked deferred_by_scope")
+    for name in set(command_members) - set(command_groups["deferred"]):
+        if command_by_name[name].get("dispatch_status") != "design_only_not_dispatchable":
+            fail(f"D-04 command {name} must remain design_only_not_dispatchable")
+
+    query_groups = d04_scope.get("queries", {})
+    query_group_counts = {"p0_read_only": 18, "p1_conditional": 6, "internal_diagnostic": 5}
+    query_members = []
+    for group, expected_count in query_group_counts.items():
+        members = query_groups.get(group)
+        if not isinstance(members, list) or len(members) != expected_count or len(members) != len(set(members)):
+            fail(f"D-04 query group {group} must contain exactly {expected_count} unique entries")
+        query_members.extend(members)
+    if len(query_members) != len(set(query_members)):
+        fail("D-04 query groups overlap")
+    query_registry_names = {item["query_type"] for item in queries}
+    if set(query_members) != query_registry_names:
+        fail(
+            "D-04 query scope differs from query registry: "
+            f"missing={sorted(query_registry_names - set(query_members))}; "
+            f"extra={sorted(set(query_members) - query_registry_names)}"
+        )
+    query_by_name = {item["query_type"]: item for item in queries}
+    if any(query_by_name[name].get("read_only") is not True for name in query_members):
+        fail("D-04 query inventory contains a non-read-only query")
+    if any(item.get("dispatch_status") != "design_only_not_dispatchable" for item in queries):
+        fail("D-04 queries must all remain design_only_not_dispatchable")
+    command_matrix_path = ROOT / "docs/planning/COMMAND-TRANSITION-AND-RECOVERY-CONTRACT-MATRIX.md"
+    if not command_matrix_path.is_file():
+        fail("missing per-command transition and recovery contract matrix")
+    command_matrix = command_matrix_path.read_text(encoding="utf-8")
+    transaction_matrix_path = ROOT / "docs/planning/STORE-LOCAL-OUTBOX-AND-CROSS-STORE-SAGA-MATRIX.md"
+    if not transaction_matrix_path.is_file():
+        fail("missing store-local outbox and cross-store saga ownership matrix")
+    transaction_matrix = transaction_matrix_path.read_text(encoding="utf-8")
+    expected_command_types = {item["command_type"] for item in commands}
+    transaction_rows = {}
+    for line in transaction_matrix.splitlines():
+        if not line.startswith("| ") or line.count("|") < 5:
+            continue
+        command_name = line.split("|", 2)[1].strip().strip(chr(96))
+        if command_name in expected_command_types:
+            transaction_rows[command_name] = line
+    if set(transaction_rows) != expected_command_types:
+        fail(
+            "transaction matrix command inventory mismatch: "
+            f"missing={sorted(expected_command_types - set(transaction_rows))}; "
+            f"unexpected={sorted(set(transaction_rows) - expected_command_types)}"
+        )
+    error_registry = load(SCHEMAS / "error-registry.v1.json")
+    known_error_codes = {entry["error_code"] for entry in error_registry["entries"]}
+    event_registry = load(SCHEMAS / "event-registry.v1.json")
+    known_event_types = set(event_registry["events"])
+    # Every authoritative write store must own its transactional outbox.
+    # The central event archive is populated asynchronously by relays; it cannot
+    # make a separate domain-store commit atomic.
+    store_ddl_files = {
+        "aurion_memory.db": [
+            "aurion_memory.base.sql", "aurion_memory.migration_v2.sql",
+            "aurion_memory.migration_v3.sql", "aurion_memory.migration_v4.sql",
+            "aurion_memory.migration_v5.sql", "aurion_memory.migration_v6.sql",
+            "aurion_memory.migration_v7.sql",
+            "aurion_memory.migration_v8.sql", "aurion_memory.migration_v9.sql",
+            "aurion_memory.migration_v10.sql",
+        ],
+        "aurion_events.db": [
+            "aurion_events.base.sql", "aurion_events.migration_v2.sql",
+            "aurion_events.migration_v3.sql", "aurion_events.migration_v4.sql",
+            "aurion_events.migration_v5.sql", "aurion_events.migration_v6.sql",
+        ],
+        "aurion_governance.db": [
+            "aurion_governance.base.sql", "aurion_governance.migration_v2.sql",
+            "aurion_governance.migration_v3.sql", "aurion_governance.migration_v4.sql", "aurion_governance.migration_v5.sql",
+        ],
+    }
+    store_tables = {}
+    for store, filenames in store_ddl_files.items():
+        ddl_text = "\n".join(
+            (ROOT / "schemas/persistence" / filename).read_text(encoding="utf-8")
+            for filename in filenames
+        )
+        store_tables[store] = set(re.findall(
+            r"CREATE TABLE(?: IF NOT EXISTS)?\s+([A-Za-z_][A-Za-z0-9_]*)",
+            ddl_text,
+            flags=re.IGNORECASE,
+        ))
+        if "outbox" not in store_tables[store]:
+            fail(f"{store}: missing store-local transactional outbox table")
+
+    command_acceptance_ids = set()
+    mapped_command_types = set()
+    for item in commands:
+        command_type = item["command_type"]
+        if not item.get("unresolved_bindings"):
+            fail(f"{command_type}: missing explicit unresolved-binding ledger")
+        if item.get("dispatch_status") not in {
+            "design_only_not_dispatchable", "deferred_by_scope"
+        }:
+            fail(f"{command_type}: unsafe dispatch status")
+        matrix_row = f"| `{command_type}` |"
+        if matrix_row not in command_matrix:
+            fail(f"{command_type}: missing per-command transition matrix row")
+        matching_rows = [
+            line for line in command_matrix.splitlines()
+            if line.startswith(matrix_row)
+        ]
+        if len(matching_rows) != 1:
+            fail(f"{command_type}: expected exactly one per-command transition row")
+        if item["dispatch_status"] != "deferred_by_scope":
+            matching_rows = [
+                line for line in command_matrix.splitlines()
+                if line.startswith(matrix_row)
+            ]
+            if len(matching_rows) != 1:
+                fail(f"{command_type}: expected exactly one per-command transition row")
+            row_cells = [
+                cell.strip()
+                for cell in matching_rows[0].strip().strip("|").split("|")
+            ]
+            if len(row_cells) != 4:
+                fail(f"{command_type}: transition row must have four columns")
+            matrix_events = set(re.findall(
+                r"\b[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+\.v\d+\b",
+                row_cells[2],
+            ))
+            registry_events = set(item.get("emitted_event_bindings", []))
+            if matrix_events != registry_events:
+                fail(
+                    f"{command_type}: transition-matrix event boundary differs from registry; "
+                    f"matrix={sorted(matrix_events)}; registry={sorted(registry_events)}"
+                )
+        transaction_row = transaction_rows[command_type]
+        transaction_cells = [
+            cell.strip()
+            for cell in transaction_row.strip().strip("|").split("|")
+        ]
+        if len(transaction_cells) != 5:
+            fail(f"{command_type}: transaction matrix row must have five columns")
+        expected_mode = (
+            "DEFERRED" if item["dispatch_status"] == "deferred_by_scope"
+            else "CROSS_STORE_SAGA" if len(item.get("persistence_stores", [])) > 1
+            else "SINGLE_STORE_LOCAL_OUTBOX"
+        )
+        if transaction_cells[2] != expected_mode:
+            fail(f"{command_type}: transaction matrix mode differs from registry boundary")
+        matrix_stores = (
+            [] if transaction_cells[1] in {"—", "-", ""}
+            else [value.strip().strip("`") for value in transaction_cells[1].split(",")]
+        )
+        registry_stores = item.get("persistence_stores", [])
+        if set(matrix_stores) != set(registry_stores):
+            fail(
+                f"{command_type}: transaction matrix stores differ from registry; "
+                f"matrix={sorted(matrix_stores)}; registry={sorted(registry_stores)}"
+            )
+        matrix_outboxes = (
+            [] if transaction_cells[3].lower().startswith("none")
+            else [value.strip().strip("`") for value in transaction_cells[3].split(",")]
+        )
+        expected_outboxes = [f"{store}:outbox" for store in registry_stores]
+        if set(matrix_outboxes) != set(expected_outboxes):
+            fail(
+                f"{command_type}: transaction matrix outboxes differ from registry; "
+                f"matrix={sorted(matrix_outboxes)}; expected={sorted(expected_outboxes)}"
+            )
+        if item["dispatch_status"] == "deferred_by_scope":
+            if item.get("acceptance_case_id") or item.get("error_code_bindings") or item.get("emitted_event_bindings"):
+                fail(f"{command_type}: deferred command must not have active contract bindings")
+            continue
+        mapped_command_types.add(command_type)
+        bindings = item.get("table_bindings", [])
+        binding_stores = [binding["store"] for binding in bindings]
+        if len(binding_stores) != len(set(binding_stores)):
+            fail(f"{command_type}: duplicate table-binding store")
+        bindings_by_store = {
+            binding["store"]: set(binding["tables"])
+            for binding in bindings
+        }
+        stores = item.get("persistence_stores", [])
+        transaction_contract = item.get("transaction_contract", "")
+        for binding in bindings:
+            store = binding["store"]
+            role = binding.get("binding_role")
+            if store not in store_tables:
+                fail(f"{command_type}: table binding names unknown store {store}")
+            missing_tables = set(binding["tables"]) - store_tables[store]
+            if missing_tables:
+                fail(f"{command_type}: {store} binding names absent DDL tables {sorted(missing_tables)}")
+            if store in stores:
+                if role != "authoritative_write":
+                    fail(f"{command_type}: persistence store {store} must have authoritative_write binding role")
+            elif role == "async_archive":
+                if store != "aurion_events.db" or not {"events", "outbox"}.issubset(set(binding["tables"])):
+                    fail(f"{command_type}: async_archive must bind events/outbox in aurion_events.db")
+            elif role == "read_dependency":
+                if "outbox" in binding["tables"]:
+                    fail(f"{command_type}: read_dependency {store} must not bind its write outbox")
+            else:
+                fail(f"{command_type}: extra store {store} must be read_dependency or async_archive")
+        if set(stores) - set(binding_stores):
+            fail(f"{command_type}: authoritative persistence store lacks table binding")
+        if len(stores) == 1 and not transaction_contract.startswith("SINGLE_STORE_LOCAL_OUTBOX:"):
+            fail(f"{command_type}: single-store command lacks explicit local-outbox transaction contract")
+        if len(stores) > 1:
+            if not transaction_contract.startswith("CROSS_STORE_SAGA:"):
+                fail(f"{command_type}: multi-store command lacks explicit saga transaction contract")
+            coordinator = next(
+                (binding for binding in item.get("table_bindings", [])
+                 if binding["store"] == "aurion_events.db"),
+                None,
+            )
+            if "aurion_events.db" not in stores or coordinator is None:
+                fail(f"{command_type}: cross-store saga must bind the event/recovery coordinator")
+            if not {"operations", "operation_steps", "recovery_journal", "outbox"}.issubset(set(coordinator["tables"])):
+                fail(f"{command_type}: saga coordinator must bind operations, operation_steps, recovery_journal and outbox")
+        for store in stores:
+            if store not in store_tables:
+                fail(f"{command_type}: unknown persistence store {store}")
+            if "outbox" not in store_tables[store]:
+                fail(f"{command_type}: {store} has no local outbox DDL")
+            if "outbox" not in bindings_by_store.get(store, set()):
+                fail(f"{command_type}: {store} binding omits its local outbox")
+        for field in (
+            "expected_revision_contract",
+            "authorization_contract",
+            "idempotency_contract",
+            "deadline_cancellation_contract",
+            "side_effect_contract",
+            "transaction_contract",
+        ):
+            if not isinstance(item.get(field), str) or not item[field].strip():
+                fail(f"{command_type}: missing populated {field}")
+        if not item.get("error_code_bindings"):
+            fail(f"{command_type}: missing command-specific error bindings")
+        if not item.get("emitted_event_bindings"):
+            fail(f"{command_type}: mapped command has no explicit emitted-event binding")
+        unknown_errors = set(item["error_code_bindings"]) - known_error_codes
+        if unknown_errors:
+            fail(f"{command_type}: unknown error bindings {sorted(unknown_errors)}")
+        unknown_events = set(item.get("emitted_event_bindings", [])) - known_event_types
+        if unknown_events:
+            fail(f"{command_type}: unknown event bindings {sorted(unknown_events)}")
+        case_id = item.get("acceptance_case_id")
+        if not isinstance(case_id, str) or not re.fullmatch(r"CC-\d{3}", case_id) or case_id in command_acceptance_ids:
+            fail(f"{command_type}: missing, malformed or duplicate command acceptance case ID")
+        command_acceptance_ids.add(case_id)
+        if f"| `{case_id}` | `{command_type}` |" not in command_matrix:
+            fail(f"{command_type}: acceptance case {case_id} missing from matrix catalogue")
+        if item.get("dispatch_status") != "design_only_not_dispatchable":
+            fail(f"{command_type}: mapped command unexpectedly dispatchable")
+    matrix_command_rows = {
+        line.split("|", 2)[1].strip().strip("`")
+        for line in command_matrix.splitlines()
+        if line.startswith("| `") and line.count("|") >= 4
+        and line.split("|", 2)[1].strip().strip("`") in {item["command_type"] for item in commands}
+    }
+    if matrix_command_rows != {item["command_type"] for item in commands}:
+        fail("command transition matrix rows do not exactly match registry inventory")
+    if len(command_acceptance_ids) != len(mapped_command_types):
+        fail("every mapped command must have exactly one unique acceptance case")
+
+    matrix_acceptance_rows = [
+        line for line in command_matrix.splitlines()
+        if re.match(r"^\|\s*\x60CC-\d{3}\x60\s*\|", line)
+    ]
+    matrix_acceptance_ids = [
+        re.match(r"^\|\s*`(CC-\d{3})`\s*\|", line).group(1)
+        for line in matrix_acceptance_rows
+    ]
+    if len(matrix_acceptance_ids) != len(set(matrix_acceptance_ids)):
+        fail("command transition matrix contains duplicate CC acceptance rows")
+    if set(matrix_acceptance_ids) != command_acceptance_ids:
+        fail(
+            "command acceptance ID inventory differs between registry and matrix: "
+            f"registry_only={sorted(command_acceptance_ids - set(matrix_acceptance_ids))}; "
+            f"matrix_only={sorted(set(matrix_acceptance_ids) - command_acceptance_ids)}"
+        )
+    expected_command_acceptance_ids = {
+        f"CC-{index:03d}" for index in range(1, len(mapped_command_types) + 1)
+    }
+    if command_acceptance_ids != expected_command_acceptance_ids:
+        fail("command acceptance IDs must be a contiguous CC-001…CC-N inventory")
+
+    query_contract_fields = (
+        "authorization_contract",
+        "data_classification",
+        "redaction_contract",
+        "consistency_contract",
+        "ordering_cursor_contract",
+        "limits_contract",
+        "freshness_cache_contract",
+        "projection_contract",
+    )
+    query_matrix_path = ROOT / "docs/planning/QUERY-SEMANTICS-AND-SECURITY-CONTRACT-MATRIX.md"
+    if not query_matrix_path.is_file():
+        fail("missing per-query semantic contract matrix")
+    query_matrix = query_matrix_path.read_text(encoding="utf-8")
+    projection_matrix_path = ROOT / "docs/planning/QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md"
+    if not projection_matrix_path.is_file():
+        fail("missing query projection and persistence reconciliation matrix")
+    projection_matrix = projection_matrix_path.read_text(encoding="utf-8")
+    query_acceptance_ids = set()
+    query_types = {item["query_type"] for item in queries}
+    matrix_query_types = set()
+    for item in queries:
+        query_type = item["query_type"]
+        if not item.get("unresolved_bindings"):
+            fail(f"{query_type}: missing explicit unresolved-binding ledger")
+        if item.get("dispatch_status") != "design_only_not_dispatchable":
+            fail(f"{query_type}: unsafe dispatch status")
+        if item.get("read_only") is not True:
+            fail(f"{query_type}: query must remain read-only")
+        query_bindings = item.get("table_bindings", [])
+        query_binding_stores = [binding["store"] for binding in query_bindings]
+        if len(query_binding_stores) != len(set(query_binding_stores)):
+            fail(f"{query_type}: duplicate query table-binding store")
+        if set(query_binding_stores) != set(item.get("persistence_stores", [])):
+            fail(f"{query_type}: read-projection table stores differ from declared persistence stores")
+        if len(query_binding_stores) != 1:
+            fail(
+                f"{query_type}: cross-store query projection is unsupported until "
+                "a versioned cross-store consistency protocol is specified"
+            )
+        for binding in query_bindings:
+            if binding.get("binding_role") != "read_projection":
+                fail(f"{query_type}: query table binding must be read_projection")
+            store = binding["store"]
+            if store not in store_tables:
+                fail(f"{query_type}: unknown query projection store {store}")
+            missing_tables = set(binding["tables"]) - store_tables[store]
+            if missing_tables:
+                fail(f"{query_type}: {store} projection names absent DDL tables {sorted(missing_tables)}")
+        unresolved_projection_fields = item.get("projection_unresolved_fields", [])
+        if len(unresolved_projection_fields) != len(set(unresolved_projection_fields)):
+            fail(f"{query_type}: duplicate unresolved projection fields")
+        result_ref = item["result_item_schema"]
+        result_path, result_pointer = result_ref.split("#", 1)
+        result_document = load(ROOT / result_path)
+        result_node = result_document
+        for token in result_pointer.lstrip("/").split("/"):
+            token = token.replace("~1", "/").replace("~0", "~")
+            result_node = result_node[token]
+        result_fields = set(result_node.get("properties", {}))
+        resolved_projection_fields = item.get("projection_resolved_fields", [])
+        if len(resolved_projection_fields) != len(set(resolved_projection_fields)):
+            fail(f"{query_type}: duplicate resolved projection fields")
+        unresolved_set = set(unresolved_projection_fields)
+        resolved_set = set(resolved_projection_fields)
+        if unresolved_set & resolved_set:
+            fail(f"{query_type}: a projection field is both resolved and unresolved")
+        if unresolved_set | resolved_set != result_fields:
+            fail(
+                f"{query_type}: projection field inventory does not exactly cover result schema; "
+                f"missing={sorted(result_fields - (unresolved_set | resolved_set))}; "
+                f"unknown={sorted((unresolved_set | resolved_set) - result_fields)}"
+            )
+        if "UNVERIFIED" not in item.get("projection_contract", ""):
+            fail(f"{query_type}: projection contract must preserve unverified evidence boundary")
+        section_start = projection_matrix.find(f"### {chr(96)}{query_type}{chr(96)}")
+        if section_start < 0:
+            fail(f"{query_type}: missing field-level projection section")
+        next_section = projection_matrix.find("\n### ", section_start + 1)
+        projection_section = projection_matrix[section_start:] if next_section < 0 else projection_matrix[section_start:next_section]
+        for field_name in unresolved_projection_fields:
+            marker = f"- {chr(96)}{field_name}{chr(96)} → **UNMAPPED"
+            if marker not in projection_section:
+                fail(f"{query_type}: projection matrix omits unresolved field {field_name}")
+        for field_name in resolved_projection_fields:
+            marker = f"- {chr(96)}{field_name}{chr(96)} → "
+            if marker not in projection_section or marker + "**UNMAPPED" in projection_section:
+                fail(f"{query_type}: resolved projection field {field_name} lacks a proposed source/derivation")
+        # Every relational source named by a field mapping must be part of
+        # this query's declared read projection. Parenthetical text is a
+        # derivation/annotation (for example an event type), not a table join.
+        bound_query_tables = {
+            table for binding in query_bindings for table in binding["tables"]
+        }
+        for projection_line in projection_section.splitlines():
+            if not projection_line.startswith("- `") or " → " not in projection_line:
+                continue
+            source_expression = re.sub(
+                r"\([^)]*\)", "", projection_line.split(" → ", 1)[1]
+            )
+            source_tables = {
+                table for table, _column in re.findall(
+                    r"\b([a-z][a-z0-9_]*)\.([a-z][a-z0-9_]*)\b",
+                    source_expression,
+                )
+            }
+            undeclared_sources = source_tables - bound_query_tables
+            if undeclared_sources:
+                field_name = projection_line.split("`", 2)[1]
+                fail(
+                    f"{query_type}: projection field {field_name} references "
+                    f"undeclared read tables {sorted(undeclared_sources)}"
+                )
+        for field in query_contract_fields:
+            if not isinstance(item.get(field), str) or not item[field].strip():
+                fail(f"{query_type}: missing populated {field}")
+        if set(item["unresolved_bindings"]) != {
+            "measured_endpoint_resource_budgets",
+            "handler_level_executable_positive_negative_redaction_consistency_and_read_only_tests",
+        }:
+            fail(f"{query_type}: unresolved ledger does not match the verified query contract boundary")
+        for field in (
+            "acceptance_positive_assertion",
+            "acceptance_negative_assertion",
+            "read_only_invariant",
+        ):
+            if not isinstance(item.get(field), str) or not item[field].strip():
+                fail(f"{query_type}: missing populated {field}")
+        case_id = item.get("acceptance_case_id")
+        if not isinstance(case_id, str) or not case_id.startswith("QCC-") or case_id in query_acceptance_ids:
+            fail(f"{query_type}: missing or duplicate query acceptance case ID")
+        query_acceptance_ids.add(case_id)
+        matrix_row = f"| `{query_type}` |"
+        if matrix_row not in query_matrix:
+            fail(f"{query_type}: missing per-query matrix row")
+        case_row = f"| `{case_id}` | `{query_type}` |"
+        if case_row not in query_matrix:
+            fail(f"{query_type}: acceptance case {case_id} missing from query matrix")
+        matrix_query_types.add(query_type)
+
+    if matrix_query_types != query_types:
+        fail("query contract matrix rows do not exactly match registry inventory")
+    if len(query_acceptance_ids) != len(queries):
+        fail("every query must have exactly one unique acceptance case")
+
+    event_registry = load(SCHEMAS / "event-registry.v1.json")
+    events = event_registry["events"]
+    if len(events) != 94:
+        fail(f"event registry expected 94 entries, found {len(events)}")
+
+    # Reconcile event producer declarations bidirectionally with command
+    # emissions. An event with no command producer remains explicitly
+    # unresolved; it is not silently assumed to be an external or internal
+    # producer. Consumer and owner-transition semantics remain separate gates.
+    expected_event_producers = {event_type: set() for event_type in events}
+    for command in commands:
+        for event_type in command.get("emitted_event_bindings", []):
+            if event_type not in expected_event_producers:
+                fail(
+                    f"{command['command_type']}: emitted event {event_type} "
+                    "is absent from the event registry"
+                )
+            expected_event_producers[event_type].add(command["command_type"])
+    for event_type, event in events.items():
+        declared = event.get("command_producers")
+        if not isinstance(declared, list) or len(declared) != len(set(declared)):
+            fail(f"{event_type}: command_producers must be a unique array")
+        expected = expected_event_producers[event_type]
+        if set(declared) != expected:
+            fail(
+                f"{event_type}: command producer mismatch; "
+                f"declared={sorted(declared)} expected={sorted(expected)}"
+            )
+        expected_status = "bound" if expected else "unresolved"
+        if event.get("command_producer_binding_status") != expected_status:
+            fail(
+                f"{event_type}: command producer status must be "
+                f"{expected_status!r}"
+            )
+
+    event_matrix_path = ROOT / "docs/planning/EVENT-PRODUCER-AND-CONSUMER-SEMANTICS-MATRIX.md"
+    if not event_matrix_path.is_file():
+        fail("missing event producer/consumer semantics matrix")
+    event_matrix = event_matrix_path.read_text(encoding="utf-8")
+    matrix_event_rows = {}
+    for line in event_matrix.splitlines():
+        if not line.startswith("| `") or line.count("|") < 4:
+            continue
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        event_type = cells[0].strip("`")
+        producer_cell = cells[1]
+        payload_name = cells[2].strip("`")
+        producers = {
+            part for index, part in enumerate(producer_cell.split("`"))
+            if index % 2 == 1 and part
+        }
+        consumer_transition_summary = cells[3] if len(cells) > 3 else ""
+        matrix_event_rows[event_type] = (producers, payload_name, consumer_transition_summary)
+    if set(matrix_event_rows) != set(events):
+        fail("event producer/consumer matrix inventory does not exactly match event registry")
+    for event_type, event in events.items():
+        matrix_producers, matrix_payload, matrix_summary = matrix_event_rows[event_type]
+        if matrix_producers != set(event["command_producers"]):
+            fail(f"{event_type}: event matrix command producers do not match event registry")
+        schema_pointer = event["payload_schema_ref"].split("#", 1)[1]
+        expected_payload = schema_pointer.rsplit("/", 1)[-1].replace("~1", "/").replace("~0", "~")
+        if matrix_payload != expected_payload:
+            fail(
+                f"{event_type}: event matrix payload {matrix_payload!r} "
+                f"does not match schema definition {expected_payload!r}"
+            )
+        if matrix_summary != event.get("consumer_transition_summary"):
+            fail(f"{event_type}: event matrix consumer/transition summary does not match registry")
+        consumer_components = [
+            consumer.get("component", "")
+            for consumer in event.get("consumer_contracts", [])
+        ]
+        if not consumer_components or len(consumer_components) != len(set(consumer_components)):
+            fail(f"{event_type}: consumer contracts must name unique intended components")
+        for component in consumer_components:
+            if not component or component not in matrix_summary:
+                fail(f"{event_type}: consumer summary omits intended component {component!r}")
+        for field in (
+            "producer_origin", "producer_trigger_contract", "owning_component",
+            "consumer_contracts", "owner_transition_contract",
+            "ordering_idempotency_contract", "failure_recovery_contract",
+        ):
+            if not event.get(field):
+                fail(f"{event_type}: missing event field {field}")
+        if event.get("specification_status") != "specified_not_runtime_validated":
+            fail(f"{event_type}: event specification status is misleading")
+        if event["command_producers"] and event["producer_origin"] != "command":
+            fail(f"{event_type}: command-produced event has inconsistent producer origin")
+        if not event["command_producers"] and event["producer_origin"] == "command":
+            fail(f"{event_type}: unbound event cannot claim command producer origin")
+        expected_unresolved = ["runtime_handler", "event_specific_acceptance_execution"]
+        if set(event.get("unresolved_bindings", [])) != set(expected_unresolved):
+            fail(f"{event_type}: unresolved event bindings do not match implementation evidence boundary")
+
+    operation_matrix_path = ROOT / "docs/planning/OPERATION-LIFECYCLE-TRANSITION-MATRIX.md"
+    if not operation_matrix_path.is_file():
+        fail("missing operation lifecycle transition matrix")
+    operation_matrix = operation_matrix_path.read_text(encoding="utf-8")
+    operation_rows = {}
+    for line in operation_matrix.splitlines():
+        if not line.startswith("| `operation."):
+            continue
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        if len(cells) != 4:
+            fail("operation lifecycle matrix row must have four cells")
+        operation_rows[cells[0].strip("`")] = (cells[2], cells[3])
+    operation_matrix_events = set(operation_rows)
+    action_gateway_events = {
+        event_type for event_type, event in events.items()
+        if event.get("producer_origin") == "action_gateway_internal_transition"
+    }
+    if len(action_gateway_events) != 15 or operation_matrix_events != action_gateway_events:
+        fail("operation lifecycle matrix must exactly cover the 15 Action Gateway internal events")
+    operation_states = set(
+        schema_docs["domain-payloads.v1.schema.json"]["$defs"]["operationLifecycleEvent"]
+        ["properties"]["state"]["enum"]
+    )
+    for event_type in events:
+        if event_type.startswith("operation.") and event_type != "operation.reconciled.v1":
+            target_state = event_type.removeprefix("operation.").removesuffix(".v1")
+            if target_state not in operation_states:
+                fail(f"{event_type}: event target state is absent from operation lifecycle schema")
+        # Reconciliation is an evidence-bearing transition event, not a
+        # persistent operation state; it resolves to a supported state.
+
+    for event_type in action_gateway_events:
+        if operation_rows.get(event_type) != (
+            events[event_type]["producer_trigger_contract"],
+            events[event_type]["owner_transition_contract"],
+        ):
+            fail(f"{event_type}: operation lifecycle matrix trigger/transition differs from event registry")
+        cells = next(
+            [cell.strip() for cell in line.split("|")[1:-1]]
+            for line in operation_matrix.splitlines()
+            if line.startswith(f"| `{event_type}` |")
+        )
+        predecessor_states = {state.strip() for state in cells[1].split(",")}
+        if not predecessor_states or not predecessor_states <= operation_states:
+            fail(f"{event_type}: predecessor state is absent from operation lifecycle schema")
+        target_state = event_type.removeprefix("operation.").removesuffix(".v1")
+        if target_state in predecessor_states:
+            fail(f"{event_type}: self-transition is not permitted")
+    for event_type in action_gateway_events:
+        event = events[event_type]
+        trigger = event.get("producer_trigger_contract", "")
+        if (
+            "No public command producer is bound" in trigger
+            or "exact runtime trigger remains unimplemented" in trigger
+            or "exact_internal_producer_trigger" in event.get("unresolved_bindings", [])
+        ):
+            fail(f"{event_type}: Action Gateway internal producer trigger is still generic/unresolved")
+
+    non_command_events = {
+        event_type for event_type, event in events.items()
+        if not event.get("command_producers")
+        and event.get("producer_origin") != "action_gateway_internal_transition"
+    }
+    ingress_matrix_path = ROOT / "docs/planning/EVENT-INGRESS-AND-INTERNAL-PRODUCER-TRIGGER-MATRIX.md"
+    if not ingress_matrix_path.is_file():
+        fail("missing non-command event ingress/internal producer trigger matrix")
+    ingress_matrix = ingress_matrix_path.read_text(encoding="utf-8")
+    ingress_matrix_events = set(
+        re.findall(r"`([a-z][a-z0-9_.]+\.v1)`", ingress_matrix)
+    )
+    if len(non_command_events) != 27 or ingress_matrix_events != non_command_events:
+        fail("non-command event trigger matrix must exactly cover the 27 non-command/non-Action-Gateway events")
+    ingress_rows = {}
+    for line in ingress_matrix.splitlines():
+        if not line.startswith("| `") or line.count("|") < 4:
+            continue
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        if len(cells) != 4:
+            continue
+        event_type = cells[0].strip("`")
+        if event_type in non_command_events:
+            ingress_rows[event_type] = (cells[1], cells[2], cells[3])
+    for event_type in non_command_events:
+        event = events[event_type]
+        if ingress_rows.get(event_type) != (
+            event["producer_origin"],
+            event["producer_trigger_contract"],
+            event["owner_transition_contract"],
+        ):
+            fail(f"{event_type}: non-command trigger matrix differs from event registry")
+    for event_type in non_command_events:
+        event = events[event_type]
+        trigger = event.get("producer_trigger_contract", "")
+        if (
+            "No public command producer is bound" in trigger
+            or "exact runtime trigger remains unimplemented" in trigger
+            or "exact_internal_producer_trigger" in event.get("unresolved_bindings", [])
+        ):
+            fail(f"{event_type}: non-command producer trigger is still generic/unresolved")
+
+    # Keep current narrative inventory summaries derived from the authoritative
+    # registry. Historical append-only audit entries are intentionally excluded.
+    command_bound_event_count = sum(bool(event.get("command_producers")) for event in events.values())
+    total_unbound_event_count = len(action_gateway_events) + len(non_command_events)
+    event_summary_requirements = {
+        event_matrix_path: [
+            f"Events with one or more explicit command producers: **{command_bound_event_count}**.",
+            f"Events with no command producer binding: **{total_unbound_event_count}**.",
+            f"15 of the {total_unbound_event_count} events without command producers",
+            f"the {len(non_command_events)} other non-command events",
+        ],
+        ROOT / "docs/planning/SEMANTIC-ARCHITECTURE-RECONCILIATION-REPORT.md": [
+            f"{command_bound_event_count} events have command producer bindings; {total_unbound_event_count} have no command producer.",
+            f"the other {len(non_command_events)} non-command events have exact trusted-ingress/internal producer triggers",
+            f"owner acceptance of the {total_unbound_event_count} non-command producer-trigger specifications",
+        ],
+        ROOT / "docs/planning/PLANNING-COMPLETION-REGISTER.md": [
+            f"{command_bound_event_count} events have explicit command-producer bindings and {total_unbound_event_count} have no command producer binding.",
+            f"{command_bound_event_count} command-produced events and records {total_unbound_event_count} events without command producers as unresolved",
+            f"{command_bound_event_count} have exact command-producer bindings and {total_unbound_event_count} have no command producer binding",
+            f"All {total_unbound_event_count} non-command event triggers are now specified",
+            f"owner acceptance of the {total_unbound_event_count} non-command producer-trigger specifications",
+            "54 command records (52 mapped, two deferred)",
+        ],
+    }
+    for summary_path, required_fragments in event_summary_requirements.items():
+        if not summary_path.is_file():
+            fail(f"missing current event inventory summary: {summary_path.relative_to(ROOT)}")
+        summary_text = summary_path.read_text(encoding="utf-8")
+        for fragment in required_fragments:
+            if fragment not in summary_text:
+                fail(
+                    f"{summary_path.relative_to(ROOT)}: current inventory summary "
+                    f"does not match registry-derived expectation: {fragment}"
+                )
+
+    scenario_contracts = load(SCHEMAS / "fixtures/scenario-contracts.fixture.json")
+    scenarios = scenario_contracts["scenarios"]
+    expected_scenario_ids = {
+        *(f"INT-{index:03d}" for index in range(1, 5)),
+        *(f"CM-{index:03d}" for index in range(1, 30)),
+        *(f"AD-{index:03d}" for index in range(1, 16)),
+        *(f"SY-{index:03d}" for index in range(1, 16)),
+    }
+    scenario_ids = {item["scenario_id"] for item in scenarios}
+    step_count = sum(len(item["steps"]) for item in scenarios)
+    negative_control_count = sum(len(item["negative_controls"]) for item in scenarios)
+    if len(scenarios) != 63 or scenario_ids != expected_scenario_ids:
+        fail("scenario contract fixture must contain INT-001…004, CM-001…029, AD-001…015 and SY-001…015")
+    if step_count != 368 or negative_control_count != 89:
+        fail(
+            f"scenario fixture expected 368 ordered steps and 89 negative controls; "
+            f"found {step_count} steps and {negative_control_count} controls"
+        )
+    command_types = {item["command_type"] for item in commands}
+    query_types = {item["query_type"] for item in queries}
+    command_by_type = {item["command_type"]: item for item in commands}
+    for scenario in scenarios:
+        for step in scenario["steps"]:
+            action = step["contract_action"]
+            action_kind, _, action_name = action.partition(":")
+            expected_events = set(step.get("expected_events", []))
+            if action_kind == "command":
+                command = command_by_type.get(action_name)
+                if command is None:
+                    fail(f"{scenario['scenario_id']}: unknown command action {action_name}")
+                emitted_events = set(command.get("emitted_event_bindings", []))
+                if not expected_events.issubset(emitted_events):
+                    fail(
+                        f"{scenario['scenario_id']}/{step['step_id']}: expected events "
+                        f"are not declared by command {action_name} emitted_event_bindings"
+                    )
+                if (
+                    scenario["scenario_id"] in {"CM-001", "CM-002", "CM-003", "CM-004", "CM-005", "CM-006", "CM-007", "CM-008", "CM-009", "CM-010", "CM-011", "CM-012", "CM-013", "CM-014", "CM-015", "CM-016", "CM-017", "CM-022", "CM-023", "CM-024", "CM-025", "CM-026", "CM-027", "CM-028", "CM-029"}
+                    and expected_events
+                    and expected_events != emitted_events
+                ):
+                    fail(
+                        f"{scenario['scenario_id']}/{step['step_id']}: concrete positive command step "
+                        f"must enumerate every emitted event for {action_name}"
+                    )
+            elif action_kind == "query":
+                if action_name not in query_types:
+                    fail(f"{scenario['scenario_id']}: unknown query action {action_name}")
+                if expected_events:
+                    fail(f"{scenario['scenario_id']}/{step['step_id']}: read-only query cannot emit domain events")
+            elif action_kind == "event" and action_name not in events:
+                fail(f"{scenario['scenario_id']}: unknown event action {action_name}")
+    scenario_by_id = {item["scenario_id"]: item for item in scenarios}
+    for scenario_id in ("CM-001", "CM-002", "CM-003", "CM-004", "CM-005", "CM-006", "CM-007", "CM-008", "CM-009", "CM-010", "CM-011", "CM-012", "CM-013", "CM-014", "CM-015", "CM-016", "CM-017", "CM-022", "CM-023", "CM-024", "CM-025", "CM-026", "CM-027", "CM-028", "CM-029"):
+        scenario = scenario_by_id[scenario_id]
+        if any(step["contract_action"] == "fake:scenario.exercise_contract_sequence" for step in scenario["steps"]):
+            fail(f"{scenario_id}: concrete scenario cannot use the generic exercise_contract_sequence placeholder")
+        if not any(step.get("expected_events") for step in scenario["steps"]):
+            fail(f"{scenario_id}: concrete scenario must declare expected event outcomes")
+    domain_payload_defs = set(schema_docs["domain-payloads.v1.schema.json"].get("$defs", {}))
+    world_payload_defs = set(schema_docs["world-interaction.v1.schema.json"].get("$defs", {}))
+    catalogue_sources = (
+        ROOT / "docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md",
+        ROOT / "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md",
+    )
+    catalogue_text = "\n".join(
+        path.read_text(encoding="utf-8") for path in catalogue_sources
+    )
+    catalogue_ids = set(re.findall(r"\b[A-Z]{2,4}-\d{3}\b", catalogue_text))
+    model_decision_text = (
+        ROOT / "docs/planning/MODEL-ARCHITECTURE-AND-TRAINING-OWNER-DECISIONS.md"
+    ).read_text(encoding="utf-8")
+    owner_decision_ids = set(re.findall(r"\bMD-\d{2}\b", model_decision_text))
+    work_package_text = (
+        ROOT / "docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md"
+    ).read_text(encoding="utf-8")
+    work_package_ids = set(re.findall(r"\bWP-\d{2}\b", work_package_text))
+    source_scenario_sources = (
+        ROOT / "docs/architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md",
+        ROOT / "docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md",
+    )
+    source_scenario_text = "\n".join(
+        path.read_text(encoding="utf-8") for path in source_scenario_sources
+    )
+    source_scenario_ids = set(re.findall(r"\b(?:CM|AD)-\d{3}\b", source_scenario_text))
+    expected_event_scenario_refs = {}
+    for scenario in scenarios:
+        for step in scenario["steps"]:
+            for event_type in step.get("expected_events", []):
+                expected_event_scenario_refs.setdefault(event_type, set()).add(scenario["scenario_id"])
+    unknown_expected_event_types = set(expected_event_scenario_refs) - set(events)
+    if unknown_expected_event_types:
+        fail(f"scenario fixtures reference unknown event types: {sorted(unknown_expected_event_types)}")
+    for event_type, event in events.items():
+        if set(event.get("acceptance_scenario_refs", [])) != expected_event_scenario_refs.get(event_type, set()):
+            fail(f"{event_type}: acceptance scenario references do not match scenario fixture coverage")
+    for scenario in scenarios:
+        scenario_id = scenario["scenario_id"]
+        source_refs = scenario.get("source_scenario_ids", [])
+        unknown_source_refs = set(source_refs) - source_scenario_ids
+        if unknown_source_refs:
+            fail(f"{scenario_id}: unknown source scenario IDs {sorted(unknown_source_refs)}")
+        step_ids = [step.get("step_id") for step in scenario["steps"]]
+        expected_step_ids = [
+            f"S{index:02d}" for index in range(1, len(scenario["steps"]) + 1)
+        ]
+        if step_ids != expected_step_ids:
+            fail(f"{scenario_id}: step IDs must be unique and sequential from S01")
+        control_ids = [control.get("control_id") for control in scenario["negative_controls"]]
+        if len(control_ids) != len(set(control_ids)):
+            fail(f"{scenario_id}: duplicate negative-control IDs")
+        if scenario.get("execution_status") != "specified_not_executed" or scenario.get("execution_authority") != "none":
+            fail(f"{scenario_id}: scenario fixture must not imply execution or authority")
+        for field in (
+            "initial_state", "steps", "negative_controls", "restart_replay_controls",
+            "concurrency_controls", "fault_controls", "held_out_controls",
+        ):
+            if not scenario.get(field):
+                fail(f"{scenario_id}: missing scenario field {field}")
+        if not scenario.get("acceptance_thresholds", {}).get("hard_invariants"):
+            fail(f"{scenario_id}: missing hard acceptance invariants")
+        if not scenario.get("acceptance_thresholds", {}).get("evidence_requirement"):
+            fail(f"{scenario_id}: missing evidence requirement")
+        for reference in scenario.get("contract_refs", []):
+            if reference.startswith("payload:"):
+                payload_name = reference.split(":", 1)[1]
+                if payload_name not in domain_payload_defs | world_payload_defs:
+                    fail(f"{scenario_id}: unknown payload reference {payload_name}")
+            elif reference.startswith("event:"):
+                event_type = reference.split(":", 1)[1]
+                if not event_type or event_type not in events:
+                    fail(f"{scenario_id}: unknown event reference {event_type!r}")
+            elif reference.startswith("MD-"):
+                if reference not in owner_decision_ids:
+                    fail(f"{scenario_id}: unknown owner-decision reference {reference!r}")
+            elif reference.startswith("WP-"):
+                if reference not in work_package_ids:
+                    fail(f"{scenario_id}: unknown work-package reference {reference!r}")
+            elif reference in command_types or reference in query_types or reference in events:
+                continue
+            elif reference.startswith("catalogue:"):
+                if not reference.split(":", 1)[1]:
+                    fail(f"{scenario_id}: empty catalogue reference")
+            else:
+                # Catalogue IDs use a stable PREFIX-NNN form.
+                parts = reference.split("-")
+                if len(parts) < 2 or not parts[-1].isdigit():
+                    fail(f"{scenario_id}: unresolved contract reference {reference!r}")
+                if reference not in catalogue_ids:
+                    fail(
+                        f"{scenario_id}: catalogue reference {reference!r} "
+                        "does not resolve in the canonical architecture/security catalogues"
+                    )
+        for step in scenario["steps"]:
+            action = step.get("contract_action", "")
+            if action.startswith("command:") and action.split(":", 1)[1] not in command_types:
+                fail(f"{scenario_id}/{step.get('step_id')}: unknown command action {action}")
+            if action.startswith("query:") and action.split(":", 1)[1] not in query_types:
+                fail(f"{scenario_id}/{step.get('step_id')}: unknown query action {action}")
+            if not step.get("expected_transitions") or not step.get("durable_assertions"):
+                fail(f"{scenario_id}/{step.get('step_id')}: missing transition or durable-state assertions")
+            unknown_step_events = set(step.get("expected_events", [])) - set(events)
+            if unknown_step_events:
+                fail(f"{scenario_id}/{step.get('step_id')}: unknown events {sorted(unknown_step_events)}")
+        for control in scenario["negative_controls"]:
+            if not control.get("expected_disposition") or not control.get("must_not_change"):
+                fail(f"{scenario_id}/{control.get('control_id')}: incomplete negative control")
+        if scenario_id in {"INT-001", "CM-012", "CM-013", "CM-016", "AD-009"}:
+            metric_rule = scenario["acceptance_thresholds"].get("learning_metric_rule", "")
+            if "pre-register" not in metric_rule.lower() and "pre-register" not in scenario["acceptance_thresholds"].get("learning_metric_rule","").lower():
+                fail(f"{scenario_id}: learning scenario lacks pre-registered metric rule")
+
+    def resolve_pointer(document, pointer: str, label: str):
+        if not pointer.startswith("#/"):
+            fail(f"{label}: expected a non-root JSON Pointer fragment")
+        value = document
+        for raw_part in pointer[2:].split("/"):
+            part = raw_part.replace("~1", "/").replace("~0", "~")
+            if isinstance(value, list):
+                try:
+                    index = int(part)
+                except ValueError:
+                    fail(f"{label}: non-integer array index {part!r}")
+                if index < 0 or index >= len(value):
+                    fail(f"{label}: array index {index} is out of range")
+                value = value[index]
+            elif isinstance(value, dict) and part in value:
+                value = value[part]
+            else:
+                fail(f"{label}: unresolved JSON Pointer segment {part!r}")
+        return value
+
+    def resolve_schema_reference(reference: str, label: str):
+        schema_path, separator, pointer = reference.partition("#")
+        if not separator or not schema_path.startswith("schemas/"):
+            fail(f"{label}: malformed schema reference {reference!r}")
+        schema_name = Path(schema_path).name
+        document = schema_docs.get(schema_name)
+        if document is None:
+            fail(f"{label}: schema file {schema_path!r} is not in the validated schema set")
+        target = resolve_pointer(document, "#" + pointer, f"{label} schema")
+        if not isinstance(target, dict):
+            fail(f"{label}: schema pointer does not resolve to a schema object")
+        return document, pointer
+
+    fixture_cache = {}
+
+    # Shared cache must exist before command/query fixture validation invokes the helper.
+    fixture_cache = {}
+
+    def validate_bound_fixture(reference: str, selected_schema_ref: str, label: str):
+        fixture_path, separator, fixture_pointer = reference.partition("#")
+        if not separator or not fixture_path.startswith("schemas/fixtures/"):
+            fail(f"{label}: malformed fixture reference {reference!r}")
+        if fixture_path not in fixture_cache:
+            path = ROOT / fixture_path
+            if not path.is_file():
+                fail(f"{label}: fixture file does not exist: {fixture_path}")
+            fixture_cache[fixture_path] = load(path)
+        payload = resolve_pointer(
+            fixture_cache[fixture_path], "#" + fixture_pointer, f"{label} fixture"
+        )
+        schema_document, schema_pointer = resolve_schema_reference(selected_schema_ref, label)
+        wrapper = {
+            "$schema": schema_document["$schema"],
+            "$defs": schema_document.get("$defs", {}),
+            "$ref": "#" + schema_pointer,
+        }
+        validate(payload, wrapper, f"{label} fixture {reference}")
+
+    for item in commands:
+        if item["dispatch_status"] == "deferred_by_scope":
+            continue
+        command_type = item["command_type"]
+        for fixture_ref in item["fixture_refs"]:
+            leaf = fixture_ref.rsplit("/", 1)[-1]
+            selected = (
+                item["envelope_schema"] if leaf == "commandEnvelope"
+                else item["response_schema"] if leaf == "commandResponse"
+                else item["request_schema"]
+            )
+            validate_bound_fixture(fixture_ref, selected, command_type)
+
+    for item in queries:
+        query_type = item["query_type"]
+        for fixture_ref in item["fixture_refs"]:
+            leaf = fixture_ref.rsplit("/", 1)[-1]
+            input_schema_leaf = item["input_schema"].rsplit("/", 1)[-1]
+            selected = (
+                item["envelope_schema"] if leaf == "queryEnvelope"
+                else item["response_schema"] if leaf == "queryResponse"
+                else item["input_schema"] if leaf == input_schema_leaf
+                else item["result_item_schema"]
+            )
+            validate_bound_fixture(fixture_ref, selected, query_type)
+
+    for event_type, item in events.items():
+        if item.get("dispatch_status") != "design_only_not_dispatchable":
+            fail(f"{event_type}: event unexpectedly dispatchable")
+        if not item.get("unresolved_bindings"):
+            fail(f"{event_type}: missing event binding ledger")
+
+        schema_ref = item.get("payload_schema_ref", "")
+        schema_path, separator, schema_pointer = schema_ref.partition("#")
+        if not separator or not schema_path.startswith("schemas/"):
+            fail(f"{event_type}: malformed payload schema reference {schema_ref!r}")
+        schema_name = Path(schema_path).name
+        payload_schema = schema_docs.get(schema_name)
+        if payload_schema is None:
+            fail(f"{event_type}: missing payload schema file {schema_path!r}")
+        payload_definition = resolve_pointer(
+            payload_schema, "#" + schema_pointer, f"{event_type} payload schema"
+        )
+        if not isinstance(payload_definition, dict):
+            fail(f"{event_type}: payload schema reference does not resolve to a schema object")
+        if not payload_schema.get("$schema"):
+            fail(f"{event_type}: referenced schema has no dialect declaration")
+        # Validate against a local wrapper carrying the source schema's full
+        # $defs. This avoids resolving a relative file-name $id as though it
+        # were a registered absolute URI, while preserving internal refs.
+        payload_validation_schema = {
+            "$schema": payload_schema["$schema"],
+            "$defs": payload_schema.get("$defs", {}),
+            "$ref": "#" + schema_pointer,
+        }
+
+        fixture_refs = item.get("fixture_refs", [])
+        if not fixture_refs:
+            fail(f"{event_type}: no event-body fixture references")
+        for fixture_ref in fixture_refs:
+            fixture_path, fixture_separator, fixture_pointer = fixture_ref.partition("#")
+            if not fixture_separator or not fixture_path.startswith("schemas/fixtures/"):
+                fail(f"{event_type}: malformed fixture reference {fixture_ref!r}")
+            if fixture_path not in fixture_cache:
+                path = ROOT / fixture_path
+                if not path.is_file():
+                    fail(f"{event_type}: fixture file does not exist: {fixture_path}")
+                fixture_cache[fixture_path] = load(path)
+            fixture_payload = resolve_pointer(
+                fixture_cache[fixture_path],
+                "#" + fixture_pointer,
+                f"{event_type} fixture {fixture_ref}",
+            )
+            validate(fixture_payload, payload_validation_schema, f"{event_type} fixture {fixture_ref}")
+
+    # Validate integrated scenario contracts as design fixtures, not runtime tests.
+    scenario_document = load(FIXTURES / "scenario-contracts.fixture.json")
+    scenarios = scenario_document["scenarios"]
+    if len(scenarios) != 63:
+        fail(f"scenario contract fixture expected 63 scenarios, found {len(scenarios)}")
+    known_commands = {item["command_type"] for item in commands}
+    known_queries = {item["query_type"] for item in queries}
+    known_scenario_ids = {
+        *(f"CM-{number:03d}" for number in range(1, 30)),
+        *(f"AD-{number:03d}" for number in range(1, 16)),
+    }
+    scenario_ids = set()
+    for scenario in scenarios:
+        scenario_id = scenario["scenario_id"]
+        if scenario_id in scenario_ids:
+            fail(f"{scenario_id}: duplicate integrated scenario ID")
+        scenario_ids.add(scenario_id)
+        unknown_sources = set(scenario["source_scenario_ids"]) - known_scenario_ids
+        if unknown_sources:
+            fail(f"{scenario_id}: unknown source scenario IDs {sorted(unknown_sources)}")
+        step_ids = [step["step_id"] for step in scenario["steps"]]
+        if len(step_ids) != len(set(step_ids)):
+            fail(f"{scenario_id}: duplicate step IDs")
+        control_ids = [item["control_id"] for item in scenario["negative_controls"]]
+        if len(control_ids) != len(set(control_ids)):
+            fail(f"{scenario_id}: duplicate negative-control IDs")
+        for step in scenario["steps"]:
+            kind, separator, name = step["contract_action"].partition(":")
+            if not separator:
+                fail(f"{scenario_id}/{step['step_id']}: malformed contract action")
+            if kind == "command" and name not in known_commands:
+                fail(f"{scenario_id}/{step['step_id']}: unknown command {name}")
+            if kind == "query" and name not in known_queries:
+                fail(f"{scenario_id}/{step['step_id']}: unknown query {name}")
+            if kind == "event" and name not in known_event_types:
+                fail(f"{scenario_id}/{step['step_id']}: unknown event action {name}")
+            unknown_events = set(step["expected_events"]) - known_event_types
+            if unknown_events:
+                fail(
+                    f"{scenario_id}/{step['step_id']}: unknown expected events "
+                    f"{sorted(unknown_events)}"
+                )
+        if scenario["execution_status"] != "specified_not_executed" or scenario["execution_authority"] != "none":
+            fail(f"{scenario_id}: scenario fixture cannot imply execution or authority")
+
+    required_scenario_ids = {
+        *(f"INT-{number:03d}" for number in range(1, 5)),
+        *(f"CM-{number:03d}" for number in range(1, 30)),
+        *(f"AD-{number:03d}" for number in range(1, 16)),
+        *(f"SY-{number:03d}" for number in range(1, 16)),
+    }
+    if scenario_ids != required_scenario_ids:
+        fail(
+            "scenario fixture inventory mismatch: "
+            f"missing={sorted(required_scenario_ids - scenario_ids)}; "
+            f"unexpected={sorted(scenario_ids - required_scenario_ids)}"
+        )
+
+    error_registry = load(SCHEMAS / "error-registry.v1.json")
+    error_cases = load(FIXTURES / "error-handler-cases.fixture.json")["cases"]
+    if len(error_registry["entries"]) != 35 or len(error_cases) != 35:
+        fail("error registry and fixture corpus must each contain 35 entries")
+    if len({item["error_code"] for item in error_registry["entries"]}) != 35:
+        fail("error registry contains duplicate error codes")
+    case_by_code = {case["payload"]["error_code"]: case for case in error_cases}
+    case_by_id = {case["case_id"]: case for case in error_cases}
+    expected_error_case_ids = {
+        f"EHC-{index:03d}" for index in range(1, 36)
+    }
+    if len(case_by_id) != 35 or set(case_by_id) != expected_error_case_ids:
+        fail("error fixture case IDs must uniquely cover EHC-001…EHC-035")
+    for item in error_registry["entries"]:
+        if item.get("status") != "seed":
+            fail(f"{item['error_code']}: seed status changed without runtime handler gate")
+        if item["error_code"] not in case_by_code:
+            fail(f"{item['error_code']}: no matching error fixture")
+        case = case_by_code[item["error_code"]]
+        if case["handler_contract_ref"] != item["handler_mapping_ref"]:
+            fail(f"{item['error_code']}: handler mapping and fixture disagree")
+        if case["payload"]["category"] != item["category"]:
+            fail(f"{item['error_code']}: fixture category differs from error registry")
+        if case["expected_side_effect_default"] != item["default_side_effect_state"]:
+            fail(f"{item['error_code']}: fixture side-effect default differs from error registry")
+        if case["payload"]["side_effect_state"] != case["expected_side_effect_default"]:
+            fail(f"{item['error_code']}: fixture payload side-effect state differs from its declared default")
+        if case["expected_retry_posture"] != item["default_retry_posture"]:
+            fail(f"{item['error_code']}: fixture retry posture differs from error registry")
+
+    # Reconcile the machine registry against the normative per-code mapping
+    # table. This verifies mapping integrity, not that a runtime handler exists.
+
+    matrix_path = ROOT / "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md"
+    error_matrix_text = matrix_path.read_text(encoding="utf-8")
+    handler_headings = set(re.findall(r"^### (EH-\d{3})$", error_matrix_text, flags=re.MULTILINE))
+    matrix_rows = {}
+    for line_number, line in enumerate(
+        matrix_path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.startswith("| `") or "[EH-" not in line:
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 5:
+            fail(f"error-handler matrix line {line_number}: expected five cells")
+        code = cells[0].strip("`")
+        handler_match = re.fullmatch(r"\[EH-(\d{3})\]\(#eh-\d{3}\)", cells[1])
+        fixture_match = re.search(r"EHC-(\d{3})", cells[4])
+        if not handler_match or not fixture_match:
+            fail(f"error-handler matrix line {line_number}: malformed handler/fixture reference")
+        handler_id = f"EH-{handler_match.group(1)}"
+        handler_ref = (
+            "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#"
+            + handler_id.lower()
+        )
+        if f"### {handler_id}" not in error_matrix_text:
+            fail(f"{code}: referenced category handler heading {handler_id} is missing")
+        fixture_id = f"EHC-{fixture_match.group(1)}"
+        fixture_case = case_by_id.get(fixture_id)
+        if fixture_case is None:
+            fail(f"{code}: matrix references missing error fixture {fixture_id}")
+        if fixture_case["payload"]["error_code"] != code:
+            fail(f"{code}: matrix fixture {fixture_id} belongs to a different error code")
+        if fixture_case["handler_contract_ref"] != handler_ref:
+            fail(f"{code}: matrix fixture {fixture_id} points to a different category handler")
+        if code in matrix_rows:
+            fail(f"{code}: duplicate code-level handler mapping")
+        matrix_rows[code] = {
+            "handler_ref": (
+                "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-"
+                + handler_match.group(1)
+            ),
+            "side_effect": cells[2].strip("`"),
+            "retry": cells[3].strip("`"),
+            "fixture_ref": (
+                "schemas/fixtures/error-handler-cases.fixture.json#/cases/"
+                + str(int(fixture_match.group(1)) - 1)
+            ),
+        }
+    if len(matrix_rows) != 35:
+        fail(f"error-handler matrix expected 35 code mappings, found {len(matrix_rows)}")
+    referenced_handler_ids = {
+        row["handler_ref"].rsplit("#", 1)[1].upper().replace("EH-", "EH-")
+        for row in matrix_rows.values()
+    }
+    if referenced_handler_ids != handler_headings:
+        fail(
+            "error-handler category heading inventory mismatch: "
+            f"unreferenced={sorted(handler_headings - referenced_handler_ids)}; "
+            f"missing={sorted(referenced_handler_ids - handler_headings)}"
+        )
+    registry_by_code = {item["error_code"]: item for item in error_registry["entries"]}
+    if set(matrix_rows) != set(registry_by_code):
+        fail(
+            "error-handler mapping inventory mismatch: "
+            f"matrix_only={sorted(set(matrix_rows) - set(registry_by_code))}; "
+            f"registry_only={sorted(set(registry_by_code) - set(matrix_rows))}"
+        )
+    for code, row in matrix_rows.items():
+        item = registry_by_code[code]
+        if item["handler_mapping_ref"] != row["handler_ref"]:
+            fail(f"{code}: machine registry handler differs from code-level matrix")
+        if item["default_side_effect_state"] != row["side_effect"]:
+            fail(f"{code}: default side-effect state differs from code-level matrix")
+        if item["default_retry_posture"] != row["retry"]:
+            fail(f"{code}: default retry posture differs from code-level matrix")
+        if row["fixture_ref"] not in item["fixture_refs"]:
+            fail(f"{code}: machine registry omits code-level matrix fixture")
+
+    recovery_rows = {}
+    for line_number, line in enumerate(
+        matrix_path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.startswith("| EHR-"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 5:
+            fail(f"recovery assertion line {line_number}: expected five cells")
+        test_id = cells[0].strip("`")
+        code = cells[1].strip("`")
+        fixture_match = re.fullmatch(r"EHC-(\d{3})", cells[4])
+        if not re.fullmatch(r"EHR-\d{3}", test_id) or not fixture_match:
+            fail(f"recovery assertion line {line_number}: malformed test or fixture ID")
+        if not cells[2] or not cells[3]:
+            fail(f"{test_id}: required assertion or forbidden-result text is empty")
+        if test_id in recovery_rows or code in recovery_rows.values():
+            fail(f"{test_id}/{code}: duplicate per-code recovery assertion")
+        recovery_rows[test_id] = code
+        if code not in registry_by_code:
+            fail(f"{test_id}: references unknown error code {code}")
+        expected_fixture = (
+            "schemas/fixtures/error-handler-cases.fixture.json#/cases/"
+            + str(int(fixture_match.group(1)) - 1)
+        )
+        if expected_fixture not in registry_by_code[code]["fixture_refs"]:
+            fail(f"{test_id}: fixture does not match registry entry {code}")
+    if len(recovery_rows) != 35:
+        fail(f"expected 35 code-specific recovery assertions, found {len(recovery_rows)}")
+    if set(recovery_rows.values()) != set(registry_by_code):
+        fail("code-specific recovery assertions do not cover the exact error registry inventory")
+
+    # Every positive domain fixture is validated against the correspondingly
+    # named reusable definition, not merely parsed as JSON.
+    domain_schema = schema_docs["domain-payloads.v1.schema.json"]
+    domain_fixture = load(FIXTURES / "domain-payloads.fixture.json")
+    if len(domain_schema.get("$defs", {})) != 103:
+        fail(f"expected 103 reusable domain payload definitions, found {len(domain_schema.get('$defs', {}))}")
+    if len(domain_fixture) != 95:
+        fail(f"expected 95 positive domain payload fixtures, found {len(domain_fixture)}")
+
+    # The D-02 field-path allowlist is a versioned machine contract, not prose-only policy.
+    sync_allowlist = load(SCHEMAS / "sync-field-allowlist.d02.v1.json")
+    if sync_allowlist.get("allowlist_version") != "d02-cloud-mobile.v1":
+        fail("D-02 field allowlist version mismatch")
+    if sync_allowlist.get("classification_policy_version") != "d02-classification.v1":
+        fail("D-02 classification policy version mismatch")
+    if sync_allowlist.get("default_policy") != "deny":
+        fail("D-02 field allowlist must be default-deny")
+    sync_domains = sync_allowlist.get("domains", {})
+    # D-02 allowlist and classification policy share the accepted scope status.
+    # Owner acceptance never grants an export entitlement or enables runtime sync.
+    sync_policy = load(SCHEMAS / "sync-classification-policy.d02.v1.json")
+    validate(sync_policy, schema_docs["sync-classification-policy.d02.v1.schema.json"], "D-02 synchronization classification policy")
+    policy_status = sync_policy.get("status")
+    owner_acceptance = sync_policy.get("owner_acceptance", {})
+    if sync_allowlist.get("status") != policy_status:
+        fail("D-02 allowlist and classification-policy owner disposition statuses differ")
+    if policy_status == "builder_proposal_not_owner_accepted":
+        if owner_acceptance.get("status") != "pending":
+            fail("D-02 pending builder proposal has inconsistent owner-acceptance metadata")
+    elif policy_status == "owner_accepted_option_a_export_disabled":
+        if (owner_acceptance.get("status") != "accepted_option_a"
+                or owner_acceptance.get("accepted_at") != "2026-11-18"
+                or owner_acceptance.get("accepted_revision") != "owner-confirmation-2026-11-18-option-A"):
+            fail("D-02 Option A owner-acceptance record is incomplete or inconsistent")
+    else:
+        fail(f"unsupported D-02 classification-policy status: {policy_status!r}")
+    if sync_policy.get("export_enabled") is not False or sync_policy.get("default_action") != "deny":
+        fail("D-02 classification policy must remain export-disabled and default-deny")
+    if sync_policy.get("policy_version") != sync_allowlist.get("classification_policy_version"):
+        fail("D-02 classification-policy registry version does not match field allowlist")
+    if sync_policy.get("allowlist_version") != sync_allowlist.get("allowlist_version"):
+        fail("D-02 classification-policy registry references a different allowlist")
+    expected_default_conditions = {
+        "same_authenticated_owner_on_both_runtimes",
+        "destination_runtime_is_enrolled_and_not_revoked",
+        "owner_has_enabled_the_exact_synchronized_domain",
+        "exact_allowlist_and_classification_policy_versions_are_supported",
+        "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+        "source_and_destination_retention_rules_allow_the_transfer",
+        "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+        "signature_digest_owner_scope_and_destination_binding_validate",
+    }
+    expected_conditional_conditions = {
+        "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+        "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+        "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+        "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+        "payload_is_encrypted_and_integrity_verified_before_transport",
+        "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded",
+    }
+    default_conditions = sync_policy.get("default_transfer_conditions", [])
+    conditional_conditions = sync_policy.get("conditional_transfer_conditions", [])
+    if (set(default_conditions) != expected_default_conditions
+            or len(default_conditions) != len(expected_default_conditions)):
+        fail("D-02 default transfer conditions do not exactly match the accepted policy")
+    if (set(conditional_conditions) != expected_conditional_conditions
+            or len(conditional_conditions) != len(expected_conditional_conditions)):
+        fail("D-02 conditional transfer conditions do not exactly match the accepted policy")
+
+    policy_domains = sync_policy.get("domains", {})
+    if set(policy_domains) != set(sync_domains):
+        fail("D-02 classification-policy domain inventory differs from field allowlist")
+    classification_path_count = 0
+    for domain_name, allow_rule in sync_domains.items():
+        policy_rule = policy_domains[domain_name]
+        if policy_rule.get("schema_refs") != allow_rule.get("schema_refs"):
+            fail(f"D-02 {domain_name}: classification-policy schema refs differ from allowlist")
+        field_rules = policy_rule.get("fields", [])
+        rule_by_path = {item.get("path"): item for item in field_rules}
+        if len(rule_by_path) != len(field_rules):
+            fail(f"D-02 {domain_name}: duplicate classification-policy field path")
+        expected_groups = {
+            "proposed_default": set(allow_rule.get("default_paths", [])),
+            "conditional_proposal": set(allow_rule.get("conditional_paths", [])),
+            "local_only": set(allow_rule.get("excluded_paths", [])),
+        }
+        expected_all = set().union(*expected_groups.values())
+        if sum(len(group) for group in expected_groups.values()) != len(expected_all):
+            fail(f"D-02 {domain_name}: allowlist path groups overlap")
+        if set(rule_by_path) != expected_all:
+            fail(f"D-02 {domain_name}: classification-policy paths do not exactly cover allowlist paths")
+        for group_name, paths in expected_groups.items():
+            for field_path in paths:
+                item = rule_by_path[field_path]
+                if item.get("path_treatment") != group_name:
+                    fail(f"D-02 {domain_name}.{field_path}: policy treatment differs from allowlist group")
+                if group_name == "proposed_default":
+                    conditions = item.get("conditions", [])
+                    if (item.get("classification") != "OWNER_PRIVATE"
+                            or item.get("per_aggregate_authorization_required") is not False
+                            or set(conditions) != expected_default_conditions
+                            or len(conditions) != len(expected_default_conditions)):
+                        fail(f"D-02 {domain_name}.{field_path}: proposed defaults must be OWNER_PRIVATE with the exact accepted condition set")
+                elif group_name == "conditional_proposal":
+                    conditions = item.get("conditions", [])
+                    if (item.get("classification") not in {"OWNER_PRIVATE", "SENSITIVE"}
+                            or item.get("per_aggregate_authorization_required") is not True
+                            or set(conditions) != expected_conditional_conditions
+                            or len(conditions) != len(expected_conditional_conditions)):
+                        fail(f"D-02 {domain_name}.{field_path}: conditional field must require exact aggregate authorization and the exact accepted condition set")
+                else:
+                    if item.get("classification") not in {"SENSITIVE", "SECURITY_RESTRICTED"} or item.get("conditions") or item.get("per_aggregate_authorization_required") is not False:
+                        fail(f"D-02 {domain_name}.{field_path}: excluded field must remain local-only")
+                classification_path_count += 1
+    local_policy = sync_policy.get("cross_domain_local_only", [])
+    local_by_id = {item.get("identifier"): item for item in local_policy}
+    if len(local_by_id) != len(local_policy) or set(local_by_id) != set(sync_allowlist.get("cross_domain_local_only", [])):
+        fail("D-02 cross-domain local-only policy does not exactly match allowlist controls")
+    if any(item.get("classification") not in {"SENSITIVE", "SECURITY_RESTRICTED"} for item in local_policy):
+        fail("D-02 cross-domain local-only control has an invalid classification")
+    if sync_policy.get("unlisted_path_rule") != "deny_and_quarantine":
+        fail("D-02 unlisted path must fail closed")
+    if sync_policy.get("numeric_sensitivity_rule") != "no_authoritative_mapping; deny_and_quarantine":
+        fail("D-02 numeric sensitivity must not be inferred")
+    sync_def = domain_schema["$defs"]["syncChange"]
+    if set(sync_domains) != set(sync_def["properties"]["domain"].get("enum", [])):
+        fail("D-02 allowlist domains do not match syncChange domain enum")
+    # Each allowed domain names the canonical payload schemas that own its field paths.
+    world_schema = schema_docs["world-interaction.v1.schema.json"]
+    allowed_source_schemas = {
+        "domain-payloads.v1.schema.json": domain_schema,
+        "world-interaction.v1.schema.json": world_schema,
+    }
+    for domain_name, rule in sync_domains.items():
+        schema_refs = rule.get("schema_refs", [])
+        if not schema_refs:
+            fail(f"D-02 {domain_name}: missing source payload schema references")
+        source_definitions = []
+        for schema_ref in schema_refs:
+            if "#/$defs/" not in schema_ref:
+                fail(f"D-02 {domain_name}: invalid source schema reference {schema_ref!r}")
+            schema_file, definition_name = schema_ref.split("#/$defs/", 1)
+            filename = schema_file.rsplit("/", 1)[-1]
+            source_schema = allowed_source_schemas.get(filename)
+            if source_schema is None or definition_name not in source_schema.get("$defs", {}):
+                fail(f"D-02 {domain_name}: unresolved source schema reference {schema_ref!r}")
+            source_definitions.append((source_schema, definition_name))
+
+        def resolve_sync_schema_node(node, source_schema):
+            seen_refs = set()
+            while isinstance(node, dict) and "$ref" in node:
+                reference = node["$ref"]
+                if not reference.startswith("#/$defs/"):
+                    return None
+                referenced_name = reference[len("#/$defs/"):]
+                if referenced_name in seen_refs:
+                    return None
+                seen_refs.add(referenced_name)
+                node = source_schema.get("$defs", {}).get(referenced_name)
+                if node is None:
+                    return None
+            return node
+
+        def has_exact_typed_sync_path(source_schema, definition_name, field_path):
+            node = source_schema["$defs"][definition_name]
+            parts = field_path.split(".")
+            for part in parts:
+                node = resolve_sync_schema_node(node, source_schema)
+                if not isinstance(node, dict):
+                    return False
+                properties = node.get("properties", {})
+                if part not in properties:
+                    return False
+                node = properties[part]
+            node = resolve_sync_schema_node(node, source_schema)
+            if not isinstance(node, dict):
+                return False
+            field_type = node.get("type")
+            field_types = set(field_type) if isinstance(field_type, list) else {field_type}
+            if "object" in field_types:
+                return False
+            if field_type is None and ("properties" in node or node.get("additionalProperties") is True):
+                return False
+            for variant_key in ("oneOf", "anyOf", "allOf"):
+                variants = node.get(variant_key, [])
+                if any(isinstance(variant, dict) and variant.get("type") == "object" for variant in variants):
+                    return False
+            return True
+
+        for path_group in ("default_paths", "conditional_paths"):
+            for field_path in rule.get(path_group, []):
+                if "*" in field_path:
+                    fail(f"D-02 {domain_name}: wildcard path {field_path!r} is not an exact field allowlist entry")
+                if not any(
+                    has_exact_typed_sync_path(source_schema, definition_name, field_path)
+                    for source_schema, definition_name in source_definitions
+                ):
+                    fail(f"D-02 {domain_name}: {field_path!r} is not an exact typed source-schema path")
+        for path_group in ("default_paths", "conditional_paths", "excluded_paths", "schema_refs"):
+            paths = rule.get(path_group, [])
+            if paths != sorted(set(paths)):
+                fail(f"D-02 {domain_name}.{path_group} must be sorted and unique")
+            if any("*" in path for path in paths):
+                fail(f"D-02 {domain_name}.{path_group} must not contain wildcard paths")
+        excluded = set(rule.get("excluded_paths", []))
+        if excluded.intersection(rule.get("default_paths", [])):
+            fail(f"D-02 {domain_name}: an excluded path is also default-allowlisted")
+    sync_required = set(sync_def.get("required", []))
+    for required_field in (
+        "base_aggregate_version", "source_runtime_id", "target_runtime_id",
+        "source_sequence", "allowlist_version", "classification_policy_version",
+        "causal_parent_ids", "field_paths", "authorization_ref",
+        "retention_policy_version", "encryption_profile_id",
+        "encryption_key_version_ref", "signature_profile_id", "signature_ref",
+    ):
+        if required_field not in sync_required:
+            fail(f"syncChange missing D-02 v2 field {required_field}")
+    if "source_device_id" in sync_required:
+        fail("syncChange must not require a physical source_device_id for cloud runtimes")
+    sync_change = domain_fixture["syncChange"]
+    if sync_change["schema_version"].split(".", 1)[0] != "2":
+        fail("syncChange fixture must use v2 envelope semantics")
+    if sync_change["allowlist_version"] != sync_allowlist["allowlist_version"]:
+        fail("syncChange fixture allowlist version mismatch")
+    if sync_change["classification_policy_version"] != sync_allowlist["classification_policy_version"]:
+        fail("syncChange fixture classification-policy version mismatch")
+    if sync_change["base_aggregate_version"] >= sync_change["aggregate_version"]:
+        fail("syncChange fixture does not advance beyond its base aggregate revision")
+    if sync_change["field_paths"] != sorted(set(sync_change["field_paths"])):
+        fail("syncChange field_paths must be sorted and unique")
+    allowed = set(sync_domains[sync_change["domain"]]["default_paths"])
+    conditional = set(sync_domains[sync_change["domain"]]["conditional_paths"])
+    def path_allowed(path, paths):
+        # Conditional authorization is exact-path only; wildcard expansion is forbidden.
+        return path in paths
+    unknown_paths = [
+        path for path in sync_change["field_paths"]
+        if not path_allowed(path, allowed)
+        and not (sync_change["authorization_ref"] and path_allowed(path, conditional))
+    ]
+    if unknown_paths:
+        fail(f"syncChange fixture contains paths outside D-02 allowlist: {unknown_paths}")
+    if sync_change["tombstone"] or sync_change["tombstone_metadata"] is not None:
+        fail("ordinary syncChange fixture must not carry tombstone metadata")
+    tombstone = domain_fixture["syncTombstoneChange"]
+    if not tombstone["tombstone"] or tombstone["field_paths"] or tombstone["encrypted_payload_ref"] is not None:
+        fail("syncTombstoneChange must carry no content field paths or encrypted content payload")
+    if tombstone["tombstone_metadata"]["retention_policy_version"] != sync_change["retention_policy_version"]:
+        fail("sync tombstone must bind a retention-policy version")
+    conflict = domain_fixture["syncConflictDetectedRecord"]
+    if conflict["resolution_state"] != "pending" or conflict["local_change_id"] == conflict["remote_change_id"]:
+        fail("detected sync conflict must preserve two distinct pending source changes")
+    resolved_conflict = domain_fixture["syncConflictResolvedRecord"]
+    if resolved_conflict["resolution_state"] != "resolved" or not resolved_conflict["approval_ref"] or not resolved_conflict["resolution_digest"]:
+        fail("resolved sync conflict must bind explicit owner approval and resolution digest")
+    if events["sync.tombstone.applied.v1"]["payload_schema_ref"] != "schemas/domain-payloads.v1.schema.json#/$defs/syncTombstoneChange":
+        fail("sync tombstone event must reference its event-specific schema")
+    if events["sync.conflict.detected.v1"]["payload_schema_ref"] != "schemas/domain-payloads.v1.schema.json#/$defs/syncConflictDetectedRecord":
+        fail("sync conflict-detected event must reference its event-specific schema")
+    if events["sync.conflict.resolved.v1"]["payload_schema_ref"] != "schemas/domain-payloads.v1.schema.json#/$defs/syncConflictResolvedRecord":
+        fail("sync conflict-resolved event must reference its event-specific schema")
+
+    for name, payload in domain_fixture.items():
+        if name not in domain_schema["$defs"]:
+            fail(f"domain fixture {name}: no same-named schema definition")
+        validate(payload, {"$ref": f"{domain_schema['$id']}#/$defs/{name}"},
+                 f"positive domain fixture {name}")
+
+    # The PR-19 lineage fixture is one coherent chain, not disconnected examples.
+    lineage_request = domain_fixture["learningExperimentRequest"]
+    lineage_worker_request = domain_fixture["workerRequest"]
+    lineage_worker_result = domain_fixture["workerResult"]
+    lineage_completion = domain_fixture["learningExperimentCompleted"]
+    lineage_eval_request = domain_fixture["learningCandidateEvaluationRequest"]
+    lineage_eval_result = domain_fixture["learningCandidateEvaluated"]
+    for label, payload in (
+        ("worker request", lineage_worker_request),
+        ("worker result", lineage_worker_result),
+        ("experiment completion", lineage_completion),
+        ("candidate evaluation request", lineage_eval_request),
+        ("candidate evaluation result", lineage_eval_result),
+    ):
+        if payload["learning_update_id"] != lineage_request["learning_update_id"]:
+            fail(f"PR-19 lineage: {label} changed learning_update_id")
+        if payload["experiment_id"] != lineage_request["experiment_id"]:
+            fail(f"PR-19 lineage: {label} changed experiment_id")
+        if "configuration_digest" in payload and payload["configuration_digest"] != lineage_request["configuration_digest"]:
+            fail(f"PR-19 lineage: {label} changed configuration_digest")
+    if lineage_worker_request["attempt_id"] != lineage_worker_result["attempt_id"] or lineage_worker_request["job_id"] != lineage_worker_result["job_id"]:
+        fail("PR-19 lineage: worker result does not echo exact attempt/job identity")
+    if lineage_completion["attempt_id"] != lineage_worker_request["attempt_id"] or lineage_completion["job_id"] != lineage_worker_request["job_id"]:
+        fail("PR-19 lineage: completion does not bind exact worker attempt/job")
+    if lineage_eval_request["attempt_id"] != lineage_completion["attempt_id"] or lineage_eval_result["attempt_id"] != lineage_completion["attempt_id"]:
+        fail("PR-20 lineage: evaluation does not bind exact completed attempt")
+    if lineage_eval_request["candidate_artifact_sha256"] != lineage_completion["candidate_artifact_sha256"] or lineage_eval_result["candidate_artifact_sha256"] != lineage_completion["candidate_artifact_sha256"]:
+        fail("PR-20 lineage: evaluation candidate digest differs from worker output")
+
+    # MD-16: dataset admission is bound to exact source bytes, authorization,
+    # license terms, owner/model scope and the declared training purpose.
+    source_authorization = domain_fixture["datasetSourceAuthorization"]
+    dataset_manifest = domain_fixture["datasetManifest"]
+    if source_authorization["status"] != "active" or source_authorization["training_permission"] != "allow":
+        fail("MD-16 fixture: source authorization is not active and training-allowed")
+    if dataset_manifest["owner_ref"] != source_authorization["owner_ref"]:
+        fail("MD-16 fixture: dataset manifest and source authorization owner differ")
+    if dataset_manifest["model_family_ref"] != source_authorization["owner_scope"]["model_family_ref"]:
+        fail("MD-16 fixture: dataset manifest model family exceeds source authorization scope")
+    if dataset_manifest["training_purpose"] not in source_authorization["permitted_purposes"]:
+        fail("MD-16 fixture: dataset purpose is not permitted by source authorization")
+    included_refs = [item["source_ref"] for item in dataset_manifest["included_sources"]]
+    if len(included_refs) != len(set(included_refs)):
+        fail("MD-16 fixture: duplicate source identity in immutable dataset manifest")
+    for included in dataset_manifest["included_sources"]:
+        if included["source_ref"] != source_authorization["source_ref"]:
+            fail("MD-16 fixture: included source has no matching authorization record")
+        if included["source_content_sha256"] != source_authorization["source_content_sha256"]:
+            fail("MD-16 fixture: included source content digest differs from authorization")
+        if included["authorization_id"] != source_authorization["authorization_id"]:
+            fail("MD-16 fixture: included source authorization identity mismatch")
+        if included["authorization_record_digest"] != source_authorization["record_digest"]:
+            fail("MD-16 fixture: included source authorization record digest mismatch")
+        if included["license_or_terms_digest"] != source_authorization["license_or_terms_digest"]:
+            fail("MD-16 fixture: included source license/terms digest mismatch")
+
+    # MD-16 event fixtures preserve the exact source authorization and manifest lineage.
+    authorization_decided = domain_fixture["datasetSourceAuthorizationDecided"]["authorization"]
+    authorization_revoked = domain_fixture["datasetSourceAuthorizationRevoked"]
+    manifest_sealed = domain_fixture["datasetManifestSealed"]["manifest"]
+    admission_blocked = domain_fixture["datasetAdmissionBlocked"]
+    revocation_impact = domain_fixture["datasetRevocationImpactAssessed"]
+    if authorization_decided["authorization_id"] != source_authorization["authorization_id"] or authorization_decided["record_digest"] != source_authorization["record_digest"]:
+        fail("MD-16 event fixture: authorization decision changed source authorization identity/digest")
+    if authorization_revoked["authorization_id"] != source_authorization["authorization_id"] or authorization_revoked["authorization_record_digest"] != source_authorization["record_digest"]:
+        fail("MD-16 event fixture: revocation does not bind the exact authorization version")
+    if manifest_sealed["manifest_digest"] != dataset_manifest["manifest_digest"] or manifest_sealed["dataset_manifest_id"] != dataset_manifest["dataset_manifest_id"]:
+        fail("MD-16 event fixture: sealed manifest identity/digest mismatch")
+    if admission_blocked["authorization_id"] != source_authorization["authorization_id"] or admission_blocked["manifest_id"] != dataset_manifest["dataset_manifest_id"]:
+        fail("MD-16 event fixture: blocked admission is not bound to the exact source/manifest")
+    if revocation_impact["authorization_id"] != source_authorization["authorization_id"] or revocation_impact["authorization_record_digest"] != source_authorization["record_digest"]:
+        fail("MD-16 event fixture: revocation impact changed the exact authorization identity/digest")
+
+    identity_fixture = domain_fixture["modelCandidateIdentityFixture"]
+    expected_candidate_id = str(uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        "aurions:candidate:v1:"
+        f"{identity_fixture['owner_ref']}:{identity_fixture['proposal_id']}:"
+        f"{identity_fixture['artifact_sha256']}",
+    ))
+    if identity_fixture["candidate_id"] != expected_candidate_id:
+        fail("model candidate identity fixture does not match canonical UUIDv5 derivation")
+    model_proposal = domain_fixture["evolutionModelCandidateProposed"]
+    if model_proposal["candidate_id"] != identity_fixture["candidate_id"]:
+        fail("model candidate proposal does not bind the canonical candidate ID")
+    if model_proposal["proposal_id"] != identity_fixture["proposal_id"] or model_proposal["candidate_artifact_sha256"] != identity_fixture["artifact_sha256"]:
+        fail("model candidate proposal identity fixture changed its proposal/artifact binding")
+
+    # PR-19/PR-20 is one identity chain: worker completion -> held-out learning
+    # evaluation -> proposal/candidate -> evolution evaluation -> activation and
+    # rollback operation digests. Independent fixture fragments are insufficient.
+    experiment = domain_fixture["learningExperimentCompleted"]
+    evaluation_request = domain_fixture["learningCandidateEvaluationRequest"]
+    learning_evaluation = domain_fixture["learningCandidateEvaluated"]
+    lifecycle = domain_fixture["evolutionCandidateLifecycle"]
+    activation = domain_fixture["evolutionCandidateActivated"]
+    rollback = domain_fixture["evolutionCandidateRolledBack"]
+    lineage_fields = ("learning_update_id", "experiment_id", "attempt_id")
+    for field in lineage_fields:
+        expected_value = experiment[field]
+        if evaluation_request[field] != expected_value or learning_evaluation[field] != expected_value or model_proposal[field] != expected_value:
+            fail(f"PR-19/PR-20 candidate chain changed {field}")
+    for label, record in (("learning evaluation request", evaluation_request), ("learning evaluation", learning_evaluation)):
+        if record["candidate_artifact_ref"] != experiment["candidate_artifact_ref"] or record["candidate_artifact_sha256"] != experiment["candidate_artifact_sha256"]:
+            fail(f"PR-19/PR-20 {label} is not bound to the exact worker candidate artifact")
+    for field in ("baseline_artifact_ref", "dataset_manifest_ref", "evaluation_protocol_ref"):
+        if evaluation_request[field] != learning_evaluation[field]:
+            fail(f"PR-20 evaluation request/result changed {field}")
+    for field in ("baseline_artifact_sha256", "dataset_manifest_sha256", "evaluation_protocol_sha256"):
+        if evaluation_request[field] != learning_evaluation[field]:
+            fail(f"PR-20 evaluation request/result changed {field}")
+    if learning_evaluation["status"] != "passed" or not learning_evaluation.get("report_artifact_ref"):
+        fail("PR-20 candidate fixture must bind a passing held-out report artifact")
+    if identity_fixture["artifact_sha256"] != experiment["candidate_artifact_sha256"]:
+        fail("canonical candidate identity is not derived from the trained artifact digest")
+    if model_proposal["candidate_artifact_ref"] != experiment["candidate_artifact_ref"]:
+        fail("evolution proposal does not reference the exact trained candidate artifact")
+    if model_proposal["learning_evaluation_id"] != learning_evaluation["evaluation_id"]:
+        fail("evolution proposal does not reference the exact learning evaluation ID")
+    if model_proposal["evaluation_ref"] != learning_evaluation["report_artifact_ref"]:
+        fail("evolution proposal does not reference the held-out learning evaluation report")
+    if model_proposal["evidence_refs"].count(learning_evaluation["report_artifact_ref"]) != 1:
+        fail("evolution proposal must retain the exact held-out evaluation report as evidence")
+
+    candidate_shared_fields = (
+        "candidate_id", "proposal_id", "artifact_ref", "candidate_artifact_sha256",
+        "learning_update_id", "experiment_id", "attempt_id",
+        "learning_evaluation_id", "learning_evaluation_ref", "learning_evaluation_digest",
+        "evolution_evaluation_id", "evolution_evaluation_ref", "evolution_evaluation_digest",
+        "evaluation_ref", "evaluation_status",
+    )
+    expected_candidate_values = {
+        "candidate_id": identity_fixture["candidate_id"],
+        "proposal_id": model_proposal["proposal_id"],
+        "artifact_ref": experiment["candidate_artifact_ref"],
+        "candidate_artifact_sha256": experiment["candidate_artifact_sha256"],
+        "learning_update_id": experiment["learning_update_id"],
+        "experiment_id": experiment["experiment_id"],
+        "attempt_id": experiment["attempt_id"],
+        "learning_evaluation_id": learning_evaluation["evaluation_id"],
+        "learning_evaluation_ref": learning_evaluation["report_artifact_ref"],
+        "learning_evaluation_digest": learning_evaluation["report_digest"],
+        "evolution_evaluation_id": lifecycle["evolution_evaluation_id"],
+        "evolution_evaluation_ref": lifecycle["evolution_evaluation_ref"],
+        "evolution_evaluation_digest": lifecycle["evolution_evaluation_digest"],
+        "evaluation_ref": lifecycle["evaluation_ref"],
+        "evaluation_status": "passed",
+    }
+    if lifecycle["state"] != "evaluated":
+        fail("candidate lifecycle baseline fixture must be evaluated before activation")
+    for label, record in (("evaluation lifecycle", lifecycle), ("activation", activation), ("rollback", rollback)):
+        for field in candidate_shared_fields:
+            if record.get(field) != expected_candidate_values[field]:
+                fail(f"PR-19/PR-20 {label} changed candidate lineage field {field}")
+    if activation["state"] != "active" or activation.get("approval_ref") is None or activation.get("pointer_revision", 0) < 1:
+        fail("candidate activation fixture is missing its approval/state/pointer evidence")
+    if rollback["state"] != "rolled_back" or rollback.get("approval_ref") is None or rollback.get("rollback_ref") is None:
+        fail("candidate rollback fixture is missing its separate approval/rollback evidence")
+
+    identity_mismatch = load(FIXTURES / "negative" / "candidate-identity-mismatch.semantic.json")
+    validate(
+        identity_mismatch,
+        {"$ref": f"{domain_schema['$id']}#/$defs/modelCandidateIdentityFixture"},
+        "semantic candidate identity mismatch fixture",
+    )
+    mismatch_expected_id = str(uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        "aurions:candidate:v1:"
+        f"{identity_mismatch['owner_ref']}:{identity_mismatch['proposal_id']}:"
+        f"{identity_mismatch['artifact_sha256']}",
+    ))
+    if identity_mismatch["candidate_id"] == mismatch_expected_id:
+        fail("semantic candidate identity mismatch fixture unexpectedly matches canonical UUIDv5")
+    if identity_mismatch["candidate_id"] == identity_fixture["candidate_id"]:
+        fail("semantic candidate identity mismatch fixture must differ from the positive candidate")
+
+    operation_digest_fixtures = load(FIXTURES / "candidate-operation-digests.fixture.json")
+    operation_fields = {
+        "activation": {
+            "schema_version", "owner_ref", "operation_id", "action", "target_mechanism",
+            "candidate_id", "proposal_id", "candidate_artifact_ref", "candidate_artifact_sha256",
+            "learning_evaluation_ref", "learning_evaluation_digest",
+            "evolution_evaluation_ref", "evolution_evaluation_digest",
+            "expected_active_pointer_revision", "previous_candidate_ref",
+            "policy_version_ref", "scope", "expires_at",
+        },
+        "rollback": {
+            "schema_version", "owner_ref", "operation_id", "action", "target_mechanism",
+            "candidate_id", "proposal_id", "candidate_artifact_ref", "candidate_artifact_sha256",
+            "previous_candidate_ref", "previous_artifact_ref", "previous_artifact_sha256",
+            "expected_active_pointer_revision", "policy_version_ref", "scope", "expires_at",
+        },
+    }
+    expected_actions = {"activation": "candidate.activate", "rollback": "candidate.rollback"}
+    for fixture_name, expected_action in expected_actions.items():
+        entry = operation_digest_fixtures.get(fixture_name, {})
+        operation = entry.get("operation", {})
+        if set(operation) != operation_fields[fixture_name]:
+            fail(f"{fixture_name} operation digest fixture has missing or unexpected fields")
+        if operation.get("action") != expected_action:
+            fail(f"{fixture_name} operation digest fixture has the wrong action")
+        if operation.get("candidate_id") != identity_fixture["candidate_id"] or operation.get("proposal_id") != model_proposal["proposal_id"]:
+            fail(f"{fixture_name} operation digest does not bind the canonical proposal/candidate identity")
+        if operation.get("candidate_artifact_ref") != experiment["candidate_artifact_ref"] or operation.get("candidate_artifact_sha256") != experiment["candidate_artifact_sha256"]:
+            fail(f"{fixture_name} operation digest does not bind the exact trained artifact")
+        if operation.get("learning_evaluation_ref", learning_evaluation["report_artifact_ref"]) != learning_evaluation["report_artifact_ref"]:
+            fail(f"{fixture_name} operation digest does not bind the exact learning evaluation report")
+        if operation.get("learning_evaluation_digest", learning_evaluation["report_digest"]) != learning_evaluation["report_digest"]:
+            fail(f"{fixture_name} operation digest does not bind the exact learning evaluation digest")
+        if operation.get("evolution_evaluation_ref", lifecycle["evolution_evaluation_ref"]) != lifecycle["evolution_evaluation_ref"]:
+            fail(f"{fixture_name} operation digest does not bind the exact evolution evaluation")
+        if operation.get("evolution_evaluation_digest", lifecycle["evolution_evaluation_digest"]) != lifecycle["evolution_evaluation_digest"]:
+            fail(f"{fixture_name} operation digest does not bind the exact evolution evaluation digest")
+        actual_digest = hashlib.sha256(canonical_jcs_fixture_bytes(operation)).hexdigest()
+        if actual_digest != entry.get("expected_sha256"):
+            fail(f"{fixture_name} operation digest fixture does not match its RFC 8785 SHA-256")
+        lifecycle_record = activation if fixture_name == "activation" else rollback
+        if operation.get("expected_active_pointer_revision") != lifecycle_record.get("pointer_revision"):
+            fail(f"{fixture_name} operation digest pointer revision differs from lifecycle evidence")
+        if operation.get("previous_candidate_ref") != lifecycle_record.get("previous_candidate_ref"):
+            fail(f"{fixture_name} operation digest previous candidate differs from lifecycle evidence")
+        if fixture_name == "rollback":
+            if operation.get("previous_artifact_ref") != rollback.get("restored_artifact_ref") or operation.get("previous_artifact_sha256") != rollback.get("restore_artifact_sha256"):
+                fail("rollback operation digest does not bind the exact restored artifact reference/digest")
+
+    # Additional focused positive fixtures.
+    for fixture_name, definition in [
+        ("decision-recorded.fixture.json", "decisionRecorded"),
+        ("provider-lifecycle.fixture.json", None),
+        ("provider-lifecycle-enabled.fixture.json", None),
+    ]:
+        payload = load(FIXTURES / fixture_name)
+        if definition:
+            validate(payload, {"$ref": f"{domain_schema['$id']}#/$defs/{definition}"},
+                     fixture_name)
+        else:
+            for name, value in payload.items():
+                validate(value, {"$ref": f"{domain_schema['$id']}#/$defs/{name}"},
+                         f"{fixture_name}:{name}")
+
+    # Negative controls are explicit: each must fail its intended schema.
+    negative_cases = {
+        "approval-request-invalid-risk.invalid.json": ("domain-payloads.v1.schema.json", "approvalRequested"),
+        "artifact-manifest-invalid-hash.invalid.json": ("domain-payloads.v1.schema.json", "artifactManifest"),
+        "capability-descriptor-missing-provenance.invalid.json": ("capability-descriptor-body.v1.schema.json", None),
+        "capability-descriptor-unknown-authority-field.invalid.json": ("capability-descriptor-body.v1.schema.json", None),
+        "capability-discovery-missing-constraints.invalid.json": ("domain-payloads.v1.schema.json", "capabilityDiscoveryRequest"),
+        "capability-discovery-missing-scope.invalid.json": ("domain-payloads.v1.schema.json", "capabilityDiscoveryRequest"),
+        "capability-verification-invalid-version.invalid.json": ("domain-payloads.v1.schema.json", "capabilityVerificationRequest"),
+        "command-envelope-missing-type.invalid.json": ("domain-payloads.v1.schema.json", "commandEnvelope"),
+        "context-assembly-missing-scope.invalid.json": ("domain-payloads.v1.schema.json", "contextAssemblyRequest"),
+        "contract-error-missing-side-effect-state.invalid.json": ("domain-payloads.v1.schema.json", "contractError"),
+        "dataset-authorization-decided-missing-approval.invalid.json": ("domain-payloads.v1.schema.json", "datasetSourceAuthorizationDecided"),
+        "dataset-authorization-revoked-invalid-digest.invalid.json": ("domain-payloads.v1.schema.json", "datasetSourceAuthorizationRevoked"),
+        "dataset-manifest-sealed-missing-check-digest.invalid.json": ("domain-payloads.v1.schema.json", "datasetManifestSealed"),
+        "dataset-admission-blocked-missing-reason.invalid.json": ("domain-payloads.v1.schema.json", "datasetAdmissionBlocked"),
+        "dataset-revocation-impact-missing-operation.invalid.json": ("domain-payloads.v1.schema.json", "datasetRevocationImpactAssessed"),
+        "decision-selected-without-option.invalid.json": ("domain-payloads.v1.schema.json", "decisionRecorded"),
+        "disclosure-invalid-digest.invalid.json": ("domain-payloads.v1.schema.json", "externalDisclosureRecord"),
+        "domain-query-invalid-limit.invalid.json": ("domain-payloads.v1.schema.json", "domainQuery"),
+        "error-registry-missing-side-effect.invalid.json": ("error-registry.v1.schema.json", None),
+        "learning-experiment-missing-protocol.invalid.json": ("domain-payloads.v1.schema.json", "learningExperimentRequest"),
+        "learning-experiment-missing-lineage.invalid.json": ("domain-payloads.v1.schema.json", "learningExperimentRequest"),
+        "worker-result-missing-attempt.invalid.json": ("domain-payloads.v1.schema.json", "workerResult"),
+        "learning-evaluation-missing-lineage.invalid.json": ("domain-payloads.v1.schema.json", "learningCandidateEvaluationRequest"),
+        "candidate-activation-missing-approval.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActionRequest"),
+        "candidate-activated-evaluation-not-passed.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActivated"),
+        "candidate-rolled-back-evaluation-not-passed.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateRolledBack"),
+        "candidate-rollback-missing-reference.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActionRequest"),
+        "candidate-activated-missing-evaluation.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateActivated"),
+        "candidate-rolled-back-missing-restore-digest.invalid.json": ("domain-payloads.v1.schema.json", "evolutionCandidateRolledBack"),
+        "dataset-source-missing-rights-basis.invalid.json": ("domain-payloads.v1.schema.json", "datasetSourceAuthorization"),
+        "dataset-source-private-missing-authorization.invalid.json": ("domain-payloads.v1.schema.json", "datasetSourceAuthorization"),
+        "dataset-manifest-source-missing-authorization.invalid.json": ("domain-payloads.v1.schema.json", "datasetManifest"),
+        "dataset-manifest-empty-sources.invalid.json": ("domain-payloads.v1.schema.json", "datasetManifest"),
+        "evolution-proposal-missing-candidate-lineage.invalid.json": ("domain-payloads.v1.schema.json", "evolutionProposed"),
+        "memory-retrieval-invalid-limit.invalid.json": ("domain-payloads.v1.schema.json", "memoryRetrievalQuery"),
+        "message-envelope-invalid-owner-type.invalid.json": ("message-envelope.v1.schema.json", None),
+        "operation-control-invalid-action.invalid.json": ("domain-payloads.v1.schema.json", "operationControlRequest"),
+        "operation-proposal-invalid-risk-class.invalid.json": ("world-interaction.v1.schema.json", "interactionProposal"),
+        "outcome-evaluation-missing-observed.invalid.json": ("domain-payloads.v1.schema.json", "outcomeEvaluation"),
+        "provider-failure-dispatched-blind-retry.invalid.json": ("domain-payloads.v1.schema.json", "providerFailure"),
+        "query-envelope-invalid-consistency.invalid.json": ("domain-payloads.v1.schema.json", "queryEnvelope"),
+        "query-response-missing-result-schema.invalid.json": ("domain-payloads.v1.schema.json", "queryResponse"),
+        "sync-conflict-missing-remote.invalid.json": ("domain-payloads.v1.schema.json", "syncConflictRecord"),
+        "task-control-invalid-action.invalid.json": ("domain-payloads.v1.schema.json", "taskControlRequest"),
+        "task-control-missing-version.invalid.json": ("domain-payloads.v1.schema.json", "taskControlRequest"),
+        "task-run-transition-missing-revision.invalid.json": ("domain-payloads.v1.schema.json", "taskRunTransition"),
+        "worker-result-missing-job.invalid.json": ("domain-payloads.v1.schema.json", "workerResult"),
+        "world-entity-missing-evidence.invalid.json": ("world-interaction.v1.schema.json", "entity"),
+    }
+    negative_dir = FIXTURES / "negative"
+    actual_negative = {p.name for p in negative_dir.glob("*.invalid.json")}
+    if actual_negative != set(negative_cases):
+        fail(
+            "Negative fixture inventory mismatch: "
+            f"unmapped={sorted(actual_negative - set(negative_cases))}; "
+            f"missing={sorted(set(negative_cases) - actual_negative)}"
+        )
+
+    for filename, (schema_name, definition) in negative_cases.items():
+        instance = load(negative_dir / filename)
+        schema = schema_docs[schema_name]
+        if definition and schema_name == "world-interaction.v1.schema.json":
+            target = {
+                "$schema": Draft202012Validator.META_SCHEMA["$id"],
+                "$defs": schema["$defs"],
+                "$ref": f"#/$defs/{definition}",
+            }
+        elif definition:
+            target = {"$ref": f"{schema['$id']}#/$defs/{definition}"}
+        else:
+            target = schema
+        try:
+            validate(instance, target, f"negative control {filename}")
+        except AssertionError:
+            continue
+        fail(f"negative control unexpectedly validated: {filename}")
+
+    print(
+        f"PASS: {len(schema_docs)} Draft 2020-12 schemas; "
+        f"{len(pairs)} paired registry/fixture checks; "
+        f"{len(domain_fixture)} positive domain payloads; "
+        f"{len(negative_cases)} schema-negative controls; "
+        "1 semantic candidate-identity mismatch control; "
+        "2 canonical candidate operation-digest vectors; "
+        f"{len(recovery_rows)} code-specific recovery assertions; "
+        f"{classification_path_count} D-02 classified field paths plus {len(local_policy)} local-only controls."
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except Exception as exc:  # Keep CI output concise and actionable.
+        print(f"FAIL: {exc}", file=sys.stderr)
+        raise SystemExit(1)

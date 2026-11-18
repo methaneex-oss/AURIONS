@@ -1,0 +1,11 @@
+{
+  "prediction_ref": "prediction:1",
+  "plan_ref": "plan:1",
+  "operation_ref": "operation:1",
+  "expected_outcome_ref": "artifact:expected:1",
+  "verification_sources": [
+    "platform_observation:1"
+  ],
+  "attribution_context": {},
+  "requested_at": "2026-11-11T08:11:00Z"
+}

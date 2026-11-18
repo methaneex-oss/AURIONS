@@ -1,0 +1,1853 @@
+{
+  "experienceObserved": {
+    "experience_id": "10000000-0000-4000-8000-000000000001",
+    "source_type": "user_input",
+    "observed_at": "2026-11-11T08:00:00Z",
+    "recorded_at": "2026-11-11T08:00:01Z",
+    "content_ref": "artifact:experience:1",
+    "sensitivity": 1,
+    "provenance": {
+      "source_ref": "owner-session:1",
+      "source_kind": "authenticated_owner_input",
+      "actor_ref": "owner:primary",
+      "device_ref": "device:mobile",
+      "external_origin": false
+    },
+    "capture_method": "cli-input",
+    "capture_limitations": [],
+    "retention_class": "durable"
+  },
+  "representationCreated": {
+    "representation_id": "20000000-0000-4000-8000-000000000001",
+    "experience_id": "10000000-0000-4000-8000-000000000001",
+    "representation_type": "semantic_interpretation",
+    "method_id": "representation.pipeline",
+    "method_version": "1.0",
+    "content": {
+      "summary": "Owner supplied a bounded objective."
+    },
+    "uncertainty": {
+      "confidence": 0.9,
+      "limitations": []
+    },
+    "source_refs": [
+      "artifact:experience:1"
+    ],
+    "created_at": "2026-11-11T08:00:02Z"
+  },
+  "contextSnapshot": {
+    "context_id": "30000000-0000-4000-8000-000000000001",
+    "version": 1,
+    "scope": "task:initial",
+    "valid_from": "2026-11-11T08:00:02Z",
+    "valid_until": null,
+    "attributes": {
+      "objective": "inspect current environment"
+    },
+    "provenance_refs": [
+      "artifact:experience:1"
+    ],
+    "uncertainty": {
+      "unknowns": [
+        "available capabilities"
+      ]
+    },
+    "created_at": "2026-11-11T08:00:02Z"
+  },
+  "beliefRevision": {
+    "belief_id": "40000000-0000-4000-8000-000000000001",
+    "knowledge_id": "41000000-0000-4000-8000-000000000001",
+    "revision_id": "42000000-0000-4000-8000-000000000001",
+    "revision_number": 1,
+    "epistemic_status": "provisional",
+    "confidence": 0.5,
+    "revision_reason": "Initial evidence is incomplete.",
+    "evidence_refs": [
+      {
+        "evidence_id": "43000000-0000-4000-8000-000000000001",
+        "stance": "supports",
+        "relevance": 0.5
+      }
+    ],
+    "created_at": "2026-11-11T08:00:03Z"
+  },
+  "predictionCreated": {
+    "prediction_id": "50000000-0000-4000-8000-000000000001",
+    "subject_ref": "task:initial",
+    "expected_outcome": {
+      "state": "objective_completed"
+    },
+    "evaluation_criteria": {
+      "required_evidence": [
+        "completion_receipt"
+      ]
+    },
+    "conditions": {
+      "network": "offline"
+    },
+    "horizon": {
+      "deadline": "2026-11-11T09:00:00Z"
+    },
+    "confidence": 0.6,
+    "evidence_refs": [
+      "belief:40000000-0000-4000-8000-000000000001"
+    ],
+    "created_at": "2026-11-11T08:00:04Z"
+  },
+  "planStepContract": {
+    "step_id": "60000000-0000-4000-8000-000000000001",
+    "plan_id": "61000000-0000-4000-8000-000000000001",
+    "plan_version": 1,
+    "sequence": 0,
+    "step_role": "environment_observation",
+    "role_schema_version": "1.0",
+    "intent": "Discover currently available environment interfaces.",
+    "capability_ref": null,
+    "input_binding": {
+      "scope": "local"
+    },
+    "preconditions": {
+      "owner_session": "authenticated"
+    },
+    "expected_effects": {
+      "observation_records": "created"
+    },
+    "resource_budget": {
+      "deadline_ms": 10000
+    },
+    "dependencies": [],
+    "verification_contract": {
+      "evidence": "observation_receipt"
+    },
+    "stop_conditions": {
+      "permission_missing": "defer"
+    },
+    "status": "pending"
+  },
+  "operationProposal": {
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "actor_identity": "runtime:mobile",
+    "device_id": "71000000-0000-4000-8000-000000000001",
+    "origin_goal_id": null,
+    "origin_plan_id": "61000000-0000-4000-8000-000000000001",
+    "origin_step_id": "60000000-0000-4000-8000-000000000001",
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "target_ref": "resource:example",
+    "canonical_parameters_artifact_id": "72000000-0000-4000-8000-000000000001",
+    "parameter_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "expected_effects_ref": "artifact:expected-effects:1",
+    "sensitivity": 1,
+    "data_categories": [
+      "non_sensitive_metadata"
+    ],
+    "risk_class": "R0",
+    "policy_version_ref": "policy:1",
+    "approval_request_id": null,
+    "deadline": "2026-11-11T08:10:00Z",
+    "resource_budget": {
+      "duration_ms": 5000
+    },
+    "idempotency_key": "operation:70000000-attempt-1",
+    "canonicalization_version": "1.0",
+    "created_at": "2026-11-11T08:00:05Z"
+  },
+  "operationAttemptReceipt": {
+    "attempt_id": "73000000-0000-4000-8000-000000000001",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "attempt_number": 1,
+    "state": "prepared",
+    "idempotency_key": "operation:70000000-attempt-1",
+    "dispatched_at": null,
+    "finished_at": null,
+    "provider_receipt_ref": null,
+    "reported_effects_ref": null,
+    "verification_evidence_ref": null,
+    "error_ref": null,
+    "uncertainty_reason": null,
+    "reconciled_at": null
+  },
+  "outcomeEvaluation": {
+    "outcome_evaluation_id": "80000000-0000-4000-8000-000000000001",
+    "prediction_ref": "50000000-0000-4000-8000-000000000001",
+    "plan_ref": "61000000-0000-4000-8000-000000000001",
+    "operation_ref": "70000000-0000-4000-8000-000000000001",
+    "expected_outcome_ref": "artifact:expected:1",
+    "observed_outcome_ref": "artifact:observed:1",
+    "verification_sources": [
+      "receipt:1",
+      "observation:1"
+    ],
+    "result": "inconclusive",
+    "attribution_hypotheses": [],
+    "uncertainty": {
+      "reason": "Fixture has no real execution evidence."
+    },
+    "created_at": "2026-11-11T08:00:06Z"
+  },
+  "learningUpdate": {
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "target_mechanism": "capability_selection",
+    "update_kind": "capability_knowledge",
+    "hypothesis": {
+      "claim": "Capability precondition estimate should be revised."
+    },
+    "scope": {
+      "provider_id": "provider.example",
+      "device_id": "71000000-0000-4000-8000-000000000001"
+    },
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "baseline_artifact_ref": null,
+    "candidate_artifact_ref": null,
+    "evaluation_protocol_ref": null,
+    "metrics_ref": null,
+    "regression_results_ref": null,
+    "approval_ref": null,
+    "state": "proposed",
+    "rollback_ref": null,
+    "created_at": "2026-11-11T08:00:07Z"
+  },
+  "appraisalUpdated": {
+    "appraisal_id": "a1000000-0000-4000-8000-000000000001",
+    "context_id": "30000000-0000-4000-8000-000000000001",
+    "context_version": 1,
+    "assessment": {
+      "relevance": "context-dependent estimate"
+    },
+    "uncertainty": {
+      "basis": "fixture only"
+    },
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "sensitivity": 1,
+    "created_at": "2026-11-11T08:00:08Z",
+    "valid_until": null
+  },
+  "reasoningHypothesisProposed": {
+    "reasoning_id": "a2000000-0000-4000-8000-000000000001",
+    "context_id": "30000000-0000-4000-8000-000000000001",
+    "context_version": 1,
+    "hypothesis_ref": "urn:fixture:hypothesis:1",
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "conclusion_summary_ref": null,
+    "uncertainty": {
+      "known_unknowns": [
+        "fixture has no real evidence"
+      ]
+    },
+    "sensitivity": 1,
+    "created_at": "2026-11-11T08:00:08Z"
+  },
+  "attentionAllocated": {
+    "allocation_id": "a3000000-0000-4000-8000-000000000001",
+    "context_id": "30000000-0000-4000-8000-000000000001",
+    "context_version": 1,
+    "candidate_refs": [
+      "task:fixture"
+    ],
+    "selected_refs": [
+      "task:fixture"
+    ],
+    "deferred_refs": [],
+    "resource_budget": {
+      "time_ms": 1000
+    },
+    "rationale_ref": "urn:fixture:attention:rationale",
+    "created_at": "2026-11-11T08:00:08Z",
+    "valid_until": null
+  },
+  "goalRevision": {
+    "goal_id": "a4000000-0000-4000-8000-000000000001",
+    "revision": 1,
+    "description": "Fixture-only bounded objective",
+    "state": "proposed",
+    "priority": 0.5,
+    "constraints": {
+      "scope": "fixture"
+    },
+    "reason_ref": "urn:fixture:goal:reason",
+    "created_at": "2026-11-11T08:00:08Z",
+    "objective_id": "objective-fixture-1",
+    "objective_version": 1
+  },
+  "capabilityKnowledgeRevision": {
+    "knowledge_revision_id": "a5000000-0000-4000-8000-000000000001",
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "revision_number": 1,
+    "context_scope": {
+      "provider_id": "provider.example",
+      "device_id": "71000000-0000-4000-8000-000000000001"
+    },
+    "claims": {
+      "precondition": "unknown"
+    },
+    "confidence": {
+      "estimate": null,
+      "method": "insufficient evidence"
+    },
+    "status": "provisional",
+    "evidence_refs": [
+      {
+        "evidence_id": "43000000-0000-4000-8000-000000000001",
+        "stance": "contextualizes"
+      }
+    ],
+    "created_at": "2026-11-11T08:00:08Z"
+  },
+  "environmentObserved": {
+    "observation_id": "a6000000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "device_id": "71000000-0000-4000-8000-000000000001",
+    "environment_scope": "fixture-only",
+    "observed_at": "2026-11-11T08:00:08Z",
+    "recorded_at": "2026-11-11T08:00:08Z",
+    "source_id": "fixture.platform.observer",
+    "collection_method": "schema-fixture",
+    "collector_version": "fixture-1",
+    "platform_context": {
+      "platform": "not measured"
+    },
+    "observed_facts": [],
+    "sensitivity": 1,
+    "limitations": [
+      "No real Android observation was performed."
+    ],
+    "validity": {
+      "status": "fixture-only"
+    }
+  },
+  "selfModelUpdated": {
+    "self_model_revision_id": "a7000000-0000-4000-8000-000000000001",
+    "revision_number": 1,
+    "claims": {
+      "capability": "unknown"
+    },
+    "confidence": {
+      "calibration": "not measured"
+    },
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "created_at": "2026-11-11T08:00:08Z"
+  },
+  "evolutionProposed": {
+    "proposal_id": "a8000000-0000-4000-8000-000000000001",
+    "target_mechanism": "capability_discovery",
+    "description": "Fixture-only change proposal",
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "impact_risk": {
+      "status": "not evaluated"
+    },
+    "candidate_artifact_ref": null,
+    "evaluation_ref": null,
+    "state": "proposed",
+    "approval_ref": null,
+    "created_at": "2026-11-11T08:00:08Z",
+    "updated_at": "2026-11-11T08:00:08Z"
+  },
+  "permissionEvaluated": {
+    "request_id": "a9000000-0000-4000-8000-000000000001",
+    "decision_id": "aa000000-0000-4000-8000-000000000001",
+    "decision": "deferred",
+    "policy_version_ref": "policy:fixture:v1",
+    "scope_digest": "fixture-digest",
+    "risk_class": "R0",
+    "evaluated_at": "2026-11-11T08:00:08Z",
+    "reason_ref": "urn:fixture:permission:unknown"
+  },
+  "approvalDecision": {
+    "request_id": "ab000000-0000-4000-8000-000000000001",
+    "decision_id": "ac000000-0000-4000-8000-000000000001",
+    "authenticated_owner_ref": "owner:primary",
+    "decision": "denied",
+    "approved_digest": "fixture-digest",
+    "decided_at": "2026-11-11T08:00:08Z",
+    "authentication_context_ref": "auth:fixture"
+  },
+  "taskCheckpointDetails": {
+    "checkpoint_id": "ad000000-0000-4000-8000-000000000001",
+    "plan_id": "61000000-0000-4000-8000-000000000001",
+    "plan_version": 1,
+    "context_version_ref": "30000000-0000-4000-8000-000000000001:1",
+    "capability_epoch_digest": "fixture-capability-epoch",
+    "dependency_state_digest": "fixture-dependency-state",
+    "pending_steps": [
+      "60000000-0000-4000-8000-000000000001"
+    ],
+    "resume_conditions": {
+      "network": "not-required-for-fixture"
+    },
+    "invalidation_reason": null,
+    "created_at": "2026-11-11T08:00:08Z"
+  },
+  "syncChange": {
+    "change_id": "ae000000-0000-4000-8000-000000000001",
+    "domain": "belief",
+    "schema_version": "2.0",
+    "owner_id": "owner:primary",
+    "aggregate_id": "belief:fixture:7",
+    "aggregate_version": 3,
+    "created_at": "2026-11-17T09:00:00Z",
+    "payload_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "encrypted_payload_ref": "ciphertext-ref:sync-change-fixture-1",
+    "tombstone": false,
+    "retention_class": "owner_private",
+    "retention_policy_version": "retention-policy:d02-v1",
+    "idempotency_key": "fixture-sync-change-1",
+    "base_aggregate_version": 2,
+    "source_runtime_id": "72000000-0000-4000-8000-000000000001",
+    "target_runtime_id": "72000000-0000-4000-8000-000000000002",
+    "source_sequence": 8,
+    "allowlist_version": "d02-cloud-mobile.v1",
+    "classification_policy_version": "d02-classification.v1",
+    "causal_parent_ids": [
+      "72000000-0000-4000-8000-000000000008"
+    ],
+    "field_paths": [
+      "belief_id",
+      "created_at",
+      "epistemic_status",
+      "knowledge_id",
+      "revision_id",
+      "revision_number"
+    ],
+    "authorization_ref": null,
+    "encryption_profile_id": "encryption-profile:design-placeholder",
+    "encryption_key_version_ref": "key-version-ref:fixture-only",
+    "signature_profile_id": "signature-profile:design-placeholder",
+    "signature_ref": "signature-ref:fixture-only",
+    "tombstone_metadata": null
+  },
+  "discoveryRequest": {
+    "discovery_id": "af000000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "device_id": "71000000-0000-4000-8000-000000000001",
+    "requested_scope": {
+      "scope": "fixture-only"
+    },
+    "requested_at": "2026-11-11T08:00:08Z",
+    "source_refs": [
+      "fixture.provider.alpha"
+    ],
+    "observation_refs": [
+      "artifact:observed:1"
+    ],
+    "mode": "passive_metadata",
+    "resource_budget": {
+      "duration_ms": 1000
+    },
+    "deadline": "2026-11-11T08:00:10Z",
+    "cancellation_token": null
+  },
+  "discoveryResult": {
+    "discovery_id": "af000000-0000-4000-8000-000000000001",
+    "status": "partial",
+    "completed_at": "2026-11-11T08:00:08Z",
+    "descriptor_refs": [
+      "capability:fixture:1"
+    ],
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "unknowns": [
+      "actual provider interface"
+    ],
+    "limitations": [
+      "fixture-only; no real discovery"
+    ],
+    "provider_errors": []
+  },
+  "memoryRecord": {
+    "memory_id": "b0000000-0000-4000-8000-000000000001",
+    "memory_type": "episodic",
+    "content_ref": "artifact:memory-fixture:1",
+    "summary": "Fixture-only memory record",
+    "sensitivity": 1,
+    "status": "active",
+    "created_at": "2026-11-11T08:00:08Z",
+    "updated_at": "2026-11-11T08:00:08Z",
+    "last_accessed_at": null,
+    "retention_until": null,
+    "deleted_at": null
+  },
+  "knowledgeItem": {
+    "knowledge_id": "b1000000-0000-4000-8000-000000000001",
+    "proposition": "Fixture-only provisional knowledge statement",
+    "domain": "fixture",
+    "status": "active",
+    "created_at": "2026-11-11T08:00:08Z",
+    "updated_at": "2026-11-11T08:00:08Z"
+  },
+  "predictionEvaluation": {
+    "evaluation_id": "b2000000-0000-4000-8000-000000000001",
+    "prediction_id": "50000000-0000-4000-8000-000000000001",
+    "observed_outcome_ref": "artifact:observed:1",
+    "result": "inconclusive",
+    "evaluated_at": "2026-11-11T08:00:08Z",
+    "evaluator_ref": "evaluator:fixture",
+    "evidence_refs": [
+      "artifact:observed:1"
+    ],
+    "uncertainty": {
+      "reason": "No real execution evidence"
+    }
+  },
+  "operationLifecycleEvent": {
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "attempt_id": "73000000-0000-4000-8000-000000000001",
+    "state": "ready",
+    "occurred_at": "2026-11-11T08:00:08Z",
+    "provider_receipt_ref": null,
+    "verification_evidence_ref": null,
+    "error_ref": null,
+    "uncertainty_reason": null,
+    "policy_decision_ref": null,
+    "attempt_state": "prepared",
+    "attempt_number": 1
+  },
+  "decisionRecorded": {
+    "decision_id": "5d2f4c90-7a6d-4e23-ae32-1b7d51e20a11",
+    "goal_id": null,
+    "plan_id": null,
+    "decision_type": "deferred",
+    "rationale_ref": "urn:aurions:fixture:rationale:deferred-decision",
+    "uncertainty": {
+      "reason": "Required evidence is not yet available",
+      "confidence": null
+    },
+    "created_at": "2026-11-11T00:00:00Z"
+  },
+  "evidenceItem": {
+    "evidence_id": "b3000000-0000-4000-8000-000000000001",
+    "source_experience_id": "10000000-0000-4000-8000-000000000001",
+    "source_ref": "artifact:observed:1",
+    "evidence_type": "fixture-observation",
+    "observed_at": "2026-11-11T08:00:11Z",
+    "recorded_at": "2026-11-11T08:00:11Z",
+    "reliability": {
+      "status": "not-measured"
+    }
+  },
+  "planRevision": {
+    "plan_id": "61000000-0000-4000-8000-000000000001",
+    "goal_id": "a4000000-0000-4000-8000-000000000001",
+    "goal_revision": 1,
+    "plan_version": 1,
+    "status": "draft",
+    "created_at": "2026-11-11T08:00:11Z",
+    "step_refs": [
+      "60000000-0000-4000-8000-000000000001"
+    ],
+    "context_version_ref": "30000000-0000-4000-8000-000000000001:1",
+    "capability_epoch_digest": null
+  },
+  "memoryRetrieval": {
+    "retrieval_id": "b4000000-0000-4000-8000-000000000001",
+    "query_ref": "urn:fixture:query:1",
+    "scope": {
+      "purpose": "fixture-only"
+    },
+    "candidate_refs": [
+      {
+        "memory_id": "b0000000-0000-4000-8000-000000000001",
+        "relevance": 0.5,
+        "provenance_refs": [
+          "artifact:experience:1"
+        ],
+        "uncertainty": {
+          "status": "fixture-only"
+        }
+      }
+    ],
+    "created_at": "2026-11-11T08:00:11Z",
+    "access_decision_ref": null
+  },
+  "capabilityDescriptorRecord": {
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "provider_id": "provider.example",
+    "device_scope": "fixture-device",
+    "discovery_epoch": "fixture-epoch-1",
+    "descriptor_schema_version": "1.0",
+    "descriptor_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "source_ref": "fixture.provider.alpha",
+    "first_discovered_at": "2026-11-11T08:00:00Z",
+    "last_verified_at": null,
+    "expires_at": null,
+    "status": "discovered",
+    "descriptor_body": {
+      "descriptor_schema_version": "1.0",
+      "interface": {
+        "invocation_contract_ref": "urn:fixture:provider-alpha:invoke:1",
+        "input_schema_ref": "urn:fixture:provider-alpha:input:1",
+        "output_schema_ref": "urn:fixture:provider-alpha:output:1",
+        "transport": "fixture-adapter",
+        "provider_api_version": "1"
+      },
+      "preconditions": [
+        {
+          "predicate_ref": "urn:fixture:condition:resource-available",
+          "state": "unknown",
+          "scope": {
+            "fixture": "contract-validation"
+          },
+          "evidence_refs": []
+        }
+      ],
+      "effects": [
+        {
+          "effect_type": "provider-defined-effect",
+          "target_scope": "fixture-resource",
+          "impact": {
+            "description": "Fixture-only effect"
+          },
+          "data_access": [],
+          "side_effects": [],
+          "reversibility": "unknown"
+        }
+      ],
+      "platform_requirements": [],
+      "constraints": {
+        "availability": "unknown",
+        "fixture_only": true
+      },
+      "risk_facts": [
+        {
+          "fact_type": "effect-scope",
+          "value": "fixture-only",
+          "evidence_refs": []
+        }
+      ],
+      "execution": {
+        "timeout_ms": 1000,
+        "cancellation": "cooperative",
+        "idempotency": "unknown",
+        "retry_semantics": "after_reconciliation",
+        "uncertain_outcome_semantics": "Mark uncertain after dispatch without receipt; reconcile before retry."
+      },
+      "verification": {
+        "strategy": "fixture-verification-only",
+        "postconditions": [],
+        "evidence_sources": [],
+        "limitations": [
+          "This fixture is not a real Android capability or platform validation."
+        ]
+      },
+      "resource_profile": {
+        "estimates": {
+          "cpu": "unknown",
+          "memory": "unknown",
+          "storage": "unknown",
+          "network": "unknown",
+          "battery": "unknown",
+          "duration": "unknown"
+        },
+        "uncertainty": {
+          "basis": "No measurements; schema fixture only."
+        }
+      },
+      "lifecycle": {
+        "status": "discovered",
+        "first_discovered_at": "2026-11-11T00:00:00Z",
+        "last_verified_at": null,
+        "expires_at": null,
+        "invalidation_reason": null
+      },
+      "provenance": {
+        "source_id": "fixture.provider.alpha",
+        "discovery_method": "schema-fixture",
+        "evidence_refs": [],
+        "device_context": {
+          "fixture_only": true
+        },
+        "collector_version": "fixture-1",
+        "observed_at": "2026-11-11T00:00:00Z"
+      },
+      "extensions": {
+        "fixture_metadata": {
+          "not_for_production": true
+        }
+      }
+    }
+  },
+  "representationRevised": {
+    "representation_id": "21000000-0000-4000-8000-000000000001",
+    "revision_number": 2,
+    "supersedes_revision_id": "20000000-0000-4000-8000-000000000001",
+    "experience_id": "10000000-0000-4000-8000-000000000001",
+    "representation_type": "semantic_interpretation",
+    "method_id": "representation.pipeline",
+    "method_version": "1.1",
+    "content": {
+      "summary": "Revised interpretation from additional evidence."
+    },
+    "uncertainty": {
+      "confidence": 0.7
+    },
+    "source_refs": [
+      "artifact:experience:1",
+      "artifact:evidence:2"
+    ],
+    "created_at": "2026-11-11T08:01:00Z"
+  },
+  "approvalRequested": {
+    "request_id": "ac100000-0000-4000-8000-000000000001",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "owner_ref": "owner:primary",
+    "session_ref": "session:authenticated:1",
+    "operation_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "target_ref": "resource:example",
+    "data_categories": [
+      "local_metadata"
+    ],
+    "recipients": [
+      "local_device"
+    ],
+    "risk_class": "R1",
+    "policy_version_ref": "policy:1",
+    "expires_at": "2026-11-11T08:05:00Z",
+    "requested_at": "2026-11-11T08:01:00Z"
+  },
+  "learningExperimentCompleted": {
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "hypothesis_ref": "hypothesis:fixture:1",
+    "baseline_artifact_ref": "artifact:baseline:1",
+    "candidate_artifact_ref": "artifact:candidate:1",
+    "dataset_manifest_ref": "artifact:dataset:1",
+    "protocol_ref": "artifact:protocol:1",
+    "metrics_ref": "artifact:metrics:1",
+    "regression_results_ref": "artifact:regression:1",
+    "code_revision": "commit:fixture",
+    "random_seed": 42,
+    "started_at": "2026-11-11T08:00:00Z",
+    "finished_at": "2026-11-11T08:02:00Z",
+    "status": "passed",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "configuration_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "training_manifest_ref": "artifact:training-manifest:1",
+    "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "evolutionCandidateLifecycle": {
+    "candidate_id": "fe29e442-5149-519a-aee4-a4fa10ed36c4",
+    "proposal_id": "e0000000-0000-4000-8000-000000000001",
+    "artifact_ref": "artifact:candidate:1",
+    "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "learning_evaluation_id": "ad300000-0000-4000-8000-000000000001",
+    "learning_evaluation_ref": "artifact:learning-evaluation:1",
+    "learning_evaluation_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "evolution_evaluation_id": "ad400000-0000-4000-8000-000000000001",
+    "evolution_evaluation_ref": "artifact:evolution-evaluation:1",
+    "evolution_evaluation_digest": "6666666666666666666666666666666666666666666666666666666666666666",
+    "evaluation_ref": "artifact:evolution-evaluation:1",
+    "evaluation_status": "passed",
+    "state": "evaluated",
+    "approval_ref": null,
+    "previous_candidate_ref": null,
+    "rollback_ref": null,
+    "occurred_at": "2026-11-11T08:03:30Z"
+  },
+  "artifactManifest": {
+    "artifact_id": "af100000-0000-4000-8000-000000000001",
+    "artifact_kind": "evaluation_report",
+    "schema_version": "1.0",
+    "media_type": "application/json",
+    "byte_size": 128,
+    "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "storage_ref": "artifact-store:fixture:1",
+    "owner_id": "owner:primary",
+    "sensitivity": 1,
+    "provenance": {
+      "producer_id": "evaluation.worker",
+      "source_refs": [
+        "experiment:fixture:1"
+      ]
+    },
+    "lineage": {
+      "parent_artifact_refs": [
+        "artifact:dataset:1"
+      ],
+      "derived_from": [
+        "artifact:dataset:1"
+      ]
+    },
+    "retention_class": "project-retained",
+    "lifecycle": "quarantined",
+    "created_at": "2026-11-11T08:02:00Z"
+  },
+  "externalDisclosureRecord": {
+    "disclosure_id": "b0100000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "actor_identity": "runtime:cloud",
+    "recipient_ref": "provider:example",
+    "purpose_ref": "task:authorized:1",
+    "data_categories": [
+      "minimal_context"
+    ],
+    "source_refs": [
+      "artifact:context:1"
+    ],
+    "sensitivity": 2,
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "policy_version_ref": "policy:1",
+    "payload_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "approval_ref": null,
+    "decision": "deny",
+    "status": "denied",
+    "transferred_at": null,
+    "created_at": "2026-11-11T08:03:00Z"
+  },
+  "retentionDeletionEvent": {
+    "deletion_id": "b0200000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "domain": "memory",
+    "target_refs": [
+      "memory:1",
+      "artifact:memory:1"
+    ],
+    "reason": "owner_requested",
+    "requested_at": "2026-11-11T08:03:00Z",
+    "active_visibility_removed_at": "2026-11-11T08:03:01Z",
+    "tombstone_ref": "tombstone:1",
+    "backup_epoch": 3,
+    "expires_at": "2026-12-11T08:03:00Z",
+    "propagation_state": "sync_pending"
+  },
+  "syncConflictRecord": {
+    "conflict_id": "b0300000-0000-4000-8000-000000000001",
+    "domain": "belief",
+    "owner_id": "owner:primary",
+    "aggregate_id": "belief:fixture:7",
+    "local_change_id": "ae000000-0000-4000-8000-000000000011",
+    "remote_change_id": "ae000000-0000-4000-8000-000000000012",
+    "common_base_version": 2,
+    "local_runtime_id": "72000000-0000-4000-8000-000000000001",
+    "remote_runtime_id": "72000000-0000-4000-8000-000000000002",
+    "local_aggregate_version": 3,
+    "remote_aggregate_version": 3,
+    "local_version_ref": "belief-revision:local:3",
+    "remote_version_ref": "belief-revision:remote:3",
+    "causal_parent_ids": [
+      "72000000-0000-4000-8000-000000000010"
+    ],
+    "conflict_revision": 1,
+    "conflict_kind": "concurrent_revision",
+    "resolution_state": "pending",
+    "detected_at": "2026-11-17T09:02:00Z",
+    "allowlist_version": "d02-cloud-mobile.v1",
+    "classification_policy_version": "d02-classification.v1"
+  },
+  "workerRequest": {
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "protocol_version": "1.0",
+    "job_type": "training",
+    "input_artifact_refs": [
+      "artifact:dataset:1"
+    ],
+    "config": {
+      "mode": "held_out"
+    },
+    "seed": 42,
+    "resource_budget": {
+      "cpu_ms": 10000,
+      "memory_bytes": 268435456
+    },
+    "deadline": "2026-11-11T08:10:00Z",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "configuration_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "workerProgress": {
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "sequence": 1,
+    "phase": "evaluating",
+    "progress_fraction": 0.5,
+    "metrics": {
+      "cases_completed": 5
+    },
+    "occurred_at": "2026-11-11T08:05:00Z"
+  },
+  "workerResult": {
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "status": "completed",
+    "output_artifact_refs": [
+      "artifact:candidate:1"
+    ],
+    "metrics": {
+      "held_out_score": 0.7
+    },
+    "environment_manifest": "artifact:environment:1",
+    "dataset_manifest": "artifact:dataset:1",
+    "code_revision": "commit:fixture",
+    "random_seed": 42,
+    "started_at": "2026-11-11T08:04:00Z",
+    "finished_at": "2026-11-11T08:06:00Z",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "configuration_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "workerFailure": {
+    "job_id": "b0400000-0000-4000-8000-000000000001",
+    "error_code": "WORKER_TIMEOUT",
+    "retryable": true,
+    "diagnostic_ref": "artifact:diagnostic:1",
+    "occurred_at": "2026-11-11T08:06:00Z"
+  },
+  "contextInvalidated": {
+    "context_id": "30000000-0000-4000-8000-000000000001",
+    "version": 1,
+    "reason": "new evidence invalidated task context",
+    "invalidated_at": "2026-11-11T08:07:00Z",
+    "evidence_refs": [
+      "artifact:evidence:3"
+    ]
+  },
+  "outcomeObserved": {
+    "outcome_id": "b0500000-0000-4000-8000-000000000001",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "observed_at": "2026-11-11T08:07:00Z",
+    "observation_refs": [
+      "artifact:observed:2"
+    ],
+    "verification_state": "unknown",
+    "uncertainty": {
+      "reason": "fixture contains no execution evidence"
+    },
+    "observer_ref": "observer:fixture"
+  },
+  "commandEnvelope": {
+    "command_id": "b0600000-0000-4000-8000-000000000001",
+    "command_version": "1.0",
+    "owner_id": "owner:primary",
+    "actor_identity": "runtime:mobile",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "issued_at": "2026-11-11T08:08:00Z",
+    "deadline": "2026-11-11T08:09:00Z",
+    "idempotency_key": "command:fixture:1",
+    "requested_capability": "capability:discovery",
+    "payload": {
+      "scope": "local"
+    },
+    "data_classification": "internal",
+    "approval_reference": null,
+    "command_type": "capability.discover"
+  },
+  "queryEnvelope": {
+    "query_id": "b0700000-0000-4000-8000-000000000001",
+    "query_version": "1.0",
+    "owner_id": "owner:primary",
+    "actor_identity": "runtime:mobile",
+    "scope": {
+      "device_id": "71000000-0000-4000-8000-000000000001"
+    },
+    "requested_at": "2026-11-11T08:08:00Z",
+    "deadline": "2026-11-11T08:08:05Z",
+    "consistency": "local_committed",
+    "query_payload": {
+      "kind": "capability_search"
+    },
+    "max_results": 50,
+    "query_type": "capability.search"
+  },
+  "commandResponse": {
+    "command_id": "b0600000-0000-4000-8000-000000000001",
+    "status": "accepted",
+    "responded_at": "2026-11-11T08:08:01Z",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "reason_ref": null,
+    "accepted_for_processing": true,
+    "command_type": "capability.discover",
+    "command_version": "1.0"
+  },
+  "contractError": {
+    "error_id": "b0800000-0000-4000-8000-000000000001",
+    "error_code": "CAPABILITY_STALE",
+    "category": "precondition",
+    "retryable": false,
+    "side_effect_state": "not_dispatched",
+    "occurred_at": "2026-11-11T08:08:02Z",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "retry_after_ms": null,
+    "diagnostic_ref": "artifact:diagnostic:1",
+    "details": {
+      "descriptor_version": 1
+    }
+  },
+  "contractNegotiation": {
+    "negotiation_id": "b0900000-0000-4000-8000-000000000001",
+    "producer_id": "runtime:mobile",
+    "consumer_id": "adapter:platform",
+    "supported_envelope_versions": [
+      "1.0"
+    ],
+    "supported_schema_versions": {
+      "capability-descriptor": [
+        "1.0"
+      ],
+      "command": [
+        "1.0"
+      ]
+    },
+    "result": "accepted",
+    "negotiated_at": "2026-11-11T08:08:03Z",
+    "selected_envelope_version": "1.0",
+    "rejection_reason": null
+  },
+  "contextAssemblyRequest": {
+    "context_id": "31000000-0000-4000-8000-000000000001",
+    "scope": "active_task",
+    "input_refs": [
+      "experience:1",
+      "memory:2",
+      "goal:3"
+    ],
+    "requested_at": "2026-11-11T08:09:00Z",
+    "valid_until": null,
+    "uncertainty_policy": "preserve_conflicts"
+  },
+  "environmentObservationRequest": {
+    "observation_id": "b1000000-0000-4000-8000-000000000001",
+    "environment_scope": {
+      "device_ref": "device:local"
+    },
+    "observation_channels": [
+      "system_metadata",
+      "available_interfaces"
+    ],
+    "provider_refs": [],
+    "purpose_ref": "task:discovery",
+    "requested_at": "2026-11-11T08:09:00Z",
+    "deadline": "2026-11-11T08:10:00Z",
+    "resource_budget": {
+      "cpu_ms": 5000
+    }
+  },
+  "capabilityDiscoveryRequest": {
+    "discovery_id": "b1100000-0000-4000-8000-000000000001",
+    "environment_scope": {
+      "device_ref": "device:local",
+      "scope": "accessible"
+    },
+    "provider_filters": [],
+    "discovery_constraints": {
+      "permission_mode": "observe_only"
+    },
+    "discovery_strategy_ref": "strategy:general_discovery",
+    "environment_observation_refs": [
+      "observation:1"
+    ],
+    "requested_at": "2026-11-11T08:09:00Z",
+    "deadline": "2026-11-11T08:10:00Z",
+    "resource_budget": {
+      "cpu_ms": 10000
+    }
+  },
+  "capabilityVerificationRequest": {
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "verification_plan_ref": "plan:verify:1",
+    "evidence_refs": [
+      "evidence:1"
+    ],
+    "target_scope": {
+      "device_ref": "device:local"
+    },
+    "requested_at": "2026-11-11T08:09:00Z",
+    "deadline": "2026-11-11T08:10:00Z"
+  },
+  "capabilityInvalidationRequest": {
+    "capability_id": "provider.example.capability",
+    "descriptor_version": 1,
+    "reason": "provider interface changed",
+    "evidence_refs": [
+      "evidence:2"
+    ],
+    "observed_at": "2026-11-11T08:09:00Z"
+  },
+  "memoryRetrievalQuery": {
+    "query_id": "b1200000-0000-4000-8000-000000000001",
+    "query_representation_ref": "representation:query:1",
+    "context_ref": "context:1",
+    "scope": {
+      "owner_id": "owner:primary"
+    },
+    "retrieval_constraints": {
+      "relevance_threshold": 0.4
+    },
+    "requested_at": "2026-11-11T08:09:00Z",
+    "limit": 20,
+    "include_provenance": true
+  },
+  "domainQuery": {
+    "resource_selector": {
+      "domain": "goal",
+      "owner_id": "owner:primary"
+    },
+    "filters": [
+      {
+        "field": "state",
+        "operator": "eq",
+        "value": "active"
+      }
+    ],
+    "sort": [
+      {
+        "field": "updated_at",
+        "direction": "desc"
+      }
+    ],
+    "projection": [
+      "goal_id",
+      "revision",
+      "description",
+      "state"
+    ],
+    "temporal_scope": null,
+    "cursor": null,
+    "limit": 50,
+    "requested_at": "2026-11-11T08:09:00Z"
+  },
+  "operationControlRequest": {
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "control_action": "reconcile",
+    "reason_ref": "reason:uncertain",
+    "idempotency_key": "operation-control:1",
+    "expected_state": "uncertain",
+    "reconciliation_query_ref": "query:operation:1",
+    "requested_at": "2026-11-11T08:09:00Z",
+    "deadline": "2026-11-11T08:10:00Z"
+  },
+  "goalControlRequest": {
+    "goal_id": "32000000-0000-4000-8000-000000000001",
+    "expected_revision": 2,
+    "control_action": "pause",
+    "reason_ref": "reason:owner-request",
+    "requested_at": "2026-11-11T08:09:00Z"
+  },
+  "taskControlRequest": {
+    "task_run_id": "33000000-0000-4000-8000-000000000001",
+    "control_action": "pause",
+    "expected_version": 1,
+    "reason_ref": "reason:resource-budget",
+    "requested_at": "2026-11-11T08:09:00Z",
+    "deadline": "2026-11-11T08:10:00Z"
+  },
+  "approvalRevocationRequest": {
+    "approval_request_id": "ac100000-0000-4000-8000-000000000001",
+    "owner_session_ref": "session:authenticated:1",
+    "reason_ref": "reason:owner-revocation",
+    "policy_version_ref": "policy:1",
+    "revoked_at": "2026-11-11T08:09:00Z"
+  },
+  "appraisalEvaluationRequest": {
+    "context_id": "31000000-0000-4000-8000-000000000001",
+    "context_version": 2,
+    "evidence_refs": [
+      "evidence:1",
+      "evidence:2"
+    ],
+    "goal_refs": [
+      "goal:1"
+    ],
+    "prior_outcome_refs": [
+      "outcome:1"
+    ],
+    "resource_context": {
+      "cpu_available": 0.5
+    },
+    "requested_at": "2026-11-11T08:09:00Z"
+  },
+  "attentionAllocationRequest": {
+    "context_ref": "context:1",
+    "candidate_work_refs": [
+      "task:1",
+      "prediction:2",
+      "memory_retrieval:3"
+    ],
+    "resource_budget": {
+      "cpu_ms": 5000,
+      "memory_bytes": 134217728
+    },
+    "allocation_constraints": {
+      "mandatory_governance_checks": true
+    },
+    "deadline": null,
+    "requested_at": "2026-11-11T08:09:00Z"
+  },
+  "reasoningAssessmentRequest": {
+    "context_ref": "context:1",
+    "question": "Which means are feasible under current constraints?",
+    "evidence_refs": [
+      "evidence:1"
+    ],
+    "alternative_hypothesis_refs": [],
+    "resource_budget": {
+      "cpu_ms": 10000
+    },
+    "requested_at": "2026-11-11T08:09:00Z"
+  },
+  "planCheckpointRequest": {
+    "plan_id": "34000000-0000-4000-8000-000000000001",
+    "plan_version": 2,
+    "checkpoint_id": "35000000-0000-4000-8000-000000000001",
+    "pending_steps": [
+      "step:3",
+      "step:4"
+    ],
+    "resume_conditions": {
+      "requires_context_revalidation": true
+    },
+    "invalidation_reason": null,
+    "created_at": "2026-11-11T08:09:00Z"
+  },
+  "queryResponse": {
+    "query_id": "b0700000-0000-4000-8000-000000000001",
+    "query_type": "capability.search",
+    "query_version": "1.0",
+    "result_schema_version": "1.0",
+    "results": [
+      {
+        "capability_id": "provider.example.capability",
+        "descriptor_version": 1
+      }
+    ],
+    "consistency": "local_committed",
+    "observed_at": "2026-11-11T08:10:00Z",
+    "next_cursor": null,
+    "has_more": false,
+    "diagnostics_ref": null
+  },
+  "permissionRecord": {
+    "permission_id": "b1300000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "capability_ref": "provider.example.capability",
+    "target_scope": {
+      "device_ref": "device:local"
+    },
+    "status": "active",
+    "policy_version_ref": "policy:1",
+    "granted_by": "owner:primary",
+    "approval_ref": null,
+    "created_at": "2026-11-11T08:10:00Z",
+    "expires_at": null,
+    "revoked_at": null
+  },
+  "auditRecord": {
+    "audit_id": "b1400000-0000-4000-8000-000000000001",
+    "owner_id": "owner:primary",
+    "actor_identity": "runtime:mobile",
+    "action_type": "operation.authorization.evaluated",
+    "target_ref": "operation:1",
+    "decision": "denied",
+    "policy_version_ref": "policy:1",
+    "operation_id": "70000000-0000-4000-8000-000000000001",
+    "approval_ref": null,
+    "evidence_refs": [
+      "evidence:1"
+    ],
+    "occurred_at": "2026-11-11T08:10:00Z",
+    "correlation_id": "b0600000-0000-4000-8000-000000000001"
+  },
+  "taskRunStatus": {
+    "task_run_id": "33000000-0000-4000-8000-000000000001",
+    "task_definition_ref": "task:definition:1",
+    "state": "paused",
+    "priority": 0.5,
+    "budget": {
+      "cpu_ms": 10000
+    },
+    "checkpoint_refs": [
+      "checkpoint:1"
+    ],
+    "created_at": "2026-11-11T08:00:00Z",
+    "updated_at": "2026-11-11T08:10:00Z",
+    "failure_ref": null,
+    "revision": 2
+  },
+  "contextInvalidationRequest": {
+    "context_id": "31000000-0000-4000-8000-000000000001",
+    "expected_version": 2,
+    "reason_ref": "reason:new_evidence",
+    "evidence_refs": [
+      "evidence:4"
+    ],
+    "requested_at": "2026-11-11T08:11:00Z"
+  },
+  "predictionEvaluationRequest": {
+    "prediction_id": "36000000-0000-4000-8000-000000000001",
+    "observed_outcome_ref": "outcome:observed:1",
+    "evidence_refs": [
+      "evidence:5"
+    ],
+    "evaluation_context": {
+      "scope": "held_out"
+    },
+    "requested_at": "2026-11-11T08:11:00Z"
+  },
+  "outcomeEvaluationRequest": {
+    "prediction_ref": "prediction:1",
+    "plan_ref": "plan:1",
+    "operation_ref": "operation:1",
+    "expected_outcome_ref": "artifact:expected:1",
+    "observed_outcome_ref": "artifact:observed:1",
+    "verification_sources": [
+      "platform_observation:1"
+    ],
+    "attribution_context": {
+      "confounders": [
+        "network_state"
+      ]
+    },
+    "requested_at": "2026-11-11T08:11:00Z"
+  },
+  "learningExperimentRequest": {
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "hypothesis_ref": "hypothesis:2",
+    "baseline_artifact_ref": "artifact:baseline:2",
+    "dataset_manifest_ref": "artifact:dataset:2",
+    "protocol_ref": "artifact:protocol:2",
+    "candidate_artifact_ref": null,
+    "random_seed": 42,
+    "resource_budget": {
+      "cpu_ms": 60000,
+      "memory_bytes": 536870912
+    },
+    "requested_at": "2026-11-11T08:11:00Z",
+    "deadline": "2026-11-11T08:20:00Z",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "configuration_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "code_revision": "commit:fixture",
+    "dataset_split_ref": "artifact:dataset-split:1",
+    "training_manifest_ref": "artifact:training-manifest:1",
+    "initialization_method": "random_initialization",
+    "initialization_artifact_ref": "artifact:baseline:1",
+    "architecture_config_ref": "artifact:architecture:1",
+    "tokenizer_artifact_ref": "artifact:tokenizer:1"
+  },
+  "learningCandidateEvaluationRequest": {
+    "candidate_artifact_ref": "artifact:candidate:1",
+    "baseline_artifact_ref": "artifact:baseline:1",
+    "dataset_manifest_ref": "artifact:dataset:1",
+    "evaluation_protocol_ref": "artifact:protocol:1",
+    "regression_suite_ref": "artifact:regression:2",
+    "requested_at": "2026-11-11T08:11:00Z",
+    "deadline": "2026-11-11T08:20:00Z",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "baseline_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "dataset_manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "evaluation_protocol_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "evolutionCandidateActionRequest": {
+    "candidate_id": "ae100000-0000-4000-8000-000000000002",
+    "proposal_id": "a8000000-0000-4000-8000-000000000002",
+    "action": "evaluate",
+    "artifact_ref": "artifact:candidate:2",
+    "evaluation_ref": null,
+    "approval_ref": null,
+    "rollback_ref": null,
+    "requested_at": "2026-11-11T08:11:00Z"
+  },
+  "taskRunTransition": {
+    "task_run_id": "33000000-0000-4000-8000-000000000001",
+    "task_definition_ref": "task:definition:1",
+    "from_state": "running",
+    "to_state": "paused",
+    "previous_revision": 1,
+    "revision": 2,
+    "cause_type": "task_control",
+    "cause_ref": "command:task-pause:1",
+    "actor_ref": "owner:primary",
+    "control_request_ref": "command:task-pause:1",
+    "checkpoint_ref": "checkpoint:1",
+    "failure_ref": null,
+    "reconciliation_ref": null,
+    "occurred_at": "2026-11-11T08:10:00Z"
+  },
+  "approvalRevoked": {
+    "approval_request_id": "ab000000-0000-4000-8000-000000000002",
+    "revocation_id": "ab100000-0000-4000-8000-000000000002",
+    "owner_session_ref": "session:fixture:owner",
+    "reason_ref": "urn:fixture:approval:revocation-reason",
+    "policy_version_ref": "policy:fixture:v1",
+    "revoked_at": "2026-11-11T08:03:00Z",
+    "operation_reconciliation_required": true
+  },
+  "learningCandidateEvaluated": {
+    "evaluation_id": "ad300000-0000-4000-8000-000000000001",
+    "candidate_artifact_ref": "artifact:candidate:1",
+    "baseline_artifact_ref": "artifact:baseline:1",
+    "dataset_manifest_ref": "artifact:dataset:1",
+    "evaluation_protocol_ref": "artifact:protocol:1",
+    "regression_suite_ref": "artifact:regression-suite:fixture",
+    "metrics_ref": "artifact:candidate-metrics:fixture",
+    "regression_results_ref": "artifact:regression-results:fixture",
+    "unseen_controls_ref": "artifact:unseen-controls:fixture",
+    "status": "passed",
+    "evaluated_at": "2026-11-11T08:03:00Z",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "baseline_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "dataset_manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "evaluation_protocol_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "report_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "report_artifact_ref": "artifact:learning-evaluation:1"
+  },
+  "selfModelUpdateProposed": {
+    "self_model_revision_id": "a7000000-0000-4000-8000-000000000002",
+    "revision_number": 2,
+    "claims": {
+      "capability": "candidate claim awaiting validation"
+    },
+    "confidence": {
+      "calibration": "evidence pending"
+    },
+    "evidence_refs": [
+      "artifact:observed:2"
+    ],
+    "created_at": "2026-11-11T08:03:00Z",
+    "status": "proposed"
+  },
+  "modelCandidateIdentityFixture": {
+    "owner_ref": "owner:primary",
+    "proposal_id": "e0000000-0000-4000-8000-000000000001",
+    "artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "candidate_id": "fe29e442-5149-519a-aee4-a4fa10ed36c4"
+  },
+  "evolutionModelCandidateProposed": {
+    "proposal_id": "e0000000-0000-4000-8000-000000000001",
+    "target_mechanism": "primary_model",
+    "description": "Model candidate proposal fixture with exact source lineage",
+    "evidence_refs": [
+      "artifact:learning-evaluation:1"
+    ],
+    "impact_risk": {
+      "risk_class": "R5",
+      "status": "quarantined"
+    },
+    "candidate_artifact_ref": "artifact:candidate:1",
+    "evaluation_ref": "artifact:learning-evaluation:1",
+    "state": "proposed",
+    "approval_ref": null,
+    "created_at": "2026-11-16T18:00:00Z",
+    "updated_at": "2026-11-16T18:00:00Z",
+    "candidate_id": "fe29e442-5149-519a-aee4-a4fa10ed36c4",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "learning_evaluation_id": "ad300000-0000-4000-8000-000000000001",
+    "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "datasetSourceAuthorization": {
+    "authorization_id": "b1400000-0000-4000-8000-000000000001",
+    "owner_ref": "owner:primary",
+    "source_ref": "source:licensed-corpus:1",
+    "source_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "source_origin": {
+      "acquisition_method": "licensed_repository_export",
+      "origin_ref": "source-origin:fixture:1",
+      "acquired_at": "2026-11-16T20:00:00Z"
+    },
+    "rights_holder_ref": "rights-holder:fixture",
+    "authorization_basis": "license",
+    "license_or_terms_ref": "license:fixture:compatible-v1",
+    "license_or_terms_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "permitted_purposes": [
+      "foundation_pretraining"
+    ],
+    "training_permission": "allow",
+    "memory_retention_permission": "deny",
+    "private_data_classification": "public",
+    "private_data_authorization_ref": null,
+    "owner_scope": {
+      "owner_ref": "owner:primary",
+      "project_ref": "project:aurions",
+      "model_family_ref": "model-family:aurions-foundation",
+      "dataset_scope_ref": "dataset-scope:foundation-v1"
+    },
+    "valid_from": "2026-11-16T20:00:00Z",
+    "expires_at": null,
+    "policy_version_ref": "policy:training-data-v1",
+    "status": "active",
+    "revoked_at": null,
+    "revocation_ref": null,
+    "created_at": "2026-11-16T20:00:00Z",
+    "supersedes_authorization_id": null,
+    "record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "datasetManifest": {
+    "dataset_manifest_id": "b1500000-0000-4000-8000-000000000001",
+    "schema_version": "1.0",
+    "owner_ref": "owner:primary",
+    "model_family_ref": "model-family:aurions-foundation",
+    "training_purpose": "foundation_pretraining",
+    "model_generation_ref": "model-generation:initial",
+    "tokenizer_artifact_ref": "artifact:tokenizer:initial",
+    "included_sources": [
+      {
+        "source_ref": "source:licensed-corpus:1",
+        "source_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "authorization_id": "b1400000-0000-4000-8000-000000000001",
+        "authorization_record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "license_or_terms_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "source_artifact_ref": "artifact:source:licensed-corpus:1",
+        "transformation_lineage_refs": [
+          "transform:normalize-v1"
+        ]
+      }
+    ],
+    "excluded_sources": [
+      {
+        "source_ref": "source:unknown-rights:1",
+        "reason": "unknown_rights"
+      }
+    ],
+    "preprocessing_pipeline_ref": "pipeline:foundation-v1",
+    "preprocessing_config_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "deduplication_report_ref": "artifact:dedup-report:1",
+    "quality_report_ref": "artifact:quality-report:1",
+    "language_domain_classification_ref": "artifact:language-domain-report:1",
+    "curriculum_config_ref": "config:curriculum:foundation-v1",
+    "curriculum_config_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "splits": {
+      "train": {
+        "split_ref": "split:train:1",
+        "digest": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "validation": {
+        "split_ref": "split:validation:1",
+        "digest": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "held_out": {
+        "split_ref": "split:held-out:1",
+        "digest": "3333333333333333333333333333333333333333333333333333333333333333"
+      }
+    },
+    "rights_policy_snapshot_ref": "policy-snapshot:training-data:1",
+    "rights_policy_snapshot_digest": "4444444444444444444444444444444444444444444444444444444444444444",
+    "authorization_evaluated_at": "2026-11-16T20:01:00Z",
+    "created_at": "2026-11-16T20:02:00Z",
+    "manifest_digest": "5555555555555555555555555555555555555555555555555555555555555555",
+    "lifecycle": "sealed",
+    "derived_artifact_refs": [
+      "artifact:future-checkpoint:1"
+    ]
+  },
+  "evolutionCandidateActivated": {
+    "candidate_id": "fe29e442-5149-519a-aee4-a4fa10ed36c4",
+    "proposal_id": "e0000000-0000-4000-8000-000000000001",
+    "artifact_ref": "artifact:candidate:1",
+    "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "learning_evaluation_id": "ad300000-0000-4000-8000-000000000001",
+    "learning_evaluation_ref": "artifact:learning-evaluation:1",
+    "learning_evaluation_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "evolution_evaluation_id": "ad400000-0000-4000-8000-000000000001",
+    "evolution_evaluation_ref": "artifact:evolution-evaluation:1",
+    "evolution_evaluation_digest": "6666666666666666666666666666666666666666666666666666666666666666",
+    "evaluation_ref": "artifact:evolution-evaluation:1",
+    "evaluation_status": "passed",
+    "state": "active",
+    "approval_ref": "approval:fixture:activation",
+    "previous_candidate_ref": "candidate:previous:1",
+    "rollback_ref": null,
+    "pointer_revision": 3,
+    "occurred_at": "2026-11-11T08:04:00Z"
+  },
+  "evolutionCandidateRolledBack": {
+    "candidate_id": "fe29e442-5149-519a-aee4-a4fa10ed36c4",
+    "proposal_id": "e0000000-0000-4000-8000-000000000001",
+    "artifact_ref": "artifact:candidate:1",
+    "candidate_artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "learning_update_id": "90000000-0000-4000-8000-000000000001",
+    "experiment_id": "ad100000-0000-4000-8000-000000000001",
+    "attempt_id": "ad200000-0000-4000-8000-000000000001",
+    "learning_evaluation_id": "ad300000-0000-4000-8000-000000000001",
+    "learning_evaluation_ref": "artifact:learning-evaluation:1",
+    "learning_evaluation_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "evolution_evaluation_id": "ad400000-0000-4000-8000-000000000001",
+    "evolution_evaluation_ref": "artifact:evolution-evaluation:1",
+    "evolution_evaluation_digest": "6666666666666666666666666666666666666666666666666666666666666666",
+    "evaluation_ref": "artifact:evolution-evaluation:1",
+    "evaluation_status": "passed",
+    "state": "rolled_back",
+    "approval_ref": "approval:fixture:rollback",
+    "previous_candidate_ref": "candidate:previous:1",
+    "rollback_ref": "rollback:operation:b2000000-0000-4000-8000-000000000001",
+    "restored_artifact_ref": "artifact:model-baseline:previous",
+    "restore_artifact_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+    "pointer_revision": 4,
+    "occurred_at": "2026-11-11T08:05:00Z"
+  },
+  "datasetSourceAuthorizationDecided": {
+    "authorization": {
+      "authorization_id": "b1400000-0000-4000-8000-000000000001",
+      "owner_ref": "owner:primary",
+      "source_ref": "source:licensed-corpus:1",
+      "source_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "source_origin": {
+        "acquisition_method": "licensed_repository_export",
+        "origin_ref": "source-origin:fixture:1",
+        "acquired_at": "2026-11-16T20:00:00Z"
+      },
+      "rights_holder_ref": "rights-holder:fixture",
+      "authorization_basis": "license",
+      "license_or_terms_ref": "license:fixture:compatible-v1",
+      "license_or_terms_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "permitted_purposes": [
+        "foundation_pretraining"
+      ],
+      "training_permission": "allow",
+      "memory_retention_permission": "deny",
+      "private_data_classification": "public",
+      "private_data_authorization_ref": null,
+      "owner_scope": {
+        "owner_ref": "owner:primary",
+        "project_ref": "project:aurions",
+        "model_family_ref": "model-family:aurions-foundation",
+        "dataset_scope_ref": "dataset-scope:foundation-v1"
+      },
+      "valid_from": "2026-11-16T20:00:00Z",
+      "expires_at": null,
+      "policy_version_ref": "policy:training-data-v1",
+      "status": "active",
+      "revoked_at": null,
+      "revocation_ref": null,
+      "created_at": "2026-11-16T20:00:00Z",
+      "supersedes_authorization_id": null,
+      "record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    "approval_ref": "approval:dataset-source:1",
+    "decision_ref": "decision:dataset-source:1",
+    "decided_at": "2026-11-16T19:00:00Z"
+  },
+  "datasetSourceAuthorizationRevoked": {
+    "authorization_id": "b1400000-0000-4000-8000-000000000001",
+    "authorization_record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "owner_ref": "owner:primary",
+    "revocation_ref": "revocation:dataset-source:1",
+    "reason_ref": "reason:license-withdrawn",
+    "approval_ref": "approval:dataset-revoke:1",
+    "policy_version_ref": "policy:training-data-v1",
+    "revoked_at": "2026-11-16T19:10:00Z"
+  },
+  "datasetManifestSealed": {
+    "manifest": {
+      "dataset_manifest_id": "b1500000-0000-4000-8000-000000000001",
+      "schema_version": "1.0",
+      "owner_ref": "owner:primary",
+      "model_family_ref": "model-family:aurions-foundation",
+      "training_purpose": "foundation_pretraining",
+      "model_generation_ref": "model-generation:initial",
+      "tokenizer_artifact_ref": "artifact:tokenizer:initial",
+      "included_sources": [
+        {
+          "source_ref": "source:licensed-corpus:1",
+          "source_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "authorization_id": "b1400000-0000-4000-8000-000000000001",
+          "authorization_record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "license_or_terms_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "source_artifact_ref": "artifact:source:licensed-corpus:1",
+          "transformation_lineage_refs": [
+            "transform:normalize-v1"
+          ]
+        }
+      ],
+      "excluded_sources": [
+        {
+          "source_ref": "source:unknown-rights:1",
+          "reason": "unknown_rights"
+        }
+      ],
+      "preprocessing_pipeline_ref": "pipeline:foundation-v1",
+      "preprocessing_config_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "deduplication_report_ref": "artifact:dedup-report:1",
+      "quality_report_ref": "artifact:quality-report:1",
+      "language_domain_classification_ref": "artifact:language-domain-report:1",
+      "curriculum_config_ref": "config:curriculum:foundation-v1",
+      "curriculum_config_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "splits": {
+        "train": {
+          "split_ref": "split:train:1",
+          "digest": "1111111111111111111111111111111111111111111111111111111111111111"
+        },
+        "validation": {
+          "split_ref": "split:validation:1",
+          "digest": "2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "held_out": {
+          "split_ref": "split:held-out:1",
+          "digest": "3333333333333333333333333333333333333333333333333333333333333333"
+        }
+      },
+      "rights_policy_snapshot_ref": "policy-snapshot:training-data:1",
+      "rights_policy_snapshot_digest": "4444444444444444444444444444444444444444444444444444444444444444",
+      "authorization_evaluated_at": "2026-11-16T20:01:00Z",
+      "created_at": "2026-11-16T20:02:00Z",
+      "manifest_digest": "5555555555555555555555555555555555555555555555555555555555555555",
+      "lifecycle": "sealed",
+      "derived_artifact_refs": [
+        "artifact:future-checkpoint:1"
+      ]
+    },
+    "authorization_check_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "sealed_at": "2026-11-16T19:05:00Z",
+    "supervisor_ref": "supervisor:dataset:1"
+  },
+  "datasetAdmissionBlocked": {
+    "admission_id": "d1000000-0000-4000-8000-000000000001",
+    "owner_ref": "owner:primary",
+    "model_family_ref": "model-family:aurions-foundation",
+    "training_purpose": "foundation_pretraining",
+    "manifest_id": "b1500000-0000-4000-8000-000000000001",
+    "source_ref": "source:licensed-corpus:1",
+    "authorization_id": "b1400000-0000-4000-8000-000000000001",
+    "denial_reason": "revoked",
+    "checked_at": "2026-11-16T19:11:00Z",
+    "policy_version_ref": "policy:training-data-v1",
+    "worker_job_ref": null,
+    "evidence_refs": [
+      "authorization:b1400000-0000-4000-8000-000000000001",
+      "revocation:dataset-source:1"
+    ]
+  },
+  "datasetRevocationImpactAssessed": {
+    "impact_id": "d2000000-0000-4000-8000-000000000001",
+    "operation_ref": "operation:dataset-revocation:1",
+    "authorization_id": "b1400000-0000-4000-8000-000000000001",
+    "authorization_record_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "owner_ref": "owner:primary",
+    "manifest_refs": [
+      "manifest:b1500000-0000-4000-8000-000000000001"
+    ],
+    "derived_artifact_refs": [
+      "artifact:checkpoint:1",
+      "artifact:candidate:1"
+    ],
+    "active_attempt_refs": [
+      "attempt:training:1"
+    ],
+    "influence_state": "unknown",
+    "disposition": "manual_review",
+    "findings_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "assessed_at": "2026-11-16T19:20:00Z"
+  },
+  "syncTombstoneChange": {
+    "change_id": "ae000000-0000-4000-8000-000000000002",
+    "domain": "memory",
+    "schema_version": "2.0",
+    "owner_id": "owner:primary",
+    "aggregate_id": "memory:fixture:9",
+    "aggregate_version": 4,
+    "created_at": "2026-11-17T09:00:00Z",
+    "payload_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "encrypted_payload_ref": null,
+    "tombstone": true,
+    "retention_class": "owner_private",
+    "retention_policy_version": "retention-policy:d02-v1",
+    "idempotency_key": "fixture-sync-tombstone-1",
+    "base_aggregate_version": 3,
+    "source_runtime_id": "72000000-0000-4000-8000-000000000001",
+    "target_runtime_id": "72000000-0000-4000-8000-000000000002",
+    "source_sequence": 9,
+    "allowlist_version": "d02-cloud-mobile.v1",
+    "classification_policy_version": "d02-classification.v1",
+    "causal_parent_ids": [
+      "72000000-0000-4000-8000-000000000008"
+    ],
+    "field_paths": [],
+    "authorization_ref": null,
+    "encryption_profile_id": "encryption-profile:design-placeholder",
+    "encryption_key_version_ref": "key-version-ref:fixture-only",
+    "signature_profile_id": "signature-profile:design-placeholder",
+    "signature_ref": "signature-ref:fixture-only",
+    "tombstone_metadata": {
+      "deletion_id": "b0200000-0000-4000-8000-000000000002",
+      "deletion_revision": 4,
+      "deleted_at": "2026-11-17T09:01:00Z",
+      "retention_policy_version": "retention-policy:d02-v1",
+      "causal_parent_ids": [
+        "72000000-0000-4000-8000-000000000009"
+      ],
+      "authorization_ref": "owner-approval:deletion-fixture-1"
+    }
+  },
+  "syncConflictDetectedRecord": {
+    "conflict_id": "b0300000-0000-4000-8000-000000000001",
+    "domain": "belief",
+    "owner_id": "owner:primary",
+    "aggregate_id": "belief:fixture:7",
+    "local_change_id": "ae000000-0000-4000-8000-000000000011",
+    "remote_change_id": "ae000000-0000-4000-8000-000000000012",
+    "common_base_version": 2,
+    "local_runtime_id": "72000000-0000-4000-8000-000000000001",
+    "remote_runtime_id": "72000000-0000-4000-8000-000000000002",
+    "local_aggregate_version": 3,
+    "remote_aggregate_version": 3,
+    "local_version_ref": "belief-revision:local:3",
+    "remote_version_ref": "belief-revision:remote:3",
+    "causal_parent_ids": [
+      "72000000-0000-4000-8000-000000000010"
+    ],
+    "conflict_revision": 1,
+    "conflict_kind": "concurrent_revision",
+    "resolution_state": "pending",
+    "detected_at": "2026-11-17T09:02:00Z",
+    "allowlist_version": "d02-cloud-mobile.v1",
+    "classification_policy_version": "d02-classification.v1"
+  },
+  "syncConflictResolvedRecord": {
+    "conflict_id": "b0300000-0000-4000-8000-000000000001",
+    "domain": "belief",
+    "owner_id": "owner:primary",
+    "aggregate_id": "belief:fixture:7",
+    "local_change_id": "ae000000-0000-4000-8000-000000000011",
+    "remote_change_id": "ae000000-0000-4000-8000-000000000012",
+    "common_base_version": 2,
+    "local_runtime_id": "72000000-0000-4000-8000-000000000001",
+    "remote_runtime_id": "72000000-0000-4000-8000-000000000002",
+    "local_aggregate_version": 3,
+    "remote_aggregate_version": 3,
+    "local_version_ref": "belief-revision:local:3",
+    "remote_version_ref": "belief-revision:remote:3",
+    "causal_parent_ids": [
+      "72000000-0000-4000-8000-000000000010"
+    ],
+    "conflict_revision": 1,
+    "conflict_kind": "concurrent_revision",
+    "resolution_state": "resolved",
+    "detected_at": "2026-11-17T09:02:00Z",
+    "allowlist_version": "d02-cloud-mobile.v1",
+    "classification_policy_version": "d02-classification.v1",
+    "expected_conflict_revision": 1,
+    "resolution_actor_ref": "owner:authenticated-session:fixture",
+    "approval_ref": "approval:sync-conflict-resolution:fixture",
+    "resolution_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "resolution_kind": "merged",
+    "resolution_policy_version": "conflict-policy:d02-v1",
+    "resolution_ref": "belief-revision:resolved:4"
+  }
+}

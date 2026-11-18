@@ -1,0 +1,116 @@
+{
+  "registry_id": "aurions.first-release-command-query-scope.d04",
+  "registry_version": "1.0",
+  "status": "owner_accepted_scope_only",
+  "owner_decision": "D-04",
+  "owner_accepted_at": "2026-11-17",
+  "source_refs": [
+    "docs/planning/FIRST-RELEASE-COMMAND-QUERY-SCOPE-AND-GAP-ANALYSIS.md#section-12",
+    "docs/planning/PLANNING-EXIT-OWNER-DECISION-PACKET.md#D-04"
+  ],
+  "authority_boundary": "Acceptance fixes first-release interface scope only. It does not authorize implementation, runtime dispatch, permissions, an Android action, training, candidate activation, planning exit, PR readiness or merge.",
+  "dispatch_invariant": "Every mapped command and every query remains design_only_not_dispatchable; deferred commands remain deferred_by_scope.",
+  "commands": {
+    "p0_public_owner_facing": [
+      "experience.submit",
+      "representation.create",
+      "context.assemble",
+      "belief.propose",
+      "belief.revise",
+      "objective.create",
+      "objective.revise",
+      "goal.create",
+      "goal.revise",
+      "goal.cancel",
+      "plan.propose",
+      "plan.revise",
+      "plan.checkpoint",
+      "task.start",
+      "task.pause",
+      "task.resume",
+      "task.cancel",
+      "world.entity.observe",
+      "world.relationship.revise",
+      "situation.snapshot.create",
+      "means.affordance.propose",
+      "interaction.propose",
+      "interaction.outcome.record",
+      "outcome.evaluate",
+      "learning.update.propose",
+      "learning.experiment.submit",
+      "learning.candidate.evaluate"
+    ],
+    "p0_internal_protected": [
+      "prediction.create",
+      "prediction.evaluate",
+      "appraisal.evaluate",
+      "attention.allocate",
+      "reasoning.assess",
+      "decision.record",
+      "self_model.update.propose",
+      "evolution.change.propose",
+      "evolution.candidate.evaluate",
+      "evolution.candidate.activate",
+      "evolution.candidate.rollback",
+      "approval.request",
+      "approval.decide",
+      "approval.revoke"
+    ],
+    "p1_conditional": [
+      "environment.observe",
+      "capability.discover",
+      "capability.verify",
+      "capability.invalidate",
+      "capability.knowledge.propose",
+      "capability.knowledge.revise",
+      "operation.propose",
+      "operation.cancel",
+      "operation.reconcile"
+    ],
+    "internal_maintenance_optional": [
+      "context.invalidate",
+      "memory.retrieve"
+    ],
+    "deferred": [
+      "device.pair",
+      "device.revoke"
+    ]
+  },
+  "queries": {
+    "p0_read_only": [
+      "memory.search",
+      "knowledge.search",
+      "representation.inspect",
+      "context.get",
+      "belief.inspect",
+      "objective.inspect",
+      "goal.get",
+      "plan.get",
+      "task.status",
+      "world.entity.search",
+      "world.entity.inspect",
+      "world.relationship.search",
+      "situation.inspect",
+      "means.affordance.search",
+      "interaction.inspect",
+      "interaction.outcome.inspect",
+      "permission.inspect",
+      "audit.lookup"
+    ],
+    "p1_conditional": [
+      "environment.inspect",
+      "capability.search",
+      "capability.inspect",
+      "capability.knowledge.inspect",
+      "device.capabilities",
+      "operation.status"
+    ],
+    "internal_diagnostic": [
+      "prediction.inspect",
+      "appraisal.inspect",
+      "attention.inspect",
+      "reasoning.inspect",
+      "decision.inspect"
+    ]
+  }
+}

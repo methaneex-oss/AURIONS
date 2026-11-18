@@ -1,0 +1,11 @@
+{
+  "capability_id": "provider.example.capability",
+  "descriptor_version": 0,
+  "verification_plan_ref": "plan:verify:1",
+  "evidence_refs": [],
+  "target_scope": {
+    "device_ref": "device:local"
+  },
+  "requested_at": "2026-11-11T08:09:00Z",
+  "deadline": "2026-11-11T08:10:00Z"
+}

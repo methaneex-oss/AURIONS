@@ -1,0 +1,16 @@
+{
+  "request_id": "ac100000-0000-4000-8000-000000000001",
+  "operation_id": "70000000-0000-4000-8000-000000000001",
+  "owner_ref": "owner:primary",
+  "session_ref": "session:1",
+  "operation_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "capability_id": "provider.example.capability",
+  "descriptor_version": 1,
+  "target_ref": "resource:example",
+  "data_categories": [],
+  "recipients": [],
+  "risk_class": "R9",
+  "policy_version_ref": "policy:1",
+  "expires_at": "2026-11-11T08:05:00Z",
+  "requested_at": "2026-11-11T08:01:00Z"
+}

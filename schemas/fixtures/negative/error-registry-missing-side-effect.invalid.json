@@ -1,0 +1,20 @@
+{
+  "registry_id": "aurions.error-codes",
+  "registry_version": "1.0",
+  "status": "seed",
+  "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5",
+  "entries": [
+    {
+      "error_code": "operation.dispatch.ADAPTER_DISPATCH_FAILED",
+      "category": "operation.dispatch",
+      "default_retry_posture": "reconcile_before_retry",
+      "recovery_action": "Reconcile the target/provider; do not blindly retry.",
+      "owner_or_platform_intervention": "conditional",
+      "description": "Dispatch failure with possible side effect.",
+      "status": "seed",
+      "handler_mapping_ref": null,
+      "fixture_refs": [],
+      "source_ref": "docs/planning/IMPLEMENTATION-READY-PLANNING-CONTRACTS.md#4.5"
+    }
+  ]
+}

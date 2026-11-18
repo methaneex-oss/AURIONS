@@ -1,0 +1,706 @@
+{
+  "fixture_version": "1.0",
+  "source_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md",
+  "cases": [
+    {
+      "case_id": "EHC-001",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-001",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000001",
+        "error_code": "contract.schema.SCHEMA_MALFORMED",
+        "category": "contract.schema",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-001"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-002",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-001",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000002",
+        "error_code": "contract.schema.SCHEMA_MAJOR_UNSUPPORTED",
+        "category": "contract.schema",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-002"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-003",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-001",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000003",
+        "error_code": "contract.schema.SCHEMA_CONDITION_UNSUPPORTED",
+        "category": "contract.schema",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-003"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-004",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-002",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000004",
+        "error_code": "provider.identity.PROVIDER_UNKNOWN",
+        "category": "provider.identity",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-004"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-005",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-002",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000005",
+        "error_code": "provider.identity.PROVIDER_UNTRUSTED",
+        "category": "provider.identity",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-005"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-006",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-002",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000006",
+        "error_code": "provider.identity.PROVIDER_VERSION_UNVALIDATED",
+        "category": "provider.identity",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-006"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-007",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-003",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000007",
+        "error_code": "provider.availability.PROVIDER_UNAVAILABLE",
+        "category": "provider.availability",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-007"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-008",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-003",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000008",
+        "error_code": "provider.availability.PROVIDER_RATE_LIMITED",
+        "category": "provider.availability",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-008"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-009",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-004",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000009",
+        "error_code": "capability.validity.CAPABILITY_STALE",
+        "category": "capability.validity",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-009"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-010",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-004",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000010",
+        "error_code": "capability.validity.CAPABILITY_REVOKED",
+        "category": "capability.validity",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-010"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-011",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-004",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000011",
+        "error_code": "capability.validity.CAPABILITY_INCOMPATIBLE",
+        "category": "capability.validity",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-011"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-012",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-005",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000012",
+        "error_code": "evidence.precondition.EVIDENCE_INSUFFICIENT",
+        "category": "evidence.precondition",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-012"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-013",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-005",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000013",
+        "error_code": "evidence.precondition.PRECONDITION_FALSE",
+        "category": "evidence.precondition",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-013"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-014",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-005",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000014",
+        "error_code": "evidence.precondition.PRECONDITION_UNKNOWN",
+        "category": "evidence.precondition",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-014"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-015",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-006",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000015",
+        "error_code": "platform.permission.PLATFORM_GRANT_MISSING",
+        "category": "platform.permission",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-015"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-016",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-006",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000016",
+        "error_code": "platform.permission.PLATFORM_GRANT_REVOKED",
+        "category": "platform.permission",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-016"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-017",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-007",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000017",
+        "error_code": "governance.authorization.POLICY_DENIED",
+        "category": "governance.authorization",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-017"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-018",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-007",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000018",
+        "error_code": "governance.authorization.APPROVAL_EXPIRED",
+        "category": "governance.authorization",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-018"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-019",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-007",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000019",
+        "error_code": "governance.authorization.APPROVAL_MISMATCH",
+        "category": "governance.authorization",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-019"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-020",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-007",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000020",
+        "error_code": "governance.authorization.APPROVAL_REVOKED",
+        "category": "governance.authorization",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-020"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-021",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-008",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000021",
+        "error_code": "operation.conflict.EXPECTED_REVISION_CONFLICT",
+        "category": "operation.conflict",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-021"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-022",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-008",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000022",
+        "error_code": "operation.conflict.DEPENDENCY_VERSION_STALE",
+        "category": "operation.conflict",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-022"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-023",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-008",
+      "expected_retry_posture": "after_condition_change",
+      "expected_side_effect_default": "not_dispatched",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000023",
+        "error_code": "operation.conflict.IDEMPOTENCY_KEY_REUSE_MISMATCH",
+        "category": "operation.conflict",
+        "retryable": false,
+        "side_effect_state": "not_dispatched",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-023"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-024",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-009",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000024",
+        "error_code": "operation.budget.DEADLINE_EXCEEDED",
+        "category": "operation.budget",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-024"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-025",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-009",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000025",
+        "error_code": "operation.budget.RESOURCE_BUDGET_EXCEEDED",
+        "category": "operation.budget",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-025"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-026",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-009",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000026",
+        "error_code": "operation.budget.CANCELLED_BEFORE_DISPATCH",
+        "category": "operation.budget",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-026"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-027",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-010",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000027",
+        "error_code": "operation.dispatch.ADAPTER_DISPATCH_FAILED",
+        "category": "operation.dispatch",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-027"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-028",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-010",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000028",
+        "error_code": "operation.dispatch.DISPATCH_RECEIPT_MISSING",
+        "category": "operation.dispatch",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-028"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-029",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-011",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000029",
+        "error_code": "operation.outcome.OUTCOME_UNCERTAIN",
+        "category": "operation.outcome",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-029"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-030",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-011",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000030",
+        "error_code": "operation.outcome.POSTCONDITION_UNVERIFIED",
+        "category": "operation.outcome",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-030"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-031",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-011",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000031",
+        "error_code": "operation.outcome.PROVIDER_RESULT_CONTRADICTED",
+        "category": "operation.outcome",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-031"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-032",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-012",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000032",
+        "error_code": "provider.contract.PROVIDER_CONTRACT_VIOLATION",
+        "category": "provider.contract",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-032"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-033",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-012",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000033",
+        "error_code": "provider.contract.PROVIDER_INTEGRITY_FAILURE",
+        "category": "provider.contract",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-033"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-034",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-013",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000034",
+        "error_code": "runtime.internal.INTERNAL_FAILURE",
+        "category": "runtime.internal",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-034"
+        }
+      }
+    },
+    {
+      "case_id": "EHC-035",
+      "handler_contract_ref": "docs/planning/ERROR-HANDLER-CONTRACT-MATRIX.md#eh-013",
+      "expected_retry_posture": "reconcile_before_retry",
+      "expected_side_effect_default": "unknown",
+      "payload": {
+        "error_id": "e0000000-0000-4000-8000-000000000035",
+        "error_code": "runtime.internal.STORAGE_COMMIT_UNCERTAIN",
+        "category": "runtime.internal",
+        "retryable": false,
+        "side_effect_state": "unknown",
+        "occurred_at": "2026-11-12T00:00:00Z",
+        "operation_id": null,
+        "retry_after_ms": null,
+        "diagnostic_ref": null,
+        "details": {
+          "fixture_case": "EHC-035"
+        }
+      }
+    }
+  ]
+}
