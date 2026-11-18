@@ -199,7 +199,7 @@ The reviewer must be different from the PR author and must not be the builder's 
 
 ## Exact current review handoff — 2026-11-18
 
-- Target PR #2 head: 32ceea9f9f07a5b751120ee1f5b15fb636123c78; PR #2 remains open, draft and unmerged.
+- Last CI-validated PR #2 source head: 3a3dc7d1d18b19af360c44834b82ce2704fbecc1; PR #2 was open, draft and unmerged at that validation point. Fetch the live head and complete changed-file set immediately before review.
 - Exact-head automatic CI run 44278564389 passed all nine steps. It validated 11 Draft 2020-12 schemas, 95 positive payloads, 48 schema-negative controls, 106 D-02 classified field paths and 21 local-only controls, 17 work packages/62 acyclic edges, and all 21 ordered SQLite DDL files on host SQLite 3.46.1 with Memory v10 invariants. The workflow limits SQLite evidence to host smoke testing.
 - New machine artifacts to challenge: schemas/sync-classification-policy.d02.v1.schema.json and schemas/sync-classification-policy.d02.v1.json. Verify path-by-path completeness against the eight-domain allowlist; challenge OWNER_PRIVATE defaults, SENSITIVE conditional content, SECURITY_RESTRICTED exclusions, strictest-source classification, numeric-sensitivity deny behavior, local-only controls, same-owner/runtime constraints, exact-purpose/expiry/destination/field consent, version binding and fail-closed behavior. The policy is not owner-accepted, default-deny and export-disabled.
 - D-04 exact scope is owner-accepted; every command/query remains design-only/non-dispatchable. D-02 Option B is selected, but its detailed field policy remains pending owner disposition. D-03 remains staged; MD-01…MD-16 are selected.
@@ -208,8 +208,11 @@ The reviewer must be different from the PR author and must not be the builder's 
 
 ## Latest exact-head review baseline — 2026-11-18
 
-- **Review target:** PR #2 head 26f08650c7319db15a146cdea41754c05b3f8343, 148 changed files, base main; PR is open/draft/unmerged.
-- **CI:** exact-head run [44279735924](https://github.com/methaneex-oss/AURIONS/actions/runs/44279735924) passed all nine steps. Rechecked 11 schemas, 95 positive payloads, 48 negative controls, 106 D-02 classified field paths/21 local-only controls, 17 work packages/62 acyclic dependencies and 21 host SQLite DDL files with Memory v10 invariants on SQLite 3.46.1.
+- **Last validated review baseline:** PR #2 head 3a3dc7d1d18b19af360c44834b82ce2704fbecc1, 148 changed files, base main; PR open/draft/unmerged at that validation point.
+- **CI:** exact-head run [44280128976](https://github.com/methaneex-oss/AURIONS/actions/runs/44280128976) passed all nine steps: 11 schemas, 95 positive payloads, 48 schema-negative controls, 106 D-02 classified field paths/21 local-only controls, 17 work packages/62 acyclic edges and 21 host SQLite DDL files with Memory v10 invariants on SQLite 3.46.1.
 - Review the full PR diff, not only these summaries. Pay particular attention to the D-02 classification registry and fail-closed validator, the updated topology and WP-15 dependencies, all 94 event producer/consumer contracts, 42 non-command triggers, D-04 scope registry, PR-19/PR-20 synthetic candidate chain and the final owner packet.
 - No GitHub review or inline review thread is recorded for this exact revision. The older independent re-review must not be carried forward as approval. No eligible reviewer identity/team has been verified.
 
+## Live-head review start requirement
+
+Before beginning independent review, fetch PR #2 and record the current exact head SHA and complete changed-file set. The baseline above is the last fully validated source revision, not an evergreen alias for future commits. Review the exact live diff and do not carry forward approval from a historical SHA.

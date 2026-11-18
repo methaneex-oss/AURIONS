@@ -1,6 +1,6 @@
 # AURIONS — Planning Exit Owner Decision Packet
 
-- **Status:** Builder-owned schema and cross-document reconciliation are current through 26f0865; exact-head host CI passed. D-02 has a separate machine-readable classification policy for every allowlist path, but that policy remains a builder proposal, not owner-accepted, and export remains disabled. Planning exit is not approved pending D-02 policy disposition, independent review and explicit owner approval.
+- **Status:** Builder-owned schema and cross-document reconciliation are current through source head 3a3dc7d; exact-head host CI passed. The pointer refresh below is documentation-only.
 - **Branch:** `docs/complete-system-architecture`
 - **Authority:** `INITIAL-ENGINEERING-SPECIFICATION.md`, the First Usable Release Definition, and the Project Directorship and Team Operating Standard remain authoritative.
 - **Purpose:** Consolidate only decisions that the builder cannot make without changing product scope, personal authority, risk tolerance or owner intent.
@@ -116,8 +116,8 @@ If no option is selected, C remains the active safe state because the policy is 
 
 ## 2026-11-18 current-head handoff
 
-- Exact PR #2 HEAD: 26f08650c7319db15a146cdea41754c05b3f8343. At the start of this reconciliation the PR was open/draft/unmerged with 148 changed files.
-- Automatic exact-head workflow 44278564389 passed all nine steps: 11 Draft 2020-12 schemas; 9 paired registry/fixture checks; 95 positive domain payloads; 48 schema-negative controls; one semantic candidate-ID mismatch; two canonical operation-digest vectors; 35 recovery assertions; 106 D-02 classified field paths plus 21 local-only controls; 17 work packages/62 acyclic dependencies; all 21 SQLite DDL files on host SQLite 3.46.1 with FK/integrity and Memory v10 invariants; Android probe shell syntax. The workflow log explicitly limits SQLite evidence to host smoke testing, not Android/Termux, crash/restore, concurrency, cross-store recovery or runtime handlers.
+- Last CI-validated PR #2 HEAD: 3a3dc7d1d18b19af360c44834b82ce2704fbecc1; 148 changed files; base main; open/draft/unmerged at that validation point.
+- Automatic exact-head CI [44280128976](https://github.com/methaneex-oss/AURIONS/actions/runs/44280128976) passed all nine steps on `3a3dc7d1d18b19af360c44834b82ce2704fbecc1`: 11 Draft 2020-12 schemas, 9 paired registry/fixture checks, 95 positive payloads, 48 schema-negative controls, one semantic candidate-ID mismatch, two canonical operation-digest vectors, 35 recovery assertions, 106 D-02 classified field paths plus 21 local-only controls, 17 work packages/62 acyclic dependencies, all 21 ordered SQLite DDL files on host SQLite 3.46.1 with FK/integrity and Memory v10 invariants, and Android probe shell syntax. SQLite evidence is host smoke testing only; Android/Termux, crash/restore, concurrency, cross-store recovery and runtime handlers remain unverified.
 - D-02 has a separate machine-readable classification-policy schema/registry. CI enforces exact allowlist/domain/schema/path parity and keeps the policy not owner-accepted, default-deny and export-disabled.
 - D-04 remains owner-accepted exactly as recorded on 2026-11-17. All command/query records remain design-only/non-dispatchable; per-entry readiness gates remain open.
 - D-03 remains staged; no Android action or permission is selected. D-01 and MD-01…MD-16 dispositions remain unchanged.
@@ -127,8 +127,11 @@ If no option is selected, C remains the active safe state because the policy is 
 
 ## 2026-11-18 final documentation-reconciliation revision
 
-- Exact PR #2 HEAD: 26f08650c7319db15a146cdea41754c05b3f8343; 148 changed files; base main; open/draft/unmerged.
-- Exact-head automatic CI run [44279735924](https://github.com/methaneex-oss/AURIONS/actions/runs/44279735924) passed all nine steps. It revalidated the 11-schema corpus, 106 D-02 classified field paths/21 local-only controls, 17 work packages/62 acyclic dependencies and all 21 SQLite DDL files on host SQLite 3.46.1 with Memory v10 invariants.
+- Last CI-validated PR #2 HEAD: 3a3dc7d1d18b19af360c44834b82ce2704fbecc1; 148 changed files; base main; open/draft/unmerged at that validation point.
+- Automatic exact-head CI [44280128976](https://github.com/methaneex-oss/AURIONS/actions/runs/44280128976) passed all nine steps on `3a3dc7d1d18b19af360c44834b82ce2704fbecc1`: 11 Draft 2020-12 schemas, 9 paired registry/fixture checks, 95 positive payloads, 48 schema-negative controls, one semantic candidate-ID mismatch, two canonical operation-digest vectors, 35 recovery assertions, 106 D-02 classified field paths plus 21 local-only controls, 17 work packages/62 acyclic dependencies, all 21 ordered SQLite DDL files on host SQLite 3.46.1 with FK/integrity and Memory v10 invariants, and Android probe shell syntax. SQLite evidence is host smoke testing only; Android/Termux, crash/restore, concurrency, cross-store recovery and runtime handlers remain unverified.
 - This revision reconciles the topology decision, WP-15 exit row, owner-decision traceability matrix and semantic architecture report with the current classification-policy proposal and D-04 disposition. The D-02 policy remains a builder proposal, default-deny and export-disabled.
 - No PR review or inline review thread has been submitted for this exact head. The historic independent re-review is not applicable. Planning exit remains blocked until the owner disposes of the D-02 field policy, an independent reviewer inspects this exact diff and findings are resolved, external evidence gates are staged/passed, and the owner explicitly approves planning exit.
 
+## Final pointer-refresh rule — 2026-11-18
+
+The SHA above is the last fully CI-validated source revision. The pointer refresh committed after it is documentation-only and must receive its own automatic CI. Before independent review, fetch the live PR #2 head and complete changed-file set again; the reviewer must inspect that exact live diff, not a historical baseline.
