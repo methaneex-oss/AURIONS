@@ -53,3 +53,8 @@ Rules:
 
 
 D-02 field-classification policy owner disposition: **Option A accepted 2026-11-18**. The registry records `owner_accepted_option_a_export_disabled`; default action remains deny and export remains disabled. This is not runtime enforcement or permission to synchronize.
+
+
+### D-02 field-policy owner disposition — 2026-11-18
+
+The owner accepted D-02 field-classification Option A. This supersedes earlier pending/builder-proposal descriptions above. The machine registry records `owner_accepted_option_a_export_disabled`; schema and validator enforce the recorded acceptance and exact allowlist parity. `default_action: deny` and `export_enabled: false` remain mandatory. The policy does not authenticate peers, select cryptographic profiles, implement export/receiver enforcement or authorize synchronization.

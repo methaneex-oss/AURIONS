@@ -996,3 +996,10 @@ PR #2 remains open, draft and unmerged. No runtime implementation, training, com
 - **Security boundary unchanged:** `default_action=deny`; `export_enabled=false`. This does not authorize export, peer enrollment, runtime synchronization, Android actions, dispatch, training, candidate activation, planning exit, PR readiness or merge.
 - **Preserved decisions:** D-01 accepted; D-02 topology Option B selected; D-03 staged; D-04 exact §12 scope accepted; MD-01…MD-16 selected. No prior decision was reopened or altered.
 - **Still open:** independent review of exact live PR diff, reviewer identity, findings correction, external evidence staging, target Android/Termux and runtime/security evidence, and explicit owner planning-exit approval. Planning remains IN PROGRESS/BLOCKED; M0 WP-00+WP-01 remains non-authorizing.
+
+
+## Superseding D-02 field-policy disposition — 2026-11-18
+
+This entry is authoritative over earlier historical rows/notes in this register that describe the field policy as pending owner disposition. D-02 topology Option B remains selected (2026-11-16). The owner accepted field-classification **Option A** (2026-11-18), covering 106 exact field paths across eight domains and 21 cross-domain local-only controls. The registry and validator record the accepted state; default action remains deny and export remains disabled.
+
+D-02 remains **IN PROGRESS** because acceptance of policy scope does not establish enforcement. Still open: authenticated peer enrollment/revocation and key lifecycle; runtime export projection and receiver admission; atomic apply/receipt/outbox/recovery; strict classification/retention/authorization enforcement; C++/Python canonicalization; executed SY fault/replay/concurrency/restore tests; and cloud plus Android/Termux target evidence. Planning remains **BLOCKED** pending independent review of the exact live PR diff, findings resolution, external-gate disposition/staging and explicit owner planning-exit approval. No implementation, dispatch, training, activation, PR-ready or merge authority is implied.

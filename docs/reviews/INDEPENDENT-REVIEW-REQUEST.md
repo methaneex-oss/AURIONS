@@ -226,3 +226,8 @@ Before beginning independent review, fetch PR #2 and record the current exact he
 - Acceptance is policy-scope only. It does not authorize export, peer enrollment, runtime synchronization, implementation, Android action, dispatch, training, candidate activation, planning exit, PR readiness or merge.
 - The independent reviewer must inspect the exact live PR head and full changed-file set, including this decision-record change, the policy/schema/validator transition and all unchanged architecture contracts. Prior review reports do not carry forward.
 - Other decisions remain unchanged: D-01 accepted; D-03 staged; D-04 exact §12 scope accepted; MD-01…MD-16 selected.
+
+
+## Superseding owner disposition — 2026-11-18
+
+This section supersedes earlier bullets in this review brief that describe the D-02 field policy as owner-pending or builder-proposed. The owner accepted **Option A** for D-02 field classification; Option B remains the separately selected topology. The machine policy records `owner_accepted_option_a_export_disabled`. Default action remains deny and export remains disabled. The independent reviewer must challenge the accepted policy itself and its validator, including exact path parity, classifications, conditional authorization, excluded/local-only controls, fail-closed handling and the fact that acceptance does not grant export or runtime authority. Review must be against the exact live PR head and complete changed-file set; no historic review carries forward.

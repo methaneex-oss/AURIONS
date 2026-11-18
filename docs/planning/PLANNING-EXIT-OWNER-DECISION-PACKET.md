@@ -145,3 +145,10 @@ The SHA above is the last fully CI-validated source revision. The pointer refres
 - **Authority boundary:** `default_action=deny`; `export_enabled=false`. This is not export, peer enrollment, runtime sync, Android action, dispatch, implementation, training, activation, planning-exit, PR-ready or merge authorization.
 - **Preserved decisions:** D-01 accepted; D-02 topology Option B selected; D-03 staged; D-04 exact §12 scope accepted; MD-01…MD-16 selected. No prior decision reopened or altered.
 - **Still open:** exact-live-head independent review, reviewer identity, findings correction, external evidence gate disposition/staging, target/runtime/security evidence and explicit owner planning-exit approval. Planning remains IN PROGRESS/BLOCKED; proposed M0 WP-00+WP-01 is not authorization.
+
+
+## Superseding D-02 field-policy disposition — 2026-11-18
+
+This dated disposition supersedes any earlier statement in this packet that the D-02 field-classification policy is owner-pending or builder-proposed. The owner selected **Option A: accept the bounded proposal as written**. The accepted policy covers 106 exact field paths across eight domains and 21 cross-domain local-only controls. Default metadata retains all specified same-owner/runtime/domain/version/retention/integrity conditions; conditional fields require exact per-aggregate authorization naming owner, domain, aggregate, paths, purpose, destination, policy version and expiry; excluded and local-only paths remain denied; unlisted paths and unmapped numeric sensitivity deny/quarantine.
+
+The machine registry records `owner_accepted_option_a_export_disabled`, accepted date `2026-11-18`, and decision reference `owner-confirmation-2026-11-18-option-A`. **Policy acceptance is not export authorization:** `default_action=deny`, `export_enabled=false`. No runtime sync, peer enrollment, implementation, Android action, dispatch, training, activation, planning exit, PR readiness or merge is authorized by this decision.

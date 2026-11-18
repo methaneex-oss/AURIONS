@@ -114,3 +114,8 @@ The owner accepted the exact registry-derived §12 classification on the builder
 The owner selected D-02 Option B as the topology. That does not accept individual field classifications. The builder added schemas/sync-classification-policy.d02.v1.schema.json and schemas/sync-classification-policy.d02.v1.json. They cover all 106 exact default/conditional/excluded paths in the eight-domain allowlist plus 21 cross-domain local-only controls. CI run 44278564389 enforces exact domain/schema/path parity and keeps the policy not owner-accepted, default-deny and export-disabled.
 
 The policy is not owner-accepted and no field is export-enabled. The Planning Exit Owner Decision Packet records three bounded choices: accept the proposal as written; accept metadata-only defaults and reject conditional paths in v1; or stage all domain export until after security/target evidence. No choice is inferred from the earlier Option B topology selection.
+
+
+## Superseding D-02 field-policy disposition — 2026-11-18
+
+This section supersedes §7's earlier proposal/pending-owner wording. The owner accepted **D-02 field-classification Option A** on 2026-11-18, separate from the already-selected Option B topology. The accepted policy covers 106 exact paths across eight domains and 21 cross-domain local-only controls. Default paths retain all specified owner/runtime/domain/version/retention/integrity checks; conditional paths require exact per-aggregate authorization; excluded/local-only paths remain denied. The machine registry and validator encode this acceptance. `default_action=deny` and `export_enabled=false` remain mandatory. This is not an export entitlement or runtime authorization.

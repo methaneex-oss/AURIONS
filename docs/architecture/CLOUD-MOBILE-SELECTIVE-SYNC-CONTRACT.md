@@ -184,3 +184,8 @@ The following work remains before implementation:
 - The v2 change/conflict payload definitions, event-specific tombstone and conflict payload definitions, positive payload examples and versioned default-deny field allowlist are present in the machine-readable schema set.
 - The five sync events have nonempty acceptance-scenario references that match the SY-001…SY-015 machine scenario steps. The 15 SY scenarios remain `specified_not_executed` with `execution_authority: none`.
 - Runtime enforcement of the durable per-runtime synchronization persistence and complete runtime classification-policy enforcement, authenticated peer lifecycle/key management, runtime projection and receiver handlers, C++/Python conformance, executed SY fault/recovery tests and cloud/Android target conformance remain IN PROGRESS. This document does not authorize implementation or change the owner-selected D-02 Option B scope.
+
+
+### Owner disposition update — 2026-11-18
+
+The owner accepted D-02 field-classification Option A as bounded policy scope, separate from the Option B topology decision. This supersedes the earlier owner-pending wording in §2. The machine policy records `owner_accepted_option_a_export_disabled`; the registry covers all 106 allowlist paths and 21 cross-domain local-only controls. Acceptance does not enable export: default action remains deny and export remains disabled. All owner/runtime/domain/version/retention/integrity conditions, exact per-aggregate authorization for conditional fields, excluded/local-only denials and unknown-path quarantine remain binding. Runtime enforcement, peer/key lifecycle, C++/Python conformance, executed SY tests and target evidence remain open.
