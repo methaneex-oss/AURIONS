@@ -1007,3 +1007,12 @@ D-02 remains **IN PROGRESS** because acceptance of policy scope does not establi
 ## Canonical role naming — 2026-11-18
 
 All historical uses of “builder” in this register refer to the **Project Builder** role. The separate review role is the **Independent Reviewer**. These are the only role labels to use in current and future project records. See [Canonical Project Role Names](../governance/CANONICAL-PROJECT-ROLE-NAMES.md). This is a naming normalization, not a rewrite of historical evidence, authorship or review verdicts. Project Builder self-review never satisfies the Independent Reviewer gate.
+
+## Post-naming exact-head refresh — 2026-11-18
+
+- Exact PR #2 HEAD: `5438cef4df6ee7321a4d0eede647f4f9bc9ea40f`.
+- PR #2 remains open, draft and unmerged; 149 changed files; base `main`.
+- Exact-head automatic CI run [44294309115](https://github.com/methaneex-oss/AURIONS/actions/runs/44294309115) passed all nine substantive steps: schema/fixture validation, governance contract, work-package traceability, 21-file host SQLite DDL/migration smoke tests and Android probe shell syntax.
+- No GitHub PR review or inline review thread is recorded. This is not evidence that the Independent Reviewer has completed review. The Independent Reviewer must review this exact head and full 149-file changed-file set.
+- The canonical role labels Project Builder and Independent Reviewer apply. No provider or model identity is recorded for either role.
+- The three Project Builder pre-review findings above remain open for independent challenge and disposition. The PR remains NOT READY for planning exit or implementation; no implementation, dispatch, training, activation, ready-state or merge authority is implied.
