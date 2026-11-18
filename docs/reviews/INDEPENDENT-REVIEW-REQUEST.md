@@ -262,3 +262,12 @@ These are Project Builder observations to investigate, not prescribed conclusion
 - Separate confirmed defects, risks, questions, recommendations and evidence limitations.
 - Return a clear verdict with file/line references and severity for each finding.
 - Do not modify the branch while conducting the independent review. Project Builder will handle authorized corrections after the report is preserved.
+
+## Post-naming exact-head refresh — 2026-11-18
+
+- Exact PR #2 HEAD: `5438cef4df6ee7321a4d0eede647f4f9bc9ea40f`.
+- PR #2 remains open, draft and unmerged; 149 changed files; base `main`.
+- Exact-head automatic CI run [44294309115](https://github.com/methaneex-oss/AURIONS/actions/runs/44294309115) passed all nine substantive steps: schema/fixture validation, governance contract, work-package traceability, 21-file host SQLite DDL/migration smoke tests and Android probe shell syntax.
+- No GitHub PR review or inline review thread is recorded. This is not evidence that the Independent Reviewer has completed review. The Independent Reviewer must review this exact head and full 149-file changed-file set.
+- The canonical role labels Project Builder and Independent Reviewer apply. No provider or model identity is recorded for either role.
+- The three Project Builder pre-review findings above remain open for independent challenge and disposition. The PR remains NOT READY for planning exit or implementation; no implementation, dispatch, training, activation, ready-state or merge authority is implied.
