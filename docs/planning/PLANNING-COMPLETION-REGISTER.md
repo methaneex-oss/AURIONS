@@ -965,7 +965,7 @@ PR #2 remains open, draft and unmerged. No runtime implementation, training, com
 
 ## 2026-11-18 authoritative current-head builder audit
 
-- Exact PR #2 HEAD: 32ceea9f9f07a5b751120ee1f5b15fb636123c78. PR #2 had 148 changed files at the start of this pass, targeted main and remained open/draft/unmerged.
+- Exact PR #2 HEAD: 26f08650c7319db15a146cdea41754c05b3f8343. PR #2 had 148 changed files at the start of this pass, targeted main and remained open/draft/unmerged.
 - Automatic exact-head workflow 44278564389 passed all nine steps: 11 Draft 2020-12 schemas; 9 paired registry/fixture checks; 95 positive domain payloads; 48 schema-negative controls; one semantic candidate-ID mismatch; two canonical operation-digest vectors; 35 recovery assertions; 106 D-02 classified field paths plus 21 local-only controls; 17 work packages/62 acyclic dependencies; all 21 SQLite DDL files on host SQLite 3.46.1 with FK/integrity and Memory v10 invariants; Android probe shell syntax. The workflow log explicitly limits SQLite evidence to host smoke testing, not Android/Termux, crash/restore, concurrency, cross-store recovery or runtime handlers.
 - D-02 Option B remains selected. The separate classification-policy schema/registry gives named classes and treatments for every allowlist path; CI enforces exact parity and keeps it not owner-accepted, default-deny and export-disabled. No domain export is enabled.
 - D-04 exact §12 scope remains owner-accepted (2026-11-17). All 54 command records and 29 query records remain design-only/non-dispatchable; per-entry technical gates remain open.
@@ -973,3 +973,11 @@ PR #2 remains open, draft and unmerged. No runtime implementation, training, com
 - 94 events remain design-only. The 42 without command-producer bindings have proposed trusted/internal triggers (15 Action Gateway transitions and 27 other triggers); independent semantic review/owner disposition remains open. Scenario corpus: 63 specifications, 368 steps and 89 negative controls; SY-001…SY-015 remain specified, not executed.
 - PR-19/PR-20 fixtures are synthetic; no actual training, held-out improvement, authenticated approval, activation or rollback is evidenced.
 - No independent review has been submitted against the current PR head; historical review evidence predates it. Planning remains IN PROGRESS/BLOCKED pending D-02 policy disposition, external-gate staging, independent review/findings correction and explicit owner planning-exit approval. Proposed M0 WP-00+WP-01 is not authorization.
+
+## 2026-11-18 final exact-head refresh
+
+- Final exact head: 26f08650c7319db15a146cdea41754c05b3f8343. PR #2 remains open/draft/unmerged with 148 changed files.
+- Automatic exact-head CI [44279735924](https://github.com/methaneex-oss/AURIONS/actions/runs/44279735924) passed all nine steps. It reports 11 Draft 2020-12 schemas; 95 positive payloads; 48 schema-negative controls; 106 D-02 classified paths/21 local-only controls; 17 packages/62 acyclic edges; all 21 SQLite DDL files on host SQLite 3.46.1 with FK/integrity and Memory v10 invariants. Host-only limitations remain Android/Termux, crash/restore, concurrency, cross-store recovery and runtime handlers.
+- The latest topology/WP-15/owner-matrix/semantic-report corrections are included in this exact-head CI. D-02 field policy remains owner-pending and export-disabled; D-04 exact §12 scope remains owner-accepted; D-03 remains staged.
+- No independent review exists for this exact revision. Planning is not ready for exit until the D-02 policy disposition, independent exact-head review/findings resolution, external-gate staging and explicit owner approval are complete.
+

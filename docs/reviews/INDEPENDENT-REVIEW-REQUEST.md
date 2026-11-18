@@ -205,3 +205,11 @@ The reviewer must be different from the PR author and must not be the builder's 
 - D-04 exact scope is owner-accepted; every command/query remains design-only/non-dispatchable. D-02 Option B is selected, but its detailed field policy remains pending owner disposition. D-03 remains staged; MD-01…MD-16 are selected.
 - Independent review must inspect the complete live PR diff, all 94 event consumer/owner-transition specifications and 42 non-command trigger specifications, query projection/security contracts, persistence ownership and work-package readiness. Prior review reports apply only to historical SHAs.
 - No submitted GitHub review or inline thread is recorded for the live head. A reviewer identity/team has not been verified; do not fabricate a reviewer or treat the builder self-review as independent.
+
+## Latest exact-head review baseline — 2026-11-18
+
+- **Review target:** PR #2 head 26f08650c7319db15a146cdea41754c05b3f8343, 148 changed files, base main; PR is open/draft/unmerged.
+- **CI:** exact-head run [44279735924](https://github.com/methaneex-oss/AURIONS/actions/runs/44279735924) passed all nine steps. Rechecked 11 schemas, 95 positive payloads, 48 negative controls, 106 D-02 classified field paths/21 local-only controls, 17 work packages/62 acyclic dependencies and 21 host SQLite DDL files with Memory v10 invariants on SQLite 3.46.1.
+- Review the full PR diff, not only these summaries. Pay particular attention to the D-02 classification registry and fail-closed validator, the updated topology and WP-15 dependencies, all 94 event producer/consumer contracts, 42 non-command triggers, D-04 scope registry, PR-19/PR-20 synthetic candidate chain and the final owner packet.
+- No GitHub review or inline review thread is recorded for this exact revision. The older independent re-review must not be carried forward as approval. No eligible reviewer identity/team has been verified.
+

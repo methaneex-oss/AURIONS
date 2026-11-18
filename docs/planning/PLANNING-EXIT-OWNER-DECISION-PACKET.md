@@ -1,6 +1,6 @@
 # AURIONS — Planning Exit Owner Decision Packet
 
-- **Status:** Builder-owned schema and cross-document reconciliation are current through 32ceea9; exact-head host CI passed. D-02 has a separate machine-readable classification policy for every allowlist path, but that policy remains a builder proposal, not owner-accepted, and export remains disabled. Planning exit is not approved pending D-02 policy disposition, independent review and explicit owner approval.
+- **Status:** Builder-owned schema and cross-document reconciliation are current through 26f0865; exact-head host CI passed. D-02 has a separate machine-readable classification policy for every allowlist path, but that policy remains a builder proposal, not owner-accepted, and export remains disabled. Planning exit is not approved pending D-02 policy disposition, independent review and explicit owner approval.
 - **Branch:** `docs/complete-system-architecture`
 - **Authority:** `INITIAL-ENGINEERING-SPECIFICATION.md`, the First Usable Release Definition, and the Project Directorship and Team Operating Standard remain authoritative.
 - **Purpose:** Consolidate only decisions that the builder cannot make without changing product scope, personal authority, risk tolerance or owner intent.
@@ -116,7 +116,7 @@ If no option is selected, C remains the active safe state because the policy is 
 
 ## 2026-11-18 current-head handoff
 
-- Exact PR #2 HEAD: 32ceea9f9f07a5b751120ee1f5b15fb636123c78. At the start of this reconciliation the PR was open/draft/unmerged with 148 changed files.
+- Exact PR #2 HEAD: 26f08650c7319db15a146cdea41754c05b3f8343. At the start of this reconciliation the PR was open/draft/unmerged with 148 changed files.
 - Automatic exact-head workflow 44278564389 passed all nine steps: 11 Draft 2020-12 schemas; 9 paired registry/fixture checks; 95 positive domain payloads; 48 schema-negative controls; one semantic candidate-ID mismatch; two canonical operation-digest vectors; 35 recovery assertions; 106 D-02 classified field paths plus 21 local-only controls; 17 work packages/62 acyclic dependencies; all 21 SQLite DDL files on host SQLite 3.46.1 with FK/integrity and Memory v10 invariants; Android probe shell syntax. The workflow log explicitly limits SQLite evidence to host smoke testing, not Android/Termux, crash/restore, concurrency, cross-store recovery or runtime handlers.
 - D-02 has a separate machine-readable classification-policy schema/registry. CI enforces exact allowlist/domain/schema/path parity and keeps the policy not owner-accepted, default-deny and export-disabled.
 - D-04 remains owner-accepted exactly as recorded on 2026-11-17. All command/query records remain design-only/non-dispatchable; per-entry readiness gates remain open.
@@ -124,3 +124,11 @@ If no option is selected, C remains the active safe state because the policy is 
 - Independent review remains outstanding. No reviewer identity/team is fabricated and no review submission or inline thread is recorded for the current head.
 - Planning exit requires D-02 policy disposition, independent review of the exact final PR diff, findings resolution, owner/staging records for external evidence gates and explicit owner planning-exit approval. Proposed M0 WP-00+WP-01 is not authorization.
 - Implementation, runtime dispatch, sync export, training, candidate activation, PR ready-state and merge remain unauthorized.
+
+## 2026-11-18 final documentation-reconciliation revision
+
+- Exact PR #2 HEAD: 26f08650c7319db15a146cdea41754c05b3f8343; 148 changed files; base main; open/draft/unmerged.
+- Exact-head automatic CI run [44279735924](https://github.com/methaneex-oss/AURIONS/actions/runs/44279735924) passed all nine steps. It revalidated the 11-schema corpus, 106 D-02 classified field paths/21 local-only controls, 17 work packages/62 acyclic dependencies and all 21 SQLite DDL files on host SQLite 3.46.1 with Memory v10 invariants.
+- This revision reconciles the topology decision, WP-15 exit row, owner-decision traceability matrix and semantic architecture report with the current classification-policy proposal and D-04 disposition. The D-02 policy remains a builder proposal, default-deny and export-disabled.
+- No PR review or inline review thread has been submitted for this exact head. The historic independent re-review is not applicable. Planning exit remains blocked until the owner disposes of the D-02 field policy, an independent reviewer inspects this exact diff and findings are resolved, external evidence gates are staged/passed, and the owner explicitly approves planning exit.
+
