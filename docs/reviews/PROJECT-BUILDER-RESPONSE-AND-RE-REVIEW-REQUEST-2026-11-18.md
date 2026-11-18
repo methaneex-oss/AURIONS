@@ -55,7 +55,19 @@ Correction commits:
 
 **Validation:** Automatic exact-head CI run [44315034563](https://github.com/methaneex-oss/AURIONS/actions/runs/44315034563) passed all nine substantive workflow steps on correction baseline `46ab78005736d521d1e13f865fd64d39f2e67ee5`, including Draft 2020-12 schema/fixture validation, governance checks, work-package traceability, host SQLite DDL/migration smoke tests and Android probe shell syntax. This does not prove runtime policy enforcement, Android/Termux behavior or export safety in an operating system.
 
-## 3. Request for Independent Reviewer re-review
+## 3. Additional Project Builder finding PB-02 — global condition schema enforcement
+
+A follow-up audit of the PB-01 correction found that the Python validator enforced the exact accepted global `default_transfer_conditions` and `conditional_transfer_conditions` arrays, but the JSON Schema still permitted any non-empty string arrays for those two top-level registry properties. The per-field condition arrays were already constrained by exact `const` values; the remaining gap was limited to the duplicated global arrays.
+
+**Correction committed:** `schemas/sync-classification-policy.d02.v1.schema.json` now constrains both global arrays to the exact owner-accepted condition arrays using JSON Schema `const`. The Python validator continues to enforce the same exact sets and duplicate rejection. This aligns standalone schema validation with the repository validator and prevents a mutated global condition array from passing schema validation alone.
+
+- Correction commit: `deec499b4dac16a7e28bb894f61aafe78f915033`.
+- Updated schema blob: `15b490b35ca55d883bbaad95dc203f025b91d846`.
+- Exact-head automatic CI for this correction is pending; no CI success is claimed yet.
+
+This is a schema-contract correction only. It does not enable export or runtime synchronization and does not close IR-03 or any target/runtime gate.
+
+## 4. Request for Independent Reviewer re-review
 
 Independent Reviewer: fetch PR #2 directly and record the exact live head SHA and complete changed-file list before beginning. The correction baseline above is not a substitute for that live fetch.
 
@@ -70,7 +82,7 @@ Please perform a focused but independent re-review that:
 
 The Independent Reviewer must remain read-only while reviewing. Do not modify source files, change owner decisions, enable export, assign dispatchability, authorize implementation, approve planning exit or merge.
 
-## 4. Current authority and project state
+## 5. Current authority and project state
 
 - D-02 topology Option B remains selected.
 - D-02 field-classification Option A remains owner-accepted as policy scope only.
