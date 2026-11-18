@@ -3,13 +3,13 @@
   "registry_version": "1.0",
   "policy_version": "d02-classification.v1",
   "allowlist_version": "d02-cloud-mobile.v1",
-  "status": "builder_proposal_not_owner_accepted",
+  "status": "owner_accepted_option_a_export_disabled",
   "default_action": "deny",
   "export_enabled": false,
   "owner_acceptance": {
-    "status": "pending",
-    "accepted_at": null,
-    "accepted_revision": null
+    "status": "accepted_option_a",
+    "accepted_at": "2026-11-18",
+    "accepted_revision": "owner-confirmation-2026-11-18-option-A"
   },
   "classification_order": [
     "PUBLIC",

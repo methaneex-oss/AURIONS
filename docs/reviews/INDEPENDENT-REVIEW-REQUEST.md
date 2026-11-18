@@ -216,3 +216,13 @@ The reviewer must be different from the PR author and must not be the builder's 
 ## Live-head review start requirement
 
 Before beginning independent review, fetch PR #2 and record the current exact head SHA and complete changed-file set. The baseline above is the last fully validated source revision, not an evergreen alias for future commits. Review the exact live diff and do not carry forward approval from a historical SHA.
+
+
+## Owner decision update — 2026-11-18 (authoritative)
+
+- D-02 topology remains Option B, selected 2026-11-16.
+- The owner accepted **D-02 field-classification Option A** on 2026-11-18: accept the bounded proposal as written, including exact default-path conditions, per-aggregate authorization for conditional paths, and denied excluded/local-only paths.
+- The machine policy records `owner_accepted_option_a_export_disabled`; schema and validator enforce the accepted-state metadata. Default action remains deny and export remains disabled. Do not describe the field policy as owner-pending or builder-proposed in the current review.
+- Acceptance is policy-scope only. It does not authorize export, peer enrollment, runtime synchronization, implementation, Android action, dispatch, training, candidate activation, planning exit, PR readiness or merge.
+- The independent reviewer must inspect the exact live PR head and full changed-file set, including this decision-record change, the policy/schema/validator transition and all unchanged architecture contracts. Prior review reports do not carry forward.
+- Other decisions remain unchanged: D-01 accepted; D-03 staged; D-04 exact §12 scope accepted; MD-01…MD-16 selected.

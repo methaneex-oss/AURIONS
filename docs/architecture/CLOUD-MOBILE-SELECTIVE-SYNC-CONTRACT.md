@@ -179,8 +179,8 @@ The following work remains before implementation:
 
 ## 10. Closure boundary
 
-- D-02 Option B is owner-selected.
-- This document specifies the bounded builder-proposed first-release domain/field policy, authority boundary, causality, conflict, deletion, retention, replay and recovery semantics.
+- D-02 Option B topology is owner-selected (2026-11-16); the separate D-02 field-classification policy was owner-accepted as Option A on 2026-11-18.
+- This document specifies the bounded first-release domain/field policy, authority boundary, causality, conflict, deletion, retention, replay and recovery semantics. Policy acceptance does not enable export or authorize runtime synchronization.
 - The v2 change/conflict payload definitions, event-specific tombstone and conflict payload definitions, positive payload examples and versioned default-deny field allowlist are present in the machine-readable schema set.
 - The five sync events have nonempty acceptance-scenario references that match the SY-001…SY-015 machine scenario steps. The 15 SY scenarios remain `specified_not_executed` with `execution_authority: none`.
-- Runtime enforcement of the durable per-runtime synchronization persistence, owner acceptance of the versioned classification policy and complete runtime classification-policy enforcement, authenticated peer lifecycle/key management, runtime projection and receiver handlers, C++/Python conformance, executed SY fault/recovery tests and cloud/Android target conformance remain IN PROGRESS. This document does not authorize implementation or change the owner-selected D-02 Option B scope.
+- Runtime enforcement of the durable per-runtime synchronization persistence and complete runtime classification-policy enforcement, authenticated peer lifecycle/key management, runtime projection and receiver handlers, C++/Python conformance, executed SY fault/recovery tests and cloud/Android target conformance remain IN PROGRESS. This document does not authorize implementation or change the owner-selected D-02 Option B scope.

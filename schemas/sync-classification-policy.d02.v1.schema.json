@@ -38,9 +38,7 @@
     "allowlist_version": {
       "const": "d02-cloud-mobile.v1"
     },
-    "status": {
-      "const": "builder_proposal_not_owner_accepted"
-    },
+    "status": {"enum":["builder_proposal_not_owner_accepted","owner_accepted_option_a_export_disabled"]},
     "default_action": {
       "const": "deny"
     },
@@ -56,9 +54,7 @@
         "accepted_revision"
       ],
       "properties": {
-        "status": {
-          "const": "pending"
-        },
+        "status": {"enum":["pending","accepted_option_a"]},
         "accepted_at": {
           "type": [
             "string",

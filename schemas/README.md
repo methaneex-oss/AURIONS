@@ -50,3 +50,6 @@ Rules:
 - `sync-field-allowlist.d02.v1.json` defines the exact versioned default, conditional and excluded field-path sets for the eight owner-selected Option B domains. It is a builder proposal, not an export entitlement.
 - `sync-classification-policy.d02.v1.json` maps every exact allowlist path to OWNER_PRIVATE, SENSITIVE or SECURITY_RESTRICTED and a proposed-default, conditional-proposal or local-only treatment. It records cross-domain local-only controls, strictest-source classification, no inferred PUBLIC fields and deny/quarantine handling for unclassified or unmapped numeric sensitivity values.
 - `sync-classification-policy.d02.v1.schema.json` validates the policy registry. `scripts/validate_schemas.py` cross-checks exact domain, schema-ref and field-path parity between the allowlist and classification policy. The policy deliberately remains `builder_proposal_not_owner_accepted`, `default_action: deny` and `export_enabled: false` until the owner accepts the exact content. This does not authenticate peers, select cryptographic profiles or implement export/receiver enforcement.
+
+
+D-02 field-classification policy owner disposition: **Option A accepted 2026-11-18**. The registry records `owner_accepted_option_a_export_disabled`; default action remains deny and export remains disabled. This is not runtime enforcement or permission to synchronize.

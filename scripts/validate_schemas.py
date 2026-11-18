@@ -1354,8 +1354,18 @@ def main() -> int:
     # builder proposal; CI must never promote it to an export entitlement.
     sync_policy = load(SCHEMAS / "sync-classification-policy.d02.v1.json")
     validate(sync_policy, schema_docs["sync-classification-policy.d02.v1.schema.json"], "D-02 synchronization classification policy")
-    if sync_policy.get("status") != "builder_proposal_not_owner_accepted":
-        fail("D-02 classification policy must remain a builder proposal until owner acceptance")
+    policy_status = sync_policy.get("status")
+    owner_acceptance = sync_policy.get("owner_acceptance", {})
+    if policy_status == "builder_proposal_not_owner_accepted":
+        if owner_acceptance.get("status") != "pending":
+            fail("D-02 pending builder proposal has inconsistent owner-acceptance metadata")
+    elif policy_status == "owner_accepted_option_a_export_disabled":
+        if (owner_acceptance.get("status") != "accepted_option_a"
+                or owner_acceptance.get("accepted_at") != "2026-11-18"
+                or owner_acceptance.get("accepted_revision") != "owner-confirmation-2026-11-18-option-A"):
+            fail("D-02 Option A owner-acceptance record is incomplete or inconsistent")
+    else:
+        fail(f"unsupported D-02 classification-policy status: {policy_status!r}")
     if sync_policy.get("export_enabled") is not False or sync_policy.get("default_action") != "deny":
         fail("D-02 classification policy must remain export-disabled and default-deny")
     if sync_policy.get("policy_version") != sync_allowlist.get("classification_policy_version"):

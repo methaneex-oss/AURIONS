@@ -967,7 +967,7 @@ PR #2 remains open, draft and unmerged. No runtime implementation, training, com
 
 - Last CI-validated PR #2 HEAD: 3a3dc7d1d18b19af360c44834b82ce2704fbecc1. PR #2 had 148 changed files, targeted main and remained open/draft/unmerged at that validation point.
 - Automatic exact-head workflow 44278564389 passed all nine steps: 11 Draft 2020-12 schemas; 9 paired registry/fixture checks; 95 positive domain payloads; 48 schema-negative controls; one semantic candidate-ID mismatch; two canonical operation-digest vectors; 35 recovery assertions; 106 D-02 classified field paths plus 21 local-only controls; 17 work packages/62 acyclic dependencies; all 21 SQLite DDL files on host SQLite 3.46.1 with FK/integrity and Memory v10 invariants; Android probe shell syntax. The workflow log explicitly limits SQLite evidence to host smoke testing, not Android/Termux, crash/restore, concurrency, cross-store recovery or runtime handlers.
-- D-02 Option B remains selected. The separate classification-policy schema/registry gives named classes and treatments for every allowlist path; CI enforces exact parity and keeps it not owner-accepted, default-deny and export-disabled. No domain export is enabled.
+- D-02 Option B topology remains selected. Field-classification Option A was owner-accepted on 2026-11-18; the registry and validator record that decision. Exact path parity remains CI-checked; default action remains deny and export remains disabled.
 - D-04 exact §12 scope remains owner-accepted (2026-11-17). All 54 command records and 29 query records remain design-only/non-dispatchable; per-entry technical gates remain open.
 - D-01 PR-01…PR-20 accepted; D-03 staged; MD-01…MD-16 selected. No decisions reopened.
 - 94 events remain design-only. The 42 without command-producer bindings have proposed trusted/internal triggers (15 Action Gateway transitions and 27 other triggers); independent semantic review/owner disposition remains open. Scenario corpus: 63 specifications, 368 steps and 89 negative controls; SY-001…SY-015 remain specified, not executed.
@@ -986,3 +986,13 @@ PR #2 remains open, draft and unmerged. No runtime implementation, training, com
 - Last fully validated source head: `3a3dc7d1d18b19af360c44834b82ce2704fbecc1`; automatic exact-head run 44280128976 passed all nine steps.
 - The owner-packet, completion-register and reviewer-pointer refresh is documentation-only. Its child commit must pass automatic PR CI before becoming the final validated planning handoff.
 - Re-fetch the live PR head and complete changed-file list before independent review. No historical SHA or prior review substitutes for review of the exact live diff.
+
+
+## 2026-11-18 D-02 field-classification owner decision — Option A
+
+- **Owner decision:** Option A — accept the bounded D-02 field-classification proposal as written.
+- **Accepted scope:** policy `d02-classification.v1` against allowlist `d02-cloud-mobile.v1`, covering 106 field paths across eight domains and 21 cross-domain local-only controls. Default metadata retains owner/runtime/domain/version/retention/integrity gates. Conditional paths retain exact per-aggregate authorization, purpose, destination, policy-version and expiry requirements. Excluded/local-only paths remain denied; unlisted paths and unmapped numeric sensitivity deny/quarantine.
+- **Machine record:** `schemas/sync-classification-policy.d02.v1.json` records `owner_accepted_option_a_export_disabled`, accepted date `2026-11-18`, decision reference `owner-confirmation-2026-11-18-option-A`. Schema and validator enforce consistent acceptance metadata.
+- **Security boundary unchanged:** `default_action=deny`; `export_enabled=false`. This does not authorize export, peer enrollment, runtime synchronization, Android actions, dispatch, training, candidate activation, planning exit, PR readiness or merge.
+- **Preserved decisions:** D-01 accepted; D-02 topology Option B selected; D-03 staged; D-04 exact §12 scope accepted; MD-01…MD-16 selected. No prior decision was reopened or altered.
+- **Still open:** independent review of exact live PR diff, reviewer identity, findings correction, external evidence staging, target Android/Termux and runtime/security evidence, and explicit owner planning-exit approval. Planning remains IN PROGRESS/BLOCKED; M0 WP-00+WP-01 remains non-authorizing.
