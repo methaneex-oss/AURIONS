@@ -73,7 +73,7 @@ Independent Reviewer: fetch PR #2 directly and record the exact live head SHA an
 
 Please perform a focused but independent re-review that:
 
-1. Verifies PB-01's five corrections against the actual diff and current source files.
+1. Verifies PB-01's five corrections and PB-02's exact global-condition schema correction against the actual diff and current source files.
 2. Confirms that the exact owner-accepted default and conditional condition sets are enforced by both schema validation and the Python validator.
 3. Challenges whether the new checks are complete, robust to mutation, and consistent with the owner-accepted Option A policy.
 4. Reassesses IR-01…IR-09 and records which findings remain open, are partially evidenced, or have genuinely closed. Do not mark a finding closed merely because a document or schema exists.
