@@ -231,3 +231,34 @@ Before beginning independent review, fetch PR #2 and record the current exact he
 ## Superseding owner disposition — 2026-11-18
 
 This section supersedes earlier bullets in this review brief that describe the D-02 field policy as owner-pending or builder-proposed. The owner accepted **Option A** for D-02 field classification; Option B remains the separately selected topology. The machine policy records `owner_accepted_option_a_export_disabled`. Default action remains deny and export remains disabled. The independent reviewer must challenge the accepted policy itself and its validator, including exact path parity, classifications, conditional authorization, excluded/local-only controls, fail-closed handling and the fact that acceptance does not grant export or runtime authority. Review must be against the exact live PR head and complete changed-file set; no historic review carries forward.
+
+## Authoritative role naming and live review handoff — 2026-11-18
+
+The reviewer role is named only **Independent Reviewer**. The authoring/execution role is named **Project Builder**. These are the canonical project role names under [Canonical Project Role Names](../governance/CANONICAL-PROJECT-ROLE-NAMES.md). Do not identify the Independent Reviewer by model, vendor, company, product, service or personal name in this brief or any project artifact. Historical references to “builder” mean Project Builder; they do not mean Independent Reviewer. Project Builder self-review is not independent review.
+
+### Current live baseline
+
+- Repository: `methaneex-oss/AURIONS`
+- Pull request: [#2](https://github.com/methaneex-oss/AURIONS/pull/2)
+- Branch: `docs/complete-system-architecture`; base: `main`
+- Last verified source revision before this naming-only documentation update: `23414be37bf736460b429498ff77557de8a8447d`
+- Last exact-head CI: [44284506350](https://github.com/methaneex-oss/AURIONS/actions/runs/44284506350), all nine substantive steps passed.
+- The live head and full changed-file list must be refreshed after this update. The review target is the exact final live head, not the baseline SHA above.
+- PR remains draft/open/unmerged. No implementation, dispatch, training, activation, planning exit or merge authority is implied.
+
+### Project Builder pre-review findings — not an Independent Reviewer verdict
+
+1. The planning completion register still contains canonical D-02 rows describing Option A as owner-pending, despite the later accepted Option A disposition. A superseding note exists, but the canonical rows should be reconciled so current-state summaries are not contradictory.
+2. The field allowlist machine document still has an older status value while the separate classification-policy registry records owner acceptance. The intended separation between topology/allowlist status, policy-scope acceptance and export authorization must be explicit and checked consistently.
+3. The validator requires non-empty condition arrays but does not verify that each accepted field rule carries the required named conditions. The schema permits arbitrary condition strings. Independent review should determine whether the accepted policy's conditions are sufficiently constrained and whether CI actually enforces them.
+
+These are Project Builder observations to investigate, not prescribed conclusions. The Independent Reviewer must independently retrieve and inspect the full live diff and source artifacts, identify additional issues, challenge these observations, and produce an independent report before comparing it with the Project Builder audit. Do not assume the findings are complete or correct.
+
+### Review procedure
+
+- Record the exact live head SHA and complete changed-file set at review start.
+- Inspect all changed files and relevant unchanged contracts needed to assess correctness.
+- Assess architecture, semantic consistency, security, authority boundaries, failure handling, persistence, validation evidence and scope discipline.
+- Separate confirmed defects, risks, questions, recommendations and evidence limitations.
+- Return a clear verdict with file/line references and severity for each finding.
+- Do not modify the branch while conducting the independent review. Project Builder will handle authorized corrections after the report is preserved.
