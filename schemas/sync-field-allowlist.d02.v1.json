@@ -1,7 +1,7 @@
 {
   "registry_id": "aurions.d02-cloud-mobile-field-allowlist",
   "registry_version": "1.0",
-  "status": "builder_proposal_not_owner_accepted",
+  "status": "owner_accepted_option_a_export_disabled",
   "allowlist_version": "d02-cloud-mobile.v1",
   "classification_policy_version": "d02-classification.v1",
   "scope": "First-release cloud/mobile runtime pair only; not general multi-device replication or authority transfer.",
