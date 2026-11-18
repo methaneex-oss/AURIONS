@@ -272,3 +272,7 @@ When a role discovers a defect or omission within its authority, it must investi
 Compliance is demonstrated through completed milestones, quality of handoffs, independently discovered findings, root-cause corrections, behavioural test evidence, regression prevention and delivery quality—not by acknowledging this standard or reporting activity. The director evaluates the team's conduct through those artifacts and outcomes.
 
 **Required transition:** from instruction-following activity to accountable engineering ownership. This part is enforceable alongside the existing role boundaries, workflow stages, scope controls and mandatory fresh-read-before-every-run gate.
+
+## Normative project role naming — 2026-11-18
+
+The canonical role names are **Project Builder** and **Independent Reviewer**, as defined in [Canonical Project Role Names](CANONICAL-PROJECT-ROLE-NAMES.md). These labels apply retroactively to interpretation of historical records and normatively to all current and future records. Historical uses of “builder” refer to the Project Builder role; they do not identify an Independent Reviewer. The Independent Reviewer must remain separate from Project Builder self-review. Do not identify either role by model, vendor, company, product, service or personal name in project documentation. This naming rule changes role labels only; it does not rewrite historical evidence or grant permissions, approvals or authority.
