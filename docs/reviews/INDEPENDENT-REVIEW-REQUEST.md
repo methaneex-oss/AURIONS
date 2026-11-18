@@ -271,3 +271,12 @@ These are Project Builder observations to investigate, not prescribed conclusion
 - No GitHub PR review or inline review thread is recorded. This is not evidence that the Independent Reviewer has completed review. The Independent Reviewer must fetch the live PR head immediately before review and inspect its complete changed-file set; the cited CI run is evidence for its own exact revision only.
 - The canonical role labels Project Builder and Independent Reviewer apply. No provider or model identity is recorded for either role.
 - The three Project Builder pre-review findings above remain open for independent challenge and disposition. The PR remains NOT READY for planning exit or implementation; no implementation, dispatch, training, activation, ready-state or merge authority is implied.
+
+
+## Authoritative repository-native handoff and reviewer rules — 2026-11-18
+
+The current operational handoff is [Project Builder → Independent Reviewer: Review Request](./BUILDER-TO-INDEPENDENT-REVIEWER-HANDOFF.md). Read that file first for the direct assignment, exact repository locations, owner-decision boundaries and required repository deliverable.
+
+The normative conduct and authority rules are in [Independent Reviewer — Operating Rules and Authority](./INDEPENDENT-REVIEWER-RULES.md). Those rules govern independence, exact-SHA review, evidence standards, owner authority, read-only conduct, finding quality and verdict meaning.
+
+This file remains the detailed technical scope and report specification. Older supplements in this file contain historical head SHAs and historical status snapshots; none is the current review target. Fetch the live PR #2 head and complete changed-file set immediately before review. The current owner decision record and the canonical role-naming standard supersede conflicting historical wording. The Independent Reviewer must save a separate report in `docs/reviews/` before comparing findings with the Project Builder.
