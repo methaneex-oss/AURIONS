@@ -115,20 +115,26 @@
       "const": "no_v1_field_is_public_by_inference; explicit_owner_and_domain_classification_required"
     },
     "default_transfer_conditions": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+      "const": [
+        "same_authenticated_owner_on_both_runtimes",
+        "destination_runtime_is_enrolled_and_not_revoked",
+        "owner_has_enabled_the_exact_synchronized_domain",
+        "exact_allowlist_and_classification_policy_versions_are_supported",
+        "field_path_is_an_exact_typed_leaf_and_is_not_excluded",
+        "source_and_destination_retention_rules_allow_the_transfer",
+        "source_or_derived_data_classification_is_not_stricter_than_this_rule",
+        "signature_digest_owner_scope_and_destination_binding_validate"
+      ]
     },
     "conditional_transfer_conditions": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+      "const": [
+        "owner_authorization_names_exact_owner_domain_aggregate_and_field_paths",
+        "authorization_names_purpose_destination_runtime_policy_version_and_expiry",
+        "authorization_is_current_not_revoked_and_verified_against_governance_at_admission",
+        "field_value_is_redacted_or_rejected_if_its_source_classification_is_stricter",
+        "payload_is_encrypted_and_integrity_verified_before_transport",
+        "no_raw_sensor_media_source_document_or_sensitive_evidence_content_is_embedded"
+      ]
     },
     "security_gate": {
       "const": "authenticated_peer_and_owner_scope; validated_signing_and_encryption_profiles; key_version_and_revocation_check; retention_and_policy_version_check; fail_closed"
