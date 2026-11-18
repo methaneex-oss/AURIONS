@@ -79,6 +79,7 @@ Please perform a focused but independent re-review that:
 4. Reassesses IR-01…IR-09 and records which findings remain open, are partially evidenced, or have genuinely closed. Do not mark a finding closed merely because a document or schema exists.
 5. Identifies any additional defects introduced by the corrections or missed in the original review.
 6. Saves a distinct re-review report under `docs/reviews/`, naming the exact reviewed SHA and evidence. Preserve the original report unchanged.
+7. Records the exact base SHA, exact reviewed head SHA, base/head branch names, PR state, and the complete changed-file count and inventory, as required by `INDEPENDENT-REVIEWER-RULES.md`. The original 2026-11-18 report omitted the exact base SHA and inventory; the Project Builder's reconstructed inventory is recorded in `PROJECT-BUILDER-INDEPENDENT-REVIEW-FINDING-DISPOSITION-2026-11-18.md`.
 
 The Independent Reviewer must remain read-only while reviewing. Do not modify source files, change owner decisions, enable export, assign dispatchability, authorize implementation, approve planning exit or merge.
 
