@@ -2,44 +2,55 @@
 
 **AURIONS** is the repository/system identifier; the final **S** denotes **System**.
 
-This repository is the implementation home for the adaptive, persistent intelligence system described in the planning specification. Its foundational principle is:
+AURIONS is one persistent, personal AI intelligence that the owner can access across supported devices. It is intended to understand, learn, remember, adapt, reason, plan and operate digital environments on the owner's behalf. Conversation is one interface, not the product's identity.
+
+Its governing principle is:
 
 > Engineer the mechanisms; let behaviour be acquired through experience.
 
-AURIONS is a trainable AI system with an evolving cognitive architecture. It is not a personal-assistant product or chatbot; conversation is an interface capability, not its identity.
+The authoritative product direction is [AURIONS — One-Brain Product Charter](docs/product/ONE-BRAIN-PRODUCT-CHARTER.md).
+
+## Product model
+
+**One brain, two primary access paths:**
+
+- **Local:** Runs on the owner's primary device, remains useful offline, uses local inference and local resources, retains durable state and can interact with the local operating system within granted permissions.
+- **Cloud:** Adds online inference, research, remote compute and connected services. It is another access path to the same AURIONS identity, not a separate assistant.
+
+Both paths must share cognitive semantics and reconcile accepted durable learning. AURIONS is designed to extend across phones, PCs and other supported devices. OS interaction must be objective-led and capable of discovering appropriate interfaces and means; it must not be reduced to a fixed task-to-command catalogue.
+
+Online information and local experience both feed learning. AURIONS must preserve provenance, evaluate evidence, revise knowledge and beliefs, learn from outcomes and owner corrections, and distinguish memory/skill adaptation from model-weight training. Model candidates require evaluation before activation.
 
 ## Project status
 
-**Current stage:** architecture planning and technical design; implementation planning is in progress.
+**Implementation is underway.** The current implementation branch contains the first C++/SQLite experience-persistence primitive. It can record an experience and retrieve it by ID after a separate process starts. This is a narrow persistence foundation, not yet contextual memory retrieval, an integrated cognitive cycle, behavioural learning, local/cloud inference or operating-system autonomy.
 
-Implementation has not been authorized. PR #1 is a proposed foundation scaffold, not an active implementation phase. No planning layer is declared complete merely because a document exists. See the [planning completion register](docs/planning/PLANNING-COMPLETION-REGISTER.md) for exact statuses and builder-owned work, and the [canonical implementation roadmap](docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md) for the proposed dependency sequence.
+Do not describe a subsystem, document, schema or passing host-side test as proof that the complete brain works. The next implementation work is to reconcile experience persistence with the canonical persistence design, add contextual retrieval and connect retrieved experience to cognitive mechanisms and later behaviour.
 
 ## Start here
 
-- [Mandatory Project Directorship and Team Operating Standard](docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md) — role authority, milestone gates, handoffs, scope/change control and final acceptance across current and future projects.
-- [Mandatory Builder Operating Protocol](docs/governance/BUILDER-OPERATING-PROTOCOL.md) — builder execution, self-review, testing, correction and evidence requirements.
-
-- [Planning documentation index](docs/planning/README.md)
-- [Owner decision traceability matrix](docs/planning/OWNER-DECISION-TRACEABILITY-MATRIX.md)
-- [Complete initial engineering specification](docs/planning/INITIAL-ENGINEERING-SPECIFICATION.md)
+- [One-Brain Product Charter](docs/product/ONE-BRAIN-PRODUCT-CHARTER.md) — governing product identity, local/cloud access, device control and learning.
+- [First Usable Release Product Definition](docs/product/FIRST-USABLE-RELEASE-DEFINITION.md) — bounded first-release workflows and acceptance boundaries.
 - [System architecture](docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md)
-- [Open-world interaction and means architecture](docs/architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) — foundational, objective-led model across contexts
-- [Android platform interaction realization](docs/architecture/ANDROID-ENVIRONMENT-AND-CAPABILITY-ARCHITECTURE.md) — Android-specific realization only
+- [Open-world interaction and means architecture](docs/architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) — objective-led understanding and means discovery across contexts.
 - [Cognitive mechanism and interaction architecture](docs/architecture/COGNITIVE-MECHANISM-AND-INTERACTION-ARCHITECTURE.md)
 - [Cloud/offline-mobile topology decision](docs/architecture/CLOUD-OFFLINE-MOBILE-TOPOLOGY-DECISION.md)
-- [Canonical contract schemas](schemas/README.md) — partial planning artifacts; not yet validated by the final C++/Python toolchain
-- [Cognitive and capability contract matrix](docs/architecture/COGNITIVE-AND-CAPABILITY-CONTRACT-MATRIX.md)
-- [Canonical Notion project control center](https://app.notion.com/p/41505b96eab381778361fc0d0ccf6344?pvs=204)
+- [Canonical persistence reconciliation](docs/planning/QUERY-PROJECTION-AND-PERSISTENCE-RECONCILIATION.md)
+- [Canonical implementation roadmap](docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md)
+- [Owner decision traceability matrix](docs/planning/OWNER-DECISION-TRACEABILITY-MATRIX.md)
+- [Builder operating protocol](docs/governance/BUILDER-OPERATING-PROTOCOL.md)
+- [Project directorship and team operating standard](docs/governance/PROJECT-DIRECTORSHIP-AND-TEAM-OPERATING-STANDARD.md)
 
 ## Engineering direction
 
-- C++ authoritative core and runtime.
-- Python workers for training, datasets, experiments and evaluation.
-- SQLite initially, with separate memory, event/recovery and governance stores.
-- Model-independent inference interfaces.
-- Offline-first operation with policy-controlled external resources.
-- Explicit governance, authorization, audit, recovery and privacy boundaries.
-- Build and validate on the actual Android/Termux target; do not infer device suitability from a successful basic inference run.
+- C++ authoritative cognitive core and runtime.
+- Python workers for data acquisition/curation, training, experiments and evaluation.
+- AURIONS-owned model direction behind model-independent local/cloud inference interfaces.
+- Durable experience, memory, knowledge, belief, learning and event state with explicit ownership and provenance.
+- Local-first operation with optional cloud inference, research and compute.
+- Objective-led operating-system interaction through context-appropriate, discoverable interfaces.
+- Cross-device continuity through explicit synchronization, reconciliation, privacy and authority boundaries.
+- Platform validation on actual target devices; do not infer compatibility from a host build.
 
 ## Repository integrity
 
