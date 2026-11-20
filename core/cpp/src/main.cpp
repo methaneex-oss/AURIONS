@@ -18,6 +18,16 @@ namespace {
     return result;
 }
 
+[[nodiscard]] std::size_t parse_limit(std::string_view value) {
+    unsigned long long result{};
+    const auto parsed = std::from_chars(value.data(), value.data() + value.size(), result);
+    if (parsed.ec != std::errc{} || parsed.ptr != value.data() + value.size() ||
+        result == 0 || result > 100) {
+        throw std::invalid_argument("limit must be an integer from 1 to 100");
+    }
+    return static_cast<std::size_t>(result);
+}
+
 [[nodiscard]] std::string json_escape(std::string_view value) {
     std::string output;
     output.reserve(value.size() + 8);
@@ -67,6 +77,29 @@ int main(int argc, char** argv) {
             const auto saved = store.record(
                 argv[4], argv[7], argv[5], parse_sensitivity(argv[6]));
             std::cout << "{\"experience_id\":\"" << saved.id << "\"}\n";
+            return EXIT_SUCCESS;
+        }
+
+
+        if (operation == "search" && (argc == 6 || argc == 7)) {
+            const std::size_t limit = argc == 7 ? parse_limit(argv[6]) : 10;
+            const auto matches = store.search(argv[5], limit);
+            std::cout << "[";
+            for (std::size_t i = 0; i < matches.size(); ++i) {
+                if (i != 0) std::cout << ",";
+                const auto& match = matches[i];
+                const auto& experience = match.experience;
+                std::cout
+                    << "{\\"experience_id\\":\\"" << experience.id
+                    << "\\",\\"relevance\\":" << match.relevance
+                    << ",\\"source_type\\":\\"" << json_escape(experience.source_type)
+                    << "\\",\\"content\\":\\"" << json_escape(experience.content)
+                    << "\\",\\"provenance_ref\\":\\"" << json_escape(experience.provenance_ref)
+                    << "\\",\\"observed_at_ms\\":" << experience.observed_at_ms
+                    << ",\\"recorded_at_ms\\":" << experience.recorded_at_ms
+                    << ",\\"sensitivity\\":" << experience.sensitivity << "}";
+            }
+            std::cout << "]\\n";
             return EXIT_SUCCESS;
         }
 
