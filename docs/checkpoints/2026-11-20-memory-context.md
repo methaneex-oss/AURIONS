@@ -2,7 +2,7 @@
 
 **Checkpoint date:** 2026-11-20  
 **Branch:** `impl/experience-continuity`  
-**Code/documentation base before this checkpoint:** `809f9f5d80e2898fb0172680edd321342ff2dcd4`  
+**Code/documentation base before this checkpoint update:** `dab0bf1766dde249fa096d8048e121469a2439d6`  
 **Previous checkpoint:** [Experience retrieval](2026-11-20-experience-retrieval.md)  
 **Product authority:** [One-Brain Product Charter](../product/ONE-BRAIN-PRODUCT-CHARTER.md)
 
@@ -18,9 +18,9 @@ The experience store now has a contextual retrieval API and CLI. This milestone 
 - Context assembly is limited to 1–50 evidence items and 256 bytes–64 KiB.
 - The serialized-payload estimate accounts for JSON escaping and reserves overhead for metadata/delimiters.
 - Oversized or over-budget evidence is omitted rather than silently exceeding the configured budget; the packet reports omitted count.
-- Each evidence item retains its experience ID, source type, content, provenance, observation timestamp, sensitivity and relevance score.
+- Each evidence item retains its experience ID, source type, content, provenance, observation and recording timestamps, sensitivity and relevance score.
 - Added `aurions experience context <database> <query> [max-items]` JSON CLI output.
-- Added `memory_context.cpp` to the CMake library and extended the integration test for context ordering, provenance, item cap and invalid item count.
+- Added `memory_context.cpp` to the CMake library and extended the integration test for context ordering, provenance, item cap, invalid item count and JSON escaping of quotes/newlines.
 - Updated the repository README to distinguish the evidence-packet builder from actual reasoning or learning.
 
 ## Files added/changed
