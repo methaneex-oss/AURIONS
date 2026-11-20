@@ -100,6 +100,7 @@ int main(int argc, char** argv) {
                     << "\",\"provenance_ref\":\"" << json_escape(experience.provenance_ref)
                     << "\",\"observed_at_ms\":" << experience.observed_at_ms
                     << ",\"recorded_at_ms\":" << experience.recorded_at_ms
+                    << ",\"recorded_at_ms\":" << experience.recorded_at_ms
                     << ",\"sensitivity\":" << experience.sensitivity << "}";
             }
             std::cout << "]\n";
