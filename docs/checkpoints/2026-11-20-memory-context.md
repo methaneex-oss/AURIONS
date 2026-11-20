@@ -84,3 +84,21 @@ The first available push-triggered workflow run was inspected rather than treate
 - Repair commit: `430a760917fb3cd720c597bf48286db50aa337a8`
 - The failed run's only executed step was runner setup; CMake configure, compilation and CTest did not run.
 - No workflow run/status for the pinning commit was visible at checkpoint time. The repaired workflow is therefore **not yet validated**.
+
+
+## First complete CI execution and test failure (2026-11-20)
+
+The pinned workflow did execute on commit `c3278176f9b8bea5ace7d59a2bc8b0dc5d2fe793`:
+
+- CMake configure: passed.
+- C++ compilation/link: passed.
+- CTest: failed; 0/1 tests passed.
+- Failure location: `core/cpp/tests/experience_store_integration.py:67`, during the contextual search command `experience search ... "AURIONS local brain" 10`.
+- The first test helper discarded subprocess stderr, hiding the underlying SQLite/runtime diagnostic. The helper now raises an assertion containing command, stdout and stderr so the next CI run exposes the root cause.
+- Diagnostic-instrumentation commit: `c84b55090bdd026cca5dbd32084b90cd2136fede`.
+
+This is the first actual compiler/test evidence for the implementation: the C++ code compiles, but the integration test is failing. Do not describe this milestone as passing. Next action is to obtain the instrumented run's stderr, fix the underlying defect, rerun CTest, and only then connect the memory context to reasoning.
+
+## Branch integration warning
+
+GitHub's compare endpoint currently reports `impl/experience-continuity` as diverged from `main` (merge base `7327938183157ba54d932745612dfd4720981f30`, branch 14 commits behind main and a reported 1342 commits ahead). This branch must not be merged or rebased blindly. Before integration, inspect the actual commit graph and reconcile its implementation with the canonical mainline persistence and cognitive contracts. Preserve this isolated branch until a safe integration plan is established.
