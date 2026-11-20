@@ -34,7 +34,7 @@ AURIONS is one persistent AI brain with local/offline and cloud/online access pa
 - **The C++ project build and CTest suite have not yet been executed in this session.** Do not mark the implementation test-passing until the branch's `C++ Core` workflow reports success.
 - The repository workflow is configured to run on pushes to `impl/**`, but the available GitHub status lookup returned no status records at checkpoint time.
 - This is lexical retrieval, not semantic/vector retrieval. Tokenization is currently ASCII-oriented and is not a multilingual tokenizer.
-- The 500-candidate cap favours bounded local execution; retrieval recall at larger scale requires measured evaluation and likely an indexed retrieval strategy.
+- The 500-result candidate cap bounds in-process scoring, **not SQLite scan cost**: the current leading-wildcard LIKE predicates can still scan the active experience corpus. This is acceptable only as an early small-corpus prototype. Add an indexed token/FTS strategy with measured target-device performance before treating retrieval as scalable.
 - Search is a memory primitive only. No downstream cognitive consumer, belief revision, prediction feedback, adaptation or integrated learning loop has been implemented by this milestone.
 - Existing persistence schema reconciliation, ownership/privacy enforcement, retention lifecycle and local/cloud synchronization remain separate open engineering work.
 
