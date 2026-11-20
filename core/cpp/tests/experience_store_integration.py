@@ -9,7 +9,12 @@ import tempfile
 
 
 def run(*args: str) -> str:
-    completed = subprocess.run(args, check=True, capture_output=True, text=True)
+    completed = subprocess.run(args, capture_output=True, text=True)
+    if completed.returncode != 0:
+        raise AssertionError(
+            f"command failed ({completed.returncode}): {args!r}\\n"
+            f"stdout: {completed.stdout}\\nstderr: {completed.stderr}"
+        )
     return completed.stdout.strip()
 
 def parse_json(output: str):
