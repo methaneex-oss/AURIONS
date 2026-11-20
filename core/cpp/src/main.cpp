@@ -58,7 +58,8 @@ void usage() {
     std::cerr
         << "Usage:\n"
         << "  aurions experience record <database> <source> <provenance> <sensitivity 0-4> <content>\n"
-        << "  aurions experience show <database> <experience-uuid>\n";
+        << "  aurions experience show <database> <experience-uuid>\n"
+        << "  aurions experience search <database> <query> [limit 1-100]\n";
 }
 
 }  // namespace
