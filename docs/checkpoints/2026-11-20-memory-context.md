@@ -62,3 +62,15 @@ The experience store now has a contextual retrieval API and CLI. This milestone 
 ## Resume instructions
 
 Continue from `impl/experience-continuity`. Read this checkpoint and the previous experience-retrieval checkpoint. Inspect the live branch head and current source before editing. Preserve existing work and review corrections. Keep recoverable commit boundaries and update the checkpoint after each substantial milestone.
+
+
+## Follow-up source-audit corrections (2026-11-20)
+
+A subsequent source-level audit found and corrected defects in the CLI/retrieval path:
+
+- Corrected SQLite LIKE escaping to use a one-character backslash escape expression. The prior generated SQL supplied a two-character ESCAPE expression, which SQLite rejects with `ESCAPE expression must be a single character`.
+- Removed the duplicate `recorded_at_ms` key from search JSON.
+- Added `recorded_at_ms` to each memory-context evidence item, matching the provenance/timestamp contract and the existing integration assertion.
+- Strengthened the integration test JSON parser to reject duplicate object keys instead of silently accepting them.
+
+The SQLite ESCAPE expression was checked directly against Python's SQLite binding: the one-character form succeeds and the two-character form fails as expected. This is a focused SQL syntax check, **not** a C++ build or execution of the integration suite. The full CMake build and CTest remain unverified.
