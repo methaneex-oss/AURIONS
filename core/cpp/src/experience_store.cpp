@@ -366,10 +366,10 @@ std::vector<ExperienceMatch> ExperienceStore::search(
     for (std::size_t i = 0; i < terms.size(); ++i) {
         if (i != 0) sql += " OR ";
         sql += "(p.payload LIKE ?" + std::to_string(parameter++) +
-               " ESCAPE '\\' COLLATE NOCASE OR e.source_type LIKE ?" +
+               " ESCAPE '\\' OR e.source_type LIKE ?" +
                std::to_string(parameter++) +
-               " ESCAPE '\\' COLLATE NOCASE OR e.provenance_ref LIKE ?" +
-               std::to_string(parameter++) + " ESCAPE '\\' COLLATE NOCASE)";
+               " ESCAPE '\\' OR e.provenance_ref LIKE ?" +
+               std::to_string(parameter++) + " ESCAPE '\\')";
     }
     sql += ") ORDER BY e.observed_at_ms DESC, e.experience_id ASC LIMIT 500";
 
