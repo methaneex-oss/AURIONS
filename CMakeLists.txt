@@ -7,6 +7,7 @@ find_package(SQLite3 REQUIRED)
 
 add_library(aurions_core
     core/cpp/src/experience_store.cpp
+    core/cpp/src/memory_context.cpp
 )
 target_include_directories(aurions_core PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/include>
