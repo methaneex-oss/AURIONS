@@ -2,7 +2,11 @@
 
 #include <sqlite3.h>
 
+#include <algorithm>
 #include <array>
+#include <cctype>
+#include <unordered_set>
+#include <vector>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -136,6 +140,79 @@ private:
     bool committed_{false};
 };
 
+
+[[nodiscard]] std::string ascii_lower(std::string_view value) {
+    std::string result;
+    result.reserve(value.size());
+    for (const unsigned char c : value) {
+        result.push_back(static_cast<char>(c < 128 ? std::tolower(c) : c));
+    }
+    return result;
+}
+
+[[nodiscard]] std::vector<std::string> query_terms(std::string_view query) {
+    std::vector<std::string> terms;
+    std::string current;
+    for (const unsigned char c : query) {
+        if (std::isalnum(c)) {
+            current.push_back(static_cast<char>(c < 128 ? std::tolower(c) : c));
+        } else if (!current.empty()) {
+            if (current.size() >= 2) terms.push_back(std::move(current));
+            current.clear();
+        }
+    }
+    if (current.size() >= 2) terms.push_back(std::move(current));
+
+    std::sort(terms.begin(), terms.end());
+    terms.erase(std::unique(terms.begin(), terms.end()), terms.end());
+    return terms;
+}
+
+[[nodiscard]] std::string like_pattern(const std::string& term) {
+    std::string pattern = "%";
+    for (const char c : term) {
+        if (c == '%' || c == '_' || c == '\\') pattern.push_back('\\');
+        pattern.push_back(c);
+    }
+    pattern.push_back('%');
+    return pattern;
+}
+
+[[nodiscard]] double score_experience(
+    const Experience& experience,
+    const std::vector<std::string>& terms) {
+    const std::string content = ascii_lower(experience.content);
+    const std::string source = ascii_lower(experience.source_type);
+    const std::string provenance = ascii_lower(experience.provenance_ref);
+    double score = 0.0;
+    for (const auto& term : terms) {
+        const auto content_at = content.find(term);
+        const auto source_at = source.find(term);
+        const auto provenance_at = provenance.find(term);
+        if (content_at != std::string::npos) {
+            score += 3.0;
+            std::size_t position = content_at;
+            while ((position = content.find(term, position + term.size())) != std::string::npos) {
+                score += 0.25;
+            }
+        } else if (source_at != std::string::npos || provenance_at != std::string::npos) {
+            score += 1.0;
+        }
+    }
+    return score;
+}
+
+[[nodiscard]] std::string column_id(sqlite3_stmt* statement, int column) {
+    const auto* bytes = static_cast<const unsigned char*>(sqlite3_column_blob(statement, column));
+    const int size = sqlite3_column_bytes(statement, column);
+    if (bytes == nullptr || size != 16) {
+        throw std::runtime_error("stored experience ID is not a 16-byte UUID");
+    }
+    IdBytes id{};
+    std::copy(bytes, bytes + size, id.begin());
+    return format_id(id);
+}
+
 }  // namespace
 
 ExperienceStore::ExperienceStore(const std::filesystem::path& database_path) {
@@ -258,6 +335,84 @@ std::optional<Experience> ExperienceStore::get(const std::string& id) const {
         sqlite3_column_int64(query.get(), 4),
         sqlite3_column_int(query.get(), 5)
     };
+}
+
+
+std::vector<ExperienceMatch> ExperienceStore::search(
+    const std::string& query_text,
+    std::size_t limit) const {
+    if (limit == 0 || limit > 100) {
+        throw std::invalid_argument("experience search limit must be between 1 and 100");
+    }
+    if (query_text.size() > 512) {
+        throw std::invalid_argument("experience search query must not exceed 512 bytes");
+    }
+    const auto terms = query_terms(query_text);
+    if (terms.empty()) {
+        throw std::invalid_argument("experience search query must contain a term of at least two characters");
+    }
+
+    // Candidate selection is performed in SQLite with bound LIKE patterns.
+    // Ranking is deterministic in-process; at most 500 recent lexical candidates
+    // are scored per query to keep retrieval bounded on local devices.
+    std::string sql = R"sql(
+        SELECT e.experience_id, e.source_type, p.payload, e.provenance_ref,
+               e.observed_at_ms, e.recorded_at_ms, e.sensitivity
+        FROM experiences AS e
+        JOIN experience_payloads AS p ON p.payload_id = e.experience_id
+        WHERE e.retention_state = 'active' AND (
+    )sql";
+    int parameter = 1;
+    for (std::size_t i = 0; i < terms.size(); ++i) {
+        if (i != 0) sql += " OR ";
+        sql += "(p.payload LIKE ?" + std::to_string(parameter++) +
+               " ESCAPE '\\' COLLATE NOCASE OR e.source_type LIKE ?" +
+               std::to_string(parameter++) +
+               " ESCAPE '\\' COLLATE NOCASE OR e.provenance_ref LIKE ?" +
+               std::to_string(parameter++) + " ESCAPE '\\' COLLATE NOCASE)";
+    }
+    sql += ") ORDER BY e.observed_at_ms DESC, e.experience_id ASC LIMIT 500";
+
+    Statement statement(db_, sql.c_str());
+    int bind_index = 1;
+    for (const auto& term : terms) {
+        const auto pattern = like_pattern(term);
+        for (int field = 0; field < 3; ++field) {
+            check_sqlite(sqlite3_bind_text(statement.get(), bind_index++, pattern.c_str(),
+                static_cast<int>(pattern.size()), SQLITE_TRANSIENT), db_, "bind search term");
+        }
+    }
+
+    std::vector<ExperienceMatch> matches;
+    for (;;) {
+        const int result = sqlite3_step(statement.get());
+        if (result == SQLITE_DONE) break;
+        check_sqlite(result, db_, "search experiences");
+        Experience experience{
+            column_id(statement.get(), 0),
+            column_text(statement.get(), 1),
+            column_text(statement.get(), 2),
+            column_text(statement.get(), 3),
+            sqlite3_column_int64(statement.get(), 4),
+            sqlite3_column_int64(statement.get(), 5),
+            sqlite3_column_int(statement.get(), 6)
+        };
+        const double relevance = score_experience(experience, terms);
+        if (relevance > 0.0) {
+            matches.push_back(ExperienceMatch{std::move(experience), relevance});
+        }
+    }
+
+    std::sort(matches.begin(), matches.end(),
+        [](const ExperienceMatch& left, const ExperienceMatch& right) {
+            if (left.relevance != right.relevance) return left.relevance > right.relevance;
+            if (left.experience.observed_at_ms != right.experience.observed_at_ms) {
+                return left.experience.observed_at_ms > right.experience.observed_at_ms;
+            }
+            return left.experience.id < right.experience.id;
+        });
+    if (matches.size() > limit) matches.resize(limit);
+    return matches;
 }
 
 }  // namespace aurions
