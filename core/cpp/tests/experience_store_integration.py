@@ -40,7 +40,41 @@ def main() -> int:
         assert retrieved["observed_at_ms"] > 0
         assert retrieved["recorded_at_ms"] > 0
 
-    print("Experience survived process exit/restart with identity and provenance intact.")
+        # Record competing memories and prove that query context, not merely
+        # insertion order, determines retrieval ranking.
+        run(executable, "experience", "record", database,
+            "conversation", "local-preference-001", "1",
+            "I prefer local offline operation for the primary device.")
+        run(executable, "experience", "record", database,
+            "research", "architecture-note-002", "0",
+            "AURIONS local inference and memory retrieval design.")
+        strongest = "AURIONS local brain should learn from experience and adapt."
+        run(executable, "experience", "record", database,
+            "owner_correction", "owner-guidance-003", "1", strongest)
+
+        ranked = json.loads(run(
+            executable, "experience", "search", database, "AURIONS local brain", "10",
+        ))
+        assert len(ranked) >= 2
+        assert ranked[0]["content"] == strongest
+        assert ranked[0]["relevance"] > ranked[1]["relevance"]
+        assert ranked[0]["source_type"] == "owner_correction"
+        assert ranked[0]["provenance_ref"] == "owner-guidance-003"
+
+        # Query terms are bound parameters and LIKE wildcards are not interpreted
+        # as caller-controlled SQL patterns.
+        empty = subprocess.run(
+            [executable, "experience", "search", database, "%%"],
+            capture_output=True, text=True,
+        )
+        assert empty.returncode != 0
+
+        no_match = json.loads(run(
+            executable, "experience", "search", database, "quantum-banana-xyz",
+        ))
+        assert no_match == []
+
+    print("Experience survives restart and contextual retrieval ranks relevant memories with provenance.")
     return 0
 
 
