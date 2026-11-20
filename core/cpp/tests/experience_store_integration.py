@@ -74,6 +74,24 @@ def main() -> int:
         ))
         assert no_match == []
 
+        # The cognitive consumer receives a bounded evidence packet rather
+        # than raw storage access or an unstructured transcript dump.
+        context = json.loads(run(
+            executable, "experience", "context", database, "AURIONS local brain", "1",
+        ))
+        assert context["query"] == "AURIONS local brain"
+        assert len(context["evidence"]) == 1
+        assert context["evidence"][0]["content"] == strongest
+        assert context["evidence"][0]["provenance_ref"] == "owner-guidance-003"
+        assert context["payload_bytes"] <= 16 * 1024
+        assert context["omitted_count"] >= 1
+
+        invalid_context = subprocess.run(
+            [executable, "experience", "context", database, "AURIONS local brain", "51"],
+            capture_output=True, text=True,
+        )
+        assert invalid_context.returncode != 0
+
     print("Experience survives restart and contextual retrieval ranks relevant memories with provenance.")
     return 0
 
