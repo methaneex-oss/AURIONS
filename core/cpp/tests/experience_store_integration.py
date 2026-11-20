@@ -12,6 +12,18 @@ def run(*args: str) -> str:
     completed = subprocess.run(args, check=True, capture_output=True, text=True)
     return completed.stdout.strip()
 
+def parse_json(output: str):
+    """Reject duplicate object keys instead of silently accepting ambiguous JSON."""
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise AssertionError(f"duplicate JSON key: {key}")
+            result[key] = value
+        return result
+
+    return json.loads(output, object_pairs_hook=unique_object)
+
 
 def main() -> int:
     executable = str(pathlib.Path(sys.argv[1]).resolve())
@@ -21,7 +33,7 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="aurions-experience-") as directory:
         database = str(pathlib.Path(directory) / "memory.db")
 
-        created = json.loads(run(
+        created = parse_json(run(
             executable, "experience", "record", database,
             "integration_test", provenance, "2", payload,
         ))
