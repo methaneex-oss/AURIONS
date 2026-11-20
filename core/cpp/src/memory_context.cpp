@@ -12,11 +12,28 @@ namespace {
         std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
+[[nodiscard]] std::size_t json_escaped_size(const std::string& value) {
+    std::size_t size = 0;
+    for (const unsigned char c : value) {
+        if (c == '"' || c == '\\\\' || c == '\\b' || c == '\\f' ||
+            c == '\\n' || c == '\\r' || c == '\\t') {
+            size += 2;
+        } else if (c < 0x20) {
+            size += 6;
+        } else {
+            ++size;
+        }
+    }
+    return size;
+}
+
 [[nodiscard]] std::size_t estimate_item_bytes(const Experience& experience) {
-    // Includes conservative allowance for field names, JSON delimiters and
-    // scalar metadata. This is a payload budget, not an exact allocator size.
-    return experience.id.size() + experience.source_type.size() +
-        experience.content.size() + experience.provenance_ref.size() + 128;
+    // Account for JSON escaping plus a conservative allowance for field names,
+    // numeric metadata and delimiters. This is a serialized-payload estimate.
+    return json_escaped_size(experience.id) +
+        json_escaped_size(experience.source_type) +
+        json_escaped_size(experience.content) +
+        json_escaped_size(experience.provenance_ref) + 256;
 }
 
 }  // namespace
@@ -39,6 +56,10 @@ MemoryContext MemoryContextBuilder::build(
     MemoryContext context;
     context.query = query;
     context.assembled_at_ms = current_time_ms();
+    context.payload_bytes = json_escaped_size(query) + 128;
+    if (context.payload_bytes > max_bytes) {
+        throw std::invalid_argument("memory context query exceeds the configured byte budget");
+    }
     context.evidence.reserve(max_items);
 
     for (const auto& candidate : candidates) {
