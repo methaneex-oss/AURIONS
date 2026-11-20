@@ -15,8 +15,8 @@ namespace {
 [[nodiscard]] std::size_t json_escaped_size(const std::string& value) {
     std::size_t size = 0;
     for (const unsigned char c : value) {
-        if (c == '"' || c == '\\\\' || c == '\\b' || c == '\\f' ||
-            c == '\\n' || c == '\\r' || c == '\\t') {
+        if (c == '"' || c == '\\' || c == '\b' || c == '\f' ||
+            c == '\n' || c == '\r' || c == '\t') {
             size += 2;
         } else if (c < 0x20) {
             size += 6;
