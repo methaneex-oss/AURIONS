@@ -90,16 +90,16 @@ int main(int argc, char** argv) {
                 const auto& match = matches[i];
                 const auto& experience = match.experience;
                 std::cout
-                    << "{\\"experience_id\\":\\"" << experience.id
-                    << "\\",\\"relevance\\":" << match.relevance
-                    << ",\\"source_type\\":\\"" << json_escape(experience.source_type)
-                    << "\\",\\"content\\":\\"" << json_escape(experience.content)
-                    << "\\",\\"provenance_ref\\":\\"" << json_escape(experience.provenance_ref)
-                    << "\\",\\"observed_at_ms\\":" << experience.observed_at_ms
-                    << ",\\"recorded_at_ms\\":" << experience.recorded_at_ms
-                    << ",\\"sensitivity\\":" << experience.sensitivity << "}";
+                    << "{\"experience_id\":\"" << experience.id
+                    << "\",\"relevance\":" << match.relevance
+                    << ",\"source_type\":\"" << json_escape(experience.source_type)
+                    << "\",\"content\":\"" << json_escape(experience.content)
+                    << "\",\"provenance_ref\":\"" << json_escape(experience.provenance_ref)
+                    << "\",\"observed_at_ms\":" << experience.observed_at_ms
+                    << ",\"recorded_at_ms\":" << experience.recorded_at_ms
+                    << ",\"sensitivity\":" << experience.sensitivity << "}";
             }
-            std::cout << "]\\n";
+            std::cout << "]\n";
             return EXIT_SUCCESS;
         }
 
