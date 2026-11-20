@@ -85,6 +85,15 @@ def main() -> int:
         assert context["evidence"][0]["provenance_ref"] == "owner-guidance-003"
         assert context["payload_bytes"] <= 16 * 1024
         assert context["omitted_count"] >= 1
+        assert context["evidence"][0]["recorded_at_ms"] > 0
+
+        # JSON escaping must be included in the context budget and survive
+        # round-tripping for quotes and embedded newlines.
+        escaped_context = json.loads(run(
+            executable, "experience", "context", database, "Observed event", "1",
+        ))
+        assert escaped_context["evidence"][0]["content"] == payload
+        assert escaped_context["payload_bytes"] <= 16 * 1024
 
         invalid_context = subprocess.run(
             [executable, "experience", "context", database, "AURIONS local brain", "51"],
