@@ -1,4 +1,5 @@
 #include "aurions/experience_store.hpp"
+#include "aurions/memory_context.hpp"
 
 #include <charconv>
 #include <cstdlib>
@@ -101,6 +102,35 @@ int main(int argc, char** argv) {
                     << ",\"sensitivity\":" << experience.sensitivity << "}";
             }
             std::cout << "]\n";
+            return EXIT_SUCCESS;
+        }
+
+
+        if (operation == "context" && (argc == 6 || argc == 7)) {
+            const std::size_t max_items = argc == 7 ? parse_limit(argv[6]) : 8;
+            const aurions::MemoryContextBuilder builder(store);
+            const auto context = builder.build(argv[5], max_items);
+            std::cout
+                << "{\"query\":\"" << json_escape(context.query)
+                << "\",\"assembled_at_ms\":" << context.assembled_at_ms
+                << ",\"payload_bytes\":" << context.payload_bytes
+                << ",\"omitted_count\":" << context.omitted_count
+                << ",\"evidence\":[";
+            for (std::size_t i = 0; i < context.evidence.size(); ++i) {
+                if (i != 0) std::cout << ",";
+                const auto& item = context.evidence[i];
+                const auto& experience = item.experience;
+                std::cout
+                    << "{\"experience_id\":\"" << experience.id
+                    << "\",\"relevance\":" << item.relevance
+                    << ",\"source_type\":\"" << json_escape(experience.source_type)
+                    << "\",\"content\":\"" << json_escape(experience.content)
+                    << "\",\"provenance_ref\":\"" << json_escape(experience.provenance_ref)
+                    << "\",\"observed_at_ms\":" << experience.observed_at_ms
+                    << ",\"sensitivity\":" << experience.sensitivity
+                    << ",\"estimated_bytes\":" << item.estimated_bytes << "}";
+            }
+            std::cout << "]}\n";
             return EXIT_SUCCESS;
         }
 
