@@ -23,7 +23,7 @@ Online information and local experience both feed learning. AURIONS must preserv
 
 ## Project status
 
-**Implementation is underway.** The current implementation branch contains the first C++/SQLite experience-persistence primitive. It can record an experience and retrieve it by ID after a separate process starts. This is a narrow persistence foundation, not yet contextual memory retrieval, an integrated cognitive cycle, behavioural learning, local/cloud inference or operating-system autonomy.
+**Implementation is underway.** The current implementation branch contains a C++/SQLite experience store with process-restart persistence and bounded contextual lexical retrieval. Retrieval searches active experience content and provenance, ranks by query-term coverage/content matches, and returns the original provenance and sensitivity metadata. This is an early retrieval primitive, not semantic/vector retrieval, a cognitive consumer, an integrated learning cycle, behavioural adaptation, local/cloud inference or operating-system autonomy. The integration test now covers retrieval ranking and provenance, but this branch's new code has not yet been built or run in CI.
 
 Do not describe a subsystem, document, schema or passing host-side test as proof that the complete brain works. The next implementation work is to reconcile experience persistence with the canonical persistence design, add contextual retrieval and connect retrieved experience to cognitive mechanisms and later behaviour.
 
