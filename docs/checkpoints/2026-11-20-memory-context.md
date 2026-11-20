@@ -74,3 +74,13 @@ A subsequent source-level audit found and corrected defects in the CLI/retrieval
 - Strengthened the integration test JSON parser to reject duplicate object keys instead of silently accepting them.
 
 The SQLite ESCAPE expression was checked directly against Python's SQLite binding: the one-character form succeeds and the two-character form fails as expected. This is a focused SQL syntax check, **not** a C++ build or execution of the integration suite. The full CMake build and CTest remain unverified.
+
+
+## CI runner-policy repair
+
+The first available push-triggered workflow run was inspected rather than treated as a code failure. It failed before checkout/build because repository Actions policy requires every action to be pinned to a full commit SHA; the workflow used the floating tag `actions/checkout@v4`. The workflow now pins checkout to the immutable v4.2.2 commit `11bd71901bbe5b1630ceea73d27597364c9af683`.
+
+- Workflow file: `.github/workflows/cpp-core.yml`
+- Repair commit: `430a760917fb3cd720c597bf48286db50aa337a8`
+- The failed run's only executed step was runner setup; CMake configure, compilation and CTest did not run.
+- No workflow run/status for the pinning commit was visible at checkpoint time. The repaired workflow is therefore **not yet validated**.
