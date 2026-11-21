@@ -43,7 +43,7 @@ def apply_chain(path: Path, store: str, versions: int) -> None:
     connection.close()
 
 
-def build_canonical_stores(tmp_path: Path, *, authorization_expiry=900,
+def build_canonical_stores(tmp_path: Path, *, authorization_expiry=4_000_000_000_000,
                            manifest_terms_digest=TERMS_DIGEST,
                            training_permission="allow",
                            artifact_store: ArtifactStore | None = None) -> tuple[Path, Path]:
@@ -76,7 +76,7 @@ def build_canonical_stores(tmp_path: Path, *, authorization_expiry=900,
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (APPROVAL_ID.bytes, OPERATION_ID.bytes, OWNER, "a" * 64,
          "authorize training source", "R5", '["training_data"]', POLICY_REF,
-         1, 2000, "pending", OWNER, "owner-session:dataset"),
+         1, 4_000_000_000_000, "pending", OWNER, "owner-session:dataset"),
     )
     governance.execute(
         """INSERT INTO approval_decisions
