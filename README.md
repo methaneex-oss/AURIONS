@@ -29,10 +29,11 @@ Online information and local experience both feed learning. AURIONS must preserv
 - Persistent belief records with immutable, numbered revisions.
 - Evidence-linked Bayesian confidence updates. Supporting and contradicting evidence changes confidence according to supplied reliability and relevance; contextual evidence is retained without shifting confidence.
 - Evidence provenance, stance and revision history are returned for inspection. Duplicate use of the same experience as evidence for one belief is rejected.
+- A combined cognition-context command retrieves relevant experiences and current evidence-backed beliefs together, with confidence, revision and evidence provenance for a downstream reasoning consumer.
 
 The integration test proves that a prior of 0.5 rises to 0.8 after reliable supporting evidence, returns to 0.5 after equally reliable contradictory evidence, and remains unchanged after contextual evidence. The full revision chain and evidence provenance survive separate CLI process lifetimes. Exact-head CI run [44844792537](https://github.com/methaneex-oss/AURIONS/actions/runs/44844792537) passed CMake configure, C++ build and CTest.
 
-This is a real but bounded learning primitive—not a complete learning brain. The evidence stance and reliability are currently supplied by the caller; AURIONS does not yet infer them from raw language or observations. Bayesian belief revision is not, by itself, natural-language understanding, model reasoning, skill acquisition, prediction/outcome learning, behavioural adaptation, local/cloud inference or OS autonomy.
+This is a real but bounded learning primitive—not a complete learning brain. The evidence stance and reliability are currently supplied by the caller; AURIONS does not yet infer them from raw language or observations. The cognition-context command assembles relevant memory and belief state; it does not itself generate a reasoned natural-language answer. Bayesian belief revision is not, by itself, natural-language understanding, model reasoning, skill acquisition, prediction/outcome learning, behavioural adaptation, local/cloud inference or OS autonomy.
 
 Do not describe a subsystem, document, schema or passing host-side test as proof that the complete brain works. The next work is to connect evidence retrieval and belief revision to a cognitive consumer, then learn from predictions and independently observed outcomes. Reconcile this implementation with canonical persistence before broadening it.
 
@@ -79,6 +80,9 @@ aurions experience context <database> <query> [max-items 1-50]
 aurions belief create <database> <domain> <prior-confidence> <proposition>
 aurions belief evidence <database> <belief-uuid> <experience-uuid> <stance> <reliability> [relevance]
 aurions belief show <database> <belief-uuid>
+aurions cognition context <database> <query> [max-items 1-50]
 ```
 
 Belief evidence stance is one of `supports`, `contradicts` or `contextualizes`. Reliability must be at least 0.5 and less than 1.0; relevance is between 0 and 1. The update uses log-odds evidence accumulation and preserves each revision. This first implementation assumes evidence is conditionally independent and does not yet model source dependence or automatically classify evidence.
+
+The combined cognition context is an inspectable evidence packet, not a model response. It returns ranked experience evidence and matching belief snapshots in one result so a future reasoning/inference consumer can distinguish observations from provisional beliefs and their confidence/provenance.
