@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cctype>
 #include <cmath>
 #include <cstdint>
 #include <iomanip>
@@ -148,6 +149,47 @@ double updated_confidence(double prior, double reliability, double relevance,
     }
     log_odds = std::clamp(log_odds, -20.0, 20.0);
     return 1.0 / (1.0 + std::exp(-log_odds));
+}
+
+std::vector<std::string> belief_query_terms(std::string_view query) {
+    std::vector<std::string> terms;
+    std::string current;
+    for (const unsigned char ch : query) {
+        if (std::isalnum(ch)) {
+            current.push_back(static_cast<char>(ch < 128 ? std::tolower(ch) : ch));
+        } else if (!current.empty()) {
+            if (current.size() >= 2) terms.push_back(std::move(current));
+            current.clear();
+        }
+    }
+    if (current.size() >= 2) terms.push_back(std::move(current));
+    std::sort(terms.begin(), terms.end());
+    terms.erase(std::unique(terms.begin(), terms.end()), terms.end());
+    return terms;
+}
+
+std::string belief_like_pattern(const std::string& term) {
+    std::string pattern = "%";
+    for (const char ch : term) {
+        if (ch == '!' || ch == '%' || ch == '_') pattern.push_back('!');
+        pattern.push_back(ch);
+    }
+    pattern.push_back('%');
+    return pattern;
+}
+
+double belief_relevance(const BeliefSnapshot& belief,
+                        const std::vector<std::string>& terms) {
+    std::string text = belief.proposition + " " + belief.domain;
+    for (char& ch : text) {
+        const auto value = static_cast<unsigned char>(ch);
+        if (value < 128) ch = static_cast<char>(std::tolower(value));
+    }
+    double score = 0.0;
+    for (const auto& term : terms) {
+        if (text.find(term) != std::string::npos) score += 1.0;
+    }
+    return score;
 }
 
 BeliefSnapshot load_snapshot(sqlite3* db, const IdBytes& id) {
@@ -439,6 +481,61 @@ BeliefSnapshot BeliefStore::add_evidence(const std::string& belief_id_text,
 
 BeliefSnapshot BeliefStore::get(const std::string& belief_id_text) const {
     return load_snapshot(db_, parse_id(belief_id_text));
+}
+
+std::vector<BeliefSnapshot> BeliefStore::search(
+    const std::string& query_text, std::size_t limit) const {
+    if (query_text.size() > 512)
+        throw std::invalid_argument("belief search query must not exceed 512 bytes");
+    if (limit == 0 || limit > 50)
+        throw std::invalid_argument("belief search limit must be between 1 and 50");
+    const auto terms = belief_query_terms(query_text);
+    if (terms.empty())
+        throw std::invalid_argument("belief search query must contain a term of at least two characters");
+
+    std::string sql = R"sql(
+        SELECT b.belief_id
+        FROM beliefs b JOIN knowledge_items k ON k.knowledge_id=b.knowledge_id
+        WHERE k.status='active' AND (
+    )sql";
+    int parameter = 1;
+    for (std::size_t i = 0; i < terms.size(); ++i) {
+        if (i != 0) sql += " OR ";
+        sql += "(k.proposition LIKE ?" + std::to_string(parameter++) +
+               " ESCAPE '!' OR k.domain LIKE ?" + std::to_string(parameter++) +
+               " ESCAPE '!')";
+    }
+    sql += ") ORDER BY b.updated_at_ms DESC, b.belief_id ASC LIMIT 200";
+
+    Statement statement(db_, sql.c_str());
+    int bind_index = 1;
+    for (const auto& term : terms) {
+        const auto pattern = belief_like_pattern(term);
+        bind_text(db_, statement.get(), bind_index++, pattern);
+        bind_text(db_, statement.get(), bind_index++, pattern);
+    }
+
+    std::vector<BeliefSnapshot> matches;
+    for (;;) {
+        const int rc = sqlite3_step(statement.get());
+        if (rc == SQLITE_DONE) break;
+        check(rc, db_, "search beliefs");
+        const auto* bytes = static_cast<const unsigned char*>(sqlite3_column_blob(statement.get(), 0));
+        if (!bytes || sqlite3_column_bytes(statement.get(), 0) != 16)
+            throw std::runtime_error("stored belief ID is malformed");
+        IdBytes id{};
+        std::copy(bytes, bytes + id.size(), id.begin());
+        auto belief = load_snapshot(db_, id);
+        belief.relevance = belief_relevance(belief, terms);
+        matches.push_back(std::move(belief));
+    }
+
+    std::sort(matches.begin(), matches.end(), [](const auto& left, const auto& right) {
+        if (left.relevance != right.relevance) return left.relevance > right.relevance;
+        return left.id < right.id;
+    });
+    if (matches.size() > limit) matches.resize(limit);
+    return matches;
 }
 
 }  // namespace aurions
