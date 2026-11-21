@@ -210,6 +210,76 @@ def main() -> int:
         )
         assert invalid_context.returncode != 0
 
+        # Strategy adaptation is exercised through separate CLI processes.
+        # The selected strategy must change when its recorded outcomes change.
+        for attempt in range(10):
+            route_a = parse_json(run(
+                executable, "strategy", "choose", database, "task:local-copy", "route-a",
+            ))
+            route_a_failure = parse_json(run(
+                executable, "experience", "record", database,
+                "strategy_outcome", f"route-a-failure-{attempt}", "0",
+                "route-a failed on local-copy",
+            ))
+            recorded_a = parse_json(run(
+                executable, "strategy", "outcome", database,
+                route_a["prediction_id"], route_a_failure["experience_id"], "failure",
+            ))
+            assert recorded_a["evaluation_result"] == "incorrect"
+
+        route_b = parse_json(run(
+            executable, "strategy", "choose", database, "task:local-copy", "route-b",
+        ))
+        route_b_success = parse_json(run(
+            executable, "experience", "record", database,
+            "strategy_outcome", "route-b-success-0", "0",
+            "route-b completed local-copy successfully",
+        ))
+        recorded_b = parse_json(run(
+            executable, "strategy", "outcome", database,
+            route_b["prediction_id"], route_b_success["experience_id"], "success",
+        ))
+        assert recorded_b["evaluation_result"] == "correct"
+
+        # A fresh process must prefer the route with better observed outcomes.
+        learned_choice = parse_json(run(
+            executable, "strategy", "choose", database,
+            "task:local-copy", "route-a", "route-b",
+        ))
+        assert learned_choice["strategy_ref"] == "route-b"
+        assert learned_choice["posterior_success_probability"] > 0.5
+        assert learned_choice["trials"] == 1
+        assert learned_choice["selection_basis"] == "ucb1"
+
+        duplicate_outcome = subprocess.run(
+            [executable, "strategy", "outcome", database,
+             route_b["prediction_id"], route_b_success["experience_id"], "success"],
+            capture_output=True, text=True,
+        )
+        assert duplicate_outcome.returncode != 0
+
+        # Later failures revise the posterior and can change the next decision.
+        for attempt in range(2):
+            route_b_choice = parse_json(run(
+                executable, "strategy", "choose", database, "task:local-copy", "route-b",
+            ))
+            route_b_failure = parse_json(run(
+                executable, "experience", "record", database,
+                "strategy_outcome", f"route-b-failure-{attempt}", "0",
+                "route-b failed on local-copy",
+            ))
+            run(
+                executable, "strategy", "outcome", database,
+                route_b_choice["prediction_id"], route_b_failure["experience_id"], "failure",
+            )
+
+        revised_choice = parse_json(run(
+            executable, "strategy", "choose", database,
+            "task:local-copy", "route-a", "route-b",
+        ))
+        assert revised_choice["strategy_ref"] == "route-a"
+        assert abs(revised_choice["posterior_success_probability"] - (1.0 / 12.0)) < 1e-9
+
     print("Experience survives restart and contextual retrieval ranks relevant memories with provenance.")
     return 0
 
