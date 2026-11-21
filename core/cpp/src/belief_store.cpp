@@ -344,8 +344,10 @@ BeliefSnapshot BeliefStore::add_evidence(const std::string& belief_id_text,
         )sql");
         bind_id(db_, duplicate.get(), 1, belief_id);
         bind_id(db_, duplicate.get(), 2, experience_id);
-        if (sqlite3_step(duplicate.get()) == SQLITE_ROW)
+        const int duplicate_result = sqlite3_step(duplicate.get());
+        if (duplicate_result == SQLITE_ROW)
             throw std::invalid_argument("experience has already been used as evidence for this belief");
+        check(duplicate_result, db_, "check duplicate belief evidence");
     }
 
     int previous_number{};
