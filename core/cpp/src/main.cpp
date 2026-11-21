@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace {
 
@@ -102,7 +103,10 @@ void usage() {
         << "  aurions experience context <database> <query> [max-items 1-50]\n"
         << "  aurions belief create <database> <domain> <prior-confidence> <proposition>\n"
         << "  aurions belief evidence <database> <belief-uuid> <experience-uuid> <stance> <reliability> [relevance]\n"
-        << "  aurions belief show <database> <belief-uuid>\n";
+        << "  aurions belief show <database> <belief-uuid>\n"
+        << "  aurions cognition context <database> <query> [max-items 1-50]\n"
+        << "  aurions strategy choose <database> <context-ref> <strategy-ref> [strategy-ref ...]\n"
+        << "  aurions strategy outcome <database> <prediction-uuid> <experience-uuid> <success|failure>\n";
 }
 
 int run_experience(int argc, char** argv) {
