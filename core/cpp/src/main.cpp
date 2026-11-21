@@ -1,6 +1,7 @@
 #include "aurions/belief_store.hpp"
 #include "aurions/experience_store.hpp"
 #include "aurions/memory_context.hpp"
+#include "aurions/strategy_store.hpp"
 
 #include <charconv>
 #include <cmath>
@@ -260,6 +261,45 @@ int run_cognition(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
+
+int run_strategy(int argc, char** argv) {
+    if (argc < 4) { usage(); return EXIT_FAILURE; }
+    aurions::StrategyStore strategies(argv[3]);
+    const std::string_view operation(argv[2]);
+
+    if (operation == "choose" && argc >= 6 && argc <= 55) {
+        std::vector<std::string> candidates;
+        for (int i = 5; i < argc; ++i) candidates.emplace_back(argv[i]);
+        const auto choice = strategies.choose(argv[4], std::move(candidates));
+        std::cout << std::setprecision(17)
+            << "{\"prediction_id\":\"" << choice.prediction_id
+            << "\",\"context_ref\":\"" << json_escape(choice.context_ref)
+            << "\",\"strategy_ref\":\"" << json_escape(choice.strategy_ref)
+            << "\",\"posterior_success_probability\":" << choice.posterior_success_probability
+            << ",\"selection_score\":" << choice.selection_score
+            << ",\"successes\":" << choice.successes
+            << ",\"trials\":" << choice.trials
+            << ",\"selection_basis\":\"" << choice.selection_basis << "\"}\n";
+        return EXIT_SUCCESS;
+    }
+
+    if (operation == "outcome" && argc == 7) {
+        const auto result = strategies.record_outcome(argv[4], argv[5], argv[6]);
+        std::cout << std::setprecision(17)
+            << "{\"prediction_id\":\"" << result.prediction_id
+            << "\",\"experience_id\":\"" << result.experience_id
+            << "\",\"context_ref\":\"" << json_escape(result.context_ref)
+            << "\",\"strategy_ref\":\"" << json_escape(result.strategy_ref)
+            << "\",\"outcome\":\"" << result.outcome
+            << "\",\"evaluation_result\":\"" << result.evaluation_result
+            << "\",\"predicted_success_probability\":"
+            << result.predicted_success_probability << "}\n";
+        return EXIT_SUCCESS;
+    }
+    usage();
+    return EXIT_FAILURE;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -269,6 +309,7 @@ int main(int argc, char** argv) {
         if (group == "experience") return run_experience(argc, argv);
         if (group == "belief") return run_belief(argc, argv);
         if (group == "cognition") return run_cognition(argc, argv);
+        if (group == "strategy") return run_strategy(argc, argv);
         usage();
         return EXIT_FAILURE;
     } catch (const std::exception& error) {
