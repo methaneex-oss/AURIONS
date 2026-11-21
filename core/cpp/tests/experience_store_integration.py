@@ -125,6 +125,72 @@ def main() -> int:
         assert escaped_context["evidence"][0]["content"] == payload
         assert escaped_context["payload_bytes"] <= 16 * 1024
 
+        # Evidence-backed belief revision must change durable state, retain
+        # provenance, and incorporate contradictory evidence in a later process.
+        support = parse_json(run(
+            executable, "experience", "record", database,
+            "observation", "belief-support-001", "0",
+            "AURIONS completed the local task successfully.",
+        ))
+        contradiction = parse_json(run(
+            executable, "experience", "record", database,
+            "observation", "belief-contradiction-001", "0",
+            "AURIONS failed the local task under the same conditions.",
+        ))
+        context_evidence = parse_json(run(
+            executable, "experience", "record", database,
+            "observation", "belief-context-001", "0",
+            "The local task was performed on a test device.",
+        ))
+
+        initial_belief = parse_json(run(
+            executable, "belief", "create", database, "task-outcomes", "0.5",
+            "AURIONS completes the local task successfully.",
+        ))
+        belief_id = initial_belief["belief_id"]
+        assert len(initial_belief["revisions"]) == 1
+        assert initial_belief["revisions"][0]["confidence"] == 0.5
+
+        supported = parse_json(run(
+            executable, "belief", "evidence", database, belief_id,
+            support["experience_id"], "supports", "0.8",
+        ))
+        assert len(supported["revisions"]) == 2
+        assert abs(supported["revisions"][-1]["confidence"] - 0.8) < 1e-9
+        assert supported["revisions"][-1]["evidence_source_ref"] == "belief-support-001"
+        assert supported["revisions"][-1]["evidence_stance"] == "supports"
+
+        duplicate_evidence = subprocess.run(
+            [executable, "belief", "evidence", database, belief_id,
+             support["experience_id"], "supports", "0.8"],
+            capture_output=True, text=True,
+        )
+        assert duplicate_evidence.returncode != 0
+
+        contradicted = parse_json(run(
+            executable, "belief", "evidence", database, belief_id,
+            contradiction["experience_id"], "contradicts", "0.8",
+        ))
+        assert len(contradicted["revisions"]) == 3
+        assert abs(contradicted["revisions"][-1]["confidence"] - 0.5) < 1e-9
+        assert contradicted["revisions"][-1]["evidence_source_ref"] == "belief-contradiction-001"
+
+        contextualized = parse_json(run(
+            executable, "belief", "evidence", database, belief_id,
+            context_evidence["experience_id"], "contextualizes", "0.9",
+        ))
+        assert len(contextualized["revisions"]) == 4
+        assert abs(contextualized["revisions"][-1]["confidence"] - 0.5) < 1e-9
+
+        # A fresh CLI process must recover the complete immutable revision chain.
+        recovered_belief = parse_json(run(
+            executable, "belief", "show", database, belief_id,
+        ))
+        assert [r["revision"] for r in recovered_belief["revisions"]] == [1, 2, 3, 4]
+        assert recovered_belief["revisions"][1]["evidence_source_ref"] == "belief-support-001"
+        assert recovered_belief["revisions"][2]["evidence_stance"] == "contradicts"
+        assert recovered_belief["revisions"][3]["evidence_stance"] == "contextualizes"
+
         invalid_context = subprocess.run(
             [executable, "experience", "context", database, "AURIONS local brain", "51"],
             capture_output=True, text=True,
