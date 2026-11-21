@@ -72,7 +72,7 @@ def main() -> int:
         ranked = json.loads(run(
             executable, "experience", "search", database, "AURIONS local brain", "10",
         ))
-        assert len(ranked) >= 2
+        assert len(ranked) >= 2, f"expected multiple lexical matches; got {ranked!r}"
         assert ranked[0]["content"] == strongest
         assert ranked[0]["relevance"] > ranked[1]["relevance"]
         assert ranked[0]["source_type"] == "owner_correction"
