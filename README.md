@@ -23,9 +23,18 @@ Online information and local experience both feed learning. AURIONS must preserv
 
 ## Project status
 
-**Implementation is underway.** The current implementation branch contains a C++/SQLite experience store with process-restart persistence, contextual lexical retrieval and a bounded memory-context evidence packet builder. Retrieval searches active experience content and provenance, ranks by query-term coverage/content matches, and preserves provenance and sensitivity metadata. The context builder assembles ranked evidence under item and serialized-payload budgets for a downstream cognitive consumer. This is a foundation, not semantic/vector retrieval, model reasoning over retrieved evidence, belief revision, an integrated learning cycle, behavioural adaptation, local/cloud inference or operating-system autonomy. Integration tests cover restart persistence, retrieval ranking/provenance and context assembly, but this branch's new C++ code has not yet been built or run in CI.
+**Implementation is underway.** The current C++/SQLite core now provides:
+- Process-restart experience persistence with provenance and sensitivity metadata.
+- Bounded lexical retrieval and memory-context evidence assembly.
+- Persistent belief records with immutable, numbered revisions.
+- Evidence-linked Bayesian confidence updates. Supporting and contradicting evidence changes confidence according to supplied reliability and relevance; contextual evidence is retained without shifting confidence.
+- Evidence provenance, stance and revision history are returned for inspection. Duplicate use of the same experience as evidence for one belief is rejected.
 
-Do not describe a subsystem, document, schema or passing host-side test as proof that the complete brain works. The next implementation work is to validate the C++ build and tests, reconcile experience persistence with the canonical persistence design, connect the evidence packet to the cognitive reasoning path, and then implement evidence-backed belief revision and prediction/outcome learning.
+The integration test proves that a prior of 0.5 rises to 0.8 after reliable supporting evidence, returns to 0.5 after equally reliable contradictory evidence, and remains unchanged after contextual evidence. The full revision chain and evidence provenance survive separate CLI process lifetimes. Exact-head CI run [44844792537](https://github.com/methaneex-oss/AURIONS/actions/runs/44844792537) passed CMake configure, C++ build and CTest.
+
+This is a real but bounded learning primitive—not a complete learning brain. The evidence stance and reliability are currently supplied by the caller; AURIONS does not yet infer them from raw language or observations. Bayesian belief revision is not, by itself, natural-language understanding, model reasoning, skill acquisition, prediction/outcome learning, behavioural adaptation, local/cloud inference or OS autonomy.
+
+Do not describe a subsystem, document, schema or passing host-side test as proof that the complete brain works. The next work is to connect evidence retrieval and belief revision to a cognitive consumer, then learn from predictions and independently observed outcomes. Reconcile this implementation with canonical persistence before broadening it.
 
 ## Start here
 
@@ -55,3 +64,21 @@ Do not describe a subsystem, document, schema or passing host-side test as proof
 ## Repository integrity
 
 Do not commit runtime databases, personal memory, model weights, secrets, credentials, private datasets or generated artifacts unless an explicit, reviewed policy permits it. Keep source, reproducible configuration, tests and non-sensitive documentation under version control.
+
+
+## Current CLI capabilities
+
+The C++ executable exposes the implemented experience and belief operations:
+
+```text
+aurions experience record <database> <source> <provenance> <sensitivity 0-4> <content>
+aurions experience show <database> <experience-uuid>
+aurions experience search <database> <query> [limit 1-100]
+aurions experience context <database> <query> [max-items 1-50]
+
+aurions belief create <database> <domain> <prior-confidence> <proposition>
+aurions belief evidence <database> <belief-uuid> <experience-uuid> <stance> <reliability> [relevance]
+aurions belief show <database> <belief-uuid>
+```
+
+Belief evidence stance is one of `supports`, `contradicts` or `contextualizes`. Reliability must be at least 0.5 and less than 1.0; relevance is between 0 and 1. The update uses log-odds evidence accumulation and preserves each revision. This first implementation assumes evidence is conditionally independent and does not yet model source dependence or automatically classify evidence.
