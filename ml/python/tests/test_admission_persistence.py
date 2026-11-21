@@ -260,7 +260,12 @@ def test_training_worker_process_admits_trains_and_persists_quarantined_checkpoi
         "--steps", "30",
         "--seed", "29",
     ]
-    completed = subprocess.run(command, check=True, capture_output=True, text=True, env=env)
+    completed = subprocess.run(command, check=False, capture_output=True, text=True, env=env)
+    if completed.returncode != 0:
+        pytest.fail(
+            f"training worker failed with exit code {completed.returncode}; "
+            f"stdout={completed.stdout}; stderr={completed.stderr}"
+        )
     response = json.loads(completed.stdout)
     training = response["training_result"]
     assert training["candidate_status"] == "quarantined"
