@@ -168,3 +168,20 @@ Added contextual belief retrieval and a combined cognition-context CLI:
 CI run [44845032221](https://github.com/methaneex-oss/AURIONS/actions/runs/44845032221) on code commit `2b6e5486f9edca956d4ea8960824aeac3867f116`: **passed** configure, build and CTest (1/1).
 
 This is an inspectable context interface for a future reasoning/inference consumer. It does not generate a natural-language answer or perform semantic understanding. The next capability step is to connect an actual inference/reasoning consumer to this evidence packet while preserving the distinction between observations and provisional beliefs.
+
+
+## Capability milestone — outcome-driven strategy adaptation (2026-11-21)
+
+Added a bounded strategy selector that uses the canonical \`predictions\` and \`prediction_evaluations\` records rather than a separate strategy-history database.
+
+- The caller supplies a context reference and the currently available candidate strategy references; the selector has no fixed strategy catalogue.
+- Previously unseen candidates are explored before the selector exploits observed history.
+- For evaluated candidates, selection uses UCB1; the displayed success estimate is the Beta(1,1) posterior mean derived from recorded outcomes.
+- Every choice is persisted as a prospective prediction before the outcome is known.
+- Outcome evaluation requires a reference to an active experience record, preserves its source type and provenance, appends a separate evaluation, and closes the prediction without rewriting its original expectation.
+- A prediction can be evaluated only once. The write is transactional.
+- The integration test uses separate CLI processes to demonstrate repeated failures for one strategy, a success for another, selection of the better-supported strategy, and a later change in selection after the second strategy accumulates failures. This is intended to prove a persistent change in a later decision, not merely the presence of a class or table.
+
+**Limits:** Context and strategy references are supplied by the caller; no language understanding or strategy discovery is implemented. The caller supplies the success/failure classification, so the system does not independently verify outcomes. The selected strategy is returned as a recommendation; it is not executed. This is one narrow outcome-driven adaptation capability, not general intelligence, general learning or model-weight training.
+
+**Verification pending:** The exact commit must pass CMake configure, C++ build and the expanded process-restart integration test before this milestone is counted as verified.
