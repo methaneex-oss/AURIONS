@@ -191,6 +191,19 @@ def main() -> int:
         assert recovered_belief["revisions"][2]["evidence_stance"] == "contradicts"
         assert recovered_belief["revisions"][3]["evidence_stance"] == "contextualizes"
 
+        # The cognitive context combines recalled experiences with the
+        # current evidence-backed belief, rather than exposing either alone.
+        cognitive_context = parse_json(run(
+            executable, "cognition", "context", database,
+            "AURIONS completes local task successfully",
+        ))
+        assert cognitive_context["query"] == "AURIONS completes local task successfully"
+        assert len(cognitive_context["memory_evidence"]) >= 1
+        assert len(cognitive_context["beliefs"]) == 1
+        assert cognitive_context["beliefs"][0]["belief_id"] == belief_id
+        assert abs(cognitive_context["beliefs"][0]["confidence"] - 0.5) < 1e-9
+        assert cognitive_context["beliefs"][0]["evidence_stance"] == "contextualizes"
+
         invalid_context = subprocess.run(
             [executable, "experience", "context", database, "AURIONS local brain", "51"],
             capture_output=True, text=True,
