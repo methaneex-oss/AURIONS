@@ -84,9 +84,9 @@ int main(int argc, char** argv) {
         }
 
 
-        if (operation == "search" && (argc == 6 || argc == 7)) {
-            const std::size_t limit = argc == 7 ? parse_limit(argv[6]) : 10;
-            const auto matches = store.search(argv[5], limit);
+        if (operation == "search" && (argc == 5 || argc == 6)) {
+            const std::size_t limit = argc == 6 ? parse_limit(argv[5]) : 10;
+            const auto matches = store.search(argv[4], limit);
             std::cout << "[";
             for (std::size_t i = 0; i < matches.size(); ++i) {
                 if (i != 0) std::cout << ",";
@@ -107,10 +107,10 @@ int main(int argc, char** argv) {
         }
 
 
-        if (operation == "context" && (argc == 6 || argc == 7)) {
-            const std::size_t max_items = argc == 7 ? parse_limit(argv[6]) : 8;
+        if (operation == "context" && (argc == 5 || argc == 6)) {
+            const std::size_t max_items = argc == 6 ? parse_limit(argv[5]) : 8;
             const aurions::MemoryContextBuilder builder(store);
-            const auto context = builder.build(argv[5], max_items);
+            const auto context = builder.build(argv[4], max_items);
             std::cout
                 << "{\"query\":\"" << json_escape(context.query)
                 << "\",\"assembled_at_ms\":" << context.assembled_at_ms
