@@ -1,8 +1,11 @@
+#include "aurions/belief_store.hpp"
 #include "aurions/experience_store.hpp"
 #include "aurions/memory_context.hpp"
 
 #include <charconv>
+#include <cmath>
 #include <cstdlib>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -27,6 +30,16 @@ namespace {
         throw std::invalid_argument("limit must be an integer from 1 to 100");
     }
     return static_cast<std::size_t>(result);
+}
+
+[[nodiscard]] double parse_real(std::string_view value, const char* name) {
+    double result{};
+    const auto parsed = std::from_chars(value.data(), value.data() + value.size(), result);
+    if (parsed.ec != std::errc{} || parsed.ptr != value.data() + value.size() ||
+        !std::isfinite(result)) {
+        throw std::invalid_argument(std::string(name) + " must be a finite number");
+    }
+    return result;
 }
 
 [[nodiscard]] std::string json_escape(std::string_view value) {
@@ -55,104 +68,155 @@ namespace {
     return output;
 }
 
+void print_belief(const aurions::BeliefSnapshot& belief) {
+    std::cout << std::setprecision(17)
+        << "{\"belief_id\":\"" << belief.id
+        << "\",\"proposition\":\"" << json_escape(belief.proposition)
+        << "\",\"domain\":\"" << json_escape(belief.domain)
+        << "\",\"revisions\":[";
+    for (std::size_t i = 0; i < belief.revisions.size(); ++i) {
+        if (i != 0) std::cout << ",";
+        const auto& revision = belief.revisions[i];
+        std::cout
+            << "{\"revision\":" << revision.number
+            << ",\"confidence\":" << revision.confidence
+            << ",\"epistemic_status\":\"" << json_escape(revision.epistemic_status)
+            << "\",\"reason\":\"" << json_escape(revision.reason)
+            << "\",\"created_at_ms\":" << revision.created_at_ms
+            << ",\"evidence_count\":" << revision.evidence_count << "}";
+    }
+    std::cout << "]}\n";
+}
+
 void usage() {
     std::cerr
         << "Usage:\n"
         << "  aurions experience record <database> <source> <provenance> <sensitivity 0-4> <content>\n"
         << "  aurions experience show <database> <experience-uuid>\n"
         << "  aurions experience search <database> <query> [limit 1-100]\n"
-        << "  aurions experience context <database> <query> [max-items 1-50]\n";
+        << "  aurions experience context <database> <query> [max-items 1-50]\n"
+        << "  aurions belief create <database> <domain> <prior-confidence> <proposition>\n"
+        << "  aurions belief evidence <database> <belief-uuid> <experience-uuid> <stance> <reliability> [relevance]\n"
+        << "  aurions belief show <database> <belief-uuid>\n";
+}
+
+int run_experience(int argc, char** argv) {
+    if (argc < 4) { usage(); return EXIT_FAILURE; }
+    const std::string_view operation(argv[2]);
+    aurions::ExperienceStore store(argv[3]);
+
+    if (operation == "record" && argc == 8) {
+        const auto saved = store.record(
+            argv[4], argv[7], argv[5], parse_sensitivity(argv[6]));
+        std::cout << "{\"experience_id\":\"" << saved.id << "\"}\n";
+        return EXIT_SUCCESS;
+    }
+
+    if (operation == "search" && (argc == 5 || argc == 6)) {
+        const std::size_t limit = argc == 6 ? parse_limit(argv[5]) : 10;
+        const auto matches = store.search(argv[4], limit);
+        std::cout << "[";
+        for (std::size_t i = 0; i < matches.size(); ++i) {
+            if (i != 0) std::cout << ",";
+            const auto& match = matches[i];
+            const auto& experience = match.experience;
+            std::cout
+                << "{\"experience_id\":\"" << experience.id
+                << "\",\"relevance\":" << match.relevance
+                << ",\"source_type\":\"" << json_escape(experience.source_type)
+                << "\",\"content\":\"" << json_escape(experience.content)
+                << "\",\"provenance_ref\":\"" << json_escape(experience.provenance_ref)
+                << "\",\"observed_at_ms\":" << experience.observed_at_ms
+                << ",\"recorded_at_ms\":" << experience.recorded_at_ms
+                << ",\"sensitivity\":" << experience.sensitivity << "}";
+        }
+        std::cout << "]\n";
+        return EXIT_SUCCESS;
+    }
+
+    if (operation == "context" && (argc == 5 || argc == 6)) {
+        const std::size_t max_items = argc == 6 ? parse_limit(argv[5]) : 8;
+        const aurions::MemoryContextBuilder builder(store);
+        const auto context = builder.build(argv[4], max_items);
+        std::cout
+            << "{\"query\":\"" << json_escape(context.query)
+            << "\",\"assembled_at_ms\":" << context.assembled_at_ms
+            << ",\"payload_bytes\":" << context.payload_bytes
+            << ",\"omitted_count\":" << context.omitted_count
+            << ",\"evidence\":[";
+        for (std::size_t i = 0; i < context.evidence.size(); ++i) {
+            if (i != 0) std::cout << ",";
+            const auto& item = context.evidence[i];
+            const auto& experience = item.experience;
+            std::cout
+                << "{\"experience_id\":\"" << experience.id
+                << "\",\"relevance\":" << item.relevance
+                << ",\"source_type\":\"" << json_escape(experience.source_type)
+                << "\",\"content\":\"" << json_escape(experience.content)
+                << "\",\"provenance_ref\":\"" << json_escape(experience.provenance_ref)
+                << "\",\"observed_at_ms\":" << experience.observed_at_ms
+                << ",\"recorded_at_ms\":" << experience.recorded_at_ms
+                << ",\"sensitivity\":" << experience.sensitivity
+                << ",\"estimated_bytes\":" << item.estimated_bytes << "}";
+        }
+        std::cout << "]}\n";
+        return EXIT_SUCCESS;
+    }
+
+    if (operation == "show" && argc == 5) {
+        const auto found = store.get(argv[4]);
+        if (!found) {
+            std::cerr << "Experience not found\n";
+            return 2;
+        }
+        std::cout
+            << "{\"experience_id\":\"" << found->id
+            << "\",\"source_type\":\"" << json_escape(found->source_type)
+            << "\",\"content\":\"" << json_escape(found->content)
+            << "\",\"provenance_ref\":\"" << json_escape(found->provenance_ref)
+            << "\",\"observed_at_ms\":" << found->observed_at_ms
+            << ",\"recorded_at_ms\":" << found->recorded_at_ms
+            << ",\"sensitivity\":" << found->sensitivity << "}\n";
+        return EXIT_SUCCESS;
+    }
+    usage();
+    return EXIT_FAILURE;
+}
+
+int run_belief(int argc, char** argv) {
+    if (argc < 4) { usage(); return EXIT_FAILURE; }
+    // ExperienceStore creates/owns the experiences table referenced by canonical
+    // evidence_items. Beliefs and their revisions share this same database.
+    aurions::ExperienceStore experiences(argv[3]);
+    aurions::BeliefStore beliefs(argv[3]);
+    const std::string_view operation(argv[2]);
+
+    if (operation == "create" && argc == 7) {
+        print_belief(beliefs.create(argv[4], argv[6], parse_real(argv[5], "prior confidence")));
+        return EXIT_SUCCESS;
+    }
+    if (operation == "evidence" && (argc == 8 || argc == 9)) {
+        const double relevance = argc == 9 ? parse_real(argv[8], "relevance") : 1.0;
+        print_belief(beliefs.add_evidence(
+            argv[4], argv[5], argv[6], parse_real(argv[7], "reliability"), relevance));
+        return EXIT_SUCCESS;
+    }
+    if (operation == "show" && argc == 5) {
+        print_belief(beliefs.get(argv[4]));
+        return EXIT_SUCCESS;
+    }
+    usage();
+    return EXIT_FAILURE;
 }
 
 }  // namespace
 
 int main(int argc, char** argv) {
     try {
-        if (argc < 2 || std::string_view(argv[1]) != "experience" || argc < 4) {
-            usage();
-            return EXIT_FAILURE;
-        }
-
-        const std::string_view operation(argv[2]);
-        aurions::ExperienceStore store(argv[3]);
-
-        if (operation == "record" && argc == 8) {
-            const auto saved = store.record(
-                argv[4], argv[7], argv[5], parse_sensitivity(argv[6]));
-            std::cout << "{\"experience_id\":\"" << saved.id << "\"}\n";
-            return EXIT_SUCCESS;
-        }
-
-
-        if (operation == "search" && (argc == 5 || argc == 6)) {
-            const std::size_t limit = argc == 6 ? parse_limit(argv[5]) : 10;
-            const auto matches = store.search(argv[4], limit);
-            std::cout << "[";
-            for (std::size_t i = 0; i < matches.size(); ++i) {
-                if (i != 0) std::cout << ",";
-                const auto& match = matches[i];
-                const auto& experience = match.experience;
-                std::cout
-                    << "{\"experience_id\":\"" << experience.id
-                    << "\",\"relevance\":" << match.relevance
-                    << ",\"source_type\":\"" << json_escape(experience.source_type)
-                    << "\",\"content\":\"" << json_escape(experience.content)
-                    << "\",\"provenance_ref\":\"" << json_escape(experience.provenance_ref)
-                    << "\",\"observed_at_ms\":" << experience.observed_at_ms
-                    << ",\"recorded_at_ms\":" << experience.recorded_at_ms
-                    << ",\"sensitivity\":" << experience.sensitivity << "}";
-            }
-            std::cout << "]\n";
-            return EXIT_SUCCESS;
-        }
-
-
-        if (operation == "context" && (argc == 5 || argc == 6)) {
-            const std::size_t max_items = argc == 6 ? parse_limit(argv[5]) : 8;
-            const aurions::MemoryContextBuilder builder(store);
-            const auto context = builder.build(argv[4], max_items);
-            std::cout
-                << "{\"query\":\"" << json_escape(context.query)
-                << "\",\"assembled_at_ms\":" << context.assembled_at_ms
-                << ",\"payload_bytes\":" << context.payload_bytes
-                << ",\"omitted_count\":" << context.omitted_count
-                << ",\"evidence\":[";
-            for (std::size_t i = 0; i < context.evidence.size(); ++i) {
-                if (i != 0) std::cout << ",";
-                const auto& item = context.evidence[i];
-                const auto& experience = item.experience;
-                std::cout
-                    << "{\"experience_id\":\"" << experience.id
-                    << "\",\"relevance\":" << item.relevance
-                    << ",\"source_type\":\"" << json_escape(experience.source_type)
-                    << "\",\"content\":\"" << json_escape(experience.content)
-                    << "\",\"provenance_ref\":\"" << json_escape(experience.provenance_ref)
-                    << "\",\"observed_at_ms\":" << experience.observed_at_ms
-                    << ",\"recorded_at_ms\":" << experience.recorded_at_ms
-                    << ",\"sensitivity\":" << experience.sensitivity
-                    << ",\"estimated_bytes\":" << item.estimated_bytes << "}";
-            }
-            std::cout << "]}\n";
-            return EXIT_SUCCESS;
-        }
-
-        if (operation == "show" && argc == 5) {
-            const auto found = store.get(argv[4]);
-            if (!found) {
-                std::cerr << "Experience not found\n";
-                return 2;
-            }
-            std::cout
-                << "{\"experience_id\":\"" << found->id
-                << "\",\"source_type\":\"" << json_escape(found->source_type)
-                << "\",\"content\":\"" << json_escape(found->content)
-                << "\",\"provenance_ref\":\"" << json_escape(found->provenance_ref)
-                << "\",\"observed_at_ms\":" << found->observed_at_ms
-                << ",\"recorded_at_ms\":" << found->recorded_at_ms
-                << ",\"sensitivity\":" << found->sensitivity << "}\n";
-            return EXIT_SUCCESS;
-        }
-
+        if (argc < 2) { usage(); return EXIT_FAILURE; }
+        const std::string_view group(argv[1]);
+        if (group == "experience") return run_experience(argc, argv);
+        if (group == "belief") return run_belief(argc, argv);
         usage();
         return EXIT_FAILURE;
     } catch (const std::exception& error) {
