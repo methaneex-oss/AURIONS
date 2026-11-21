@@ -78,8 +78,13 @@ def main() -> int:
         assert ranked[0]["source_type"] == "owner_correction"
         assert ranked[0]["provenance_ref"] == "owner-guidance-003"
 
-        # Query terms are bound parameters and LIKE wildcards are not interpreted
-        # as caller-controlled SQL patterns.
+        # Optional limits must not be mistaken for the query argument.
+        ranked_default = json.loads(run(
+            executable, "experience", "search", database, "AURIONS local brain",
+        ))
+        assert ranked_default[0]["content"] == strongest
+
+        # Queries without lexical tokens are rejected before SQL execution.
         empty = subprocess.run(
             [executable, "experience", "search", database, "%%"],
             capture_output=True, text=True,
@@ -103,6 +108,14 @@ def main() -> int:
         assert context["payload_bytes"] <= 16 * 1024
         assert context["omitted_count"] >= 1
         assert context["evidence"][0]["recorded_at_ms"] > 0
+
+        # The default context limit must preserve the query rather than reading
+        # a missing optional argument.
+        context_default = json.loads(run(
+            executable, "experience", "context", database, "AURIONS local brain",
+        ))
+        assert context_default["query"] == "AURIONS local brain"
+        assert len(context_default["evidence"]) >= 1
 
         # JSON escaping must be included in the context budget and survive
         # round-tripping for quotes and embedded newlines.
