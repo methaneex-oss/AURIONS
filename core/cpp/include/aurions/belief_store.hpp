@@ -27,6 +27,7 @@ struct BeliefSnapshot {
     std::string proposition;
     std::string domain;
     std::vector<BeliefRevision> revisions;
+    double relevance{};
 };
 
 class BeliefStore final {
@@ -50,6 +51,8 @@ public:
         double relevance = 1.0);
 
     [[nodiscard]] BeliefSnapshot get(const std::string& belief_id) const;
+    [[nodiscard]] std::vector<BeliefSnapshot> search(
+        const std::string& query, std::size_t limit = 10) const;
 
 private:
     sqlite3* db_{};
