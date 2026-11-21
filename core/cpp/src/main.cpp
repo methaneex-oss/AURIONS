@@ -83,7 +83,11 @@ void print_belief(const aurions::BeliefSnapshot& belief) {
             << ",\"epistemic_status\":\"" << json_escape(revision.epistemic_status)
             << "\",\"reason\":\"" << json_escape(revision.reason)
             << "\",\"created_at_ms\":" << revision.created_at_ms
-            << ",\"evidence_count\":" << revision.evidence_count << "}";
+            << ",\"evidence_count\":" << revision.evidence_count
+            << ",\"evidence_source_ref\":\"" << json_escape(revision.evidence_source_ref)
+            << "\",\"evidence_stance\":\"" << json_escape(revision.evidence_stance)
+            << "\",\"evidence_reliability\":" << revision.evidence_reliability
+            << ",\"evidence_relevance\":" << revision.evidence_relevance << "}";
     }
     std::cout << "]}\n";
 }
