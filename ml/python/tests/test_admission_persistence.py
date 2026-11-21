@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from aurions_ml.admission import AdmissionDenied, admit_dataset
+from aurions_ml.admission import AdmissionDenied, admit_dataset, record_admission_decision
 
 ROOT = Path(__file__).resolve().parents[3]
 DDL = ROOT / "schemas" / "persistence"
