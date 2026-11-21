@@ -349,6 +349,22 @@ StrategyOutcome StrategyStore::record_outcome(
         provenance_ref = column_text(experience.get(), 1);
     }
 
+    {
+        Statement reused(db_, R"sql(
+            SELECT 1
+            FROM prediction_evaluations e
+            JOIN predictions p ON p.prediction_id=e.prediction_id
+            WHERE p.subject_ref='strategy-selection'
+              AND e.observed_outcome_ref=?1
+            LIMIT 1
+        )sql");
+        bind_text(db_, reused.get(), 1, "experience:" + format_id(experience_bytes));
+        const int rc = sqlite3_step(reused.get());
+        if (rc == SQLITE_ROW)
+            throw std::runtime_error("outcome experience has already been used for strategy learning");
+        check(rc, db_, "check reused strategy evidence");
+    }
+
     std::string context_ref;
     std::string strategy_ref;
     double probability = 0.0;
