@@ -16,6 +16,10 @@ struct BeliefRevision {
     std::string reason;
     std::int64_t created_at_ms{};
     int evidence_count{};
+    std::string evidence_source_ref;
+    std::string evidence_stance;
+    double evidence_reliability{};
+    double evidence_relevance{};
 };
 
 struct BeliefSnapshot {
