@@ -32,12 +32,15 @@ The experience store now has a contextual retrieval API and CLI. This milestone 
 - Updated `core/cpp/tests/experience_store_integration.py`
 - Updated `README.md`
 
-## Verification state
+## Verification state (updated 2026-11-21)
 
-- SQLite LIKE/ESCAPE query syntax was separately exercised with SQLite and returned the expected row.
-- **No C++ build or CTest run has been completed in this environment.** The branch's C++ Core workflow is configured for pushes to `impl/**`, but the available status and workflow-run connectors do not expose push-triggered runs; the status lookup returned no status records. Do not call this test-passing until actual CI evidence is retrieved.
-- A direct checkout/build attempt from this environment could not resolve GitHub's host, so no local build was possible.
-- Tests have been authored but not executed. Their assertions are not evidence of passing behaviour.
+- Exact branch-head CI run [44844452501](https://github.com/methaneex-oss/AURIONS/actions/runs/44844452501) on commit `518a6e535b359da34d2bd960c9d6ca89e0d51f73`: **passed**.
+- CMake configure: passed.
+- C++ compilation and linking: passed.
+- CTest: passed (1/1 integration test).
+- The integration test verifies process-restart persistence, JSON round-tripping, provenance retention, lexical ranking, bounded context assembly, omission accounting, and both explicit and default search/context argument forms.
+- This is host CI evidence only. It does not validate Termux/Android, local/cloud inference, belief revision, reasoning, behavioural adaptation, synchronization or OS interaction.
+
 
 ## Known engineering limitations
 
@@ -64,16 +67,17 @@ The experience store now has a contextual retrieval API and CLI. This milestone 
 Continue from `impl/experience-continuity`. Read this checkpoint and the previous experience-retrieval checkpoint. Inspect the live branch head and current source before editing. Preserve existing work and review corrections. Keep recoverable commit boundaries and update the checkpoint after each substantial milestone.
 
 
-## Follow-up source-audit corrections (2026-11-20)
+## Follow-up source-audit corrections (2026-11-20 to 2026-11-21)
 
-A subsequent source-level audit found and corrected defects in the CLI/retrieval path:
+Source audit and successive CI runs exposed and corrected the following:
 
-- Corrected SQLite LIKE escaping to use a one-character backslash escape expression. The prior generated SQL supplied a two-character ESCAPE expression, which SQLite rejects with `ESCAPE expression must be a single character`.
-- Removed the duplicate `recorded_at_ms` key from search JSON.
-- Added `recorded_at_ms` to each memory-context evidence item, matching the provenance/timestamp contract and the existing integration assertion.
-- Strengthened the integration test JSON parser to reject duplicate object keys instead of silently accepting them.
+- Search/context JSON now has no duplicate `recorded_at_ms` key and every context evidence item includes that timestamp.
+- Integration JSON parsing rejects duplicate object keys.
+- SQLite LIKE predicates now use the valid one-character `!` escape expression. An earlier checkpoint note incorrectly described the intended escape as a backslash; the actual committed SQL uses `ESCAPE '!'`.
+- The CLI had an off-by-one argument bug: search and context treated the optional limit/max-items argument as the query. This was the cause of empty retrieval results. The CLI now reads the query from `argv[4]` and the optional bound from `argv[5]`, with correct argument counts for both default and explicit limits.
+- Test diagnostics preserve subprocess stdout/stderr and report returned candidates when ranking assertions fail.
+- Integration coverage now exercises both explicit and default search/context argument forms.
 
-The SQLite ESCAPE expression was checked directly against Python's SQLite binding: the one-character form succeeds and the two-character form fails as expected. This is a focused SQL syntax check, **not** a C++ build or execution of the integration suite. The full CMake build and CTest remain unverified.
 
 
 ## CI runner-policy repair
@@ -102,3 +106,27 @@ This is the first actual compiler/test evidence for the implementation: the C++ 
 ## Branch integration warning
 
 GitHub's compare endpoint currently reports `impl/experience-continuity` as diverged from `main` (merge base `7327938183157ba54d932745612dfd4720981f30`, branch 14 commits behind main and a reported 1342 commits ahead). This branch must not be merged or rebased blindly. Before integration, inspect the actual commit graph and reconcile its implementation with the canonical mainline persistence and cognitive contracts. Preserve this isolated branch until a safe integration plan is established.
+
+
+## Verified implementation milestone — 2026-11-21
+
+The previous test failures were resolved at their causes, not by weakening assertions:
+
+1. Run `44842625000` on `dbf21f48` confirmed that the first SQL-escape correction was incomplete; SQLite still rejected the generated ESCAPE expression.
+2. Commit `b3aec61d153134f2f14ee2d3d7c65d1ada4bb4b3` corrected the emitted SQL to use `ESCAPE '!'`. Its run confirmed the SQL error was gone but exposed an empty search result.
+3. Commit `d16cd603c94e602033b1283cb04ba7d6e677af92` fixed the root cause: the CLI read the optional limit instead of the query. CI run [44844335370](https://github.com/methaneex-oss/AURIONS/actions/runs/44844335370) passed configure, build and CTest.
+4. Commit `518a6e535b359da34d2bd960c9d6ca89e0d51f73` added explicit regression coverage for default search and context arguments. CI run [44844452501](https://github.com/methaneex-oss/AURIONS/actions/runs/44844452501) passed configure, build and CTest (1/1).
+
+The currently verified code head is `518a6e535b359da34d2bd960c9d6ca89e0d51f73`.
+
+## Next capability milestone
+
+Do not expand subsystem count for its own sake. The next implementation must make a real, testable capability change:
+
+- Introduce an evidence-backed belief update that consumes persisted experience references, records support/contradiction and provenance, and preserves immutable revision history.
+- Prove that new evidence changes the stored belief state in a principled, inspectable way, that contradictory evidence can revise it, and that the result survives process restart.
+- Then provide a cognitive consumer boundary that can use retrieved evidence and revised beliefs in a later response/decision. Do not label evidence assembly alone as understanding or learning.
+- Keep the algorithm general and evidence-driven; do not encode fixed stimulus-to-response rules or predetermined beliefs.
+- Inspect and reconcile with the existing canonical persistence contracts before adding parallel tables or an unrelated second memory database.
+
+The current implementation still provides persistence and lexical recall only. It does not yet understand natural language, revise beliefs, reason, learn strategies, adapt behaviour, or invoke a model. Those capabilities remain unimplemented and must be demonstrated by end-to-end tests.
