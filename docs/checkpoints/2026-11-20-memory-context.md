@@ -156,3 +156,15 @@ Confidence is updated through log-odds evidence accumulation. Evidence reliabili
 ## Next capability work
 
 Connect contextual memory retrieval and belief revision to a cognitive consumer that can use evidence in a later response or decision. The consumer must distinguish retrieved observations from beliefs, expose uncertainty and provenance, and avoid turning unverified text into truth. Then add prediction/outcome records and test whether observed consequences revise future predictions or strategies across process restart. Do not claim general learning until the later behaviour measurably changes.
+
+
+## Combined cognition context milestone — 2026-11-21
+
+Added contextual belief retrieval and a combined cognition-context CLI:
+- `BeliefStore::search` retrieves active beliefs by lexical query terms, ranks matches by term coverage and returns the current revision with its confidence and evidence provenance.
+- `aurions cognition context <database> <query> [max-items]` combines bounded, provenance-preserving experience recall with matching current beliefs in one JSON evidence packet.
+- The integration test verifies that a belief revised through support, contradiction and contextual evidence is retrieved with its latest confidence and provenance alongside related experiences.
+
+CI run [44845032221](https://github.com/methaneex-oss/AURIONS/actions/runs/44845032221) on code commit `2b6e5486f9edca956d4ea8960824aeac3867f116`: **passed** configure, build and CTest (1/1).
+
+This is an inspectable context interface for a future reasoning/inference consumer. It does not generate a natural-language answer or perform semantic understanding. The next capability step is to connect an actual inference/reasoning consumer to this evidence packet while preserving the distinction between observations and provisional beliefs.
