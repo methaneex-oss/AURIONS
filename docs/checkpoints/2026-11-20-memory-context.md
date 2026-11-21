@@ -172,7 +172,7 @@ This is an inspectable context interface for a future reasoning/inference consum
 
 ## Capability milestone — outcome-driven strategy adaptation (2026-11-21)
 
-Added a bounded strategy selector that uses the canonical \`predictions\` and \`prediction_evaluations\` records rather than a separate strategy-history database.
+Added a bounded strategy selector that uses the canonical `predictions` and `prediction_evaluations` records rather than a separate strategy-history database.
 
 - The caller supplies a context reference and the currently available candidate strategy references; the selector has no fixed strategy catalogue.
 - Previously unseen candidates are explored before the selector exploits observed history.
