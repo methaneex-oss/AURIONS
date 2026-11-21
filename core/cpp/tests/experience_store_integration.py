@@ -251,6 +251,15 @@ def main() -> int:
         assert learned_choice["trials"] == 1
         assert learned_choice["selection_basis"] == "ucb1"
 
+        # The same experience must not be counted again under a different
+        # prediction, even when the second prediction is still open.
+        reused_experience = subprocess.run(
+            [executable, "strategy", "outcome", database,
+             learned_choice["prediction_id"], route_b_success["experience_id"], "success"],
+            capture_output=True, text=True,
+        )
+        assert reused_experience.returncode != 0
+
         duplicate_outcome = subprocess.run(
             [executable, "strategy", "outcome", database,
              route_b["prediction_id"], route_b_success["experience_id"], "success"],
@@ -280,7 +289,7 @@ def main() -> int:
         assert revised_choice["strategy_ref"] == "route-a"
         assert abs(revised_choice["posterior_success_probability"] - (1.0 / 12.0)) < 1e-9
 
-    print("Experience survives restart and contextual retrieval ranks relevant memories with provenance.")
+    print("Experience, belief revision, and outcome-driven strategy adaptation survive process restarts.")
     return 0
 
 
