@@ -259,7 +259,7 @@ def main() -> int:
         assert duplicate_outcome.returncode != 0
 
         # Later failures revise the posterior and can change the next decision.
-        for attempt in range(2):
+        for attempt in range(20):
             route_b_choice = parse_json(run(
                 executable, "strategy", "choose", database, "task:local-copy", "route-b",
             ))
