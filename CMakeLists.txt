@@ -15,7 +15,7 @@ target_include_directories(aurions_core PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/include>
 )
 target_compile_features(aurions_core PUBLIC cxx_std_20)
-target_link_libraries(aurions_core PUBLIC SQLite::SQLite3)
+target_link_libraries(aurions_core PUBLIC SQLite3::SQLite3)
 set_target_properties(aurions_core PROPERTIES CXX_EXTENSIONS OFF)
 
 add_executable(aurions
