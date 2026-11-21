@@ -185,3 +185,32 @@ def test_actual_training_permission_is_independent_of_memory_retention(tmp_path:
     paths = build_canonical_stores(tmp_path, training_permission="deny")
     with pytest.raises(AdmissionDenied, match="training permission"):
         admit(paths)
+
+
+def test_successful_admission_is_persisted_append_only(tmp_path: Path):
+    paths = build_canonical_stores(tmp_path)
+    result = admit(paths)
+    admission_id = record_admission_decision(
+        paths[1], result, policy_version_ref=POLICY_REF,
+        worker_job_ref="worker-job:one", checked_at_ms=100,
+    )
+    connection = sqlite3.connect(paths[1])
+    row = connection.execute(
+        """SELECT outcome,owner_ref,model_family_ref,training_purpose,worker_job_ref,
+                  evidence_refs_json FROM dataset_admission_decisions WHERE admission_id=?""",
+        (uuid.UUID(admission_id).bytes,),
+    ).fetchone()
+    assert row[:5] == ("admitted", OWNER, MODEL, PURPOSE, "worker-job:one")
+    evidence = json.loads(row[5])
+    assert any(item.get("kind") == "manifest" for item in evidence)
+    with pytest.raises(sqlite3.IntegrityError, match="append_only"):
+        connection.execute(
+            "UPDATE dataset_admission_decisions SET outcome='blocked' WHERE admission_id=?",
+            (uuid.UUID(admission_id).bytes,),
+        )
+    with pytest.raises(sqlite3.IntegrityError, match="append_only"):
+        connection.execute(
+            "DELETE FROM dataset_admission_decisions WHERE admission_id=?",
+            (uuid.UUID(admission_id).bytes,),
+        )
+    connection.close()

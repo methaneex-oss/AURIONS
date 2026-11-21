@@ -328,6 +328,84 @@ def admit_dataset(
             memory.close()
 
 
+
+def record_admission_decision(
+    memory_db: Path,
+    result: AdmissionResult,
+    *,
+    policy_version_ref: str,
+    worker_job_ref: str | None = None,
+    checked_at_ms: int | None = None,
+) -> str:
+    """Persist the successful admission result in the append-only memory ledger.
+
+    This records the gate result; it does not itself dispatch or authorize a worker.
+    """
+    if not memory_db.is_file():
+        raise AdmissionDenied("memory database is unavailable for admission evidence")
+    if not policy_version_ref:
+        raise AdmissionDenied("policy_version_ref is required for admission evidence")
+    if worker_job_ref is not None and not worker_job_ref:
+        raise AdmissionDenied("worker_job_ref must be non-empty when supplied")
+    checked_at = int(time.time() * 1000) if checked_at_ms is None else checked_at_ms
+    admission_id = uuid.uuid4()
+    manifest_id = uuid.UUID(result.manifest_id)
+    evidence_refs = [
+        {"kind": "manifest", "ref": result.manifest_id, "digest": result.manifest_digest},
+    ]
+    evidence_refs.extend(
+        {
+            "kind": "source_authorization",
+            "source_ref": source.source_ref,
+            "authorization_id": source.authorization_id,
+            "record_digest": source.authorization_record_digest,
+            "decision_ref": source.approval_decision_ref,
+            "content_digest": source.source_content_sha256,
+        }
+        for source in result.sources
+    )
+    authorization_id = (
+        uuid.UUID(result.sources[0].authorization_id).bytes if len(result.sources) == 1 else None
+    )
+    connection = sqlite3.connect(memory_db)
+    try:
+        connection.execute("PRAGMA foreign_keys=ON")
+        connection.execute("BEGIN IMMEDIATE")
+        manifest = connection.execute(
+            """SELECT m.owner_ref, m.model_family_ref, m.training_purpose, m.manifest_digest,
+                      m.lifecycle, s.manifest_digest
+               FROM dataset_manifests m
+               JOIN dataset_manifest_seals s ON s.manifest_id=m.manifest_id
+               WHERE m.manifest_id=?""",
+            (manifest_id.bytes,),
+        ).fetchone()
+        if manifest is None or manifest[3] != result.manifest_digest or manifest[5] != result.manifest_digest:
+            raise AdmissionDenied("manifest changed or lost its seal before admission recording")
+        if (manifest[0] != result.owner_ref or manifest[1] != result.model_family_ref or
+                manifest[2] != result.training_purpose or manifest[4] != "sealed"):
+            raise AdmissionDenied("manifest scope changed before admission recording")
+        connection.execute(
+            """INSERT INTO dataset_admission_decisions
+            (admission_id,manifest_id,owner_ref,model_family_ref,training_purpose,
+             outcome,denial_reason,authorization_id,policy_version_ref,worker_job_ref,
+             evidence_refs_json,checked_at_ms)
+            VALUES (?,?,?,?,?,'admitted',NULL,?,?,?,?,?)""",
+            (admission_id.bytes, manifest_id.bytes, result.owner_ref, result.model_family_ref,
+             result.training_purpose, authorization_id, policy_version_ref, worker_job_ref,
+             json.dumps(evidence_refs, sort_keys=True, separators=(",", ":")), checked_at),
+        )
+        connection.commit()
+        return str(admission_id)
+    except AdmissionDenied:
+        connection.rollback()
+        raise
+    except sqlite3.Error as error:
+        connection.rollback()
+        raise AdmissionDenied("could not durably record the admission decision") from error
+    finally:
+        connection.close()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--governance-db", type=Path, required=True)
@@ -341,6 +419,7 @@ def main() -> None:
     parser.add_argument("--policy-version-ref", required=True)
     parser.add_argument("--rights-policy-snapshot-ref", required=True)
     parser.add_argument("--rights-policy-snapshot-digest", required=True)
+    parser.add_argument("--worker-job-ref")
     args = parser.parse_args()
     result = admit_dataset(
         args.governance_db, args.memory_db, args.manifest_id,
@@ -353,7 +432,11 @@ def main() -> None:
         rights_policy_snapshot_ref=args.rights_policy_snapshot_ref,
         rights_policy_snapshot_digest=args.rights_policy_snapshot_digest,
     )
-    print(json.dumps(asdict(result), sort_keys=True))
+    admission_id = record_admission_decision(
+        args.memory_db, result, policy_version_ref=args.policy_version_ref,
+        worker_job_ref=args.worker_job_ref,
+    )
+    print(json.dumps({"admission_id": admission_id, "admission": asdict(result)}, sort_keys=True))
 
 
 if __name__ == "__main__":
