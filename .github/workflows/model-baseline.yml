@@ -38,7 +38,7 @@ jobs:
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.10.0
           python -m pip install pytest==9.0.2
 
-      - name: Verify model, causal masking, training, and resumable checkpoint
+      - name: Verify model, causal masking, training, inference, and resumable checkpoint
         env:
           PYTHONPATH: ml/python
         run: python -m pytest -q ml/python/tests
@@ -47,6 +47,11 @@ jobs:
         env:
           PYTHONPATH: ml/python
         run: python -m aurions_ml.smoke_train --output artifacts/aurions-synthetic-baseline.pt --steps 60
+
+      - name: Exercise local checkpoint inference
+        env:
+          PYTHONPATH: ml/python
+        run: python -m aurions_ml.inference --checkpoint artifacts/aurions-synthetic-baseline.pt --prompt "AURIONS" --max-new-tokens 16
 
       - name: Publish quarantined smoke checkpoint
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

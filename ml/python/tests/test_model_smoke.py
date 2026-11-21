@@ -58,3 +58,14 @@ def test_resume_rejects_different_seed(tmp_path: Path):
         assert "seed" in str(error)
     else:
         raise AssertionError("incompatible checkpoint was accepted")
+
+
+def test_smoke_checkpoint_supports_bounded_local_inference(tmp_path: Path):
+    from aurions_ml.inference import generate
+
+    checkpoint = tmp_path / "inference.pt"
+    run_smoke_training(checkpoint, steps=30)
+    first = generate(checkpoint, "AURIONS", max_new_tokens=12)
+    second = generate(checkpoint, "AURIONS", max_new_tokens=12)
+    assert first == second
+    assert first.startswith("AURIONS")
