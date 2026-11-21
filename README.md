@@ -81,8 +81,16 @@ aurions belief create <database> <domain> <prior-confidence> <proposition>
 aurions belief evidence <database> <belief-uuid> <experience-uuid> <stance> <reliability> [relevance]
 aurions belief show <database> <belief-uuid>
 aurions cognition context <database> <query> [max-items 1-50]
+aurions strategy choose <database> <context-ref> <strategy-ref> [strategy-ref ...]
+aurions strategy outcome <database> <prediction-uuid> <experience-uuid> <success|failure>
 ```
 
 Belief evidence stance is one of `supports`, `contradicts` or `contextualizes`. Reliability must be at least 0.5 and less than 1.0; relevance is between 0 and 1. The update uses log-odds evidence accumulation and preserves each revision. This first implementation assumes evidence is conditionally independent and does not yet model source dependence or automatically classify evidence.
 
 The combined cognition context is an inspectable evidence packet, not a model response. It returns ranked experience evidence and matching belief snapshots in one result so a future reasoning/inference consumer can distinguish observations from provisional beliefs and their confidence/provenance.
+
+## Outcome-driven strategy adaptation
+
+AURIONS has a narrow, measurable form of experience-dependent adaptation. Given a context reference and a caller-supplied set of candidate strategy references, the selector explores unseen candidates and then uses an upper-confidence-bound policy over their recorded outcomes. Its displayed success estimate is the Beta(1,1) posterior mean. Each choice is persisted as a prediction; an outcome must reference an active experience record and is appended as a separate prediction evaluation. The next choice is computed from accumulated evaluation history, including after a process restart.
+
+This is deliberately bounded. Candidate strategies and context references are supplied by the caller; the system does not discover strategies, understand natural-language objectives, execute the selected strategy, or independently classify success. The outcome label is caller-supplied and the evaluation records that limitation. The selector is evidence-driven adaptation for a supplied choice set, not general reasoning, autonomous learning, or proof of broad competence. It uses the canonical \`predictions\` and \`prediction_evaluations\` tables from the memory schema.
