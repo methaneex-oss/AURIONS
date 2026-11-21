@@ -213,6 +213,53 @@ int run_belief(int argc, char** argv) {
     return EXIT_FAILURE;
 }
 
+int run_cognition(int argc, char** argv) {
+    if (argc < 5 || argc > 6 || std::string_view(argv[2]) != "context") {
+        usage();
+        return EXIT_FAILURE;
+    }
+    aurions::ExperienceStore experiences(argv[3]);
+    aurions::BeliefStore beliefs(argv[3]);
+    const std::size_t max_items = argc == 6 ? parse_limit(argv[5]) : 8;
+    const std::string query = argv[4];
+    const aurions::MemoryContextBuilder memory_builder(experiences);
+    const auto memory = memory_builder.build(query, max_items);
+    const auto relevant_beliefs = beliefs.search(query, max_items);
+
+    std::cout << "{\\\"query\\\":\\\"" << json_escape(query) << "\\\",\\\"memory_evidence\\\":[";
+    for (std::size_t i = 0; i < memory.evidence.size(); ++i) {
+        if (i != 0) std::cout << ",";
+        const auto& item = memory.evidence[i];
+        const auto& experience = item.experience;
+        std::cout
+            << "{\\\"experience_id\\\":\\\"" << experience.id
+            << "\\\",\\\"relevance\\\":" << item.relevance
+            << ",\\\"content\\\":\\\"" << json_escape(experience.content)
+            << "\\\",\\\"source_type\\\":\\\"" << json_escape(experience.source_type)
+            << "\\\",\\\"provenance_ref\\\":\\\"" << json_escape(experience.provenance_ref)
+            << "\\\",\\\"sensitivity\\\":" << experience.sensitivity << "}";
+    }
+    std::cout << "],\\\"beliefs\\\":[";
+    for (std::size_t i = 0; i < relevant_beliefs.size(); ++i) {
+        if (i != 0) std::cout << ",";
+        const auto& belief = relevant_beliefs[i];
+        const auto& current = belief.revisions.back();
+        std::cout << std::setprecision(17)
+            << "{\\\"belief_id\\\":\\\"" << belief.id
+            << "\\\",\\\"proposition\\\":\\\"" << json_escape(belief.proposition)
+            << "\\\",\\\"domain\\\":\\\"" << json_escape(belief.domain)
+            << "\\\",\\\"relevance\\\":" << belief.relevance
+            << ",\\\"confidence\\\":" << current.confidence
+            << ",\\\"epistemic_status\\\":\\\"" << json_escape(current.epistemic_status)
+            << "\\\",\\\"revision\\\":" << current.number
+            << ",\\\"evidence_source_ref\\\":\\\"" << json_escape(current.evidence_source_ref)
+            << "\\\",\\\"evidence_stance\\\":\\\"" << json_escape(current.evidence_stance)
+            << "\\\",\\\"evidence_reliability\\\":" << current.evidence_reliability << "}";
+    }
+    std::cout << "]}\\n";
+    return EXIT_SUCCESS;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -221,6 +268,7 @@ int main(int argc, char** argv) {
         const std::string_view group(argv[1]);
         if (group == "experience") return run_experience(argc, argv);
         if (group == "belief") return run_belief(argc, argv);
+        if (group == "cognition") return run_cognition(argc, argv);
         usage();
         return EXIT_FAILURE;
     } catch (const std::exception& error) {
