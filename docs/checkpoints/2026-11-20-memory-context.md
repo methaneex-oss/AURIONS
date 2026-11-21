@@ -130,3 +130,29 @@ Do not expand subsystem count for its own sake. The next implementation must mak
 - Inspect and reconcile with the existing canonical persistence contracts before adding parallel tables or an unrelated second memory database.
 
 The current implementation still provides persistence and lexical recall only. It does not yet understand natural language, revise beliefs, reason, learn strategies, adapt behaviour, or invoke a model. Those capabilities remain unimplemented and must be demonstrated by end-to-end tests.
+
+
+## Capability milestone — persistent evidence-based belief revision (2026-11-21)
+
+**Implementation:** Added `BeliefStore` using the existing canonical memory table names and shapes for `knowledge_items`, `beliefs`, `belief_revisions`, `evidence_items` and `belief_revision_evidence`. The implementation stores these records in the same SQLite database as experiences; it does not create a separate belief database.
+
+The new CLI supports:
+- `belief create`: create a proposition/domain with a prior confidence and immutable initial revision.
+- `belief evidence`: attach an active experience as supporting, contradicting or contextual evidence.
+- `belief show`: inspect the proposition, complete revision chain, confidence, epistemic status and per-revision evidence provenance.
+
+Confidence is updated through log-odds evidence accumulation. Evidence reliability (0.5 to less than 1.0) and relevance (0 to 1) determine update magnitude. Supporting evidence increases confidence; contradictory evidence decreases it; contextualizing evidence is retained without changing confidence. The same experience cannot be counted twice for the same belief. Each update is committed transactionally and appends a revision linked to its predecessor.
+
+**Behavioural test evidence:** The integration test creates a 0.5 prior, applies supporting evidence with reliability 0.8 and obtains 0.8 confidence, applies equally reliable contradictory evidence and returns to 0.5, then adds contextual evidence without shifting confidence. It verifies provenance, stance, duplicate rejection, revision sequence and recovery of the complete revision history through a fresh CLI process.
+
+- CI run [44844792537](https://github.com/methaneex-oss/AURIONS/actions/runs/44844792537) on code commit `e33278914d419e0579e0081cad41999f89f19d00`: **passed**.
+- CMake configure: passed.
+- C++ build/link: passed.
+- CTest: passed (1/1 integration test).
+- README updated with the verified capabilities and current CLI contract in commit `0091e177bff2997e4f923e51067f497bd1159fc3`.
+
+**Limits that remain explicit:** Evidence stance, reliability and relevance are currently caller-supplied. AURIONS does not yet infer whether raw language or observations support a proposition. The evidence updater assumes conditional independence and does not model correlated sources. It is an evidence-revision primitive, not autonomous natural-language understanding, a reasoning model, skill acquisition or behavioural adaptation.
+
+## Next capability work
+
+Connect contextual memory retrieval and belief revision to a cognitive consumer that can use evidence in a later response or decision. The consumer must distinguish retrieved observations from beliefs, expose uncertainty and provenance, and avoid turning unverified text into truth. Then add prediction/outcome records and test whether observed consequences revise future predictions or strategies across process restart. Do not claim general learning until the later behaviour measurably changes.
