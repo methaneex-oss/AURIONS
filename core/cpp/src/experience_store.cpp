@@ -171,7 +171,7 @@ private:
 [[nodiscard]] std::string like_pattern(const std::string& term) {
     std::string pattern = "%";
     for (const char c : term) {
-        if (c == '%' || c == '_' || c == '\\') pattern.push_back('\\');
+        if (c == '!' || c == '%' || c == '_') pattern.push_back('!');
         pattern.push_back(c);
     }
     pattern.push_back('%');
