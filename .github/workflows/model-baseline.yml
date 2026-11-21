@@ -1,0 +1,57 @@
+name: AURIONS owned model baseline
+
+on:
+  push:
+    branches: ["impl/**"]
+    paths:
+      - "ml/python/**"
+      - ".github/workflows/model-baseline.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "ml/python/**"
+      - ".github/workflows/model-baseline.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: model-baseline-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  train-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Install CPU PyTorch and test runner
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.10.0
+          python -m pip install pytest==9.0.2
+
+      - name: Verify model, causal masking, training, and resumable checkpoint
+        env:
+          PYTHONPATH: ml/python
+        run: python -m pytest -q ml/python/tests
+
+      - name: Produce reproducible synthetic-only checkpoint
+        env:
+          PYTHONPATH: ml/python
+        run: python -m aurions_ml.smoke_train --output artifacts/aurions-synthetic-baseline.pt --steps 60
+
+      - name: Publish quarantined smoke checkpoint
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: aurions-synthetic-baseline-checkpoint
+          path: artifacts/aurions-synthetic-baseline.pt
+          if-no-files-found: error
+          retention-days: 14
