@@ -1,3 +1,4 @@
+import hashlib
 import json
 import sqlite3
 import uuid
@@ -6,6 +7,8 @@ from pathlib import Path
 import pytest
 
 from aurions_ml.admission import AdmissionDenied, _connect_read_only, admit_dataset
+from aurions_ml.artifact_store import ArtifactStore
+from aurions_ml.training import train_admitted_dataset
 
 OWNER = "owner:aurions-test"
 MODEL = "model:aurions-base"
@@ -24,9 +27,24 @@ POLICY_REF = "policy:v1"
 
 def build_databases(tmp_path: Path, *, status="active", expires_at=None, training="allow",
                     terms_digest=TERMS, lifecycle="sealed", seal=True, revoked=False,
-                    private_classification="public", private_auth=None, include_auth=True):
+                    private_classification="public", private_auth=None, include_auth=True,
+                    artifact_store: ArtifactStore | None = None):
     governance_path = tmp_path / "governance.db"
     memory_path = tmp_path / "memory.db"
+    source_bytes = ("Authorized synthetic source for AURIONS model tests. " * 80).encode("utf-8")
+    source_digest = hashlib.sha256(source_bytes).hexdigest() if artifact_store else DIGEST
+    source_artifact_ref = artifact_store.put_bytes(source_bytes).uri if artifact_store else "artifact:source-one"
+    split_artifacts = {}
+    for split_type, sentence in {
+        "train": "AURIONS learns from authorized training experience. ",
+        "validation": "AURIONS evaluates predictions on validation experience. ",
+        "held_out": "AURIONS is evaluated on held out experience. ",
+    }.items():
+        split_bytes = (sentence * 100).encode("utf-8")
+        split_artifacts[split_type] = (
+            artifact_store.put_bytes(split_bytes).uri,
+            hashlib.sha256(split_bytes).hexdigest(),
+        ) if artifact_store else (f"split:{split_type}", DIGEST)
     g = sqlite3.connect(governance_path)
     g.executescript("""
         CREATE TABLE dataset_source_authorizations (
@@ -55,7 +73,7 @@ def build_databases(tmp_path: Path, *, status="active", expires_at=None, trainin
     if include_auth:
         g.execute("""INSERT INTO dataset_source_authorizations VALUES
             (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", (
-            AUTHORIZATION.bytes, 1, OWNER, "source:one", DIGEST, "{}", "license",
+            AUTHORIZATION.bytes, 1, OWNER, "source:one", source_digest, "{}", "license",
             "license:permissive", terms_digest, json.dumps([PURPOSE]), training, "deny",
             private_classification, private_auth, PROJECT, MODEL, DATASET_SCOPE, POLICY_REF,
             1, expires_at, status, None, DIGEST, APPROVAL.bytes, "decision:dataset-approval",
@@ -79,12 +97,13 @@ def build_databases(tmp_path: Path, *, status="active", expires_at=None, trainin
             manifest_digest TEXT, rights_policy_snapshot_ref TEXT, rights_policy_snapshot_digest TEXT,
             lifecycle TEXT, manifest_artifact_ref TEXT, preprocessing_pipeline_ref TEXT,
             deduplication_report_ref TEXT, quality_report_ref TEXT,
-            language_domain_classification_ref TEXT, curriculum_config_ref TEXT
+            language_domain_classification_ref TEXT, curriculum_config_ref TEXT,
+            derived_artifact_refs_json TEXT
         );
         CREATE TABLE dataset_manifest_seals (
             manifest_id BLOB, manifest_digest TEXT, authorization_check_digest TEXT
         );
-        CREATE TABLE dataset_manifest_splits (manifest_id BLOB, split_type TEXT, split_digest TEXT);
+        CREATE TABLE dataset_manifest_splits (manifest_id BLOB, split_type TEXT, split_ref TEXT, split_digest TEXT);
         CREATE TABLE dataset_manifest_lifecycle_events (manifest_id BLOB, lifecycle_state TEXT);
         CREATE TABLE dataset_manifest_sources (
             manifest_id BLOB, source_ref TEXT, source_content_sha256 TEXT, authorization_id BLOB,
@@ -92,20 +111,25 @@ def build_databases(tmp_path: Path, *, status="active", expires_at=None, trainin
             transformation_lineage_refs_json TEXT, owner_ref TEXT, model_family_ref TEXT
         );
     """)
-    m.execute("""INSERT INTO dataset_manifests VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", (
+    m.execute("""INSERT INTO dataset_manifests VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", (
         MANIFEST.bytes, OWNER, MODEL, PURPOSE, DIGEST, "rights-snapshot:v1", POLICY,
         lifecycle, "manifest:one", "preprocess:v1", "dedup:v1", "quality:v1",
         "language-domain:v1", "curriculum:v1",
+        json.dumps([item[0] for item in split_artifacts.values()] if artifact_store else []),
     ))
     if seal:
         m.execute("INSERT INTO dataset_manifest_seals VALUES (?,?,?)", (MANIFEST.bytes, DIGEST, TERMS))
     for split in ("train", "validation", "held_out"):
-        m.execute("INSERT INTO dataset_manifest_splits VALUES (?,?,?)", (MANIFEST.bytes, split, DIGEST))
+        m.execute("INSERT INTO dataset_manifest_splits VALUES (?,?,?,?)", (
+            MANIFEST.bytes, split, split_artifacts[split][0], split_artifacts[split][1]
+        ))
     if lifecycle != "sealed":
         m.execute("INSERT INTO dataset_manifest_lifecycle_events VALUES (?,?)", (MANIFEST.bytes, lifecycle))
     m.execute("""INSERT INTO dataset_manifest_sources VALUES (?,?,?,?,?,?,?,?,?,?)""", (
-        MANIFEST.bytes, "source:one", DIGEST, AUTHORIZATION.bytes, DIGEST, TERMS,
-        "artifact:source-one", "[]", OWNER, MODEL,
+        MANIFEST.bytes, "source:one", source_digest, AUTHORIZATION.bytes, DIGEST, TERMS,
+        source_artifact_ref,
+        json.dumps([item[0] for item in split_artifacts.values()] if artifact_store else []),
+        OWNER, MODEL,
     ))
     m.commit()
     m.close()
@@ -134,8 +158,8 @@ def test_admits_current_authorized_sealed_manifest_read_only(tmp_path: Path):
         with pytest.raises(sqlite3.OperationalError, match="readonly"):
             connection.execute("INSERT INTO dataset_source_authorization_revocations VALUES (?,?)",
                                (AUTHORIZATION.bytes, DIGEST)) if path == paths[0] else connection.execute(
-                                   "INSERT INTO dataset_manifest_splits VALUES (?,?,?)",
-                                   (MANIFEST.bytes, "x", DIGEST),
+                                   "INSERT INTO dataset_manifest_splits VALUES (?,?,?,?)",
+                                   (MANIFEST.bytes, "x", "split:x", DIGEST),
                                )
         connection.close()
 
@@ -188,4 +212,53 @@ def test_denies_manifest_from_different_active_policy_snapshot(tmp_path: Path):
             dataset_scope_ref=DATASET_SCOPE, policy_version_ref=POLICY_REF,
             rights_policy_snapshot_ref="rights-snapshot:v1",
             rights_policy_snapshot_digest="e" * 64, now_ms=100,
+        )
+
+
+def test_admitted_artifacts_train_and_emit_quarantined_checkpoint(tmp_path: Path):
+    artifact_store = ArtifactStore(tmp_path / "artifacts")
+    paths = build_databases(tmp_path, artifact_store=artifact_store)
+    admission = admit(paths)
+    result = train_admitted_dataset(
+        admission, artifact_store, admission_id="admission:verified-test", steps=30, seed=29,
+    )
+    assert result.candidate_status == "quarantined"
+    assert result.activation_eligible is False
+    assert result.final_validation_loss < result.initial_validation_loss
+    stored = artifact_store.get_bytes(
+        result.checkpoint.uri, expected_sha256=result.checkpoint.sha256
+    )
+    import io
+    import torch
+    checkpoint = torch.load(io.BytesIO(stored), map_location="cpu", weights_only=True)
+    assert checkpoint["dataset_lineage"]["manifest_id"] == str(MANIFEST)
+    assert checkpoint["dataset_lineage"]["admission_id"] == "admission:verified-test"
+    assert len(checkpoint["dataset_lineage"]["sources"]) == 1
+    assert {item["split_type"] for item in checkpoint["dataset_lineage"]["splits"]} == {
+        "train", "validation", "held_out"
+    }
+
+
+def test_training_rejects_unimplemented_objective(tmp_path: Path):
+    from dataclasses import replace
+
+    artifact_store = ArtifactStore(tmp_path / "artifacts")
+    admission = admit(build_databases(tmp_path, artifact_store=artifact_store))
+    with pytest.raises(ValueError, match="only the foundation_pretraining"):
+        train_admitted_dataset(
+            replace(admission, training_purpose="instruction_sft"), artifact_store,
+            admission_id="admission:test", steps=5,
+        )
+
+
+def test_training_rejects_missing_source_to_split_lineage(tmp_path: Path):
+    from dataclasses import replace
+
+    artifact_store = ArtifactStore(tmp_path / "artifacts")
+    admission = admit(build_databases(tmp_path, artifact_store=artifact_store))
+    source = replace(admission.sources[0], transformation_lineage_refs=())
+    with pytest.raises(ValueError, match="not bound to source and manifest lineage"):
+        train_admitted_dataset(
+            replace(admission, sources=(source,)), artifact_store,
+            admission_id="admission:test", steps=5,
         )

@@ -41,6 +41,7 @@ jobs:
       - name: Verify model, causal masking, training, inference, and resumable checkpoint
         env:
           PYTHONPATH: ml/python
+          AURIONS_CANDIDATE_CHECKPOINT: artifacts/aurions-admitted-candidate.pt
         run: python -m pytest -q ml/python/tests
 
       - name: Produce reproducible synthetic-only checkpoint
@@ -56,7 +57,9 @@ jobs:
       - name: Publish quarantined smoke checkpoint
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
-          name: aurions-synthetic-baseline-checkpoint
-          path: artifacts/aurions-synthetic-baseline.pt
+          name: aurions-quarantined-model-checkpoints
+          path: |
+            artifacts/aurions-synthetic-baseline.pt
+            artifacts/aurions-admitted-candidate.pt
           if-no-files-found: error
           retention-days: 14

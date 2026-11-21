@@ -1,9 +1,8 @@
-"""Fail-closed, read-only dataset admission check for the training boundary.
+"""Fail-closed dataset admission check for the training boundary.
 
-The trusted supervisor calls this immediately before dispatch. The function
-never changes either database and never treats memory-retention permission as
-training permission. It validates persisted governance and sealed-manifest
-records; it does not replace cross-store recovery or worker-side revalidation.
+This callable gate is not yet wired to a C++ worker dispatcher. It validates
+persisted governance and sealed-manifest records; it does not replace
+cross-store recovery, artifact-byte verification, or worker-side revalidation.
 """
 
 from __future__ import annotations
@@ -39,6 +38,14 @@ class AdmittedSource:
     authorization_record_digest: str
     approval_decision_ref: str
     source_artifact_ref: str
+    transformation_lineage_refs: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class DatasetSplit:
+    split_type: str
+    artifact_ref: str
+    content_sha256: str
 
 
 @dataclass(frozen=True)
@@ -49,6 +56,8 @@ class AdmissionResult:
     model_family_ref: str
     training_purpose: str
     sources: tuple[AdmittedSource, ...]
+    splits: tuple[DatasetSplit, ...]
+    derived_artifact_refs: tuple[str, ...]
 
 
 def _connect_read_only(path: Path) -> sqlite3.Connection:
@@ -117,6 +126,7 @@ def admit_dataset(
                       m.manifest_artifact_ref, m.preprocessing_pipeline_ref,
                       m.deduplication_report_ref, m.quality_report_ref,
                       m.language_domain_classification_ref, m.curriculum_config_ref,
+                      m.derived_artifact_refs_json,
                       s.manifest_digest AS sealed_digest, s.authorization_check_digest
                FROM dataset_manifests m
                JOIN dataset_manifest_seals s ON s.manifest_id=m.manifest_id
@@ -149,15 +159,26 @@ def admit_dataset(
         )
         if any(not manifest[field] for field in required_manifest_refs):
             raise AdmissionDenied("manifest is missing a required artifact/policy reference")
+        try:
+            derived_artifact_refs = json.loads(manifest["derived_artifact_refs_json"])
+        except (TypeError, json.JSONDecodeError) as error:
+            raise AdmissionDenied("manifest derived-artifact lineage is invalid") from error
+        if (not isinstance(derived_artifact_refs, list) or
+                any(not isinstance(ref, str) or not ref for ref in derived_artifact_refs)):
+            raise AdmissionDenied("manifest derived-artifact lineage must be a string array")
 
         split_rows = memory.execute(
-            "SELECT split_type, split_digest FROM dataset_manifest_splits WHERE manifest_id=?",
+            "SELECT split_type, split_ref, split_digest FROM dataset_manifest_splits WHERE manifest_id=?",
             (manifest_key,),
         ).fetchall()
         if {row["split_type"] for row in split_rows} != {"train", "validation", "held_out"} or len(split_rows) != 3:
             raise AdmissionDenied("manifest must contain train, validation and held_out splits")
+        admitted_splits: list[DatasetSplit] = []
         for row in split_rows:
-            _digest(row["split_digest"], f"{row['split_type']} split digest")
+            digest = _digest(row["split_digest"], f"{row['split_type']} split digest")
+            if not row["split_ref"]:
+                raise AdmissionDenied(f"{row['split_type']} split artifact reference is missing")
+            admitted_splits.append(DatasetSplit(row["split_type"], row["split_ref"], digest))
 
         lifecycle = memory.execute(
             """SELECT lifecycle_state FROM dataset_manifest_lifecycle_events
@@ -248,8 +269,9 @@ def admit_dataset(
                 raise AdmissionDenied("source purpose or transformation lineage is invalid") from error
             if not isinstance(permitted, list) or training_purpose not in permitted:
                 raise AdmissionDenied("authorization does not permit the requested purpose")
-            if not isinstance(lineage, list):
-                raise AdmissionDenied("transformation lineage must be an array")
+            if (not isinstance(lineage, list) or
+                    any(not isinstance(ref, str) or not ref for ref in lineage)):
+                raise AdmissionDenied("transformation lineage must be a string array")
             if (authorization["private_data_classification"] != "public" and
                     not authorization["private_data_authorization_ref"]):
                 raise AdmissionDenied("private/personal source lacks explicit authorization")
@@ -309,6 +331,7 @@ def admit_dataset(
                 authorization_record_digest=record_digest,
                 approval_decision_ref=authorization["decision_ref"],
                 source_artifact_ref=source["source_artifact_ref"],
+                transformation_lineage_refs=tuple(lineage),
             ))
 
         return AdmissionResult(
@@ -318,6 +341,8 @@ def admit_dataset(
             model_family_ref=model_family_ref,
             training_purpose=training_purpose,
             sources=tuple(admitted),
+            splits=tuple(sorted(admitted_splits, key=lambda split: split.split_type)),
+            derived_artifact_refs=tuple(derived_artifact_refs),
         )
     except sqlite3.Error as error:
         raise AdmissionDenied("required governance or manifest records are unavailable") from error
@@ -354,6 +379,19 @@ def record_admission_decision(
         {"kind": "manifest", "ref": result.manifest_id, "digest": result.manifest_digest},
     ]
     evidence_refs.extend(
+        {"kind": "derived_artifact", "artifact_ref": ref}
+        for ref in result.derived_artifact_refs
+    )
+    evidence_refs.extend(
+        {
+            "kind": "dataset_split",
+            "split_type": split.split_type,
+            "artifact_ref": split.artifact_ref,
+            "content_digest": split.content_sha256,
+        }
+        for split in result.splits
+    )
+    evidence_refs.extend(
         {
             "kind": "source_authorization",
             "source_ref": source.source_ref,
@@ -361,6 +399,7 @@ def record_admission_decision(
             "record_digest": source.authorization_record_digest,
             "decision_ref": source.approval_decision_ref,
             "content_digest": source.source_content_sha256,
+            "transformation_lineage_refs": list(source.transformation_lineage_refs),
         }
         for source in result.sources
     )
