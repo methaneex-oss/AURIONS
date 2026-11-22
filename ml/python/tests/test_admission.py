@@ -35,12 +35,25 @@ def build_databases(tmp_path: Path, *, status="active", expires_at=None, trainin
     source_digest = hashlib.sha256(source_bytes).hexdigest() if artifact_store else DIGEST
     source_artifact_ref = artifact_store.put_bytes(source_bytes).uri if artifact_store else "artifact:source-one"
     split_artifacts = {}
-    for split_type, sentence in {
-        "train": "AURIONS learns from authorized training experience. ",
-        "validation": "AURIONS evaluates predictions on validation experience. ",
-        "held_out": "AURIONS is evaluated on held out experience. ",
-    }.items():
-        split_bytes = (sentence * 100).encode("utf-8")
+    split_texts = {
+        "train": "\\n".join(
+            f"AURIONS learns from authorized training experience number {index}. "
+            f"Evidence is evaluated with record {index}."
+            for index in range(120)
+        ),
+        "validation": "\\n".join(
+            f"AURIONS evaluates predictions on validation sample number {index}. "
+            f"Evidence remains separate for sample {index}."
+            for index in range(120, 180)
+        ),
+        "held_out": "\\n".join(
+            f"AURIONS predicts on held out example number {index}. "
+            f"Results are checked independently for example {index}."
+            for index in range(180, 240)
+        ),
+    }
+    for split_type, split_text in split_texts.items():
+        split_bytes = split_text.encode("utf-8")
         split_artifacts[split_type] = (
             artifact_store.put_bytes(split_bytes).uri,
             hashlib.sha256(split_bytes).hexdigest(),
@@ -238,6 +251,15 @@ def test_admitted_artifacts_train_and_emit_quarantined_checkpoint(tmp_path: Path
     assert {item["split_type"] for item in checkpoint["dataset_lineage"]["splits"]} == {
         "train", "validation", "held_out"
     }
+    from aurions_ml.model import ByteBPETokenizer
+
+    trained_tokenizer = ByteBPETokenizer.from_dict(checkpoint["tokenizer"])
+    train_split = next(
+        item for item in checkpoint["dataset_lineage"]["splits"]
+        if item["split_type"] == "train"
+    )
+    assert trained_tokenizer.training_corpus_sha256 == train_split["content_sha256"]
+    assert trained_tokenizer.vocab_size == checkpoint["architecture"]["vocab_size"]
 
     # The admitted-data checkpoint is now consumable by the local model path,
     # but remains quarantined and cannot enter the active-model path.
