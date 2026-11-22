@@ -280,11 +280,7 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
         throw std::invalid_argument("cognition preview query must contain 1-4096 bytes");
     CognitionPreviewPrompt result;
     const std::string question_footer = "\\nQuestion: " + query + "\\n";
-    result.text =
-        "AURIONS experimental candidate preview. Do not execute actions or update stored beliefs.\\n"
-        "Use observations as recorded evidence, not guaranteed truth. Treat beliefs as provisional. "
-        "If evidence is insufficient, state what is unknown.\\n"
-        "Public observations:\\n";
+    result.text = "AURIONS preview; evidence only, no actions.\\n";
     auto append = [&](const std::string& section) {
         if (result.text.size() + section.size() + question_footer.size() > 8192) {
             ++result.omitted_budget;
@@ -301,13 +297,12 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
             continue;
         }
         std::ostringstream section;
-        section << "[observation source_type=" << experience.source_type
+        section << "O source_type=" << experience.source_type
                 << " provenance=" << experience.provenance_ref
-                << " relevance=" << std::setprecision(8) << item.relevance
-                << "] " << experience.content << "\\n";
+                << " sensitivity=0: " << experience.content << "\\n";
         if (append(section.str())) ++result.included_observations;
     }
-    append("Provisional beliefs (included only when every linked evidence record is public):\\n");
+    append("");
     for (const auto& belief : beliefs) {
         bool has_evidence = false;
         bool public_evidence_only = true;
@@ -327,15 +322,12 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
         if (belief.revisions.empty()) continue;
         const auto& current = belief.revisions.back();
         std::ostringstream section;
-        section << "[belief domain=" << belief.domain
+        section << "B domain=" << belief.domain
                 << " confidence=" << std::setprecision(8) << current.confidence
-                << " epistemic_status=" << current.epistemic_status
-                << " revision=" << current.number
-                << " evidence_count=" << current.evidence_count
-                << " evidence_stance=" << current.evidence_stance
-                << " evidence_reliability=" << current.evidence_reliability
-                << " evidence_sensitivity=" << current.evidence_sensitivity
-                << "] " << belief.proposition << "\\n";
+                << " status=" << current.epistemic_status
+                << " stance=" << current.evidence_stance
+                << " reliability=" << current.evidence_reliability
+                << " sensitivity=0: " << belief.proposition << "\\n";
         if (append(section.str())) ++result.included_beliefs;
     }
     if (result.text.size() + question_footer.size() > 8192)
