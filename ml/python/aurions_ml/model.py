@@ -94,7 +94,8 @@ class ByteBPETokenizer:
 
     @classmethod
     def train(
-        cls, text: str, *, vocab_size: int = 512, min_frequency: int = 2
+        cls, text: str, *, vocab_size: int = 512, min_frequency: int = 2,
+        min_tokens: int = 0
     ) -> "ByteBPETokenizer":
         if not isinstance(text, str) or not text:
             raise ValueError("tokenizer training text must be non-empty")
@@ -102,6 +103,8 @@ class ByteBPETokenizer:
             raise ValueError("BPE vocab_size must be between 259 and 4096")
         if min_frequency < 2:
             raise ValueError("min_frequency must be at least 2")
+        if min_tokens < 0:
+            raise ValueError("min_tokens cannot be negative")
 
         corpus_bytes = text.encode("utf-8")
         sequences = [[cls.BYTE_OFFSET + value for value in corpus_bytes]]
@@ -129,6 +132,8 @@ class ByteBPETokenizer:
                         merged.append(sequence[index])
                         index += 1
                 merged_sequences.append(merged)
+            if min_tokens and len(merged_sequences[0]) < min_tokens:
+                break
             sequences = merged_sequences
             merges.append(pair)
 
