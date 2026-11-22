@@ -33,9 +33,9 @@ def test_trainable_bpe_tokenizer_is_deterministic_versioned_and_multilingual():
 def test_bpe_merge_budget_preserves_minimum_training_context():
     training_text = "repeated phrase " * 400
     tokenizer = ByteBPETokenizer.train(
-        training_text, vocab_size=512, min_tokens=65
+        training_text, vocab_size=512, min_tokens=2049
     )
-    assert len(tokenizer.encode(training_text)) >= 65
+    assert len(tokenizer.encode(training_text)) >= 2049
     assert tokenizer.training_corpus_sha256 == hashlib.sha256(
         training_text.encode("utf-8")
     ).hexdigest()
