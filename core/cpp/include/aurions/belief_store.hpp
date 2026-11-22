@@ -20,6 +20,7 @@ struct BeliefRevision {
     std::string evidence_stance;
     double evidence_reliability{};
     double evidence_relevance{};
+    int evidence_sensitivity{-1};
 };
 
 struct BeliefSnapshot {
