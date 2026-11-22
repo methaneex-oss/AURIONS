@@ -7,6 +7,7 @@ candidate or treats its output as trusted authority.
 from __future__ import annotations
 
 import argparse
+import io
 import math
 import re
 from pathlib import Path
@@ -50,11 +51,13 @@ def _validate_dataset_lineage(lineage: Any) -> None:
             raise ValueError("candidate split digest is invalid")
 
 
-def load_candidate_model(
-    checkpoint: Path,
+def load_candidate_model_from_bytes(
+    checkpoint_bytes: bytes,
 ) -> tuple[DecoderOnlyTransformer, ByteTokenizer | ByteBPETokenizer]:
-    """Load a quarantined smoke or admitted-data candidate for preview only."""
-    payload = torch.load(checkpoint, map_location="cpu", weights_only=True)
+    """Load a quarantined candidate from verified artifact bytes for preview only."""
+    if not isinstance(checkpoint_bytes, bytes) or not checkpoint_bytes:
+        raise ValueError("checkpoint bytes must be non-empty")
+    payload = torch.load(io.BytesIO(checkpoint_bytes), map_location="cpu", weights_only=True)
     if not isinstance(payload, dict) or payload.get("format") != "aurions-model-checkpoint-v1":
         raise ValueError("unsupported checkpoint format")
     artifact_kind = payload.get("artifact_kind")
@@ -111,6 +114,13 @@ def load_candidate_model(
     model.load_state_dict(state_dict, strict=True)
     model.eval()
     return model, tokenizer
+
+
+def load_candidate_model(
+    checkpoint: Path,
+) -> tuple[DecoderOnlyTransformer, ByteTokenizer | ByteBPETokenizer]:
+    """Load a quarantined candidate from a local checkpoint file."""
+    return load_candidate_model_from_bytes(checkpoint.read_bytes())
 
 
 def generate(checkpoint: Path, prompt: str, *, max_new_tokens: int = 32) -> str:
