@@ -280,7 +280,7 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
         throw std::invalid_argument("cognition preview query must contain 1-4096 bytes");
     CognitionPreviewPrompt result;
     const std::string question_footer = "\nQuestion: " + query + "\n";
-    result.text = "AURIONS preview; evidence only, no actions.\n";
+    result.text = "Evidence only; no actions.\n";
     auto append = [&](const std::string& section) {
         if (result.text.size() + section.size() + question_footer.size() > 8192) {
             ++result.omitted_budget;
@@ -297,9 +297,8 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
             continue;
         }
         std::ostringstream section;
-        section << "O source_type=" << experience.source_type
-                << " provenance=" << experience.provenance_ref
-                << " sensitivity=0: " << experience.content << "\n";
+        section << "O " << experience.provenance_ref
+                << ": " << experience.content << "\n";
         if (append(section.str())) ++result.included_observations;
     }
     append("");
@@ -322,12 +321,12 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
         if (belief.revisions.empty()) continue;
         const auto& current = belief.revisions.back();
         std::ostringstream section;
-        section << "B domain=" << belief.domain
-                << " confidence=" << std::setprecision(8) << current.confidence
-                << " status=" << current.epistemic_status
-                << " stance=" << current.evidence_stance
-                << " reliability=" << current.evidence_reliability
-                << " sensitivity=0: " << belief.proposition << "\n";
+        section << "B " << belief.domain
+                << " " << std::setprecision(4) << current.confidence
+                << " " << current.epistemic_status
+                << " " << current.evidence_stance
+                << " " << current.evidence_reliability
+                << ": " << belief.proposition << "\n";
         if (append(section.str())) ++result.included_beliefs;
     }
     if (result.text.size() + question_footer.size() > 8192)
