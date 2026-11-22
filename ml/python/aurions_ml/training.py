@@ -30,7 +30,7 @@ class TrainingResult:
 
 def _make_windows(text: str, tokenizer: ByteBPETokenizer, context: int) -> tuple[torch.Tensor, torch.Tensor]:
     tokens = torch.tensor(tokenizer.encode(text), dtype=torch.long)
-    if tokens.numel() <= context + 1:
+    if tokens.numel() < context + 1:
         raise ValueError("dataset split is too short for the configured context")
     # unfold creates overlapping views rather than materializing an O(N*context)
     # copy of the entire corpus. This keeps larger admitted datasets tractable.
@@ -123,6 +123,15 @@ def train_admitted_dataset(
     # Learn merges from the training split only. Validation and held-out text
     # never influence the tokenizer vocabulary or merge ranking.
     tokenizer = ByteBPETokenizer.train(split_text["train"], vocab_size=512)
+    # Repetitive training corpora can be compressed into fewer than one context
+    # window by aggressive BPE merges. Bound merge count using training data
+    # alone; validation and held-out text never influence tokenizer fitting.
+    while len(tokenizer.encode(split_text["train"])) < 65 and tokenizer.vocab_size > ByteBPETokenizer.BASE_VOCAB_SIZE:
+        tokenizer = ByteBPETokenizer.train(
+            split_text["train"], vocab_size=tokenizer.vocab_size - 1
+        )
+    if len(tokenizer.encode(split_text["train"])) < 65:
+        raise ValueError("training split is too short to produce one model context after tokenization")
     if tokenizer.training_corpus_sha256 != split_map["train"].content_sha256:
         raise RuntimeError("tokenizer training corpus digest does not match the admitted train split")
     config = DecoderConfig(
