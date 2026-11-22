@@ -50,7 +50,9 @@ def _validate_dataset_lineage(lineage: Any) -> None:
             raise ValueError("candidate split digest is invalid")
 
 
-def load_candidate_model(checkpoint: Path) -> tuple[DecoderOnlyTransformer, ByteTokenizer]:
+def load_candidate_model(
+    checkpoint: Path,
+) -> tuple[DecoderOnlyTransformer, ByteTokenizer | ByteBPETokenizer]:
     """Load a quarantined smoke or admitted-data candidate for preview only."""
     payload = torch.load(checkpoint, map_location="cpu", weights_only=True)
     if not isinstance(payload, dict) or payload.get("format") != "aurions-model-checkpoint-v1":
@@ -97,6 +99,11 @@ def load_candidate_model(checkpoint: Path) -> tuple[DecoderOnlyTransformer, Byte
     architecture = dict(payload.get("architecture", {}))
     if architecture.pop("architecture", None) != "decoder-only-causal-transformer":
         raise ValueError("unsupported model architecture")
+    tokenizer_vocab_size = (
+        tokenizer.VOCAB_SIZE if isinstance(tokenizer, ByteTokenizer) else tokenizer.vocab_size
+    )
+    if architecture.get("vocab_size") != tokenizer_vocab_size:
+        raise ValueError("model vocabulary does not match its frozen tokenizer")
     model = DecoderOnlyTransformer(DecoderConfig(**architecture))
     state_dict = payload.get("state_dict")
     if not isinstance(state_dict, dict):
