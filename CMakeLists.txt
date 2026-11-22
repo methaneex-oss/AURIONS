@@ -8,6 +8,7 @@ find_package(SQLite3 REQUIRED)
 add_library(aurions_core
     core/cpp/src/belief_store.cpp
     core/cpp/src/experience_store.cpp
+    core/cpp/src/inference_adapter.cpp
     core/cpp/src/memory_context.cpp
     core/cpp/src/strategy_store.cpp
 )
@@ -29,6 +30,12 @@ if(BUILD_TESTING)
         NAME aurions.experience.process_restart
         COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/experience_store_integration.py
+            $<TARGET_FILE:aurions>
+    )
+    add_test(
+        NAME aurions.inference.process_preview
+        COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/inference_adapter_integration.py
             $<TARGET_FILE:aurions>
     )
 endif()
