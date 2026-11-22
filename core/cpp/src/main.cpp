@@ -96,6 +96,8 @@ void print_belief(const aurions::BeliefSnapshot& belief) {
 }
 
 
+void usage();
+
 [[nodiscard]] std::size_t parse_token_limit(std::string_view value) {
     unsigned long long result{};
     const auto parsed = std::from_chars(value.data(), value.data() + value.size(), result);
