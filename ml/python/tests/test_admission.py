@@ -225,6 +225,7 @@ def test_admitted_artifacts_train_and_emit_quarantined_checkpoint(tmp_path: Path
     assert result.candidate_status == "quarantined"
     assert result.activation_eligible is False
     assert result.final_validation_loss < result.initial_validation_loss
+    assert result.held_out_loss < result.initial_held_out_loss
     stored = artifact_store.get_bytes(
         result.checkpoint.uri, expected_sha256=result.checkpoint.sha256
     )
