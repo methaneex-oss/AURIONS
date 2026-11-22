@@ -1,8 +1,10 @@
 import json
 import os
+import resource
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 from aurions_ml.artifact_store import ArtifactStore
@@ -67,10 +69,12 @@ def main():
 
         env = os.environ.copy()
         env["PYTHONPATH"] = str(Path(__file__).resolve().parents[1])
+        preview_started = time.perf_counter()
         preview = run_cli(
             executable, "cognition", "preview", str(database), sys.executable,
             str(store.root), candidate_ref, "AURIONS evidence", "8", "8", env=env,
         )
+        preview_latency_ms = (time.perf_counter() - preview_started) * 1000.0
         expected_prompt = (
             "Evidence only; no actions.\n"
             "O source:public: AURIONS public evidence shows the sample has a stable property.\n"
@@ -95,6 +99,34 @@ def main():
         assert "confidential evidence" not in preview["generated_text"].lower()
         assert "secret hypothesis" not in preview["generated_text"].lower()
         assert preview["prompt_bytes"] == len(expected_prompt.encode("utf-8"))
+
+        # Record the actual 2K-context end-to-end cost from the C++ process
+        # boundary. ru_maxrss is KiB on the Ubuntu CI host; this is the maximum
+        # resident set among child processes in this test, not a device benchmark.
+        usage = resource.getrusage(resource.RUSAGE_CHILDREN)
+        benchmark = {
+            "schema_version": "aurions-context-benchmark-v1",
+            "candidate_status": preview["candidate_status"],
+            "candidate_artifact_sha256": preview["candidate_artifact_sha256"],
+            "context_length_tokens": model.config.context_length,
+            "prompt_tokens": len(prompt_tokens) + 1,
+            "prompt_bytes": preview["prompt_bytes"],
+            "max_new_tokens": 8,
+            "preview_process_latency_ms": round(preview_latency_ms, 3),
+            "child_process_peak_rss_kib": int(usage.ru_maxrss),
+            "model_parameter_count": sum(parameter.numel() for parameter in model.parameters()),
+            "included_observations": preview["included_observations"],
+            "included_beliefs": preview["included_beliefs"],
+            "omitted_sensitive": preview["omitted_sensitive"],
+            "omitted_unverified": preview["omitted_unverified"],
+            "omitted_budget": preview["omitted_budget"],
+        }
+        output = Path("artifacts")
+        output.mkdir(parents=True, exist_ok=True)
+        (output / "aurions-preview-benchmark.json").write_text(
+            json.dumps(benchmark, sort_keys=True) + "\\n", encoding="utf-8"
+        )
+        print("AURIONS_CONTEXT_BENCHMARK=" + json.dumps(benchmark, sort_keys=True))
 
 
 if __name__ == "__main__":
