@@ -72,7 +72,11 @@ def _parse_request(line: bytes) -> dict[str, object]:
     prompt = request["prompt"]
     if not isinstance(prompt, str) or not prompt:
         raise InvalidRequest("prompt must be a non-empty string")
-    if len(prompt.encode("utf-8")) > MAX_PROMPT_BYTES:
+    try:
+        prompt_bytes = prompt.encode("utf-8")
+    except UnicodeEncodeError as error:
+        raise InvalidRequest("prompt contains invalid Unicode") from error
+    if len(prompt_bytes) > MAX_PROMPT_BYTES:
         raise InvalidRequest("prompt exceeds the 8192-byte limit")
     max_new_tokens = request["max_new_tokens"]
     if isinstance(max_new_tokens, bool) or not isinstance(max_new_tokens, int):
