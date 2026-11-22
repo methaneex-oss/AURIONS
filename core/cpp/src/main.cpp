@@ -115,11 +115,11 @@ int run_model(int argc, char** argv) {
     aurions::PythonProcessInferenceAdapter adapter(argv[3], argv[4]);
     const auto result = adapter.preview(argv[5], argv[6], max_new_tokens);
     std::cout
-        << "{\\"job_id\\":\\"" << result.job_id
-        << "\\",\\"candidate_status\\":\\"" << result.candidate_status
-        << "\\",\\"candidate_artifact_sha256\\":\\"" << result.candidate_artifact_sha256
-        << "\\",\\"generated_text\\":\\"" << json_escape(result.generated_text)
-        << "\\",\\"max_new_tokens\\":" << result.max_new_tokens << "}\\n";
+        << "{\"job_id\":\"" << result.job_id
+        << "\",\"candidate_status\":\"" << result.candidate_status
+        << "\",\"candidate_artifact_sha256\":\"" << result.candidate_artifact_sha256
+        << "\",\"generated_text\":\"" << json_escape(result.generated_text)
+        << "\",\"max_new_tokens\":" << result.max_new_tokens << "}\n";
     return EXIT_SUCCESS;
 }
 
