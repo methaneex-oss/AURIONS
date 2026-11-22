@@ -45,7 +45,7 @@ def _evaluate(
 ) -> float:
     model.eval()
     with torch.no_grad():
-        batch_inputs = inputs[: min(32, len(inputs))]
+        batch_inputs = inputs[: min(1, len(inputs))]
         batch_targets = targets[: len(batch_inputs)]
         logits = model(batch_inputs)
         return float(F.cross_entropy(logits.reshape(-1, model.config.vocab_size), batch_targets.reshape(-1)))
@@ -125,7 +125,7 @@ def train_admitted_dataset(
     # Repetitive training corpora can be compressed into fewer than one context
     # window by aggressive BPE merges. Bound merge count using training data
     # alone; validation and held-out text never influence tokenizer fitting.
-    context_length = 256
+    context_length = 2048
     tokenizer = ByteBPETokenizer.train(
         split_text["train"], vocab_size=512, min_tokens=context_length + 1
     )
@@ -152,9 +152,10 @@ def train_admitted_dataset(
 
     model.train()
     for step in range(steps):
-        index = (step * 7) % max(1, len(train_x) - 16)
-        batch_x = train_x[index : index + 16]
-        batch_y = train_y[index : index + 16]
+        batch_size = 1
+        index = (step * 7) % max(1, len(train_x) - batch_size + 1)
+        batch_x = train_x[index : index + batch_size]
+        batch_y = train_y[index : index + batch_size]
         optimizer.zero_grad(set_to_none=True)
         logits = model(batch_x)
         loss = F.cross_entropy(logits.reshape(-1, config.vocab_size), batch_y.reshape(-1))
