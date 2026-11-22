@@ -178,6 +178,9 @@ def main() -> None:
     parser.add_argument("--artifact-store", type=Path, required=True)
     parser.add_argument("--max-message-bytes", type=int, default=16384)
     args = parser.parse_args()
+    import torch
+
+    torch.set_num_threads(1)
     serve(
         ArtifactStore(args.artifact_store),
         max_message_bytes=args.max_message_bytes,
