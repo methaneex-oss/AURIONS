@@ -260,6 +260,7 @@ def test_admitted_artifacts_train_and_emit_quarantined_checkpoint(tmp_path: Path
     )
     assert trained_tokenizer.training_corpus_sha256 == train_split["content_sha256"]
     assert trained_tokenizer.vocab_size == checkpoint["architecture"]["vocab_size"]
+    assert checkpoint["architecture"]["context_length"] == 2048
 
     # The admitted-data checkpoint is now consumable by the local model path,
     # but remains quarantined and cannot enter the active-model path.
@@ -272,7 +273,7 @@ def test_admitted_artifacts_train_and_emit_quarantined_checkpoint(tmp_path: Path
     generated = generate(candidate_path, "AURIONS", max_new_tokens=8)
     assert generated.startswith("AURIONS")
     with pytest.raises(ValueError, match="prompt exceeds candidate context length"):
-        generate(candidate_path, "Z" * 300, max_new_tokens=1)
+        generate(candidate_path, "Z" * 2300, max_new_tokens=1)
 
 
 def test_training_rejects_unimplemented_objective(tmp_path: Path):
