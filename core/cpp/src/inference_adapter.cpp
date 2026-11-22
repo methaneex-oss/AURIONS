@@ -11,12 +11,14 @@
 
 #include <algorithm>
 #include <array>
+#include <cerrno>
 #include <cctype>
 #include <cstdint>
 #include <random>
 #include <stdexcept>
 #include <string_view>
 #include <unordered_map>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -263,6 +265,26 @@ void close_if_open(int& fd) noexcept {
     }
 }
 
+std::vector<std::string> worker_environment() {
+    constexpr std::array<std::string_view, 8> allowed{
+        "PATH", "PYTHONPATH", "PYTHONHOME", "HOME",
+        "TMPDIR", "LANG", "LC_ALL", "LD_LIBRARY_PATH"
+    };
+    std::vector<std::string> result;
+    for (char** item = environ; item && *item; ++item) {
+        const std::string_view entry(*item);
+        const auto separator = entry.find('=');
+        if (separator == std::string_view::npos) continue;
+        const std::string_view name = entry.substr(0, separator);
+        if (std::find(allowed.begin(), allowed.end(), name) != allowed.end())
+            result.emplace_back(entry);
+    }
+    result.emplace_back("OMP_NUM_THREADS=1");
+    result.emplace_back("MKL_NUM_THREADS=1");
+    result.emplace_back("OPENBLAS_NUM_THREADS=1");
+    return result;
+}
+
 std::string run_worker_process(
     const std::string& python,
     const std::filesystem::path& artifact_store,
@@ -312,8 +334,15 @@ std::string run_worker_process(
         argv.push_back(const_cast<char*>(argument.c_str()));
     argv.push_back(nullptr);
 
+    auto environment_strings = worker_environment();
+    std::vector<char*> envp;
+    envp.reserve(environment_strings.size() + 1);
+    for (auto& entry : environment_strings)
+        envp.push_back(entry.data());
+    envp.push_back(nullptr);
+
     pid_t child{};
-    rc = posix_spawnp(&child, python.c_str(), &actions, nullptr, argv.data(), environ);
+    rc = posix_spawnp(&child, python.c_str(), &actions, nullptr, argv.data(), envp.data());
     posix_spawn_file_actions_destroy(&actions);
     close_if_open(input_pair[1]);
     close_if_open(output_pipe[1]);
@@ -386,9 +415,17 @@ std::string run_worker_process(
     close_if_open(output_pipe[0]);
 
     int status{};
-    while (waitpid(child, &status, 0) < 0) {
-        if (errno == EINTR) continue;
-        throw std::runtime_error("could not collect inference worker process");
+    while (true) {
+        const pid_t waited = waitpid(child, &status, WNOHANG);
+        if (waited == child) break;
+        if (waited < 0 && errno == EINTR) continue;
+        if (waited < 0)
+            throw std::runtime_error("could not collect inference worker process");
+        if (std::chrono::steady_clock::now() >= deadline) {
+            terminate_child();
+            throw std::runtime_error("inference worker timed out while exiting");
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
         throw std::runtime_error("inference worker exited unsuccessfully");
