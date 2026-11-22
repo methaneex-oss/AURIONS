@@ -57,7 +57,7 @@ def _run_worker(store: ArtifactStore, input_text: str, *, max_message_bytes: int
 def test_jsonl_worker_returns_bounded_quarantined_candidate_preview(tmp_path: Path):
     store, artifact_ref = _candidate_artifact(tmp_path)
     request = _request(artifact_ref)
-    completed = _run_worker(store, json.dumps(request) + "\\n")
+    completed = _run_worker(store, json.dumps(request) + "\n")
 
     assert completed.returncode == 0, completed.stderr
     response = json.loads(completed.stdout)
@@ -78,7 +78,7 @@ def test_jsonl_worker_rejects_unknown_fields_and_duplicate_keys(tmp_path: Path):
         f'"job_id":"{uuid.uuid4()}","job_type":"candidate_inference_preview",'
         f'"candidate_artifact_ref":"{artifact_ref}","prompt":"AURIONS","max_new_tokens":8}}'
     )
-    completed = _run_worker(store, json.dumps(request) + "\\n" + duplicate + "\\n")
+    completed = _run_worker(store, json.dumps(request) + "\n" + duplicate + "\n")
 
     assert completed.returncode == 0, completed.stderr
     responses = [json.loads(line) for line in completed.stdout.splitlines()]
@@ -99,7 +99,7 @@ def test_jsonl_worker_refuses_candidate_marked_activation_eligible(tmp_path: Pat
     buffer = io.BytesIO()
     torch.save(payload, buffer)
     active_ref = store.put_bytes(buffer.getvalue()).uri
-    completed = _run_worker(store, json.dumps(_request(active_ref)) + "\\n")
+    completed = _run_worker(store, json.dumps(_request(active_ref)) + "\n")
 
     assert completed.returncode == 0, completed.stderr
     response = json.loads(completed.stdout)
@@ -109,7 +109,7 @@ def test_jsonl_worker_refuses_candidate_marked_activation_eligible(tmp_path: Pat
 
 def test_jsonl_worker_bounds_oversized_messages(tmp_path: Path):
     store, artifact_ref = _candidate_artifact(tmp_path)
-    oversized = json.dumps(_request(artifact_ref)) + (" " * 400) + "\\n"
+    oversized = json.dumps(_request(artifact_ref)) + (" " * 400) + "\n"
     completed = _run_worker(store, oversized, max_message_bytes=256)
 
     assert completed.returncode == 0, completed.stderr
