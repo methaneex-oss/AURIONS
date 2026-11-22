@@ -271,6 +271,8 @@ def test_admitted_artifacts_train_and_emit_quarantined_checkpoint(tmp_path: Path
     assert loaded_model.training is False
     generated = generate(candidate_path, "AURIONS", max_new_tokens=8)
     assert generated.startswith("AURIONS")
+    with pytest.raises(ValueError, match="prompt exceeds candidate context length"):
+        generate(candidate_path, "Z" * 300, max_new_tokens=1)
 
 
 def test_training_rejects_unimplemented_objective(tmp_path: Path):
