@@ -14,7 +14,7 @@ def test_byte_tokenizer_round_trips_multilingual_utf8():
 
 
 def test_trainable_bpe_tokenizer_is_deterministic_versioned_and_multilingual():
-    training_text = "\\n".join(
+    training_text = "\n".join(
         f"AURIONS learns from training example {index}." for index in range(80)
     )
     tokenizer = ByteBPETokenizer.train(training_text, vocab_size=320)
