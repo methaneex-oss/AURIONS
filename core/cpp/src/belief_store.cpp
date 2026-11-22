@@ -214,10 +214,11 @@ BeliefSnapshot load_snapshot(sqlite3* db, const IdBytes& id) {
                (SELECT count(*) FROM belief_revision_evidence x WHERE x.revision_id=r.revision_id),
                coalesce(e.source_ref,''), coalesce(x.stance,''), 
                coalesce(json_extract(e.reliability_json,'$.reliability'),0.0),
-               coalesce(x.relevance,0.0)
+               coalesce(x.relevance,0.0), coalesce(ex.sensitivity,-1)
         FROM belief_revisions r
         LEFT JOIN belief_revision_evidence x ON x.revision_id=r.revision_id
         LEFT JOIN evidence_items e ON e.evidence_id=x.evidence_id
+        LEFT JOIN experiences ex ON ex.experience_id=e.source_experience_id
         WHERE r.belief_id=?1 ORDER BY r.revision_number
     )sql");
     bind_id(db, revisions.get(), 1, id);
@@ -235,7 +236,8 @@ BeliefSnapshot load_snapshot(sqlite3* db, const IdBytes& id) {
             column_text(revisions.get(), 6),
             column_text(revisions.get(), 7),
             sqlite3_column_double(revisions.get(), 8),
-            sqlite3_column_double(revisions.get(), 9)
+            sqlite3_column_double(revisions.get(), 9),
+            sqlite3_column_int(revisions.get(), 10)
         });
     }
     if (result.revisions.empty()) throw std::runtime_error("belief has no revision");
