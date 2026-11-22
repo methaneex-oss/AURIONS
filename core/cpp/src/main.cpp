@@ -279,14 +279,14 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
     if (query.empty() || query.size() > 4096)
         throw std::invalid_argument("cognition preview query must contain 1-4096 bytes");
     CognitionPreviewPrompt result;
+    const std::string question_footer = "\\nQuestion: " + query + "\\n";
     result.text =
         "AURIONS experimental candidate preview. Do not execute actions or update stored beliefs.\\n"
         "Use observations as recorded evidence, not guaranteed truth. Treat beliefs as provisional. "
         "If evidence is insufficient, state what is unknown.\\n"
-        "Question: " + query + "\\n"
         "Public observations:\\n";
     auto append = [&](const std::string& section) {
-        if (result.text.size() + section.size() > 8192) {
+        if (result.text.size() + section.size() + question_footer.size() > 8192) {
             ++result.omitted_budget;
             return false;
         }
@@ -338,8 +338,9 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
                 << "] " << belief.proposition << "\\n";
         if (append(section.str())) ++result.included_beliefs;
     }
-    if (result.text.size() > 8192)
+    if (result.text.size() + question_footer.size() > 8192)
         throw std::runtime_error("cognition preview prompt exceeded its byte limit");
+    result.text += question_footer;
     return result;
 }
 
