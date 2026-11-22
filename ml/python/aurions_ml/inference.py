@@ -134,8 +134,12 @@ def generate_from_bytes(
         raise ValueError("max_new_tokens must be between 1 and 128")
     model, tokenizer = load_candidate_model_from_bytes(checkpoint_bytes)
     # A prompt is a prefix, not a completed training sample: append BOS but
-    # never EOS before asking the model to predict the next token.
-    generated = [tokenizer.BOS, *tokenizer.encode(prompt, add_boundaries=False)]
+    # never EOS before asking the model to predict the next token. Refuse
+    # overlong prompts instead of silently hiding evidence behind truncation.
+    prompt_tokens = tokenizer.encode(prompt, add_boundaries=False)
+    if len(prompt_tokens) + 1 > model.config.context_length:
+        raise ValueError("prompt exceeds candidate context length")
+    generated = [tokenizer.BOS, *prompt_tokens]
     with torch.inference_mode():
         for _ in range(max_new_tokens):
             context = torch.tensor(
