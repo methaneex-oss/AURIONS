@@ -122,14 +122,12 @@ def train_admitted_dataset(
     torch.set_num_threads(1)
     # Learn merges from the training split only. Validation and held-out text
     # never influence the tokenizer vocabulary or merge ranking.
-    tokenizer = ByteBPETokenizer.train(split_text["train"], vocab_size=512)
     # Repetitive training corpora can be compressed into fewer than one context
     # window by aggressive BPE merges. Bound merge count using training data
     # alone; validation and held-out text never influence tokenizer fitting.
-    while len(tokenizer.encode(split_text["train"])) < 65 and tokenizer.vocab_size > ByteBPETokenizer.BASE_VOCAB_SIZE:
-        tokenizer = ByteBPETokenizer.train(
-            split_text["train"], vocab_size=tokenizer.vocab_size - 1
-        )
+    tokenizer = ByteBPETokenizer.train(
+        split_text["train"], vocab_size=512, min_tokens=65
+    )
     if len(tokenizer.encode(split_text["train"])) < 65:
         raise ValueError("training split is too short to produce one model context after tokenization")
     if tokenizer.training_corpus_sha256 != split_map["train"].content_sha256:
