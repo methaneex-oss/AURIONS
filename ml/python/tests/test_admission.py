@@ -238,6 +238,17 @@ def test_admitted_artifacts_train_and_emit_quarantined_checkpoint(tmp_path: Path
         "train", "validation", "held_out"
     }
 
+    # The admitted-data checkpoint is now consumable by the local model path,
+    # but remains quarantined and cannot enter the active-model path.
+    from aurions_ml.inference import generate, load_candidate_model
+
+    candidate_path = tmp_path / "candidate.pt"
+    candidate_path.write_bytes(stored)
+    loaded_model, _ = load_candidate_model(candidate_path)
+    assert loaded_model.training is False
+    generated = generate(candidate_path, "AURIONS", max_new_tokens=8)
+    assert generated.startswith("AURIONS")
+
 
 def test_training_rejects_unimplemented_objective(tmp_path: Path):
     from dataclasses import replace
