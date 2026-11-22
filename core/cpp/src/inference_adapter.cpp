@@ -326,7 +326,7 @@ std::string run_worker_process(
     const std::vector<std::string> arguments{
         python, "-m", "aurions_ml.inference_worker",
         "--artifact-store", artifact_store.string(),
-        "--max-message-bytes", "16384"
+        "--max-message-bytes", "65536"
     };
     std::vector<char*> argv;
     argv.reserve(arguments.size() + 1);
