@@ -1,5 +1,6 @@
 #include "aurions/belief_store.hpp"
 #include "aurions/experience_store.hpp"
+#include "aurions/inference_adapter.hpp"
 #include "aurions/memory_context.hpp"
 #include "aurions/strategy_store.hpp"
 
@@ -94,6 +95,34 @@ void print_belief(const aurions::BeliefSnapshot& belief) {
     std::cout << "]}\n";
 }
 
+
+[[nodiscard]] std::size_t parse_token_limit(std::string_view value) {
+    unsigned long long result{};
+    const auto parsed = std::from_chars(value.data(), value.data() + value.size(), result);
+    if (parsed.ec != std::errc{} || parsed.ptr != value.data() + value.size() ||
+        result == 0 || result > 128) {
+        throw std::invalid_argument("max-new-tokens must be an integer from 1 to 128");
+    }
+    return static_cast<std::size_t>(result);
+}
+
+int run_model(int argc, char** argv) {
+    if ((argc != 7 && argc != 8) || std::string_view(argv[2]) != "preview") {
+        usage();
+        return EXIT_FAILURE;
+    }
+    const std::size_t max_new_tokens = argc == 8 ? parse_token_limit(argv[7]) : 32;
+    aurions::PythonProcessInferenceAdapter adapter(argv[3], argv[4]);
+    const auto result = adapter.preview(argv[5], argv[6], max_new_tokens);
+    std::cout
+        << "{\\"job_id\\":\\"" << result.job_id
+        << "\\",\\"candidate_status\\":\\"" << result.candidate_status
+        << "\\",\\"candidate_artifact_sha256\\":\\"" << result.candidate_artifact_sha256
+        << "\\",\\"generated_text\\":\\"" << json_escape(result.generated_text)
+        << "\\",\\"max_new_tokens\\":" << result.max_new_tokens << "}\\n";
+    return EXIT_SUCCESS;
+}
+
 void usage() {
     std::cerr
         << "Usage:\n"
@@ -106,7 +135,8 @@ void usage() {
         << "  aurions belief show <database> <belief-uuid>\n"
         << "  aurions cognition context <database> <query> [max-items 1-50]\n"
         << "  aurions strategy choose <database> <context-ref> <strategy-ref> [strategy-ref ...]\n"
-        << "  aurions strategy outcome <database> <prediction-uuid> <experience-uuid> <success|failure>\n";
+        << "  aurions strategy outcome <database> <prediction-uuid> <experience-uuid> <success|failure>\n"
+        << "  aurions model preview <python-executable> <artifact-store> <artifact-uri> <prompt> [max-new-tokens 1-128]\n";
 }
 
 int run_experience(int argc, char** argv) {
@@ -314,6 +344,7 @@ int main(int argc, char** argv) {
         if (group == "belief") return run_belief(argc, argv);
         if (group == "cognition") return run_cognition(argc, argv);
         if (group == "strategy") return run_strategy(argc, argv);
+        if (group == "model") return run_model(argc, argv);
         usage();
         return EXIT_FAILURE;
     } catch (const std::exception& error) {
