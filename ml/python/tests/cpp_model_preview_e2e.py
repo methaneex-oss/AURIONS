@@ -74,7 +74,7 @@ def main():
         expected_prompt = (
             "Evidence only; no actions.\n"
             "O source:public: AURIONS public evidence shows the sample has a stable property.\n"
-            "B public-domain 0.8 supported supports 0.8: AURIONS public evidence supports the public hypothesis.\n"
+            "B public-domain 0.8 provisional supports 0.8: AURIONS public evidence supports the public hypothesis.\n"
             "\nQ AURIONS evidence\n"
         )
 
