@@ -12,6 +12,8 @@ on:
     branches: [main]
     paths:
       - "ml/python/**"
+      - "core/cpp/**"
+      - "CMakeLists.txt"
       - ".github/workflows/model-baseline.yml"
 
 permissions:
