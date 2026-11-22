@@ -22,6 +22,7 @@ class TrainingResult:
     steps: int
     initial_validation_loss: float
     final_validation_loss: float
+    initial_held_out_loss: float
     held_out_loss: float
     admission_manifest_id: str
     admission_id: str
@@ -131,6 +132,7 @@ def train_admitted_dataset(
     model = DecoderOnlyTransformer(config)
     optimizer = torch.optim.AdamW(model.parameters(), lr=0.003, weight_decay=0.01)
     initial_validation_loss = _evaluate(model, validation_x, validation_y)
+    initial_held_out_loss = _evaluate(model, held_out_x, held_out_y)
 
     model.train()
     for step in range(steps):
@@ -150,6 +152,11 @@ def train_admitted_dataset(
         raise RuntimeError(
             "training failed to improve validation loss: "
             f"{initial_validation_loss:.6f} -> {final_validation_loss:.6f}"
+        )
+    if not held_out_loss < initial_held_out_loss:
+        raise RuntimeError(
+            "training failed to improve held-out loss: "
+            f"{initial_held_out_loss:.6f} -> {held_out_loss:.6f}"
         )
 
     payload = {
@@ -178,6 +185,7 @@ def train_admitted_dataset(
             "steps": steps,
             "initial_validation_loss": initial_validation_loss,
             "final_validation_loss": final_validation_loss,
+            "initial_held_out_loss": initial_held_out_loss,
             "held_out_loss": held_out_loss,
             "corpus_kind": "admitted-manifest-artifacts",
             "data_scope": "manifest-authorized-splits-only",
@@ -203,6 +211,7 @@ def train_admitted_dataset(
         steps=steps,
         initial_validation_loss=initial_validation_loss,
         final_validation_loss=final_validation_loss,
+        initial_held_out_loss=initial_held_out_loss,
         held_out_loss=held_out_loss,
         admission_manifest_id=admission.manifest_id,
         admission_id=admission_id,
