@@ -38,4 +38,10 @@ if(BUILD_TESTING)
             ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/inference_adapter_integration.py
             $<TARGET_FILE:aurions>
     )
+    add_test(
+        NAME aurions.cognition.quarantined_preview
+        COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/cognition_preview_integration.py
+            $<TARGET_FILE:aurions>
+    )
 endif()
