@@ -36,6 +36,16 @@ namespace {
     return static_cast<std::size_t>(result);
 }
 
+[[nodiscard]] std::size_t parse_context_limit(std::string_view value) {
+    unsigned long long result{};
+    const auto parsed = std::from_chars(value.data(), value.data() + value.size(), result);
+    if (parsed.ec != std::errc{} || parsed.ptr != value.data() + value.size() ||
+        result == 0 || result > 50) {
+        throw std::invalid_argument("max-items must be an integer from 1 to 50");
+    }
+    return static_cast<std::size_t>(result);
+}
+
 [[nodiscard]] double parse_real(std::string_view value, const char* name) {
     double result{};
     const auto parsed = std::from_chars(value.data(), value.data() + value.size(), result);
@@ -258,6 +268,7 @@ struct CognitionPreviewPrompt {
     std::size_t included_observations{};
     std::size_t included_beliefs{};
     std::size_t omitted_sensitive{};
+    std::size_t omitted_unverified{};
     std::size_t omitted_budget{};
 };
 
@@ -305,7 +316,11 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
             has_evidence = true;
             if (revision.evidence_sensitivity != 0) public_evidence_only = false;
         }
-        if (!has_evidence || !public_evidence_only) {
+        if (!has_evidence) {
+            ++result.omitted_unverified;
+            continue;
+        }
+        if (!public_evidence_only) {
             ++result.omitted_sensitive;
             continue;
         }
@@ -333,7 +348,7 @@ int run_cognition_preview(int argc, char** argv) {
         usage();
         return EXIT_FAILURE;
     }
-    const std::size_t max_items = argc >= 9 ? parse_limit(argv[8]) : 8;
+    const std::size_t max_items = argc >= 9 ? parse_context_limit(argv[8]) : 8;
     const std::size_t max_new_tokens = argc == 10 ? parse_token_limit(argv[9]) : 32;
     aurions::ExperienceStore experiences(argv[3]);
     aurions::BeliefStore beliefs(argv[3]);
@@ -345,15 +360,16 @@ int run_cognition_preview(int argc, char** argv) {
     aurions::PythonProcessInferenceAdapter adapter(argv[4], argv[5]);
     const auto result = adapter.preview(argv[6], prompt.text, max_new_tokens);
     std::cout
-        << "{\\"job_id\\":\\"" << result.job_id
-        << "\\",\\"candidate_status\\":\\"" << result.candidate_status
-        << "\\",\\"candidate_artifact_sha256\\":\\"" << result.candidate_artifact_sha256
-        << "\\",\\"generated_text\\":\\"" << json_escape(result.generated_text)
-        << "\\",\\"included_observations\\":" << prompt.included_observations
-        << ",\\"included_beliefs\\":" << prompt.included_beliefs
-        << ",\\"omitted_sensitive\\":" << prompt.omitted_sensitive
-        << ",\\"omitted_budget\\":" << prompt.omitted_budget
-        << ",\\"prompt_bytes\\":" << prompt.text.size() << "}\\n";
+        << "{\"job_id\":\"" << result.job_id
+        << "\",\"candidate_status\":\"" << result.candidate_status
+        << "\",\"candidate_artifact_sha256\":\"" << result.candidate_artifact_sha256
+        << "\",\"generated_text\":\"" << json_escape(result.generated_text)
+        << "\",\"included_observations\":" << prompt.included_observations
+        << ",\"included_beliefs\":" << prompt.included_beliefs
+        << ",\"omitted_sensitive\":" << prompt.omitted_sensitive
+        << ",\"omitted_unverified\":" << prompt.omitted_unverified
+        << ",\"omitted_budget\":" << prompt.omitted_budget
+        << ",\"prompt_bytes\":" << prompt.text.size() << "}\n";
     return EXIT_SUCCESS;
 }
 
