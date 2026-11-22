@@ -299,7 +299,7 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
         std::ostringstream section;
         section << "O source_type=" << experience.source_type
                 << " provenance=" << experience.provenance_ref
-                << " sensitivity=0: " << experience.content << "\\n";
+                << " sensitivity=0: " << experience.content << "\n";
         if (append(section.str())) ++result.included_observations;
     }
     append("");
@@ -327,7 +327,7 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
                 << " status=" << current.epistemic_status
                 << " stance=" << current.evidence_stance
                 << " reliability=" << current.evidence_reliability
-                << " sensitivity=0: " << belief.proposition << "\\n";
+                << " sensitivity=0: " << belief.proposition << "\n";
         if (append(section.str())) ++result.included_beliefs;
     }
     if (result.text.size() + question_footer.size() > 8192)
