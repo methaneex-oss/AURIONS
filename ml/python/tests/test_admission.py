@@ -36,17 +36,17 @@ def build_databases(tmp_path: Path, *, status="active", expires_at=None, trainin
     source_artifact_ref = artifact_store.put_bytes(source_bytes).uri if artifact_store else "artifact:source-one"
     split_artifacts = {}
     split_texts = {
-        "train": "\\n".join(
+        "train": "\n".join(
             f"AURIONS learns from authorized training experience number {index}. "
             f"Evidence is evaluated with record {index}."
             for index in range(120)
         ),
-        "validation": "\\n".join(
+        "validation": "\n".join(
             f"AURIONS evaluates predictions on validation sample number {index}. "
             f"Evidence remains separate for sample {index}."
             for index in range(120, 180)
         ),
-        "held_out": "\\n".join(
+        "held_out": "\n".join(
             f"AURIONS predicts on held out example number {index}. "
             f"Results are checked independently for example {index}."
             for index in range(180, 240)
