@@ -123,12 +123,16 @@ def load_candidate_model(
     return load_candidate_model_from_bytes(checkpoint.read_bytes())
 
 
-def generate(checkpoint: Path, prompt: str, *, max_new_tokens: int = 32) -> str:
+def generate_from_bytes(
+    checkpoint_bytes: bytes, prompt: str, *, max_new_tokens: int = 32
+) -> str:
     if not prompt:
         raise ValueError("prompt must not be empty")
+    if len(prompt.encode("utf-8")) > 8192:
+        raise ValueError("prompt exceeds the 8192-byte limit")
     if max_new_tokens < 1 or max_new_tokens > 128:
         raise ValueError("max_new_tokens must be between 1 and 128")
-    model, tokenizer = load_candidate_model(checkpoint)
+    model, tokenizer = load_candidate_model_from_bytes(checkpoint_bytes)
     # A prompt is a prefix, not a completed training sample: append BOS but
     # never EOS before asking the model to predict the next token.
     generated = [tokenizer.BOS, *tokenizer.encode(prompt, add_boundaries=False)]
@@ -143,6 +147,9 @@ def generate(checkpoint: Path, prompt: str, *, max_new_tokens: int = 32) -> str:
             generated.append(next_id)
     return tokenizer.decode(generated)
 
+
+def generate(checkpoint: Path, prompt: str, *, max_new_tokens: int = 32) -> str:
+    return generate_from_bytes(checkpoint.read_bytes(), prompt, max_new_tokens=max_new_tokens)
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
