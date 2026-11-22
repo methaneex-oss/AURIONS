@@ -83,5 +83,6 @@ jobs:
           path: |
             artifacts/aurions-synthetic-baseline.pt
             artifacts/aurions-admitted-candidate.pt
+            artifacts/aurions-preview-benchmark.json
           if-no-files-found: error
           retention-days: 14
