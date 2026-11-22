@@ -5,6 +5,8 @@ on:
     branches: ["impl/**"]
     paths:
       - "ml/python/**"
+      - "core/cpp/**"
+      - "CMakeLists.txt"
       - ".github/workflows/model-baseline.yml"
   pull_request:
     branches: [main]
@@ -43,6 +45,24 @@ jobs:
           PYTHONPATH: ml/python
           AURIONS_CANDIDATE_CHECKPOINT: artifacts/aurions-admitted-candidate.pt
         run: python -m pytest -q ml/python/tests
+
+      - name: Install SQLite development headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsqlite3-dev
+
+      - name: Build C++ cognition and inference adapter
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+          cmake --build build --parallel 2
+          ctest --test-dir build --output-on-failure
+
+      - name: Exercise real C++ to admitted-candidate cognition preview
+        env:
+          PYTHONPATH: ml/python
+          AURIONS_CANDIDATE_CHECKPOINT: artifacts/aurions-admitted-candidate.pt
+        run: |
+          python ml/python/tests/cpp_model_preview_e2e.py build/aurions "$AURIONS_CANDIDATE_CHECKPOINT"
 
       - name: Produce reproducible synthetic-only checkpoint
         env:
