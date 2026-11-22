@@ -14,7 +14,7 @@ from typing import Any
 
 import torch
 
-from .model import ByteTokenizer, DecoderConfig, DecoderOnlyTransformer
+from .model import ByteBPETokenizer, ByteTokenizer, DecoderConfig, DecoderOnlyTransformer
 
 
 def _validate_dataset_lineage(lineage: Any) -> None:
@@ -75,9 +75,25 @@ def load_candidate_model(checkpoint: Path) -> tuple[DecoderOnlyTransformer, Byte
         if not training["held_out_loss"] < training["initial_held_out_loss"]:
             raise ValueError("candidate has no demonstrated held-out-loss improvement")
     tokenizer_metadata = payload.get("tokenizer", {})
-    tokenizer = ByteTokenizer()
-    if tokenizer_metadata != {"name": tokenizer.VERSION, "vocab_size": tokenizer.VOCAB_SIZE}:
-        raise ValueError("checkpoint tokenizer identity does not match this runtime")
+    if not isinstance(tokenizer_metadata, dict):
+        raise ValueError("checkpoint tokenizer metadata is malformed")
+    tokenizer_name = tokenizer_metadata.get("name")
+    if tokenizer_name == ByteTokenizer.VERSION:
+        tokenizer = ByteTokenizer()
+        if tokenizer_metadata != {"name": tokenizer.VERSION, "vocab_size": tokenizer.VOCAB_SIZE}:
+            raise ValueError("checkpoint byte-tokenizer identity does not match this runtime")
+    elif tokenizer_name == ByteBPETokenizer.VERSION:
+        tokenizer = ByteBPETokenizer.from_dict(tokenizer_metadata)
+        if artifact_kind != "dataset-trained-candidate":
+            raise ValueError("trained BPE tokenizer is only valid for admitted-data candidates")
+        train_split = next(
+            item for item in payload["dataset_lineage"]["splits"]
+            if item["split_type"] == "train"
+        )
+        if tokenizer.training_corpus_sha256 != train_split["content_sha256"]:
+            raise ValueError("tokenizer was not trained from the checkpoint's admitted train split")
+    else:
+        raise ValueError("unsupported checkpoint tokenizer")
     architecture = dict(payload.get("architecture", {}))
     if architecture.pop("architecture", None) != "decoder-only-causal-transformer":
         raise ValueError("unsupported model architecture")
