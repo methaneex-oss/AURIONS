@@ -65,12 +65,15 @@ def load_candidate_model(checkpoint: Path) -> tuple[DecoderOnlyTransformer, Byte
         training = payload.get("training")
         if not isinstance(training, dict):
             raise ValueError("dataset-trained candidate is missing training evidence")
-        for field in ("initial_validation_loss", "final_validation_loss", "held_out_loss"):
+        for field in ("initial_validation_loss", "final_validation_loss",
+                      "initial_held_out_loss", "held_out_loss"):
             value = training.get(field)
             if not isinstance(value, (int, float)) or not math.isfinite(value):
                 raise ValueError(f"candidate training evidence has invalid {field}")
         if not training["final_validation_loss"] < training["initial_validation_loss"]:
             raise ValueError("candidate has no demonstrated validation-loss improvement")
+        if not training["held_out_loss"] < training["initial_held_out_loss"]:
+            raise ValueError("candidate has no demonstrated held-out-loss improvement")
     tokenizer_metadata = payload.get("tokenizer", {})
     tokenizer = ByteTokenizer()
     if tokenizer_metadata != {"name": tokenizer.VERSION, "vocab_size": tokenizer.VOCAB_SIZE}:
