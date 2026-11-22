@@ -57,17 +57,17 @@ def build_canonical_stores(tmp_path: Path, *, authorization_expiry=4_000_000_000
         "train": "\n".join(
             f"AURIONS learns from authorized training experience number {index}. "
             f"Evidence is evaluated with record {index}."
-            for index in range(120)
+            for index in range(240)
         ),
         "validation": "\n".join(
             f"AURIONS evaluates predictions on validation sample number {index}. "
             f"Evidence remains separate for sample {index}."
-            for index in range(120, 180)
+            for index in range(240, 360)
         ),
         "held_out": "\n".join(
             f"AURIONS predicts on held out example number {index}. "
             f"Results are checked independently for example {index}."
-            for index in range(180, 240)
+            for index in range(360, 480)
         ),
     }
     for split_type, split_text in split_texts.items():
