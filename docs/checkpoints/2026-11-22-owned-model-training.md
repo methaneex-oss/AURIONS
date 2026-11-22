@@ -1,75 +1,73 @@
-# AURIONS Implementation Checkpoint — Owned Model Training and Candidate Preview
+# AURIONS Implementation Checkpoint — Owned Model Training and Cognitive Preview
 
 **Checkpoint date:** 2026-11-22  
 **Repository:** `methaneex-oss/AURIONS`  
 **Branch:** `impl/experience-continuity`  
-**Verified code HEAD:** `067a977511b54c6762cbd5993acddc8231dafdb0`
-**Checkpoint metadata commit:** `819ce3029ea65751bfe1aae3a34054e72741eeea` (superseded by later code commits)  
+**Verified implementation HEAD:** `195363a5ad52855dc69c36f5c6fa990711157003`  
 **Previous implementation checkpoint:** `docs/checkpoints/2026-11-20-memory-context.md`
 
-## Completed implementation
+## Implemented and verified
 
-- Added a deterministic, trainable byte-level BPE tokenizer. Its merge table, special-token mapping, vocabulary size and training-corpus SHA-256 are embedded in the model checkpoint.
-- The admitted-data training path learns tokenizer merges from the admitted **training split only**. Validation and held-out splits are not used to build the tokenizer.
-- Training now rejects manifests whose train, validation and held-out artifacts or content digests are not distinct.
-- Reworked sliding-window construction to use PyTorch tensor views rather than materializing a full overlapping copy of the corpus.
-- Candidate training must improve both validation and held-out next-token loss relative to the same randomly initialized baseline before a checkpoint is emitted.
-- The candidate inference loader restores the exact BPE tokenizer from checkpoint metadata, verifies tokenizer-to-training-split digest lineage, checks model/tokenizer vocabulary agreement, and rejects candidates that are not quarantined or are marked activation-eligible.
-- Corrected prompt construction: generation begins with BOS plus prompt tokens and does not incorrectly append EOS before prediction.
-- Admitted-data checkpoints can now be loaded and used for bounded local generation in a quarantined preview path. This is not production model activation.
+### Owned model training
 
-## Verified model training and tokenizer
+- Added a deterministic, trainable byte-level BPE tokenizer. The checkpoint carries the exact merge table, special-token mapping, vocabulary size and training-corpus SHA-256.
+- BPE merges are learned only from the admitted training split. Validation and held-out splits do not influence tokenizer fitting.
+- Training split artifacts and digests must be distinct for train, validation and held-out data.
+- BPE fitting has a training-only minimum-token constraint. It cannot merge the training split below one full model context window.
+- The owned causal Transformer now uses a 256-token context for admitted-data candidates.
+- Sliding-window construction uses tensor views rather than materializing a full overlapping copy of the corpus.
+- A candidate is retained only when both validation loss and held-out loss improve against its own random-initialization baseline.
+- Candidate loading verifies dataset lineage, tokenizer-to-training-split digest binding, model/tokenizer vocabulary agreement, finite training metrics and quarantine status.
+- Inference rejects a prompt that exceeds the candidate's context window; it no longer silently drops older evidence through implicit truncation.
 
-- Model baseline workflow [45071010301](https://github.com/methaneex-oss/AURIONS/actions/runs/45071010301) on Python code commit `80cef3b4101a33c460fef7fe125b324b432970c9`: **passed**, 37/37 Python tests. This verifies BPE training, train-split digest binding, held-out improvement, admitted-candidate reload/generation and the JSONL worker's request-validation and rejection paths.
-- C++ Core workflow [45071010285](https://github.com/methaneex-oss/AURIONS/actions/runs/45071010285) on code commit `80cef3b4101a33c460fef7fe125b324b432970c9`: **passed**, CMake configure/build and CTest (1/1).
-- Artifact `aurions-quarantined-model-checkpoints`: ID `14772832963`, size 1,428,509 bytes, SHA-256 `6578ac6b0ebbe89fddab11d5fe976619111fbb4a74a524d3f33032adce7c5136`, expires 2026-12-06. It contains the synthetic baseline and admitted-data candidate checkpoint from the worker integration test.
+### Candidate inference worker and C++ process adapter
 
-The later C++ process-adapter verification is recorded separately below; its exact code HEAD is `067a977511b54c6762cbd5993acddc8231dafdb0`.
+- `ml/python/aurions_ml/inference_worker.py` exposes a versioned JSONL `candidate_inference_preview` protocol.
+- The worker validates exact request fields, protocol version, UUID, artifact URI, prompt size and token limit; duplicate keys, unknown fields and malformed inputs are rejected.
+- It reads the selected SHA-256-addressed artifact from its configured artifact store and loads only a quarantined, non-activatable candidate.
+- The C++ `InferenceAdapter` interface and POSIX `PythonProcessInferenceAdapter` launch the worker without a shell, pass a restricted environment, enforce a 15-second default deadline and a 64 KiB response cap, and validate job identity, artifact digest, protocol status and quarantine state.
+- This is a bounded subprocess adapter, not an OS sandbox. The worker still runs under the same OS user identity and filesystem permissions. Deployment must provide a job-scoped artifact-store directory and stronger isolation before treating the worker as hostile-code containment. A hard memory limit is not yet enforced.
 
-## Capability boundary
+### C++ cognition-to-model preview
 
-Demonstrated: an AURIONS-owned, randomly initialized small causal Transformer can be trained on a rights-admitted, manifest-bound dataset; the training run learns a BPE tokenizer from the training split, measures validation and held-out token loss, persists a lineage-bound quarantined candidate, reloads it and generates bounded text locally.
-
-Not demonstrated: useful general language competence, natural-language understanding, reasoning, autonomous dataset acquisition, independent outcome verification, candidate evaluation against a meaningful external capability benchmark, candidate activation, C++ cognitive-core inference integration, Termux/Android inference performance, or cloud/mobile continuity. The test corpora are controlled fixtures, not a production language corpus. Do not describe this as a capable conversational brain.
-
-## Follow-on implementation — JSONL candidate inference worker
-
-Added `ml/python/aurions_ml/inference_worker.py`, a separate-process JSONL worker that accepts one versioned `candidate_inference_preview` request per line and reads only SHA-256-addressed candidate artifacts from its configured artifact store.
-
-- Strict protocol version and exact-field validation; rejects duplicate JSON keys, unknown fields, invalid UUIDs, unsupported job types, malformed artifact URIs, invalid Unicode, invalid token limits and oversized messages.
-- Verifies artifact bytes through the content-addressed store and loads only quarantined, non-activatable candidates.
-- Returns one bounded JSON response per request; stdout is protocol-only and diagnostics go to stderr.
-- Has no database, governance, credential, activation or live-cognition write interface.
-- Added byte-based candidate loading/generation APIs so the worker does not need arbitrary filesystem paths.
-- Subprocess tests cover successful preview, unknown/duplicate fields, an activation-eligible forged checkpoint and oversized input.
-
-This worker is independently process-tested, but it is **not yet supervised or invoked by the C++ cognitive core**. Parent-side process lifecycle, resource/time limits, job-scoped filesystem restrictions and C++ response validation remain required before it is a production inference path.
-
-## Follow-on implementation — C++ inference process adapter
-
-Added a model-independent C++ `InferenceAdapter` interface and a POSIX `PythonProcessInferenceAdapter`, exposed through:
+The C++ CLI now exposes:
 
 ```text
-aurions model preview <python-executable> <artifact-store> <artifact-uri> <prompt> [max-new-tokens 1-128]
+aurions cognition preview <database> <python-executable> <artifact-store> <artifact-uri> <query> [max-items] [max-new-tokens]
 ```
 
-The adapter launches `aurions_ml.inference_worker` without a shell, sends a versioned JSONL request, closes the request stream, reads a bounded response, validates protocol/job identity/candidate digest/quarantine state/token limit, and returns only preview text. It enforces a 15-second default wall-clock deadline, a 64 KiB response cap, and a restricted environment allowlist that excludes ambient API keys and credentials. The Python worker itself is constrained to one CPU thread.
+The command retrieves relevant experience records and beliefs from the existing stores, builds a compact evidence-only prompt, and invokes the selected quarantined candidate through the process adapter.
 
-The C++ integration test uses a fake worker and verifies Unicode/quote/backslash/newline round-tripping, successful candidate preview, worker rejection propagation, secret-environment non-disclosure and oversized-response termination.
+- Only sensitivity-level-zero observations are included.
+- Beliefs without evidence are omitted.
+- A belief is omitted if any attached evidence is not public.
+- Provenance, belief domain, confidence, epistemic status, stance and reliability are retained in the prompt.
+- Included and omitted evidence counts are returned with the generated preview.
+- Prompt framing uses actual newline separators and is checked against the candidate's real tokenizer/context length in the end-to-end test.
+- The preview cannot revise beliefs, write memories, activate the model or execute actions.
 
-- C++ Core workflow [45071592983](https://github.com/methaneex-oss/AURIONS/actions/runs/45071592983) on code HEAD `067a977511b54c6762cbd5993acddc8231dafdb0`: **passed**. Configure/build passed; CTest passed (2/2), including the new process-preview test.
-- Python model workflow [45071427010](https://github.com/methaneex-oss/AURIONS/actions/runs/45071427010) on Python code commit `9b0d198af2cd6a9ee969ea6d0920c24e4bd8bb80`: **passed**, 37/37 tests. No Python model/worker code changed after that tested commit in this C++ adapter milestone.
+## CI evidence at the verified implementation HEAD
 
-**Remaining boundary:** this is a subprocess adapter, not an OS sandbox. The worker still runs under the same user identity and filesystem permissions; the parent must provide a job-scoped artifact-store directory and deployment-level isolation before treating it as a hostile-code sandbox. CPU thread fan-out, wall-clock time and response bytes are bounded; a hard memory limit is not yet enforced. The C++ cognitive core does not yet build prompts from memory/beliefs or use model output to update a decision.
+- **AURIONS owned model baseline:** [workflow 45073271992](https://github.com/methaneex-oss/AURIONS/actions/runs/45073271992), commit `195363a5ad52855dc69c36f5c6fa990711157003`: **passed**. The run completed the Python model/admission/inference suite, C++ configure/build/CTest, the real C++ → retrieved cognition evidence → admitted candidate preview, synthetic checkpoint production, local checkpoint inference and artifact publication.
+- **C++ Core:** [workflow 45073272062](https://github.com/methaneex-oss/AURIONS/actions/runs/45073272062), same commit: **passed**. Configure, build and CTest passed.
+- **Published workflow artifact:** `aurions-quarantined-model-checkpoints`, artifact ID `14774151917`, size 1,529,987 bytes, SHA-256 `0a473c8391ec3cb7386fbd393b39a171961c9a8696462acf977ebd57ba08d5e9`. It contains the synthetic baseline and admitted-data candidate checkpoints. Expires 2026-12-06.
+
+## What this demonstrates—and what it does not
+
+**Demonstrated:** an AURIONS-owned, randomly initialized causal Transformer can be trained from a rights-admitted, manifest-bound dataset; learn and persist its own BPE tokenizer; improve next-token loss on validation and held-out splits; reload the resulting quarantined candidate; and generate a bounded preview from evidence assembled by the C++ experience and belief stores. The full cross-language path is exercised in CI.
+
+**Not demonstrated:** useful general language competence, robust natural-language understanding, general reasoning, independent outcome verification, autonomous dataset acquisition, meaningful task-level accuracy, production-scale training, candidate activation, belief revision from model output, action execution, Termux/Android performance, or multi-device/cloud continuity. The training corpora used in CI are controlled synthetic fixtures, not a production language corpus. A loss improvement on those fixtures is not proof of intelligence or useful conversational ability.
+
+The model output is currently an evidence-conditioned **preview only**. It is not trusted as a fact, cannot update beliefs, and cannot authorize actions. Candidate activation remains blocked pending a separate evaluation and governance lifecycle with owner approval.
 
 ## Next implementation objective
 
-Connect the preview adapter to a real, bounded cognition-context consumer that uses retrieved experiences and beliefs as evidence, preserves provenance/uncertainty, and measures output against held-out tasks. Keep candidate inference quarantined; do not allow generated text to revise beliefs or execute actions until independent evaluation and governance exist. and a bounded separate-process worker adapter that can consume an explicitly selected, quarantined candidate for evaluation only. Use a versioned JSONL contract, strict request/response validation, time/resource bounds, job-scoped artifact access and no worker authority over live cognition or activation. Then connect the returned model output to a real cognition-context consumer and evaluate it on held-out tasks. Do not wire a quarantined candidate into the active runtime.
+Build a task-level candidate evaluation loop that uses held-out, rights-admitted examples and reports measurable behaviour beyond next-token loss. The evaluator must compare candidate output with a baseline, preserve dataset and prompt lineage, reject unsupported or unsafe outputs, and produce a reproducible promotion decision. Keep candidates quarantined until evaluation and owner-approval gates are genuinely satisfied. Do not treat a passing preview integration as proof of general understanding.
 
 ## Resume instructions
 
-1. Verify the live branch head before editing; preserve this branch and do not modify `main`.
-2. Inspect current Python model/tokenizer/training/inference code and the C++ core before changing interfaces.
-3. Continue implementation; do not restart the project or replace existing architecture.
-4. Keep claims separated into implemented, CI-tested, target-device-tested, independently verified and accepted.
-5. No model candidate may be activated without the separate evaluation, governance and owner-approval lifecycle.
+1. Verify the live branch HEAD before editing; preserve `impl/experience-continuity` and do not modify `main`.
+2. Continue implementation from this checkpoint; do not restart or redesign the existing architecture.
+3. Keep claims separated into implemented, CI-tested, target-device-tested, independently verified and accepted.
+4. Treat a candidate as quarantined until separate evaluation and owner approval authorize promotion.
+5. Prioritize observable learning and behaviour over adding mechanisms or documentation volume.
