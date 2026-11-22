@@ -53,12 +53,25 @@ def build_canonical_stores(tmp_path: Path, *, authorization_expiry=4_000_000_000
     source_digest = hashlib.sha256(source_bytes).hexdigest() if artifact_store else SOURCE_DIGEST
     source_artifact_ref = artifact_store.put_bytes(source_bytes).uri if artifact_store else "artifact:source-one"
     split_artifacts = {}
-    for split_type, sentence in {
-        "train": "AURIONS learns from authorized training experience. ",
-        "validation": "AURIONS evaluates predictions on validation experience. ",
-        "held_out": "AURIONS is evaluated on held out experience. ",
-    }.items():
-        split_bytes = (sentence * 100).encode("utf-8")
+    split_texts = {
+        "train": "\\n".join(
+            f"AURIONS learns from authorized training experience number {index}. "
+            f"Evidence is evaluated with record {index}."
+            for index in range(120)
+        ),
+        "validation": "\\n".join(
+            f"AURIONS evaluates predictions on validation sample number {index}. "
+            f"Evidence remains separate for sample {index}."
+            for index in range(120, 180)
+        ),
+        "held_out": "\\n".join(
+            f"AURIONS predicts on held out example number {index}. "
+            f"Results are checked independently for example {index}."
+            for index in range(180, 240)
+        ),
+    }
+    for split_type, split_text in split_texts.items():
+        split_bytes = split_text.encode("utf-8")
         split_artifacts[split_type] = (
             artifact_store.put_bytes(split_bytes).uri,
             hashlib.sha256(split_bytes).hexdigest(),
