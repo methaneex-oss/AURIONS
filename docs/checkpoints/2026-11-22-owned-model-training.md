@@ -3,7 +3,8 @@
 **Checkpoint date:** 2026-11-22  
 **Repository:** `methaneex-oss/AURIONS`  
 **Branch:** `impl/experience-continuity`  
-**Verified HEAD:** `7f36a41e07a30a7d16446dc5b48968b8c054ea3a`  
+**Verified code HEAD:** `80cef3b4101a33c460fef7fe125b324b432970c9`
+**Checkpoint metadata commit:** `819ce3029ea65751bfe1aae3a34054e72741eeea` (superseded by later code commits)  
 **Previous implementation checkpoint:** `docs/checkpoints/2026-11-20-memory-context.md`
 
 ## Completed implementation
@@ -36,6 +37,19 @@ The model workflow published artifact `aurions-quarantined-model-checkpoints`:
 Demonstrated: an AURIONS-owned, randomly initialized small causal Transformer can be trained on a rights-admitted, manifest-bound dataset; the training run learns a BPE tokenizer from the training split, measures validation and held-out token loss, persists a lineage-bound quarantined candidate, reloads it and generates bounded text locally.
 
 Not demonstrated: useful general language competence, natural-language understanding, reasoning, autonomous dataset acquisition, independent outcome verification, candidate evaluation against a meaningful external capability benchmark, candidate activation, C++ cognitive-core inference integration, Termux/Android inference performance, or cloud/mobile continuity. The test corpora are controlled fixtures, not a production language corpus. Do not describe this as a capable conversational brain.
+
+## Follow-on implementation — JSONL candidate inference worker
+
+Added `ml/python/aurions_ml/inference_worker.py`, a separate-process JSONL worker that accepts one versioned `candidate_inference_preview` request per line and reads only SHA-256-addressed candidate artifacts from its configured artifact store.
+
+- Strict protocol version and exact-field validation; rejects duplicate JSON keys, unknown fields, invalid UUIDs, unsupported job types, malformed artifact URIs, invalid Unicode, invalid token limits and oversized messages.
+- Verifies artifact bytes through the content-addressed store and loads only quarantined, non-activatable candidates.
+- Returns one bounded JSON response per request; stdout is protocol-only and diagnostics go to stderr.
+- Has no database, governance, credential, activation or live-cognition write interface.
+- Added byte-based candidate loading/generation APIs so the worker does not need arbitrary filesystem paths.
+- Subprocess tests cover successful preview, unknown/duplicate fields, an activation-eligible forged checkpoint and oversized input.
+
+This worker is independently process-tested, but it is **not yet supervised or invoked by the C++ cognitive core**. Parent-side process lifecycle, resource/time limits, job-scoped filesystem restrictions and C++ response validation remain required before it is a production inference path.
 
 ## Next implementation objective
 
