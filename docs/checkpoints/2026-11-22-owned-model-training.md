@@ -18,19 +18,13 @@
 - Corrected prompt construction: generation begins with BOS plus prompt tokens and does not incorrectly append EOS before prediction.
 - Admitted-data checkpoints can now be loaded and used for bounded local generation in a quarantined preview path. This is not production model activation.
 
-## Exact-head verification
+## Verified model training and tokenizer
 
-HEAD `7f36a41e07a30a7d16446dc5b48968b8c054ea3a`:
+- Model baseline workflow [45071010301](https://github.com/methaneex-oss/AURIONS/actions/runs/45071010301) on Python code commit `80cef3b4101a33c460fef7fe125b324b432970c9`: **passed**, 37/37 Python tests. This verifies BPE training, train-split digest binding, held-out improvement, admitted-candidate reload/generation and the JSONL worker's request-validation and rejection paths.
+- C++ Core workflow [45071010285](https://github.com/methaneex-oss/AURIONS/actions/runs/45071010285) on code commit `80cef3b4101a33c460fef7fe125b324b432970c9`: **passed**, CMake configure/build and CTest (1/1).
+- Artifact `aurions-quarantined-model-checkpoints`: ID `14772832963`, size 1,428,509 bytes, SHA-256 `6578ac6b0ebbe89fddab11d5fe976619111fbb4a74a524d3f33032adce7c5136`, expires 2026-12-06. It contains the synthetic baseline and admitted-data candidate checkpoint from the worker integration test.
 
-- Model baseline workflow [45070728896](https://github.com/methaneex-oss/AURIONS/actions/runs/45070728896): **passed**. All 33 Python tests passed, including tokenizer round-trip/versioning, admitted training, held-out improvement, checkpoint restoration, candidate inference, worker-process training and synthetic smoke inference.
-- C++ Core workflow [45070728915](https://github.com/methaneex-oss/AURIONS/actions/runs/45070728915): **passed**. CMake configure, C++ build/link and CTest passed (1/1).
-
-The model workflow published artifact `aurions-quarantined-model-checkpoints`:
-- Artifact ID: `14773590943`
-- Size: 1,428,517 bytes
-- SHA-256: `70bc224e9d50e222d57e1306a9378d9ddd0f2a047626f936ba4a0c9e441e89d5`
-- Expires: 2026-12-06
-- Contains the synthetic baseline and the admitted-data candidate checkpoint produced by the worker integration test.
+The later C++ process-adapter verification is recorded separately below; its exact code HEAD is `067a977511b54c6762cbd5993acddc8231dafdb0`.
 
 ## Capability boundary
 
