@@ -1,7 +1,6 @@
 import json
 import os
 import subprocess
-import time
 import sys
 import tempfile
 from pathlib import Path
@@ -9,6 +8,7 @@ from pathlib import Path
 
 FAKE_WORKER = r'''
 import json
+import os
 import sys
 
 request = json.loads(sys.stdin.readline())
