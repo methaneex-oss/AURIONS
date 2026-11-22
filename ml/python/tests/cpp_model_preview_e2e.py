@@ -75,7 +75,7 @@ def main():
             "Evidence only; no actions.\n"
             "O source:public: AURIONS public evidence shows the sample has a stable property.\n"
             "B public-domain 0.8 supported supports 0.8: AURIONS public evidence supports the public hypothesis.\n"
-            "Q AURIONS evidence\n"
+            "\nQ AURIONS evidence\n"
         )
 
         # The complete prompt must fit the actual candidate's context, not merely
