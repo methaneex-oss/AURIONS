@@ -90,7 +90,8 @@ void print_belief(const aurions::BeliefSnapshot& belief) {
             << ",\"evidence_source_ref\":\"" << json_escape(revision.evidence_source_ref)
             << "\",\"evidence_stance\":\"" << json_escape(revision.evidence_stance)
             << "\",\"evidence_reliability\":" << revision.evidence_reliability
-            << ",\"evidence_relevance\":" << revision.evidence_relevance << "}";
+            << ",\"evidence_relevance\":" << revision.evidence_relevance
+            << ",\"evidence_sensitivity\":" << revision.evidence_sensitivity << "}";
     }
     std::cout << "]}\n";
 }
@@ -291,7 +292,8 @@ int run_cognition(int argc, char** argv) {
             << "\",\"revision\":" << current.number
             << ",\"evidence_source_ref\":\"" << json_escape(current.evidence_source_ref)
             << "\",\"evidence_stance\":\"" << json_escape(current.evidence_stance)
-            << "\",\"evidence_reliability\":" << current.evidence_reliability << "}";
+            << "\",\"evidence_reliability\":" << current.evidence_reliability
+            << ",\"evidence_sensitivity\":" << current.evidence_sensitivity << "}";
     }
     std::cout << "]}\n";
     return EXIT_SUCCESS;
