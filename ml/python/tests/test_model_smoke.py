@@ -1,8 +1,9 @@
+import hashlib
 from pathlib import Path
 
 import torch
 
-from aurions_ml.model import ByteTokenizer, DecoderConfig, DecoderOnlyTransformer
+from aurions_ml.model import ByteBPETokenizer, ByteTokenizer, DecoderConfig, DecoderOnlyTransformer
 from aurions_ml.smoke_train import run_smoke_training
 
 
@@ -10,6 +11,23 @@ def test_byte_tokenizer_round_trips_multilingual_utf8():
     tokenizer = ByteTokenizer()
     text = "Hello, 你好, مرحبا, Ẹ káàbọ̀"
     assert tokenizer.decode(tokenizer.encode(text)) == text
+
+
+def test_trainable_bpe_tokenizer_is_deterministic_versioned_and_multilingual():
+    training_text = "\\n".join(
+        f"AURIONS learns from training example {index}." for index in range(80)
+    )
+    tokenizer = ByteBPETokenizer.train(training_text, vocab_size=320)
+    multilingual = "Hello, 你好, مرحبا, Ẹ káàbọ̀, ગુજરાતી"
+    assert tokenizer.vocab_size > ByteBPETokenizer.BASE_VOCAB_SIZE
+    assert tokenizer.decode(tokenizer.encode(multilingual)) == multilingual
+    assert tokenizer.training_corpus_sha256 == hashlib.sha256(
+        training_text.encode("utf-8")
+    ).hexdigest()
+
+    restored = ByteBPETokenizer.from_dict(tokenizer.to_dict())
+    assert restored.to_dict() == tokenizer.to_dict()
+    assert restored.encode(multilingual) == tokenizer.encode(multilingual)
 
 
 def test_transformer_is_causal():
