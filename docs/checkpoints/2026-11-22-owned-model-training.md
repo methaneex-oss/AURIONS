@@ -3,7 +3,7 @@
 **Checkpoint date:** 2026-11-22  
 **Repository:** `methaneex-oss/AURIONS`  
 **Branch:** `impl/experience-continuity`  
-**Verified code HEAD:** `80cef3b4101a33c460fef7fe125b324b432970c9`
+**Verified code HEAD:** `067a977511b54c6762cbd5993acddc8231dafdb0`
 **Checkpoint metadata commit:** `819ce3029ea65751bfe1aae3a34054e72741eeea` (superseded by later code commits)  
 **Previous implementation checkpoint:** `docs/checkpoints/2026-11-20-memory-context.md`
 
@@ -51,9 +51,26 @@ Added `ml/python/aurions_ml/inference_worker.py`, a separate-process JSONL worke
 
 This worker is independently process-tested, but it is **not yet supervised or invoked by the C++ cognitive core**. Parent-side process lifecycle, resource/time limits, job-scoped filesystem restrictions and C++ response validation remain required before it is a production inference path.
 
+## Follow-on implementation — C++ inference process adapter
+
+Added a model-independent C++ `InferenceAdapter` interface and a POSIX `PythonProcessInferenceAdapter`, exposed through:
+
+```text
+aurions model preview <python-executable> <artifact-store> <artifact-uri> <prompt> [max-new-tokens 1-128]
+```
+
+The adapter launches `aurions_ml.inference_worker` without a shell, sends a versioned JSONL request, closes the request stream, reads a bounded response, validates protocol/job identity/candidate digest/quarantine state/token limit, and returns only preview text. It enforces a 15-second default wall-clock deadline, a 64 KiB response cap, and a restricted environment allowlist that excludes ambient API keys and credentials. The Python worker itself is constrained to one CPU thread.
+
+The C++ integration test uses a fake worker and verifies Unicode/quote/backslash/newline round-tripping, successful candidate preview, worker rejection propagation, secret-environment non-disclosure and oversized-response termination.
+
+- C++ Core workflow [45071592983](https://github.com/methaneex-oss/AURIONS/actions/runs/45071592983) on code HEAD `067a977511b54c6762cbd5993acddc8231dafdb0`: **passed**. Configure/build passed; CTest passed (2/2), including the new process-preview test.
+- Python model workflow [45071427010](https://github.com/methaneex-oss/AURIONS/actions/runs/45071427010) on Python code commit `9b0d198af2cd6a9ee969ea6d0920c24e4bd8bb80`: **passed**, 37/37 tests. No Python model/worker code changed after that tested commit in this C++ adapter milestone.
+
+**Remaining boundary:** this is a subprocess adapter, not an OS sandbox. The worker still runs under the same user identity and filesystem permissions; the parent must provide a job-scoped artifact-store directory and deployment-level isolation before treating it as a hostile-code sandbox. CPU thread fan-out, wall-clock time and response bytes are bounded; a hard memory limit is not yet enforced. The C++ cognitive core does not yet build prompts from memory/beliefs or use model output to update a decision.
+
 ## Next implementation objective
 
-Build the model-independent C++ inference boundary and a bounded separate-process worker adapter that can consume an explicitly selected, quarantined candidate for evaluation only. Use a versioned JSONL contract, strict request/response validation, time/resource bounds, job-scoped artifact access and no worker authority over live cognition or activation. Then connect the returned model output to a real cognition-context consumer and evaluate it on held-out tasks. Do not wire a quarantined candidate into the active runtime.
+Connect the preview adapter to a real, bounded cognition-context consumer that uses retrieved experiences and beliefs as evidence, preserves provenance/uncertainty, and measures output against held-out tasks. Keep candidate inference quarantined; do not allow generated text to revise beliefs or execute actions until independent evaluation and governance exist. and a bounded separate-process worker adapter that can consume an explicitly selected, quarantined candidate for evaluation only. Use a versioned JSONL contract, strict request/response validation, time/resource bounds, job-scoped artifact access and no worker authority over live cognition or activation. Then connect the returned model output to a real cognition-context consumer and evaluate it on held-out tasks. Do not wire a quarantined candidate into the active runtime.
 
 ## Resume instructions
 
