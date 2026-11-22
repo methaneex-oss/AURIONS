@@ -10,7 +10,7 @@ import torch.nn.functional as F
 
 from .admission import AdmissionResult
 from .artifact_store import ArtifactIntegrityError, ArtifactRef, ArtifactStore
-from .model import ByteTokenizer, DecoderConfig, DecoderOnlyTransformer
+from .model import ByteBPETokenizer, DecoderConfig, DecoderOnlyTransformer
 
 
 @dataclass(frozen=True)
@@ -28,14 +28,14 @@ class TrainingResult:
     admission_id: str
 
 
-def _make_windows(text: str, tokenizer: ByteTokenizer, context: int) -> tuple[torch.Tensor, torch.Tensor]:
+def _make_windows(text: str, tokenizer: ByteBPETokenizer, context: int) -> tuple[torch.Tensor, torch.Tensor]:
     tokens = torch.tensor(tokenizer.encode(text), dtype=torch.long)
     if tokens.numel() <= context + 1:
         raise ValueError("dataset split is too short for the configured context")
-    starts = torch.arange(tokens.numel() - context)
-    inputs = torch.stack([tokens[index : index + context] for index in starts])
-    targets = torch.stack([tokens[index + 1 : index + context + 1] for index in starts])
-    return inputs, targets
+    # unfold creates overlapping views rather than materializing an O(N*context)
+    # copy of the entire corpus. This keeps larger admitted datasets tractable.
+    windows = tokens.unfold(0, context + 1, 1)
+    return windows[:, :context], windows[:, 1:]
 
 
 def _evaluate(
@@ -74,6 +74,9 @@ def train_admitted_dataset(
     if set(split_map) != {"train", "validation", "held_out"} or len(split_map) != 3:
         raise ValueError("admitted manifest must contain exactly train, validation and held_out splits")
     split_refs = {split.artifact_ref for split in admission.splits}
+    split_digests = {split.content_sha256 for split in admission.splits}
+    if len(split_refs) != 3 or len(split_digests) != 3:
+        raise ValueError("train, validation and held_out splits must have distinct artifacts and content digests")
     declared_derived = set(admission.derived_artifact_refs)
     source_lineage_refs = {
         ref for source in admission.sources for ref in source.transformation_lineage_refs
@@ -117,8 +120,13 @@ def train_admitted_dataset(
     torch.manual_seed(seed)
     torch.use_deterministic_algorithms(True)
     torch.set_num_threads(1)
-    tokenizer = ByteTokenizer()
+    # Learn merges from the training split only. Validation and held-out text
+    # never influence the tokenizer vocabulary or merge ranking.
+    tokenizer = ByteBPETokenizer.train(split_text["train"], vocab_size=512)
+    if tokenizer.training_corpus_sha256 != split_map["train"].content_sha256:
+        raise RuntimeError("tokenizer training corpus digest does not match the admitted train split")
     config = DecoderConfig(
+        vocab_size=tokenizer.vocab_size,
         context_length=64, width=48, heads=4, layers=2, feed_forward_width=128
     )
     train_x, train_y = _make_windows(split_text["train"], tokenizer, config.context_length)
@@ -167,7 +175,7 @@ def train_admitted_dataset(
         "activation_block_reason": "candidate evaluation and owner activation are not implemented",
         "initialization": "random",
         "objective": "autoregressive-next-token-prediction",
-        "tokenizer": {"name": tokenizer.VERSION, "vocab_size": tokenizer.VOCAB_SIZE},
+        "tokenizer": tokenizer.to_dict(),
         "architecture": model.architecture_manifest(),
         "dataset_lineage": {
             "manifest_id": admission.manifest_id,
