@@ -84,7 +84,10 @@ def main():
         assert len(prompt_tokens) + 1 <= model.config.context_length
         assert preview["candidate_status"] == "quarantined"
         assert preview["candidate_artifact_sha256"] == candidate_ref.rsplit("/", 1)[1]
-        assert preview["generated_text"].startswith(expected_prompt)
+        assert preview["generated_text"].startswith(expected_prompt), (
+            f"expected prompt prefix={expected_prompt!r}; "
+            f"actual generated text={preview['generated_text']!r}"
+        )
         assert preview["included_observations"] == 1
         assert preview["included_beliefs"] == 1
         assert preview["omitted_sensitive"] == 2
