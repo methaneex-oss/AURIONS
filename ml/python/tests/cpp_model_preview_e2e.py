@@ -124,7 +124,7 @@ def main():
         output = Path("artifacts")
         output.mkdir(parents=True, exist_ok=True)
         (output / "aurions-preview-benchmark.json").write_text(
-            json.dumps(benchmark, sort_keys=True) + "\\n", encoding="utf-8"
+            json.dumps(benchmark, sort_keys=True) + \n, encoding="utf-8"
         )
         print("AURIONS_CONTEXT_BENCHMARK=" + json.dumps(benchmark, sort_keys=True))
 
