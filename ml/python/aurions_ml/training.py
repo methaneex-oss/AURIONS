@@ -125,16 +125,17 @@ def train_admitted_dataset(
     # Repetitive training corpora can be compressed into fewer than one context
     # window by aggressive BPE merges. Bound merge count using training data
     # alone; validation and held-out text never influence tokenizer fitting.
+    context_length = 256
     tokenizer = ByteBPETokenizer.train(
-        split_text["train"], vocab_size=512, min_tokens=65
+        split_text["train"], vocab_size=512, min_tokens=context_length + 1
     )
-    if len(tokenizer.encode(split_text["train"])) < 65:
+    if len(tokenizer.encode(split_text["train"])) < context_length + 1:
         raise ValueError("training split is too short to produce one model context after tokenization")
     if tokenizer.training_corpus_sha256 != split_map["train"].content_sha256:
         raise RuntimeError("tokenizer training corpus digest does not match the admitted train split")
     config = DecoderConfig(
         vocab_size=tokenizer.vocab_size,
-        context_length=64, width=48, heads=4, layers=2, feed_forward_width=128
+        context_length=context_length, width=48, heads=4, layers=2, feed_forward_width=128
     )
     train_x, train_y = _make_windows(split_text["train"], tokenizer, config.context_length)
     validation_x, validation_y = _make_windows(
