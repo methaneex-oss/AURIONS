@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -137,6 +138,7 @@ void usage() {
         << "  aurions belief evidence <database> <belief-uuid> <experience-uuid> <stance> <reliability> [relevance]\n"
         << "  aurions belief show <database> <belief-uuid>\n"
         << "  aurions cognition context <database> <query> [max-items 1-50]\n"
+        << "  aurions cognition preview <database> <python-executable> <artifact-store> <artifact-uri> <query> [max-items] [max-new-tokens]\n"
         << "  aurions strategy choose <database> <context-ref> <strategy-ref> [strategy-ref ...]\n"
         << "  aurions strategy outcome <database> <prediction-uuid> <experience-uuid> <success|failure>\n"
         << "  aurions model preview <python-executable> <artifact-store> <artifact-uri> <prompt> [max-new-tokens 1-128]\n";
@@ -251,7 +253,113 @@ int run_belief(int argc, char** argv) {
     return EXIT_FAILURE;
 }
 
+struct CognitionPreviewPrompt {
+    std::string text;
+    std::size_t included_observations{};
+    std::size_t included_beliefs{};
+    std::size_t omitted_sensitive{};
+    std::size_t omitted_budget{};
+};
+
+CognitionPreviewPrompt build_cognition_preview_prompt(
+    const std::string& query,
+    const aurions::MemoryContext& memory,
+    const std::vector<aurions::BeliefSnapshot>& beliefs) {
+    if (query.empty() || query.size() > 4096)
+        throw std::invalid_argument("cognition preview query must contain 1-4096 bytes");
+    CognitionPreviewPrompt result;
+    result.text =
+        "AURIONS experimental candidate preview. Do not execute actions or update stored beliefs.\\n"
+        "Use observations as recorded evidence, not guaranteed truth. Treat beliefs as provisional. "
+        "If evidence is insufficient, state what is unknown.\\n"
+        "Question: " + query + "\\n"
+        "Public observations:\\n";
+    auto append = [&](const std::string& section) {
+        if (result.text.size() + section.size() > 8192) {
+            ++result.omitted_budget;
+            return false;
+        }
+        result.text += section;
+        return true;
+    };
+    result.omitted_budget += memory.omitted_count;
+    for (const auto& item : memory.evidence) {
+        const auto& experience = item.experience;
+        if (experience.sensitivity != 0) {
+            ++result.omitted_sensitive;
+            continue;
+        }
+        std::ostringstream section;
+        section << "[observation source_type=" << experience.source_type
+                << " provenance=" << experience.provenance_ref
+                << " relevance=" << std::setprecision(8) << item.relevance
+                << "] " << experience.content << "\\n";
+        if (append(section.str())) ++result.included_observations;
+    }
+    append("Provisional beliefs (included only when every linked evidence record is public):\\n");
+    for (const auto& belief : beliefs) {
+        bool has_evidence = false;
+        bool public_evidence_only = true;
+        for (const auto& revision : belief.revisions) {
+            if (revision.evidence_count == 0) continue;
+            has_evidence = true;
+            if (revision.evidence_sensitivity != 0) public_evidence_only = false;
+        }
+        if (!has_evidence || !public_evidence_only) {
+            ++result.omitted_sensitive;
+            continue;
+        }
+        if (belief.revisions.empty()) continue;
+        const auto& current = belief.revisions.back();
+        std::ostringstream section;
+        section << "[belief domain=" << belief.domain
+                << " confidence=" << std::setprecision(8) << current.confidence
+                << " epistemic_status=" << current.epistemic_status
+                << " revision=" << current.number
+                << " evidence_count=" << current.evidence_count
+                << " evidence_stance=" << current.evidence_stance
+                << " evidence_reliability=" << current.evidence_reliability
+                << " evidence_sensitivity=" << current.evidence_sensitivity
+                << "] " << belief.proposition << "\\n";
+        if (append(section.str())) ++result.included_beliefs;
+    }
+    if (result.text.size() > 8192)
+        throw std::runtime_error("cognition preview prompt exceeded its byte limit");
+    return result;
+}
+
+int run_cognition_preview(int argc, char** argv) {
+    if (argc < 8 || argc > 10 || std::string_view(argv[2]) != "preview") {
+        usage();
+        return EXIT_FAILURE;
+    }
+    const std::size_t max_items = argc >= 9 ? parse_limit(argv[8]) : 8;
+    const std::size_t max_new_tokens = argc == 10 ? parse_token_limit(argv[9]) : 32;
+    aurions::ExperienceStore experiences(argv[3]);
+    aurions::BeliefStore beliefs(argv[3]);
+    aurions::MemoryContextBuilder builder(experiences);
+    const std::string query = argv[7];
+    const auto memory = builder.build(query, max_items, 4096);
+    const auto relevant_beliefs = beliefs.search(query, max_items);
+    const auto prompt = build_cognition_preview_prompt(query, memory, relevant_beliefs);
+    aurions::PythonProcessInferenceAdapter adapter(argv[4], argv[5]);
+    const auto result = adapter.preview(argv[6], prompt.text, max_new_tokens);
+    std::cout
+        << "{\\"job_id\\":\\"" << result.job_id
+        << "\\",\\"candidate_status\\":\\"" << result.candidate_status
+        << "\\",\\"candidate_artifact_sha256\\":\\"" << result.candidate_artifact_sha256
+        << "\\",\\"generated_text\\":\\"" << json_escape(result.generated_text)
+        << "\\",\\"included_observations\\":" << prompt.included_observations
+        << ",\\"included_beliefs\\":" << prompt.included_beliefs
+        << ",\\"omitted_sensitive\\":" << prompt.omitted_sensitive
+        << ",\\"omitted_budget\\":" << prompt.omitted_budget
+        << ",\\"prompt_bytes\\":" << prompt.text.size() << "}\\n";
+    return EXIT_SUCCESS;
+}
+
 int run_cognition(int argc, char** argv) {
+    if (argc >= 3 && std::string_view(argv[2]) == "preview")
+        return run_cognition_preview(argc, argv);
     if (argc < 5 || argc > 6 || std::string_view(argv[2]) != "context") {
         usage();
         return EXIT_FAILURE;
