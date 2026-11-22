@@ -279,8 +279,8 @@ CognitionPreviewPrompt build_cognition_preview_prompt(
     if (query.empty() || query.size() > 4096)
         throw std::invalid_argument("cognition preview query must contain 1-4096 bytes");
     CognitionPreviewPrompt result;
-    const std::string question_footer = "\\nQuestion: " + query + "\\n";
-    result.text = "AURIONS preview; evidence only, no actions.\\n";
+    const std::string question_footer = "\nQuestion: " + query + "\n";
+    result.text = "AURIONS preview; evidence only, no actions.\n";
     auto append = [&](const std::string& section) {
         if (result.text.size() + section.size() + question_footer.size() > 8192) {
             ++result.omitted_budget;
