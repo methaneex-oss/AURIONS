@@ -41,7 +41,7 @@ print(json.dumps(response, ensure_ascii=False, separators=(",", ":")))
 '''
 
 
-def invoke(executable: str, module_root: Path, artifact_store: Path, prompt: str):
+def invoke(executable: str, module_root: Path, artifact_store: Path, prompt: str, *, use_stdin=False):
     env = os.environ.copy()
     env["PYTHONPATH"] = str(module_root)
     return subprocess.run(
@@ -52,9 +52,10 @@ def invoke(executable: str, module_root: Path, artifact_store: Path, prompt: str
             sys.executable,
             str(artifact_store),
             "artifact://sha256/" + "a" * 64,
-            prompt,
+            "--stdin" if use_stdin else prompt,
             "8",
         ],
+        input=prompt if use_stdin else None,
         capture_output=True,
         text=True,
         env=env,
@@ -82,6 +83,16 @@ def main():
         assert response["candidate_artifact_sha256"] == "a" * 64
         assert response["generated_text"] == "preview: " + prompt
         assert response["max_new_tokens"] == 8
+
+        private_prompt = "private prompt must not be in argv: " + "x" * 200
+        stdin_completed = invoke(executable, root, artifact_store, private_prompt, use_stdin=True)
+        assert stdin_completed.returncode == 0, stdin_completed.stderr
+        stdin_response = json.loads(stdin_completed.stdout)
+        assert stdin_response["generated_text"] == "preview: " + private_prompt
+
+        oversized_stdin = invoke(executable, root, artifact_store, "x" * 8193, use_stdin=True)
+        assert oversized_stdin.returncode != 0
+        assert "stdin input exceeds" in oversized_stdin.stderr
 
         rejected = invoke(executable, root, artifact_store, "fail")
         assert rejected.returncode != 0
