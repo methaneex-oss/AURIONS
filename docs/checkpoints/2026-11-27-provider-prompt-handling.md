@@ -2,7 +2,7 @@
 
 **Date:** 2026-11-27  
 **Branch:** `impl/experience-continuity`  
-**Checkpoint HEAD:** `d104aa1bd11495b49ea47a218cbb088f5ac3b3b6`  
+**Checkpoint HEAD:** `7ff8bd4a2ae2b858d54921b65f30f4ed59dfbb74`  
 **Previous verified security fix:** `255957d7b0fcbd190ee5053deb68cddc5ea8e2c8`
 
 ## Bounded work completed
@@ -20,6 +20,7 @@
 - Full model-baseline workflow was still in progress at checkpoint creation. C++ Core run on `ad683f` was cancelled by subsequent push; a new C++ Core workflow on docs-only commit `d104aa1` was running. Final results must be rechecked.
 - No local build/test environment was available in this run; GitHub Actions is the validation source.
 - Provider stdin feature has no live provider test; tests mock provider invocation.
+- README's first private-input example was caught during review because shell history can store literal prompts and its newline escape was wrong. The example was corrected to silent shell input and a proper newline; this is documentation-only and not part of the test commit.
 - No PR, merge or main-branch modification.
 
 ## Review status
