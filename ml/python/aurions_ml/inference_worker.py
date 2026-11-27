@@ -1,8 +1,10 @@
 """Versioned JSONL worker for bounded inference with quarantined candidates.
 
-The parent process owns authentication, permissions, job-scoped artifact access,
-timeouts and resource limits. This worker can only read the supplied artifact
-store and return a preview; it cannot activate a model or mutate live state.
+The parent process validates requests, bounds IPC and enforces a timeout. The
+worker's application protocol restricts it to artifact preview and prevents
+model activation or direct cognitive-state mutation. This is NOT an OS sandbox:
+the Python process still runs with the launching user's filesystem and network
+permissions unless the deployment adds platform-specific isolation.
 """
 
 from __future__ import annotations
