@@ -41,6 +41,7 @@ Do not describe a subsystem, document, schema or passing host-side test as proof
 ## Start here
 
 - [One-Brain Product Charter](docs/product/ONE-BRAIN-PRODUCT-CHARTER.md) — governing product identity, local/cloud access, device control and learning.
+- [Brain/Inference Local-Cloud Contract v1](docs/architecture/BRAIN-INFERENCE-LOCAL-CLOUD-CONTRACT-V1.md) — one cognitive brain with local/offline and cloud/online inference routes; builder proposal, not yet implemented.
 - [First Usable Release Product Definition](docs/product/FIRST-USABLE-RELEASE-DEFINITION.md) — bounded first-release workflows and acceptance boundaries.
 - [System architecture](docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md)
 - [Open-world interaction and means architecture](docs/architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) — objective-led understanding and means discovery across contexts.
