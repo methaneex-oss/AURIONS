@@ -9,8 +9,13 @@ FAKE_PROVIDER = r'''#!/usr/bin/env python3
 import sys
 prompt = sys.stdin.read()
 marker = "cobalt river"
+private_marker = "violet harbor"
 if prompt.lower().count(marker) >= 2:
     print("CONTEXT_PRESENT")
+elif prompt.lower().count(private_marker) >= 2:
+    print("PRIVATE_CONTEXT_PRESENT")
+elif private_marker in prompt.lower():
+    print("PRIVATE_CONTEXT_FILTERED")
 elif marker in prompt.lower():
     print("CONTEXT_FILTERED")
 else:
@@ -63,12 +68,12 @@ def main():
 
         private = invoke(
             executable, database, fake_python, module_root, config,
-            "Private marker cobalt river.", sensitivity=2,
+            "Private marker violet harbor.", sensitivity=2,
         )
         assert private.returncode == 0, private.stderr
         filtered = invoke(
             executable, database, fake_python, module_root, config,
-            "Check private marker cobalt river.", sensitivity=0,
+            "Check private marker violet harbor.", sensitivity=0,
         )
         assert filtered.returncode == 0, filtered.stderr
         assert json.loads(filtered.stdout)["answer"] == "CONTEXT_FILTERED"
