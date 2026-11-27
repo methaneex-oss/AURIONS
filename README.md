@@ -31,17 +31,18 @@ Online information and local experience both feed learning. AURIONS must preserv
 - Evidence provenance, stance and revision history are returned for inspection. Duplicate use of the same experience as evidence for one belief is rejected.
 - A combined cognition-context command retrieves relevant experiences and current evidence-backed beliefs together, with confidence, revision and evidence provenance for a downstream reasoning consumer.
 - Outcome-driven strategy selection uses caller-supplied candidate references, persists prospective predictions, and revises later selections from provenance-linked outcomes across process restarts.
+- A first C++ `cognition chat` path now retrieves the same SQLite experience/belief context for local or cloud inference, persists successful user/assistant turns, and filters non-public memories from model context. Cloud use requires an explicit opt-in and public-only input; the local provider route is loopback-only. Its deterministic fake-provider integration test verifies recall across separate processes and the privacy/route gates; this does not yet prove a live provider or offline device operation.
 
 The integration test proves that a prior of 0.5 rises to 0.8 after reliable supporting evidence, returns to 0.5 after equally reliable contradictory evidence, and remains unchanged after contextual evidence. The full revision chain and evidence provenance survive separate CLI process lifetimes. Exact-head CI run [44844792537](https://github.com/methaneex-oss/AURIONS/actions/runs/44844792537) passed CMake configure, C++ build and CTest. The expanded strategy-adaptation integration test also passed exact-head CI run [44918008543](https://github.com/methaneex-oss/AURIONS/actions/runs/44918205266), including configure, build and CTest (1/1).
 
-This is a real but bounded learning primitive—not a complete learning brain. The evidence stance and reliability are currently supplied by the caller; AURIONS does not yet infer them from raw language or observations. The cognition-context command assembles relevant memory and belief state; it does not itself generate a reasoned natural-language answer. Bayesian belief revision is not, by itself, natural-language understanding, model reasoning, skill acquisition, prediction/outcome learning, behavioural adaptation, local/cloud inference or OS autonomy.
+This is a real but bounded learning primitive—not a complete learning brain. The evidence stance and reliability are currently supplied by the caller; AURIONS does not yet infer them from raw language or observations. The cognition-context command assembles relevant memory and belief state. The new `cognition chat` command generates a provider-backed response using that context, but it is a thin inference loop—not yet a goal/task manager, evaluator, web researcher, governed OS operator or complete learning brain. Bayesian belief revision is not, by itself, natural-language understanding, skill acquisition, autonomous planning or OS autonomy.
 
 Do not describe a subsystem, document, schema or passing host-side test as proof that the complete brain works. The next work is to connect evidence retrieval and belief revision to a cognitive consumer, then learn from predictions and independently observed outcomes. Reconcile this implementation with canonical persistence before broadening it.
 
 ## Start here
 
 - [One-Brain Product Charter](docs/product/ONE-BRAIN-PRODUCT-CHARTER.md) — governing product identity, local/cloud access, device control and learning.
-- [Brain/Inference Local-Cloud Contract v1](docs/architecture/BRAIN-INFERENCE-LOCAL-CLOUD-CONTRACT-V1.md) — one cognitive brain with local/offline and cloud/online inference routes; builder proposal, not yet implemented.
+- [Brain/Inference Local-Cloud Contract v1](docs/architecture/BRAIN-INFERENCE-LOCAL-CLOUD-CONTRACT-V1.md) — one cognitive brain with shared local/offline and cloud/online inference routes; documents the implemented CLI slice and its remaining gaps.
 - [First Usable Release Product Definition](docs/product/FIRST-USABLE-RELEASE-DEFINITION.md) — bounded first-release workflows and acceptance boundaries.
 - [System architecture](docs/architecture/COMPLETE-SYSTEM-ARCHITECTURE.md)
 - [Open-world interaction and means architecture](docs/architecture/OPEN-WORLD-INTERACTION-AND-MEANS-ARCHITECTURE.md) — objective-led understanding and means discovery across contexts.
@@ -83,6 +84,7 @@ aurions belief create <database> <domain> <prior-confidence> <proposition>
 aurions belief evidence <database> <belief-uuid> <experience-uuid> <stance> <reliability> [relevance]
 aurions belief show <database> <belief-uuid>
 aurions cognition context <database> <query> [max-items 1-50]
+aurions cognition chat <database> <python-executable> <module-root> <provider-config> <local|cloud> <sensitivity 0-4> <credential-env-name|-> [--allow-cloud] --stdin
 aurions strategy choose <database> <context-ref> <strategy-ref> [strategy-ref ...]
 aurions strategy outcome <database> <prediction-uuid> <experience-uuid> <success|failure>
 ```
@@ -104,7 +106,7 @@ A standard-library Python runtime can invoke compatible hosted endpoints or loca
 
 ```sh
 export AURIONS_PROVIDER_API_KEY="..."
-PYTHONPATH=ml/python python -m aurions_ml.provider_runtime --config ml/python/examples/provider-openai-compatible.json --prompt "Hello"
+PYTHONPATH=ml/python python -m aurions_ml.provider_runtime --config ml/python/examples/provider-openai-compatible.json --route cloud --prompt "Hello"
 ```
 
 To keep prompt text out of process arguments, read it without echo and pipe it to stdin (note: do not put literal private prompt text in a shell command, which may be saved in shell history):
@@ -112,7 +114,7 @@ To keep prompt text out of process arguments, read it without echo and pipe it t
 ```sh
 read -r -s -p "Prompt: " prompt
 printf '\n'
-printf '%s' "$prompt" | PYTHONPATH=ml/python python -m aurions_ml.provider_runtime --config ml/python/examples/provider-openai-compatible.json --stdin
+printf '%s' "$prompt" | PYTHONPATH=ml/python python -m aurions_ml.provider_runtime --config ml/python/examples/provider-openai-compatible.json --route cloud --stdin
 ```
 
-When input is piped, `--stdin` is optional. In interactive terminals, use `--prompt` or explicitly provide `--stdin` (which requires non-interactive input). HTTP is allowed only for loopback local endpoints; remote endpoints require HTTPS. Embedded credentials, query strings, unknown configuration fields and oversized requests/responses are rejected. Provider error bodies are not printed. This is a first functional integration primitive: it is **not yet connected to the C++ cognitive runtime/router, a UI, encrypted provider settings, or model selection policies**. No live provider is exercised in CI.
+When input is piped, `--stdin` is optional. In interactive terminals, use `--prompt` or explicitly provide `--stdin` (which requires non-interactive input). HTTP is allowed only for loopback local endpoints; remote endpoints require HTTPS. Embedded credentials, query strings, unknown configuration fields and oversized requests/responses are rejected. Provider error bodies are not printed. The provider runtime is now invoked by the C++ `cognition chat` path. The CLI command accepts prompt text on stdin; pass `local` for a loopback model server or `cloud` with `--allow-cloud` and sensitivity `0` for a remote HTTPS provider. Supply the environment-variable name configured in the provider JSON as `<credential-env-name>` (or `-` when no credential is needed); the C++ launcher passes only that selected variable to the provider process. This is an initial integration, not a complete inference router, encrypted provider-settings system, model-selection policy, research pipeline or action-governance loop. CI uses a fake provider and does not exercise a live endpoint.
