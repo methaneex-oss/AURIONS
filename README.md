@@ -106,4 +106,11 @@ export AURIONS_PROVIDER_API_KEY="..."
 PYTHONPATH=ml/python python -m aurions_ml.provider_runtime --config ml/python/examples/provider-openai-compatible.json --prompt "Hello"
 ```
 
+For prompts that should not appear in shell history or process arguments, pipe text through stdin instead:
+
+```sh
+printf '%s' "Your private prompt" | PYTHONPATH=ml/python python -m aurions_ml.provider_runtime --config ml/python/examples/provider-openai-compatible.json --stdin
+# --stdin is optional when input is piped; interactive terminal use requires --prompt.
+```
+
 HTTP is allowed only for loopback local endpoints; remote endpoints require HTTPS. Embedded credentials, query strings, unknown configuration fields and oversized requests/responses are rejected. Provider error bodies are not printed. This is a first functional integration primitive: it is **not yet connected to the C++ cognitive runtime/router, a UI, encrypted provider settings, or model selection policies**. No live provider is exercised in CI.
