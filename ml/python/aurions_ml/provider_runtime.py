@@ -5,7 +5,7 @@ from pathlib import Path
 
 class ProviderConfigurationError(ValueError): pass
 
-def load_config(path: Path):
+def load_config(path: Path, *, route: str | None = None):
     try: raw=json.loads(path.read_text(encoding="utf-8"))
     except (OSError,json.JSONDecodeError) as e: raise ProviderConfigurationError("cannot read provider config JSON") from e
     allowed={"base_url","model","api_key_env","timeout_seconds","max_tokens"}
@@ -19,6 +19,10 @@ def load_config(path: Path):
     if parsed.scheme not in {"https","http"} or not parsed.hostname or parsed.username or parsed.password: raise ProviderConfigurationError("base_url must be valid HTTP(S) without embedded credentials")
     if parsed.query or parsed.fragment: raise ProviderConfigurationError("base_url cannot contain query or fragment")
     if parsed.scheme=="http" and parsed.hostname not in {"localhost","127.0.0.1","::1"}: raise ProviderConfigurationError("HTTP is allowed only for loopback local providers")
+    loopback = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+    if route not in {None, "local", "cloud"}: raise ProviderConfigurationError("route must be local or cloud")
+    if route == "local" and not loopback: raise ProviderConfigurationError("local route requires a loopback provider endpoint")
+    if route == "cloud" and (parsed.scheme != "https" or loopback): raise ProviderConfigurationError("cloud route requires a non-loopback HTTPS provider endpoint")
     key_env=raw.get("api_key_env","")
     if not isinstance(key_env,str) or (key_env and not key_env.isidentifier()): raise ProviderConfigurationError("api_key_env must be an environment variable name")
     timeout=raw.get("timeout_seconds",45); tokens=raw.get("max_tokens",512)
@@ -57,6 +61,7 @@ def chat(config,prompt,*,opener=None):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--config",type=Path,required=True)
+    p.add_argument("--route", choices=("local", "cloud"), required=True)
     prompt_source=p.add_mutually_exclusive_group()
     prompt_source.add_argument("--prompt",help="prompt text (visible in process arguments)")
     prompt_source.add_argument("--stdin",action="store_true",help="read prompt from standard input")
@@ -70,7 +75,7 @@ def main():
             return 1
     else:
         prompt=a.prompt
-    try: output=chat(load_config(a.config),prompt)
+    try: output=chat(load_config(a.config, route=a.route),prompt)
     except (ProviderConfigurationError,RuntimeError,ValueError) as e: print("aurions-provider: "+str(e),file=sys.stderr); return 1
     print(output); return 0
 if __name__=="__main__": raise SystemExit(main())
