@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from aurions_ml.provider_runtime import ProviderConfigurationError, chat, load_config
+from aurions_ml.provider_runtime import ProviderConfigurationError, chat, load_config, main
 
 
 class FakeResponse:
@@ -126,7 +126,6 @@ class ProviderRuntimeTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "1 MiB"):
             chat(config, "ok", opener=lambda request, timeout: FakeResponse(b"x" * 1048577))
 
-
     def test_redirect_is_rejected_before_credentials_can_be_forwarded(self):
         import threading
         from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -165,6 +164,25 @@ class ProviderRuntimeTests(unittest.TestCase):
             server.server_close()
             thread.join(timeout=2)
 
+    def test_cli_reads_prompt_from_stdin_without_argument_exposure(self):
+        with patch("sys.argv", ["aurions-provider", "--config", str(self.path), "--stdin"]), \
+             patch("sys.stdin") as stdin, patch("aurions_ml.provider_runtime.chat", return_value="response") as mocked_chat, \
+             patch("sys.stdout") as stdout:
+            stdin.isatty.return_value = False
+            stdin.read.return_value = "private prompt from pipe"
+            self.assertEqual(main(), 0)
+            mocked_chat.assert_called_once()
+            self.assertEqual(mocked_chat.call_args.args[1], "private prompt from pipe")
+            stdout.write.assert_called()
+
+    def test_cli_rejects_oversized_stdin_before_network(self):
+        with patch("sys.argv", ["aurions-provider", "--config", str(self.path), "--stdin"]), \
+             patch("sys.stdin") as stdin, patch("aurions_ml.provider_runtime.chat") as mocked_chat, \
+             patch("sys.stderr"):
+            stdin.isatty.return_value = False
+            stdin.read.return_value = "x" * 65537
+            self.assertEqual(main(), 1)
+            mocked_chat.assert_not_called()
 
 
 if __name__ == "__main__":
