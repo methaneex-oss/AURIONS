@@ -55,8 +55,22 @@ def chat(config,prompt,*,opener=None):
     return text
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__); p.add_argument("--config",type=Path,required=True); p.add_argument("--prompt",required=True); a=p.parse_args()
-    try: output=chat(load_config(a.config),a.prompt)
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--config",type=Path,required=True)
+    prompt_source=p.add_mutually_exclusive_group()
+    prompt_source.add_argument("--prompt",help="prompt text (visible in process arguments)")
+    prompt_source.add_argument("--stdin",action="store_true",help="read prompt from standard input")
+    a=p.parse_args()
+    if a.stdin or a.prompt is None:
+        if sys.stdin.isatty():
+            p.error("provide --prompt or pipe prompt text to stdin")
+        prompt=sys.stdin.read(65537)
+        if len(prompt.encode("utf-8"))>65536:
+            print("aurions-provider: prompt exceeds 65536 UTF-8 bytes",file=sys.stderr)
+            return 1
+    else:
+        prompt=a.prompt
+    try: output=chat(load_config(a.config),prompt)
     except (ProviderConfigurationError,RuntimeError,ValueError) as e: print("aurions-provider: "+str(e),file=sys.stderr); return 1
     print(output); return 0
 if __name__=="__main__": raise SystemExit(main())
