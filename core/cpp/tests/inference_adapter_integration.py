@@ -26,6 +26,28 @@ elif request["prompt"] == "fail":
         "status": "failed",
         "error_code": "candidate_rejected",
     }
+elif request["prompt"] == "wrong_job":
+    response = {"protocol_version": "1.0", "job_id": "00000000-0000-4000-8000-000000000000",
+                "status": "completed", "candidate_status": "quarantined",
+                "candidate_artifact_sha256": request["candidate_artifact_ref"].rsplit("/", 1)[1],
+                "generated_text": "bad", "max_new_tokens": request["max_new_tokens"]}
+elif request["prompt"] == "wrong_digest":
+    response = {"protocol_version": "1.0", "job_id": request["job_id"],
+                "status": "completed", "candidate_status": "quarantined",
+                "candidate_artifact_sha256": "b" * 64,
+                "generated_text": "bad", "max_new_tokens": request["max_new_tokens"]}
+elif request["prompt"] == "wrong_protocol":
+    response = {"protocol_version": "99.0", "job_id": request["job_id"],
+                "status": "completed", "candidate_status": "quarantined",
+                "candidate_artifact_sha256": request["candidate_artifact_ref"].rsplit("/", 1)[1],
+                "generated_text": "bad", "max_new_tokens": request["max_new_tokens"]}
+elif request["prompt"] == "duplicate":
+    print('{"protocol_version":"1.0","job_id":"' + request["job_id"] +
+          '","job_id":"' + request["job_id"] + '","status":"completed"}')
+    raise SystemExit(0)
+elif request["prompt"] == "malformed":
+    print("{not-json")
+    raise SystemExit(0)
 else:
     generated = "x" * 70000 if request["prompt"] == "large" else "preview: " + request["prompt"]
     response = {
@@ -97,6 +119,17 @@ def main():
         rejected = invoke(executable, root, artifact_store, "fail")
         assert rejected.returncode != 0
         assert "candidate_rejected" in rejected.stderr
+
+        for hostile_prompt, expected_error in (
+            ("wrong_job", "job ID does not match"),
+            ("wrong_digest", "mismatched candidate digest"),
+            ("wrong_protocol", "unsupported protocol version"),
+            ("duplicate", "duplicate JSON key"),
+            ("malformed", "malformed worker JSON response"),
+        ):
+            hostile = invoke(executable, root, artifact_store, hostile_prompt)
+            assert hostile.returncode != 0, hostile_prompt
+            assert expected_error in hostile.stderr, (hostile_prompt, hostile.stderr)
 
         oversized_response = invoke(executable, root, artifact_store, "large")
         assert oversized_response.returncode != 0
