@@ -76,7 +76,7 @@ def main():
             "Check private marker violet harbor.", sensitivity=0,
         )
         assert filtered.returncode == 0, filtered.stderr
-        assert json.loads(filtered.stdout)["answer"] == "CONTEXT_FILTERED"
+        assert json.loads(filtered.stdout)["answer"] == "PRIVATE_CONTEXT_FILTERED"
 
         denied_cloud = invoke(
             executable, database, fake_python, module_root, config,
