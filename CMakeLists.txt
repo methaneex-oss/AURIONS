@@ -44,4 +44,10 @@ if(BUILD_TESTING)
             ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/cognition_preview_integration.py
             $<TARGET_FILE:aurions>
     )
+    add_test(
+        NAME aurions.cognition.durable_chat
+        COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/cognition_chat_integration.py
+            $<TARGET_FILE:aurions>
+    )
 endif()
