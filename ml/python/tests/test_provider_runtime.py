@@ -127,5 +127,45 @@ class ProviderRuntimeTests(unittest.TestCase):
             chat(config, "ok", opener=lambda request, timeout: FakeResponse(b"x" * 1048577))
 
 
+    def test_redirect_is_rejected_before_credentials_can_be_forwarded(self):
+        import threading
+        from http.server import BaseHTTPRequestHandler, HTTPServer
+
+        class RedirectHandler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.server.received.append((self.path, self.headers.get("Authorization")))
+                self.send_response(307)
+                self.send_header("Location", self.server.redirect_target)
+                self.end_headers()
+
+            def log_message(self, format, *args):
+                return
+
+        server = HTTPServer(("127.0.0.1", 0), RedirectHandler)
+        server.received = []
+        server.redirect_target = f"http://127.0.0.1:{server.server_port}/credential-capture"
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            config = {
+                "base_url": f"http://127.0.0.1:{server.server_port}/v1",
+                "model": "local-test",
+                "api_key_env": "AURIONS_TEST_PROVIDER_KEY",
+                "timeout_seconds": 5,
+                "max_tokens": 32,
+            }
+            with patch.dict(os.environ, {"AURIONS_TEST_PROVIDER_KEY": "redirect-secret"}):
+                with self.assertRaisesRegex(RuntimeError, "HTTP 307"):
+                    chat(config, "test prompt")
+            self.assertEqual(len(server.received), 1)
+            self.assertEqual(server.received[0][0], "/v1/chat/completions")
+            self.assertEqual(server.received[0][1], "Bearer redirect-secret")
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+
+
 if __name__ == "__main__":
     unittest.main()

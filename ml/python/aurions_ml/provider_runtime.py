@@ -26,6 +26,17 @@ def load_config(path: Path):
     if isinstance(tokens,bool) or not isinstance(tokens,int) or not 1<=tokens<=8192: raise ProviderConfigurationError("max_tokens must be an integer from 1 to 8192")
     return {"base_url":url.rstrip("/"),"model":model.strip(),"api_key_env":key_env,"timeout_seconds":timeout,"max_tokens":tokens}
 
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Refuse redirects so bearer credentials cannot be forwarded to another origin."""
+    def redirect_request(self, request, response, code, message, headers, new_url):
+        return None
+
+
+def _open_without_redirects(request, timeout):
+    opener = urllib.request.build_opener(_NoRedirectHandler())
+    return opener.open(request, timeout=timeout)
+
+
 def chat(config,prompt,*,opener=None):
     if not isinstance(prompt,str) or not prompt.strip(): raise ValueError("prompt must be non-empty")
     if len(prompt.encode("utf-8"))>65536: raise ValueError("prompt exceeds 65536 UTF-8 bytes")
@@ -34,7 +45,7 @@ def chat(config,prompt,*,opener=None):
     payload=json.dumps({"model":config["model"],"messages":[{"role":"user","content":prompt}],"max_tokens":config["max_tokens"]}).encode()
     req=urllib.request.Request(config["base_url"]+"/chat/completions",data=payload,headers={"Content-Type":"application/json","Accept":"application/json",**({"Authorization":"Bearer "+key} if key else {})},method="POST")
     try:
-        with (opener or urllib.request.urlopen)(req,timeout=config["timeout_seconds"]) as response: raw=response.read(1048577)
+        with (opener or _open_without_redirects)(req,timeout=config["timeout_seconds"]) as response: raw=response.read(1048577)
     except urllib.error.HTTPError as e: raise RuntimeError(f"provider returned HTTP {e.code}") from None
     except (urllib.error.URLError,TimeoutError,OSError) as e: raise RuntimeError(f"provider request failed: {type(e).__name__}") from None
     if len(raw)>1048576: raise RuntimeError("provider response exceeded 1 MiB")
