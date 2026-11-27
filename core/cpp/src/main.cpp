@@ -15,6 +15,7 @@
 #include <string_view>
 #include <vector>
 #include <array>
+#include <algorithm>
 #include <chrono>
 #include <cerrno>
 #include <poll.h>
