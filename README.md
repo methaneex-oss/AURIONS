@@ -110,7 +110,7 @@ To keep prompt text out of process arguments, read it without echo and pipe it t
 
 ```sh
 read -r -s -p "Prompt: " prompt
-printf '\\n'
+printf '\n'
 printf '%s' "$prompt" | PYTHONPATH=ml/python python -m aurions_ml.provider_runtime --config ml/python/examples/provider-openai-compatible.json --stdin
 ```
 
