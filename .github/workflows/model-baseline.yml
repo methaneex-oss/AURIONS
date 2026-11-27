@@ -42,6 +42,11 @@ jobs:
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.10.0
           python -m pip install numpy==2.2.6 pytest==9.0.2
 
+      - name: Test configurable model provider runtime
+        env:
+          PYTHONPATH: ml/python
+        run: python -m pytest -q ml/python/tests/test_provider_runtime.py
+
       - name: Verify model, causal masking, training, inference, and resumable checkpoint
         env:
           PYTHONPATH: ml/python

@@ -1,0 +1,7 @@
+{
+  "base_url": "https://api.openai.com/v1",
+  "model": "your-model-id",
+  "api_key_env": "AURIONS_PROVIDER_API_KEY",
+  "timeout_seconds": 45,
+  "max_tokens": 512
+}
