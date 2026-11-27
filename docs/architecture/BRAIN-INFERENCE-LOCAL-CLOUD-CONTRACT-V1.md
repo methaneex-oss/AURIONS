@@ -1,6 +1,6 @@
 # AURIONS — Brain/Inference Integration Contract v1 (Builder Proposal)
 
-- **Status:** Implementation contract proposal; not owner acceptance or production capability.
+- **Status:** Contract plus an implemented first C++ conversation slice on `impl/experience-continuity`; not owner acceptance or production readiness.
 - **Product invariant:** One AURIONS brain, two inference access paths (local/offline and cloud/online). These are not two assistants and must not maintain separate cognitive logic.
 - **Authority:** The C++ cognitive runtime owns objectives, context, memory, beliefs, planning, governance, learning decisions and durable state. An inference backend generates candidate model output only.
 - **Related owner decisions:** Concurrent cloud and offline-mobile operation; shared cognitive-core implementation; D-02 Option B selective synchronization. Mobile device authority remains local.
@@ -195,3 +195,19 @@ G. Implement D-02 sync only after its exact field-policy acceptance and peer tru
 H. Run the same behavioral suite on Android offline and cloud runtime.
 
 This sequence deliberately prioritizes one functioning brain loop and two replaceable inference routes over a UI, multi-agent workforce, or broad tool catalogue.
+
+
+## 12. Implemented slice and verified boundaries (2026-11-27)
+
+The current branch now contains a first C++-owned conversation path:
+
+- `aurions cognition chat` accepts bounded stdin, retrieves existing experiences and evidence-backed beliefs, applies the current sensitivity filter, builds a bounded evidence prompt, and invokes the configured provider runtime.
+- Local and cloud requests use the same C++ cognition path, SQLite experience/belief stores and context builder. The backend is an inference resource, not a separate AURIONS identity.
+- The local route is restricted by the provider runtime to loopback endpoints. The cloud route requires HTTPS to a non-loopback endpoint, an explicit C++ `--allow-cloud` flag, and input sensitivity `0` (public).
+- The C++ launcher passes only the selected provider credential environment variable to the child process; prompt text travels over stdin, not argv. Provider response bytes are bounded and the process has a deadline.
+- After successful inference, the user message and assistant response are persisted as provenance-linked experiences with the supplied sensitivity. Later turns can retrieve them; non-public experiences are excluded from model context.
+- Model output is emitted as `display_only`. It cannot dispatch OS actions or directly create beliefs, permissions, goals or policies.
+
+The integration test uses a deterministic fake provider. It verifies retrieval across separate CLI process lifetimes, exclusion of sensitive prior experience, explicit cloud opt-in, and refusal to send non-public input through the cloud route. This is test evidence for the C++ path and policy gates, **not** proof of a live local model, live cloud service, or actual network-disabled operation.
+
+Remaining gaps are material: no actual local model invocation with networking disabled, no live cloud provider invocation, no Android/Termux run, no durable goal/task lifecycle or crash-safe response commit, no independent response/evidence evaluator, no web research acquisition pipeline, no tool/OS authorization-and-observation loop, and no automatic belief/strategy update from conversation. The current provider request is a single user-message prompt with retrieved context, not the complete versioned request/response envelope described above. Do not describe this slice as a complete cognitive brain or autonomous agent.
