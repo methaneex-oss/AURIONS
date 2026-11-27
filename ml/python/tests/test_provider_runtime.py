@@ -81,6 +81,19 @@ class ProviderRuntimeTests(unittest.TestCase):
             with self.assertRaises(ProviderConfigurationError):
                 load_config(self.path)
 
+    def test_explicit_route_restrictions(self):
+        self.path.write_text(json.dumps({
+            "base_url": "https://api.example.test/v1", "model": "remote"
+        }), encoding="utf-8")
+        with self.assertRaisesRegex(ProviderConfigurationError, "loopback"):
+            load_config(self.path, route="local")
+        self.path.write_text(json.dumps({
+            "base_url": "http://127.0.0.1:11434/v1", "model": "local"
+        }), encoding="utf-8")
+        with self.assertRaisesRegex(ProviderConfigurationError, "HTTPS"):
+            load_config(self.path, route="cloud")
+        self.assertEqual(load_config(self.path, route="local")["model"], "local")
+
     def test_missing_credential_rejected_without_request(self):
         config = load_config(self.path)
         os.environ.pop("AURIONS_TEST_PROVIDER_KEY", None)
@@ -165,7 +178,7 @@ class ProviderRuntimeTests(unittest.TestCase):
             thread.join(timeout=2)
 
     def test_cli_reads_prompt_from_stdin_without_argument_exposure(self):
-        with patch("sys.argv", ["aurions-provider", "--config", str(self.path), "--stdin"]), \
+        with patch("sys.argv", ["aurions-provider", "--config", str(self.path), "--route", "cloud", "--stdin"]), \
              patch("sys.stdin") as stdin, patch("aurions_ml.provider_runtime.chat", return_value="response") as mocked_chat, \
              patch("sys.stdout") as stdout:
             stdin.isatty.return_value = False
