@@ -8,6 +8,8 @@ from pathlib import Path
 FAKE_PROVIDER = r'''#!/usr/bin/env python3
 import sys
 prompt = sys.stdin.read()
+if "simulate provider failure" in prompt.lower():
+    raise SystemExit(7)
 marker = "cobalt river"
 private_marker = "violet harbor"
 if prompt.lower().count(marker) >= 2:
@@ -77,6 +79,27 @@ def main():
         )
         assert filtered.returncode == 0, filtered.stderr
         assert json.loads(filtered.stdout)["answer"] == "PRIVATE_CONTEXT_FILTERED"
+
+        # A failed provider call must not persist a partial conversation turn.
+        failed = invoke(
+            executable, database, fake_python, module_root, config,
+            "simulate provider failure now",
+        )
+        assert failed.returncode != 0
+        no_partial_turn = subprocess.run(
+            [executable, "experience", "search", str(database),
+             "simulate provider failure"],
+            capture_output=True, text=True, check=False,
+        )
+        assert no_partial_turn.returncode == 0, no_partial_turn.stderr
+        assert json.loads(no_partial_turn.stdout) == []
+
+        oversized = invoke(
+            executable, database, fake_python, module_root, config,
+            "x" * 4097,
+        )
+        assert oversized.returncode != 0
+        assert "stdin input exceeds" in oversized.stderr
 
         denied_cloud = invoke(
             executable, database, fake_python, module_root, config,
