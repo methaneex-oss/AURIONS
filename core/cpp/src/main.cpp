@@ -14,6 +14,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <array>
 
 namespace {
 
@@ -110,6 +111,23 @@ void print_belief(const aurions::BeliefSnapshot& belief) {
 
 void usage();
 
+[[nodiscard]] std::string read_stdin_bounded(std::size_t maximum_bytes) {
+    std::string value;
+    std::array<char, 1024> buffer{};
+    while (std::cin) {
+        std::cin.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
+        const auto count = std::cin.gcount();
+        if (count > 0) {
+            value.append(buffer.data(), static_cast<std::size_t>(count));
+            if (value.size() > maximum_bytes)
+                throw std::invalid_argument("stdin input exceeds its byte limit");
+        }
+    }
+    if (value.empty())
+        throw std::invalid_argument("stdin input must not be empty");
+    return value;
+}
+
 [[nodiscard]] std::size_t parse_token_limit(std::string_view value) {
     unsigned long long result{};
     const auto parsed = std::from_chars(value.data(), value.data() + value.size(), result);
@@ -125,9 +143,11 @@ int run_model(int argc, char** argv) {
         usage();
         return EXIT_FAILURE;
     }
+    const bool use_stdin = std::string_view(argv[6]) == "--stdin";
+    const std::string prompt = use_stdin ? read_stdin_bounded(8192) : argv[6];
     const std::size_t max_new_tokens = argc == 8 ? parse_token_limit(argv[7]) : 32;
     aurions::PythonProcessInferenceAdapter adapter(argv[3], argv[4]);
-    const auto result = adapter.preview(argv[5], argv[6], max_new_tokens);
+    const auto result = adapter.preview(argv[5], prompt, max_new_tokens);
     std::cout
         << "{\"job_id\":\"" << result.job_id
         << "\",\"candidate_status\":\"" << result.candidate_status
@@ -340,12 +360,13 @@ int run_cognition_preview(int argc, char** argv) {
         usage();
         return EXIT_FAILURE;
     }
+    const bool use_stdin = std::string_view(argv[7]) == "--stdin";
+    const std::string query = use_stdin ? read_stdin_bounded(4096) : argv[7];
     const std::size_t max_items = argc >= 9 ? parse_context_limit(argv[8]) : 8;
     const std::size_t max_new_tokens = argc == 10 ? parse_token_limit(argv[9]) : 32;
     aurions::ExperienceStore experiences(argv[3]);
     aurions::BeliefStore beliefs(argv[3]);
     aurions::MemoryContextBuilder builder(experiences);
-    const std::string query = argv[7];
     const auto memory = builder.build(query, max_items, 4096);
     const auto relevant_beliefs = beliefs.search(query, max_items);
     const auto prompt = build_cognition_preview_prompt(query, memory, relevant_beliefs);
