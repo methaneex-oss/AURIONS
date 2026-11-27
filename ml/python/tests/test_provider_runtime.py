@@ -189,7 +189,7 @@ class ProviderRuntimeTests(unittest.TestCase):
             stdout.write.assert_called()
 
     def test_cli_rejects_oversized_stdin_before_network(self):
-        with patch("sys.argv", ["aurions-provider", "--config", str(self.path), "--stdin"]), \
+        with patch("sys.argv", ["aurions-provider", "--config", str(self.path), "--route", "cloud", "--stdin"]), \
              patch("sys.stdin") as stdin, patch("aurions_ml.provider_runtime.chat") as mocked_chat, \
              patch("sys.stderr"):
             stdin.isatty.return_value = False
