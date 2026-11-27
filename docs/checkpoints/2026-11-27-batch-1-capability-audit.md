@@ -2,9 +2,9 @@
 
 **Date:** 2026-11-27
 **Branch:** `impl/experience-continuity`
-**Latest inspected HEAD:** `8039c26a9f2202564e038a15cce7818ac9ea795b`
+**Implementation/tested HEAD:** `4614c20a154a0fe1f8508371d73f3b9fd8ea2d9f`
 **Scope:** Five-objective audit: state/CI, inference boundary, integration contract, usable entry point, persistence reconciliation.
-**Status:** AUDIT IN PROGRESS — this is not an acceptance report.
+**Status:** BATCH 1 IMPLEMENTATION CLOSED — EXACT-HEAD HOST CI PASSED; LIVE DEVICE/PROVIDER ACCEPTANCE REMAINS BLOCKED.
 
 ## 1. Live repository and CI
 
@@ -106,12 +106,35 @@ This explicitly avoids treating UI work as the next priority. The first usable i
 - Conversation loop tests: first-turn response, memory recall, unrelated memory rejection, sensitive memory not leaked, restart persistence, contradiction handling and clear failure semantics.
 - Persistence: execute all DDL/migrations against SQLite, migration from prototype store, transaction/failure/recovery, canonical ownership and query semantics.
 
-## 9. Handoff priorities
+## 9. Batch 1 closure — implementation and host verification
 
-1. Finish current exact-head CI and close the added hostile worker tests; add platform isolation/resource/cancellation tests where feasible.
-2. Validate the proposed inference/cognition contract against actual schemas and implement a shared C++ adapter interface used by both local and cloud backends.
-3. Implement a brain-first C++ CLI conversation/task loop (not a UI), with bounded stdin, context retrieval, model route selection, validated output and durable interaction records.
-4. Demonstrate real responses through the local route with network disabled, then the cloud route with explicit egress policy; prove both use the same cognitive context and persistence semantics. Do not present quarantined candidate preview as production inference.
-5. Preserve and extend the existing SQLite DDL tests; implement/test query handlers and migration from the prototype stores, then validate crash/restart and Android/Termux behavior.
+The first five implementation objectives are closed on the branch. No Batch 2 work has been started.
 
-**No merge, PR or main-branch changes. No owner acceptance implied.**
+| Objective | Result | Evidence |
+|---|---|---|
+| 1. Complete hostile inference-adapter testing and correct defects | Implemented and host-tested | Wrong job ID/digest/protocol, duplicate JSON keys, malformed JSON, worker rejection, oversized response and bounded stdin cases. C++ Core exact-head CI passed. |
+| 2. Define and validate the minimum cognition/inference contract | Minimum contract implemented; full envelope remains open | Shared C++ context assembly, explicit local/cloud route restrictions, public-only cloud gate, selected credential forwarding and documented ownership boundaries. |
+| 3. Build an actual brain-first CLI conversation entry point | Implemented | `aurions cognition chat` uses C++ stores/context and the provider runtime; no UI work was substituted. |
+| 4. Connect retrieved memory to actual responses and durable experience | Implemented and host-tested with deterministic fake provider | Prior experience changes a later response across separate process invocations; user and assistant turns are stored with sensitivity and provenance. |
+| 5. Test process restart, privacy filtering and failure recovery | Implemented and host-tested | Separate-process recall, sensitive-memory exclusion, explicit cloud opt-in, refusal of non-public cloud input, provider-failure no-partial-turn check and oversized stdin rejection. |
+
+**Exact-head CI evidence (same source SHA `4614c20a154a0fe1f8508371d73f3b9fd8ea2d9f`):**
+- [C++ Core run 45997412757](https://github.com/methaneex-oss/AURIONS/actions/runs/45997412757) — configure, build and all 4 CTest tests passed.
+- [AURIONS owned model baseline run 45997412735](https://github.com/methaneex-oss/AURIONS/actions/runs/45997412735) — provider runtime tests, model/causal-masking/training/resumable-checkpoint checks, C++ candidate-preview integration, synthetic-only checkpoint production and local checkpoint inference all passed.
+
+The first attempt at the new chat integration test exposed an incorrect test expectation; it was corrected, then the exact-head C++ run passed 4/4. The provider CLI route argument omission in one oversized-stdin test was also corrected; the exact-head model-baseline run passed.
+
+## 10. Explicit acceptance blockers and limits
+
+This closes the five-objective **implementation batch**, not product acceptance or the whole AURIONS brain.
+
+- No live provider endpoint was called. CI uses deterministic fake provider responses; model-baseline CI exercises the separate quarantined local candidate-preview path.
+- No local model was run with external networking disabled, and no cloud inference was exercised against a live HTTPS service. The code enforces route boundaries but does not prove either real deployment works.
+- No execution on the owner's Android/Termux device has been performed. Host Linux CI does not establish Android/Bionic compatibility, local model resource fit or phone background-process behavior.
+- Cloud sensitivity is supplied by the caller as `0`; this slice does not automatically classify private content. The owner must not label private input public.
+- User and assistant experiences are written as two separate store transactions. Provider failure before persistence is tested; a crash between the two writes and atomic whole-turn recovery are not yet proven.
+- The provider runtime is not an OS sandbox. No platform-specific filesystem/network sandbox or resource isolation has been added.
+- The response is explicitly `display_only`; there is no tool/OS action dispatch. Durable goals/tasks, independent response evaluation, online research acquisition, autonomous belief/strategy updates, cross-device synchronization and full cognitive recovery remain outside this batch.
+- The current CLI uses a thin prompt wrapper, not the complete versioned request/response envelope in the contract. Automatic cloud-to-local fallback is not implemented.
+
+**Batch 1 is closed at the code-and-host-test level. Device/live-provider validation is blocked on access to the target runtime and a configured provider endpoint. Batch 2 has not been started. No PR, merge, main-branch change or Project Director acceptance is implied.**
