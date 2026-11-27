@@ -2,16 +2,16 @@
 
 **Date:** 2026-11-27
 **Branch:** `impl/experience-continuity`
-**Verified HEAD:** `d99fbc3f91ae6f186963443b5e7bb6697bdfcbd9`
+**Latest inspected HEAD:** `8039c26a9f2202564e038a15cce7818ac9ea795b`
 **Scope:** Five-objective audit: state/CI, inference boundary, integration contract, usable entry point, persistence reconciliation.
 **Status:** AUDIT IN PROGRESS — this is not an acceptance report.
 
 ## 1. Live repository and CI
 
-- Branch ref confirmed at `d99fbc3f91ae6f186963443b5e7bb6697bdfcbd9`.
-- Model-baseline workflow `45993577645`: SUCCESS, but tested commit `ad683f8065fb9691125e26b2222b2f2d93ae15ac`, not current HEAD.
-- C++ Core workflow `45993630763`: SUCCESS, but tested commit `d104aa1bd11495b49ea47a218cbb088f5ac3b3b6`, not current HEAD.
-- Both intervening changes are documentation/checkpoint updates; this is not evidence of a source regression, but exact-head CI remains unverified.
+- Branch ref confirmed at `8039c26a9f2202564e038a15cce7818ac9ea795b`.
+- Previous baseline C++ Core workflow `45993909208` passed at `d99fbc3`.
+- New C++ Core run `45995771731` and model-baseline run `45995771649` were queued/in progress at the latest check on `8039c26`; exact conclusions must be checked before acceptance.
+- C++ Core run `45995535753` passed at `3932e313fae081b0cd5a38444f641055a83da358`, which contains the bounded stdin source implementation; the subsequent hostile protocol test additions and worker sandbox documentation were not yet covered by a completed exact-head run.
 - No local build/test run in this environment.
 
 ## 2. Inference boundary audit (source review)
@@ -37,12 +37,14 @@ Inspected:
 ### Limitations / risks to verify
 - This is **candidate-preview inference**, not the user conversation runtime. The provider runtime remains a separate standalone primitive and is not integrated into the cognitive runtime/router.
 - Preview prompt is assembled as a bounded evidence packet and uses the literal header “Evidence only; no actions.” It is not a complete conversational agent/task loop.
-- The CLI currently accepts prompt/query through argv in the C++ preview/model preview path; private prompt text can appear in process arguments. The Python provider CLI stdin mitigation does not automatically protect these C++ paths.
+- **Corrected:** C++ model-preview and cognition-preview commands now accept `--stdin`; bounded readers cap model prompt at 8192 bytes and cognition query at 4096 bytes. Regression cases cover private prompt delivery via stdin and oversized stdin rejection. The provider runtime already supported stdin; this closes the separate C++ CLI argv exposure for these preview commands. It does not yet implement a normal conversation command.
+- Hostile adapter regression cases were added for wrong job ID, wrong artifact digest, wrong protocol version, duplicate response keys, malformed JSON, worker rejection and oversized response. Existing Python worker tests already cover duplicate/unknown request fields, activation-eligible candidate rejection and oversized requests.
 - Candidate output is explicitly quarantined and must not be described as active brain inference.
-- Static source review is not a sandbox test: process isolation, filesystem/network access, resource exhaustion, malicious checkpoint behavior and Android/Termux behavior still need targeted execution tests.
+- **Security correction:** the Python worker is not an OS sandbox. It runs with the launching user's filesystem and network permissions unless deployment-specific isolation is applied. The worker docstring now states this explicitly. Environment allowlisting and protocol bounds are defense-in-depth, not sandboxing.
+- Still unverified: filesystem/network isolation, resource exhaustion, malicious checkpoint stress, stderr flood, process cancellation races, and Android/Termux execution.
 - No live provider call or actual Android target validation is evidenced.
 
-No concrete code defect is confirmed yet. Do not change the adapter until the remaining hostile tests and exact source paths are inspected.
+A confirmed prompt privacy weakness was corrected. The full hostile test suite is added but awaits the current CI result.
 
 ## 3. Integration-contract gap
 
@@ -67,10 +69,13 @@ The most useful near-term deliverable should be a bounded CLI conversation slice
 
 The current implemented stores (experience, belief and strategy) are SQLite-backed and accessed through the prototype CLI. README describes them as a bounded primitive. The canonical planning baseline specifies separate memory, event/recovery and governance stores plus ownership, migrations, outboxes/inboxes, artifacts, deletion/retention and cross-store recovery.
 
-The existing query-projection reconciliation is explicitly static: 29 query definitions/310 fields mapped to proposed sources; SQL/joins/owner filters/redaction/cursors and behavioral verification are not closed. Therefore:
+Correction after inspecting `scripts/validate_sqlite_ddl.py`: the repository already has substantive host-side persistence validation. It executes all three base SQLite stores plus 21 ordered migration files; checks foreign keys and integrity after each DDL step; validates key table/column/trigger presence; tests rollback atomicity for aggregate/outbox pairs; tests sync ledger, inbox idempotency, acknowledgements, checkpoints, causal gaps, conflicts, tombstones, restore lifecycle, owner scope, append-only constraints and source-column references for the documented projection inventory. This is materially stronger than a static schema-only check.
+However, the query-projection reconciliation still explicitly does not implement/execute the 29 query handlers or prove their joins, owner filters, redaction, stable cursors and runtime behavior. The DDL script itself states that host smoke validation does not prove Android/Termux compatibility, crash/restore correctness, concurrency or cross-store runtime recovery. Therefore:
 - The prototype DB cannot be represented as canonical persistence closure.
-- The candidate query-field inventory is not runtime evidence.
+- The 21-file DDL chain has executable host-side smoke/invariant coverage; this must be retained and extended, not rewritten.
+- The candidate query-field inventory is not proof that the 29 query handlers exist or behave correctly.
 - A migration/integration plan must preserve the existing experience/belief/strategy data and provenance.
+- Android/Termux, crash/restore, concurrency and cross-store runtime recovery remain unverified.
 - Do not implement broad new tables before ownership and atomicity/recovery behavior are established.
 
 ## 6. External research comparison (initial)
@@ -85,7 +90,13 @@ References:
 
 Implication for AURIONS: use a small, integrated closed loop with explicit memory, evidence, planning, execution governance and postcondition observation; measure trajectory success, reliability, cost/latency, recoverability, context leakage and use of prior experience. Avoid adding multi-agent complexity before the integrated loop works.
 
-## 7. Batch 1 test plan (not yet executed locally)
+## 7. Integration contract and brain-first correction
+
+Added `docs/architecture/BRAIN-INFERENCE-LOCAL-CLOUD-CONTRACT-V1.md` and linked it from README. It specifies one C++ cognitive runtime with local/offline and cloud/online inference adapters; backend output is untrusted candidate text; local device authority remains local; cloud egress is policy-gated; online research becomes source-attributed experience; and cognitive learning is distinct from memory storage and model-weight training. It is a builder proposal, not implementation or owner acceptance.
+
+This explicitly avoids treating UI work as the next priority. The first usable interaction path must be a thin CLI/runtime path into the brain, not a UI-first redesign.
+
+## 8. Batch 1 test plan
 
 - Exact-head C++ and model-baseline CI.
 - Hostile worker protocol cases: malformed/duplicate keys, wrong protocol/job/digest, missing fields, huge output, nonzero exit, hangs, stderr flood, request write/read errors.
@@ -95,12 +106,12 @@ Implication for AURIONS: use a small, integrated closed loop with explicit memor
 - Conversation loop tests: first-turn response, memory recall, unrelated memory rejection, sensitive memory not leaked, restart persistence, contradiction handling and clear failure semantics.
 - Persistence: execute all DDL/migrations against SQLite, migration from prototype store, transaction/failure/recovery, canonical ownership and query semantics.
 
-## 8. Handoff priorities
+## 9. Handoff priorities
 
-1. Complete inference-boundary hostile testing and exact-head CI; fix only confirmed defects.
-2. Write and validate a minimal versioned inference/cognition contract (request, response, context/evidence provenance, task scope, sensitivity, errors, cancellation, budgets).
-3. Implement the bounded CLI conversation loop against that contract, with stdin privacy and tests.
-4. Demonstrate a real response path using the currently owned candidate/runtime; report capability limitations honestly.
-5. Persistence reconciliation and migration test plan; do not silently replace or discard current DB state.
+1. Finish current exact-head CI and close the added hostile worker tests; add platform isolation/resource/cancellation tests where feasible.
+2. Validate the proposed inference/cognition contract against actual schemas and implement a shared C++ adapter interface used by both local and cloud backends.
+3. Implement a brain-first C++ CLI conversation/task loop (not a UI), with bounded stdin, context retrieval, model route selection, validated output and durable interaction records.
+4. Demonstrate real responses through the local route with network disabled, then the cloud route with explicit egress policy; prove both use the same cognitive context and persistence semantics. Do not present quarantined candidate preview as production inference.
+5. Preserve and extend the existing SQLite DDL tests; implement/test query handlers and migration from the prototype stores, then validate crash/restart and Android/Termux behavior.
 
 **No merge, PR or main-branch changes. No owner acceptance implied.**
