@@ -168,10 +168,10 @@ void usage() {
         << "  aurions belief evidence <database> <belief-uuid> <experience-uuid> <stance> <reliability> [relevance]\n"
         << "  aurions belief show <database> <belief-uuid>\n"
         << "  aurions cognition context <database> <query> [max-items 1-50]\n"
-        << "  aurions cognition preview <database> <python-executable> <artifact-store> <artifact-uri> <query> [max-items] [max-new-tokens]\n"
+        << "  aurions cognition preview <database> <python-executable> <artifact-store> <artifact-uri> <query|--stdin> [max-items] [max-new-tokens]\n"
         << "  aurions strategy choose <database> <context-ref> <strategy-ref> [strategy-ref ...]\n"
         << "  aurions strategy outcome <database> <prediction-uuid> <experience-uuid> <success|failure>\n"
-        << "  aurions model preview <python-executable> <artifact-store> <artifact-uri> <prompt> [max-new-tokens 1-128]\n";
+        << "  aurions model preview <python-executable> <artifact-store> <artifact-uri> <prompt|--stdin> [max-new-tokens 1-128]\n";
 }
 
 int run_experience(int argc, char** argv) {
