@@ -2,6 +2,7 @@
 #include "aurions/experience_store.hpp"
 #include "aurions/inference_adapter.hpp"
 #include "aurions/memory_context.hpp"
+#include "aurions/representation_store.hpp"
 #include "aurions/strategy_store.hpp"
 
 #include <charconv>
@@ -309,6 +310,9 @@ void usage() {
         << "  aurions experience show <database> <experience-uuid>\n"
         << "  aurions experience search <database> <query> [limit 1-100]\n"
         << "  aurions experience context <database> <query> [max-items 1-50]\n"
+        << "  aurions representation record <database> <experience-uuid> <type> <content-json> <method> <uncertainty-json>\n"
+        << "  aurions representation show <database> <representation-uuid>\n"
+        << "  aurions representation list <database> <experience-uuid> [limit 1-100]\n"
         << "  aurions belief create <database> <domain> <prior-confidence> <proposition>\n"
         << "  aurions belief evidence <database> <belief-uuid> <experience-uuid> <stance> <reliability> [relevance]\n"
         << "  aurions belief show <database> <belief-uuid>\n"
@@ -633,6 +637,56 @@ int run_cognition(int argc, char** argv) {
 }
 
 
+int run_representation(int argc, char** argv) {
+    if (argc < 4) { usage(); return EXIT_FAILURE; }
+    aurions::RepresentationStore store(argv[3]);
+    const std::string_view operation(argv[2]);
+
+    auto print_one = [](const aurions::Representation& item) {
+        std::cout << "{\"representation_id\":\"" << item.id
+            << "\",\"experience_id\":\"" << item.experience_id
+            << "\",\"representation_type\":\"" << json_escape(item.representation_type)
+            << "\",\"content_json\":\"" << json_escape(item.content_json)
+            << "\",\"method\":\"" << json_escape(item.method)
+            << "\",\"uncertainty_json\":\"" << json_escape(item.uncertainty_json)
+            << "\",\"created_at_ms\":" << item.created_at_ms << "}\n";
+    };
+
+    if (operation == "record" && argc == 9) {
+        print_one(store.record(argv[4], argv[5], argv[6], argv[7], argv[8]));
+        return EXIT_SUCCESS;
+    }
+    if (operation == "show" && argc == 5) {
+        const auto found = store.get(argv[4]);
+        if (!found) {
+            std::cerr << "Representation not found\n";
+            return 2;
+        }
+        print_one(*found);
+        return EXIT_SUCCESS;
+    }
+    if (operation == "list" && (argc == 5 || argc == 6)) {
+        const std::size_t limit = argc == 6 ? parse_limit(argv[5]) : 20;
+        const auto items = store.list_for_experience(argv[4], limit);
+        std::cout << "[";
+        for (std::size_t i = 0; i < items.size(); ++i) {
+            if (i != 0) std::cout << ",";
+            const auto& item = items[i];
+            std::cout << "{\"representation_id\":\"" << item.id
+                << "\",\"experience_id\":\"" << item.experience_id
+                << "\",\"representation_type\":\"" << json_escape(item.representation_type)
+                << "\",\"content_json\":\"" << json_escape(item.content_json)
+                << "\",\"method\":\"" << json_escape(item.method)
+                << "\",\"uncertainty_json\":\"" << json_escape(item.uncertainty_json)
+                << "\",\"created_at_ms\":" << item.created_at_ms << "}";
+        }
+        std::cout << "]\n";
+        return EXIT_SUCCESS;
+    }
+    usage();
+    return EXIT_FAILURE;
+}
+
 int run_strategy(int argc, char** argv) {
     if (argc < 4) { usage(); return EXIT_FAILURE; }
     aurions::StrategyStore strategies(argv[3]);
@@ -679,6 +733,7 @@ int main(int argc, char** argv) {
         const std::string_view group(argv[1]);
         if (group == "experience") return run_experience(argc, argv);
         if (group == "belief") return run_belief(argc, argv);
+        if (group == "representation") return run_representation(argc, argv);
         if (group == "cognition") return run_cognition(argc, argv);
         if (group == "strategy") return run_strategy(argc, argv);
         if (group == "model") return run_model(argc, argv);
