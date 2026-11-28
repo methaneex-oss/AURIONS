@@ -8,6 +8,8 @@ from pathlib import Path
 FAKE_PROVIDER = r'''#!/usr/bin/env python3
 import sys
 prompt = sys.stdin.read()
+if len(prompt.encode("utf-8")) > 8192:
+    raise SystemExit(9)
 if "simulate provider failure" in prompt.lower():
     raise SystemExit(7)
 marker = "cobalt river"
@@ -114,6 +116,22 @@ def main():
         )
         assert denied_private_cloud.returncode != 0
         assert "non-public input" in denied_private_cloud.stderr
+
+        # The chat prompt must reserve space for its instruction suffix even
+        # when retrieval contains many large public records.
+        for index in range(20):
+            completed = subprocess.run(
+                [executable, "experience", "record", str(database),
+                 "research", f"prompt-budget-{index}", "0",
+                 "cobalt river " + ("public context " * 120)],
+                capture_output=True, text=True, check=False,
+            )
+            assert completed.returncode == 0, completed.stderr
+        bounded_prompt = invoke(
+            executable, database, fake_python, module_root, config,
+            "cobalt river public context",
+        )
+        assert bounded_prompt.returncode == 0, bounded_prompt.stderr
 
         allowed_cloud = invoke(
             executable, database, fake_python, module_root, config,
