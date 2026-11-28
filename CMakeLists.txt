@@ -19,6 +19,7 @@ add_library(aurions_core
     core/cpp/src/experience_store.cpp
     core/cpp/src/inference_adapter.cpp
     core/cpp/src/memory_context.cpp
+    core/cpp/src/representation_store.cpp
     core/cpp/src/strategy_store.cpp
 )
 target_include_directories(aurions_core PUBLIC
@@ -34,6 +35,14 @@ add_executable(aurions
 target_link_libraries(aurions PRIVATE aurions_core)
 
 if(BUILD_TESTING)
+    add_executable(aurions.representation.integration
+        core/cpp/tests/representation_store_integration.cpp
+    )
+    target_link_libraries(aurions.representation.integration PRIVATE aurions_core)
+    add_test(
+        NAME aurions.representation.persistence
+        COMMAND $<TARGET_FILE:aurions.representation.integration>
+    )
     add_executable(aurions.persistence.path_creation
         core/cpp/tests/store_path_creation.cpp
     )
