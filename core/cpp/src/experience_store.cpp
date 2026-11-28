@@ -313,6 +313,64 @@ Experience ExperienceStore::record(
         std::move(provenance_ref), observed, recorded, sensitivity};
 }
 
+
+ConversationTurn ExperienceStore::record_conversation_turn(
+    std::string user_content,
+    std::string assistant_content,
+    int sensitivity) {
+    if (user_content.empty() || assistant_content.empty()) {
+        throw std::invalid_argument("conversation content must not be empty");
+    }
+    if (sensitivity < 0 || sensitivity > 4) {
+        throw std::invalid_argument("sensitivity must be between 0 and 4");
+    }
+
+    const auto insert = [&](std::string source_type,
+                            std::string content,
+                            std::string provenance_ref) {
+        const IdBytes id_bytes = make_id_bytes();
+        const std::string id = format_id(id_bytes);
+        const std::int64_t recorded = now_ms();
+        const std::string content_ref = "sqlite://experience_payloads/" + id;
+
+        {
+            Statement payload(db_, "INSERT INTO experience_payloads(payload_id, payload) VALUES(?1, ?2)");
+            bind_id(db_, payload.get(), 1, id_bytes);
+            bind_text(db_, payload.get(), 2, content);
+            check_sqlite(sqlite3_step(payload.get()), db_, "insert conversation payload");
+        }
+        {
+            Statement experience(db_, R"sql(
+                INSERT INTO experiences(
+                    experience_id, source_type, observed_at_ms, recorded_at_ms,
+                    content_ref, sensitivity, provenance_ref, retention_state
+                ) VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, 'active')
+            )sql");
+            bind_id(db_, experience.get(), 1, id_bytes);
+            check_sqlite(sqlite3_bind_int64(experience.get(), 3, recorded), db_,
+                "bind conversation observed timestamp");
+            check_sqlite(sqlite3_bind_int64(experience.get(), 4, recorded), db_,
+                "bind conversation recorded timestamp");
+            bind_text(db_, experience.get(), 5, content_ref);
+            check_sqlite(sqlite3_bind_int(experience.get(), 6, sensitivity), db_,
+                "bind conversation sensitivity");
+            bind_text(db_, experience.get(), 7, provenance_ref);
+            check_sqlite(sqlite3_step(experience.get()), db_, "insert conversation experience");
+        }
+        return Experience{id, std::move(source_type), std::move(content),
+            std::move(provenance_ref), recorded, recorded, sensitivity};
+    };
+
+    Transaction transaction(db_);
+    Experience user = insert(
+        "conversation_user", std::move(user_content), "cli://cognition/chat/input");
+    Experience assistant = insert(
+        "conversation_assistant", std::move(assistant_content),
+        "experience://" + user.id);
+    transaction.commit();
+    return ConversationTurn{std::move(user), std::move(assistant)};
+}
+
 std::optional<Experience> ExperienceStore::get(const std::string& id) const {
     const IdBytes id_bytes = parse_id(id);
     Statement query(db_, R"sql(
