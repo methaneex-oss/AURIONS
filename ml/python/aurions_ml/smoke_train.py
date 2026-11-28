@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import math
 import json
 import os
 import tempfile
@@ -59,11 +60,25 @@ def run_smoke_training(
 
     def evaluate(x: torch.Tensor, y: torch.Tensor) -> float:
         model.eval()
+        if len(x) == 0 or len(x) != len(y):
+            raise ValueError("evaluation windows must be non-empty and aligned")
+        sample_count = min(8, len(x))
+        indices = [0] if sample_count == 1 else [
+            index * (len(x) - 1) // (sample_count - 1)
+            for index in range(sample_count)
+        ]
+        total_loss = 0.0
+        total_tokens = 0
         with torch.no_grad():
-            batch_x = x[: min(32, len(x))]
-            batch_y = y[: len(batch_x)]
-            logits = model(batch_x)
-            return float(F.cross_entropy(logits.reshape(-1, config.vocab_size), batch_y.reshape(-1)))
+            for index in indices:
+                logits = model(x[index:index + 1])
+                target = y[index:index + 1]
+                total_loss += float(F.cross_entropy(
+                    logits.reshape(-1, config.vocab_size),
+                    target.reshape(-1), reduction="sum"
+                ))
+                total_tokens += target.numel()
+        return total_loss / total_tokens
 
     initial_eval_loss = evaluate(eval_x, eval_y)
     start_step = 0
@@ -92,10 +107,15 @@ def run_smoke_training(
         torch.set_rng_state(previous["torch_rng_state"])
 
     model.train()
+    batch_size = min(16, len(train_x))
+    start_positions = len(train_x) - batch_size + 1
+    stride = 7
+    while math.gcd(stride, start_positions) != 1:
+        stride += 1
     for step in range(start_step, steps):
-        index = (step * 7) % max(1, len(train_x) - 16)
-        batch_x = train_x[index : index + 16]
-        batch_y = train_y[index : index + 16]
+        index = (step * stride) % start_positions
+        batch_x = train_x[index : index + batch_size]
+        batch_y = train_y[index : index + batch_size]
         optimizer.zero_grad(set_to_none=True)
         logits = model(batch_x)
         loss = F.cross_entropy(logits.reshape(-1, config.vocab_size), batch_y.reshape(-1))
