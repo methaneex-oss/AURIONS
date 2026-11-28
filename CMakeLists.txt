@@ -66,6 +66,14 @@ if(BUILD_TESTING)
         NAME aurions.persistence.path_creation
         COMMAND $<TARGET_FILE:aurions.persistence.path_creation>
     )
+    add_executable(aurions.conversation.persistence
+        core/cpp/tests/conversation_store_integration.cpp
+    )
+    target_link_libraries(aurions.conversation.persistence PRIVATE aurions_core)
+    add_test(
+        NAME aurions.conversation.persistence
+        COMMAND $<TARGET_FILE:aurions.conversation.persistence>
+    )
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
     add_test(
         NAME aurions.task_run.cli
