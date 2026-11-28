@@ -583,11 +583,7 @@ int run_cognition_chat(int argc, char** argv) {
 
     const std::string answer = run_provider_process(
         argv[4], argv[5], argv[6], route, argv[9], prompt.text);
-    const auto user_experience = experiences.record(
-        "conversation_user", query, "cli://cognition/chat/input", sensitivity);
-    const auto assistant_experience = experiences.record(
-        "conversation_assistant", answer,
-        "experience://" + user_experience.id, sensitivity);
+    const auto turn = experiences.record_conversation_turn(query, answer, sensitivity);
 
     std::cout << "{\"response_status\":\"display_only\",\"route\":\"" << route
               << "\",\"answer\":\"" << json_escape(answer)
