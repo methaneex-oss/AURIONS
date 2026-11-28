@@ -4,6 +4,7 @@
 #include <chrono>
 #include <filesystem>
 #include <string>
+#include <stdexcept>
 
 int main() {
     const auto root = std::filesystem::temp_directory_path() /
