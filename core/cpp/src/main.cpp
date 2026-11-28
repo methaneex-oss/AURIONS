@@ -587,8 +587,8 @@ int run_cognition_chat(int argc, char** argv) {
 
     std::cout << "{\"response_status\":\"display_only\",\"route\":\"" << route
               << "\",\"answer\":\"" << json_escape(answer)
-              << "\",\"user_experience_id\":\"" << user_experience.id
-              << "\",\"assistant_experience_id\":\"" << assistant_experience.id
+              << "\",\"user_experience_id\":\"" << turn.user.id
+              << "\",\"assistant_experience_id\":\"" << turn.assistant.id
               << "\",\"included_observations\":" << prompt.included_observations
               << ",\"included_beliefs\":" << prompt.included_beliefs
               << ",\"omitted_sensitive\":" << prompt.omitted_sensitive
