@@ -1,10 +1,33 @@
 import hashlib
+import math
 from pathlib import Path
 
 import torch
 
 from aurions_ml.model import ByteBPETokenizer, ByteTokenizer, DecoderConfig, DecoderOnlyTransformer
 from aurions_ml.smoke_train import run_smoke_training
+from aurions_ml.training import _evaluate
+
+
+
+
+def test_split_evaluation_samples_across_full_range_deterministically():
+    class TrackingModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.config = type("Config", (), {"vocab_size": 2})()
+            self.visited = []
+
+        def forward(self, token_ids):
+            self.visited.append(int(token_ids[0, 0]))
+            return torch.zeros((token_ids.shape[0], token_ids.shape[1], 2))
+
+    model = TrackingModel()
+    inputs = torch.arange(10, dtype=torch.long).reshape(10, 1)
+    targets = torch.zeros_like(inputs)
+    loss = _evaluate(model, inputs, targets)
+    assert math.isfinite(loss)
+    assert model.visited == [0, 1, 2, 3, 5, 6, 7, 9]
 
 
 def test_byte_tokenizer_round_trips_multilingual_utf8():
