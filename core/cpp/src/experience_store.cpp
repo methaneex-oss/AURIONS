@@ -404,8 +404,8 @@ std::vector<ExperienceMatch> ExperienceStore::search(
     if (limit == 0 || limit > 100) {
         throw std::invalid_argument("experience search limit must be between 1 and 100");
     }
-    if (query_text.size() > 512) {
-        throw std::invalid_argument("experience search query must not exceed 512 bytes");
+    if (query_text.size() > 4096) {
+        throw std::invalid_argument("experience search query must not exceed 4096 bytes");
     }
     const auto terms = query_terms(query_text);
     if (terms.empty()) {
