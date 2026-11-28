@@ -97,7 +97,7 @@ def main() -> int:
         assert unverified["belief_id"] in returned
         assert returned[unverified["belief_id"]]["revision"] == 1
         assert returned[unverified["belief_id"]]["evidence_stance"] == ""
-        assert returned[unverified["belief_id"]]["evidence_sensitivity"] == 0
+        assert returned[unverified["belief_id"]]["evidence_sensitivity"] == -1
         assert returned[belief_id]["confidence"] == counter_revision["confidence"]
         assert returned[belief_id]["revision"] == 3
 
