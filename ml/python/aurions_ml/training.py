@@ -215,6 +215,7 @@ def train_admitted_dataset(
             "owner_ref": admission.owner_ref,
             "model_family_ref": admission.model_family_ref,
             "training_purpose": admission.training_purpose,
+            "policy_version_ref": admission.policy_version_ref,
             "sources": source_lineage,
             "splits": split_lineage,
             "derived_artifact_refs": list(admission.derived_artifact_refs),
