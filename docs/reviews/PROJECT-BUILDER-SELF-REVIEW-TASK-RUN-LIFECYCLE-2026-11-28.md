@@ -1,39 +1,52 @@
-# Project Builder Self-Review Report — AURIONS Task-Run Lifecycle
+# Project Builder Self-Review Report — Task-Run Lifecycle
 
 **Date:** 2026-11-28  
 **Branch:** `impl/experience-continuity`  
-**Reviewed revision:** `8ceed36d6140ce50a19142036cc07ccd9b759ced`  
-**Review type:** Project Builder self-review; not an Independent Reviewer verdict  
-**Scope:** TaskRunStore lifecycle semantics, failure-reference persistence/return behavior, and related integration regression test.
+**Review revision:** `fada5091c8044afa37ea52cbcc106a640989fcdb`  
+**Review type:** Builder self-review, not an Independent Reviewer verdict  
+**Scope:** Task-run persistence/state-transition implementation, schema initialization, regression tests, and exact-head CI.
 
-## Governance pre-run evidence
-- Project Directorship and Team Operating Standard blob: `6d904a076e126546cd63b6a5b6959f7cafbff218`
-- Builder Operating Protocol blob: `c5b569b5d924432476335230c2d609c7ca9ee8c9`
-- Freshly retrieved and read before this review run. EBT-01 is contained in Part J of the team standard.
+## Governance
+The Project Directorship and Team Operating Standard and Builder Operating Protocol were reviewed earlier in this builder run. The report remains a bounded review, not acceptance of WP-00–WP-09.
 
-## Review result
-**SELF-REVIEW: CORRECTION IMPLEMENTED; AUTOMATED VERIFICATION PENDING.**
+## Findings and corrections
 
-### Finding SR-01 — stale failure reference after leaving failure state
-**Severity:** Moderate / correctness and record consistency  
-**Evidence:** The transition update previously cleared `failure_ref` only when entering `running`. Other transitions to non-failure states could leave an old reference attached. This was inconsistent with the state meaning and could mislead callers inspecting the current record.
+### SR-01 — stale failure reference on non-failure states
+**Finding:** Existing state could retain an old failure reference after transitioning into cancellation, completion, pause, running, queued, or lost state.
+**Correction:** Clear the persisted and returned failure reference on non-failure states; retain/update it only for failed or blocked state transitions.
+**Regression:** Blocked → cancelled asserts that both the transition return and persisted record have no stale failure reference.
 
-**Correction:** The SQL update now clears the reference on non-failure states; a newly supplied failure reference is retained for `failed` or `blocked` transitions. The returned `TaskRun` is updated with the same rule.
+### SR-02 — schema version not explicitly tracked
+**Finding:** TaskRunStore created tables with `CREATE TABLE IF NOT EXISTS`, without a version marker or refusal to open a database from a newer schema.
+**Correction:** Schema initialization is now in a SQLite transaction. `PRAGMA user_version` is checked; version > 1 is rejected; successful initialization sets version 1 atomically.
+**Regression:** Tests assert fresh DB user_version=1 and reject a fixture at version 99.
 
-**Regression test:** Added a blocked-to-cancelled case. It asserts the reference is initially recorded, then absent from both the transition return value and the persisted record after cancellation.
+### SR-03 — regression test could mask a late assertion failure
+**Finding:** The test's success flag was set before the newly added failure-reference assertions. A later exception could be caught yet leave success true, allowing a false pass if cleanup succeeded.
+**Correction:** Success is set only after every assertion in the full test completes. Transition-count assertion was also moved to an explicit failure check.
+**Regression:** The test returns failure if any newly added assertion throws.
 
-## Verification
-- Previous baseline at `a28e7f041180bc1c3006180a73cf67b1751ecc01`: C++ Core workflow passed (run 46091825500), and AURIONS owned model baseline workflow passed (run 46091825511).
-- Correction revision `8ceed36d6140ce50a19142036cc07ccd9b759ced`: C++ Core workflow run 46092679458 was observed queued/in progress at report creation. Do not treat this correction as verified until that run completes successfully.
-- Runs triggered by intermediate commits were cancelled by later pushes; they are not verification evidence.
-- No local build/test execution was available in this environment; GitHub Actions is the execution evidence source.
+### SR-04 — migration test fixture directory was not created
+**Finding:** The future-version fixture attempted SQLite open before the temporary root directory existed.
+**Correction:** The test creates its temporary root before creating/opening fixture DBs.
 
-## Additional self-review observations / residuals
-1. The task-run store is a persistence/state-transition mechanism; it is not an executor or scheduler and does not dispatch work. That boundary is explicit in the API comment.
-2. The store currently uses schema creation with `CREATE TABLE IF NOT EXISTS`; formal versioned migrations for this subsystem, migration rollback tests, and compatibility tests remain unverified.
-3. The transition journal is transactionally coupled to state updates, but tamper-evident cryptographic integrity, retention/compaction policy, and backup/restore guarantees are not implemented or established by this review.
-4. The integration tests cover ordinary lifecycle, no-op/terminal rejection, stale revisions, checkpoint references, lost-run reconciliation, restart persistence, and the newly corrected failure-reference lifecycle. They do not establish exhaustive state-transition coverage or concurrent-writer stress behavior.
-5. This review is deliberately bounded to the task-run subsystem. It is not a self-review of all WP-00–09, and those work packages are not declared complete.
+## Re-review
 
-## Disposition
-The identified in-scope defect was corrected and regression coverage added. Final builder handoff remains **pending CI verification**. Independent Reviewer scrutiny, independent behavioral testing beyond the automated CI evidence, and Project Director acceptance remain separate gates.
+- Read back the source and regression test after edits.
+- Reviewed the GitHub compare patch from the prior review revision through the correction commits.
+- Checked the transaction/rollback ordering: the schema-version statement is scoped/finalized before schema SQL; version marker update is committed with schema creation; a future version throws before schema mutation and unwinds the transaction.
+- Checked test control flow: pass flag is assigned only after the new assertions; fixture root is created first; unsupported-version constructor must throw.
+- CI was triggered at the latest code revision, but **not yet completed at the time of this report**. No compile/test pass is claimed for the latest correction set.
+
+## Residual limitations (not falsely marked fixed)
+
+1. Schema version 1 is a foundation marker; no future migration scripts exist yet because no later schema version is defined.
+2. Journal tamper-evidence/cryptographic integrity, retention/compaction, backup/restore guarantees, and concurrent writer stress are not covered by this change.
+3. Transition-state coverage is not exhaustive; only exercised cases are supported by the integration test.
+4. TaskRunStore persists lifecycle records and transitions. It does not schedule/dispatch or execute tasks.
+5. This review does not certify the full AURIONS codebase or WP-00–WP-09.
+
+## Status
+**In-scope findings SR-01 through SR-04 corrected in code/test.**  
+**Latest exact-head CI verification: pending.**  
+**Independent Reviewer and Project Director gates: remain separate.**
