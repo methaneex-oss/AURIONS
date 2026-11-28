@@ -59,6 +59,12 @@ if(BUILD_TESTING)
     )
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
     add_test(
+        NAME aurions.belief.revisions
+        COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/belief_revision_integration.py
+            $<TARGET_FILE:aurions>
+    )
+    add_test(
         NAME aurions.representation.cli
         COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/representation_cli_integration.py
