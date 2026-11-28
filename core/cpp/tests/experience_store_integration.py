@@ -69,7 +69,10 @@ def main() -> int:
             f"{writer_stdout} {writer_stderr}"
         )
         contention_record = parse_json(writer_stdout)
-        assert contention_record["content"] == "lock retry evidence"
+        stored_content = parse_json(run(
+            executable, "experience", "show", database, contention_record["experience_id"],
+        ))
+        assert stored_content["content"] == "lock retry evidence"
 
         # A second OS process opens the same database and retrieves the record.
         retrieved = json.loads(run(
