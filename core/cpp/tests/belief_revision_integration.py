@@ -95,8 +95,11 @@ def main() -> int:
         returned = {item["belief_id"]: item for item in context["beliefs"]}
         assert belief_id in returned
         assert unverified["belief_id"] in returned
-        assert returned[unverified["belief_id"]]["evidence_count"] == 0
+        assert returned[unverified["belief_id"]]["revision"] == 1
+        assert returned[unverified["belief_id"]]["evidence_stance"] == ""
+        assert returned[unverified["belief_id"]]["evidence_sensitivity"] == 0
         assert returned[belief_id]["confidence"] == counter_revision["confidence"]
+        assert returned[belief_id]["revision"] == 3
 
         # A separate CLI process reads the complete revision history.
         reopened = json.loads(run(executable, "belief", "show", db, belief_id))
