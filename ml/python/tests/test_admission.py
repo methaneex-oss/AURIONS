@@ -247,6 +247,7 @@ def test_admitted_artifacts_train_and_emit_quarantined_checkpoint(tmp_path: Path
     checkpoint = torch.load(io.BytesIO(stored), map_location="cpu", weights_only=True)
     assert checkpoint["dataset_lineage"]["manifest_id"] == str(MANIFEST)
     assert checkpoint["dataset_lineage"]["admission_id"] == "admission:verified-test"
+    assert checkpoint["dataset_lineage"]["policy_version_ref"] == POLICY_REF
     assert len(checkpoint["dataset_lineage"]["sources"]) == 1
     assert {item["split_type"] for item in checkpoint["dataset_lineage"]["splits"]} == {
         "train", "validation", "held_out"
