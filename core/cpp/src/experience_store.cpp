@@ -366,11 +366,14 @@ std::vector<ExperienceMatch> ExperienceStore::search(
     int parameter = 1;
     for (std::size_t i = 0; i < terms.size(); ++i) {
         if (i != 0) sql += " OR ";
-        sql += "(p.payload LIKE ?" + std::to_string(parameter++) +
+        const int payload_parameter = parameter++;
+        const int source_parameter = parameter++;
+        const int provenance_parameter = parameter++;
+        sql += "(p.payload LIKE ?" + std::to_string(payload_parameter) +
                " ESCAPE '!' OR e.source_type LIKE ?" +
-               std::to_string(parameter++) +
+               std::to_string(source_parameter) +
                " ESCAPE '!' OR e.provenance_ref LIKE ?" +
-               std::to_string(parameter++) + " ESCAPE '!')";
+               std::to_string(provenance_parameter) + " ESCAPE '!')";
     }
     sql += ") ORDER BY e.observed_at_ms DESC, e.experience_id ASC LIMIT 500";
 

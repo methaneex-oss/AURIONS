@@ -26,6 +26,9 @@ target_include_directories(aurions_core PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/include>
 )
 target_compile_features(aurions_core PUBLIC cxx_std_20)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(aurions_core PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 target_link_libraries(aurions_core PUBLIC ${AURIONS_SQLITE_TARGET})
 set_target_properties(aurions_core PROPERTIES CXX_EXTENSIONS OFF)
 
@@ -33,6 +36,9 @@ add_executable(aurions
     core/cpp/src/main.cpp
 )
 target_link_libraries(aurions PRIVATE aurions_core)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(aurions PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 if(BUILD_TESTING)
     add_executable(aurions.representation.integration

@@ -506,8 +506,10 @@ std::vector<BeliefSnapshot> BeliefStore::search(
     int parameter = 1;
     for (std::size_t i = 0; i < terms.size(); ++i) {
         if (i != 0) sql += " OR ";
-        sql += "(k.proposition LIKE ?" + std::to_string(parameter++) +
-               " ESCAPE '!' OR k.domain LIKE ?" + std::to_string(parameter++) +
+        const int proposition_parameter = parameter++;
+        const int domain_parameter = parameter++;
+        sql += "(k.proposition LIKE ?" + std::to_string(proposition_parameter) +
+               " ESCAPE '!' OR k.domain LIKE ?" + std::to_string(domain_parameter) +
                " ESCAPE '!')";
     }
     sql += ") ORDER BY b.updated_at_ms DESC, b.belief_id ASC LIMIT 200";
