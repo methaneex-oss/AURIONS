@@ -6,6 +6,8 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+import sqlite3
+import time
 
 
 def run(*args: str) -> str:
@@ -43,6 +45,31 @@ def main() -> int:
             "integration_test", provenance, "2", payload,
         ))
         experience_id = created["experience_id"]
+
+        # A second writer must wait for a transient SQLite lock rather than
+        # fail immediately. The store connection has a bounded busy timeout.
+        lock_connection = sqlite3.connect(database, timeout=1)
+        lock_connection.execute("BEGIN IMMEDIATE")
+        blocked_writer = subprocess.Popen(
+            [executable, "experience", "record", database,
+             "integration_test", "lock-contention", "0", "lock retry evidence"],
+            capture_output=True, text=True,
+        )
+        try:
+            time.sleep(0.25)
+            assert blocked_writer.poll() is None, (
+                "writer failed immediately instead of waiting for SQLite lock"
+            )
+        finally:
+            lock_connection.commit()
+            lock_connection.close()
+        writer_stdout, writer_stderr = blocked_writer.communicate(timeout=6)
+        assert blocked_writer.returncode == 0, (
+            f"writer did not recover after lock release: "
+            f"{writer_stdout} {writer_stderr}"
+        )
+        contention_record = parse_json(writer_stdout)
+        assert contention_record["content"] == "lock retry evidence"
 
         # A second OS process opens the same database and retrieves the record.
         retrieved = json.loads(run(

@@ -259,6 +259,7 @@ BeliefStore::BeliefStore(const std::filesystem::path& database_path) {
     }
     try {
         exec(db_, "PRAGMA foreign_keys=ON");
+        check(sqlite3_busy_timeout(db_, 5000), db_, "configure SQLite busy timeout");
         exec(db_, R"sql(
             CREATE TABLE IF NOT EXISTS knowledge_items (
               knowledge_id BLOB PRIMARY KEY CHECK(length(knowledge_id)=16),

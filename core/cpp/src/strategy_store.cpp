@@ -212,6 +212,7 @@ StrategyStore::StrategyStore(const std::filesystem::path& database_path) {
     }
     try {
         exec(db_, "PRAGMA foreign_keys=ON");
+        check(sqlite3_busy_timeout(db_, 5000), db_, "configure SQLite busy timeout");
         // These definitions match the canonical aurion_memory.base.sql tables.
         // An incompatible existing schema fails closed rather than creating a
         // parallel strategy-history store.

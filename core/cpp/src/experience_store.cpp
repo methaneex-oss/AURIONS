@@ -230,6 +230,7 @@ ExperienceStore::ExperienceStore(const std::filesystem::path& database_path) {
 
     try {
         execute(db_, "PRAGMA foreign_keys = ON");
+        check_sqlite(sqlite3_busy_timeout(db_, 5000), db_, "configure SQLite busy timeout");
         execute(db_, R"sql(
             CREATE TABLE IF NOT EXISTS experience_payloads (
                 payload_id BLOB PRIMARY KEY CHECK(length(payload_id) = 16),
