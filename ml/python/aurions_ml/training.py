@@ -44,11 +44,29 @@ def _evaluate(
     targets: torch.Tensor,
 ) -> float:
     model.eval()
+    if len(inputs) == 0 or len(inputs) != len(targets):
+        raise ValueError("evaluation windows must be non-empty and aligned")
+    # Evaluate a deterministic, evenly spaced sample across the split rather
+    # than only its first window. Keep batch size one because long-context
+    # attention makes larger evaluation batches disproportionately expensive.
+    sample_count = min(8, len(inputs))
+    if sample_count == 1:
+        indices = [0]
+    else:
+        indices = [index * (len(inputs) - 1) // (sample_count - 1)
+                   for index in range(sample_count)]
+    total_loss = 0.0
+    total_tokens = 0
     with torch.no_grad():
-        batch_inputs = inputs[: min(1, len(inputs))]
-        batch_targets = targets[: len(batch_inputs)]
-        logits = model(batch_inputs)
-        return float(F.cross_entropy(logits.reshape(-1, model.config.vocab_size), batch_targets.reshape(-1)))
+        for index in indices:
+            logits = model(inputs[index:index + 1])
+            target = targets[index:index + 1]
+            total_loss += float(F.cross_entropy(
+                logits.reshape(-1, model.config.vocab_size),
+                target.reshape(-1), reduction="sum"
+            ))
+            total_tokens += target.numel()
+    return total_loss / total_tokens
 
 
 def train_admitted_dataset(
