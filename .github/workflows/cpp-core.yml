@@ -15,26 +15,68 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: Configure, build, and test
-    runs-on: ubuntu-latest
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: GCC / Ubuntu 22.04
+            os: ubuntu-22.04
+            compiler: g++
+            install: ""
+            sanitizer: false
+          - label: GCC / Ubuntu 24.04
+            os: ubuntu-24.04
+            compiler: g++
+            install: ""
+            sanitizer: false
+          - label: Clang / Ubuntu 24.04
+            os: ubuntu-24.04
+            compiler: clang++
+            install: clang
+            sanitizer: false
+          - label: GCC / ASan + UBSan / Ubuntu 24.04
+            os: ubuntu-24.04
+            compiler: g++
+            install: ""
+            sanitizer: true
+
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install SQLite development headers
-        run: sudo apt-get update && sudo apt-get install --yes libsqlite3-dev
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libsqlite3-dev ${{ matrix.install }}
 
       - name: Report toolchain
         run: |
           cmake --version
-          c++ --version
+          ${{ matrix.compiler }} --version
           sqlite3 --version || true
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+        env:
+          SANITIZER: ${{ matrix.sanitizer }}
+        run: |
+          if [ "$SANITIZER" = "true" ]; then
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON \
+              -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} \
+              -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+              -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+          else
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON \
+              -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          fi
 
       - name: Build
         run: cmake --build build --parallel 2
 
       - name: Test
+        env:
+          ASAN_OPTIONS: detect_leaks=0
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
         run: ctest --test-dir build --output-on-failure
