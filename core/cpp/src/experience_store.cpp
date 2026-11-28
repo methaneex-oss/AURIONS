@@ -347,6 +347,7 @@ ConversationTurn ExperienceStore::record_conversation_turn(
                 ) VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, 'active')
             )sql");
             bind_id(db_, experience.get(), 1, id_bytes);
+            bind_text(db_, experience.get(), 2, source_type);
             check_sqlite(sqlite3_bind_int64(experience.get(), 3, recorded), db_,
                 "bind conversation observed timestamp");
             check_sqlite(sqlite3_bind_int64(experience.get(), 4, recorded), db_,
