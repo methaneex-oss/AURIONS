@@ -21,6 +21,7 @@ add_library(aurions_core
     core/cpp/src/memory_context.cpp
     core/cpp/src/representation_store.cpp
     core/cpp/src/strategy_store.cpp
+    core/cpp/src/task_run_store.cpp
 )
 target_include_directories(aurions_core PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/include>
@@ -41,6 +42,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 if(BUILD_TESTING)
+    add_executable(aurions.task_run.integration
+        core/cpp/tests/task_run_store_integration.cpp
+    )
+    target_link_libraries(aurions.task_run.integration PRIVATE aurions_core)
+    add_test(
+        NAME aurions.task_run.lifecycle
+        COMMAND $<TARGET_FILE:aurions.task_run.integration>
+    )
     add_executable(aurions.representation.integration
         core/cpp/tests/representation_store_integration.cpp
     )
@@ -58,6 +67,12 @@ if(BUILD_TESTING)
         COMMAND $<TARGET_FILE:aurions.persistence.path_creation>
     )
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    add_test(
+        NAME aurions.task_run.cli
+        COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/task_run_cli_integration.py
+            $<TARGET_FILE:aurions>
+    )
     add_test(
         NAME aurions.belief.revisions
         COMMAND ${Python3_EXECUTABLE}

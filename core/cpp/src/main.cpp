@@ -4,6 +4,7 @@
 #include "aurions/memory_context.hpp"
 #include "aurions/representation_store.hpp"
 #include "aurions/strategy_store.hpp"
+#include "aurions/task_run_store.hpp"
 
 #include <charconv>
 #include <cmath>
@@ -55,6 +56,14 @@ namespace {
         throw std::invalid_argument("max-items must be an integer from 1 to 50");
     }
     return static_cast<std::size_t>(result);
+}
+
+[[nodiscard]] std::int64_t parse_revision(std::string_view value) {
+    std::int64_t result{};
+    const auto parsed = std::from_chars(value.data(), value.data() + value.size(), result);
+    if (parsed.ec != std::errc{} || parsed.ptr != value.data() + value.size() || result < 1)
+        throw std::invalid_argument("revision must be a positive integer");
+    return result;
 }
 
 [[nodiscard]] double parse_real(std::string_view value, const char* name) {
@@ -310,6 +319,10 @@ void usage() {
         << "  aurions experience show <database> <experience-uuid>\n"
         << "  aurions experience search <database> <query> [limit 1-100]\n"
         << "  aurions experience context <database> <query> [max-items 1-50]\n"
+        << "  aurions task create <database> <task-definition-ref> <priority> <budget-json> <cause-ref> <actor-ref>\n"
+        << "  aurions task show <database> <task-run-uuid>\n"
+        << "  aurions task transition <database> <task-run-uuid> <expected-revision> <target-state> <cause-type> <cause-ref> <actor-ref> <checkpoint-ref|-> <failure-ref|-> <reconciliation-ref|->\n"
+        << "  aurions task events <database> <task-run-uuid>\n"
         << "  aurions representation record <database> <experience-uuid> <type> <content-json> <method> <uncertainty-json>\n"
         << "  aurions representation show <database> <representation-uuid>\n"
         << "  aurions representation list <database> <experience-uuid> [limit 1-100]\n"
@@ -637,6 +650,73 @@ int run_cognition(int argc, char** argv) {
 }
 
 
+int run_task(int argc, char** argv) {
+    if (argc < 4) { usage(); return EXIT_FAILURE; }
+    aurions::TaskRunStore store(argv[3]);
+    const std::string_view operation(argv[2]);
+    auto print_run = [](const aurions::TaskRun& run) {
+        std::cout << std::setprecision(17)
+            << "{\"task_run_id\":\"" << run.id
+            << "\",\"task_definition_ref\":\"" << json_escape(run.task_definition_ref)
+            << "\",\"state\":\"" << json_escape(run.state)
+            << "\",\"revision\":" << run.revision
+            << ",\"priority\":" << run.priority
+            << ",\"budget_json\":\"" << json_escape(run.budget_json)
+            << "\",\"checkpoint_refs_json\":\"" << json_escape(run.checkpoint_refs_json)
+            << "\",\"created_at_ms\":" << run.created_at_ms
+            << ",\"updated_at_ms\":" << run.updated_at_ms
+            << ",\"failure_ref\":";
+        if (run.failure_ref) std::cout << "\"" << json_escape(*run.failure_ref) << "\"";
+        else std::cout << "null";
+        std::cout << "}\n";
+    };
+    if (operation == "create" && argc == 9) {
+        print_run(store.create(argv[4], parse_real(argv[5], "priority"), argv[6], argv[7], argv[8]));
+        return EXIT_SUCCESS;
+    }
+    if (operation == "show" && argc == 5) {
+        const auto run = store.get(argv[4]);
+        if (!run) { std::cerr << "Task run not found\n"; return 2; }
+        print_run(*run);
+        return EXIT_SUCCESS;
+    }
+    if (operation == "transition" && argc == 13) {
+        auto optional_ref = [](const char* value) -> std::optional<std::string> {
+            if (std::string_view(value) == "-") return std::nullopt;
+            return std::string(value);
+        };
+        print_run(store.transition(argv[4], parse_revision(argv[5]), argv[6], argv[7],
+            argv[8], argv[9], optional_ref(argv[10]), optional_ref(argv[11]), optional_ref(argv[12])));
+        return EXIT_SUCCESS;
+    }
+    if (operation == "events" && argc == 5) {
+        const auto events = store.transitions(argv[4]);
+        std::cout << "[";
+        for (std::size_t i = 0; i < events.size(); ++i) {
+            if (i) std::cout << ",";
+            const auto& e = events[i];
+            std::cout << "{\"event_id\":\"" << e.event_id << "\",\"task_run_id\":\"" << e.task_run_id
+                << "\",\"from_state\":";
+            if (e.from_state) std::cout << "\"" << json_escape(*e.from_state) << "\""; else std::cout << "null";
+            std::cout << ",\"to_state\":\"" << json_escape(e.to_state)
+                << "\",\"previous_revision\":" << e.previous_revision << ",\"revision\":" << e.revision
+                << ",\"cause_type\":\"" << json_escape(e.cause_type)
+                << "\",\"cause_ref\":\"" << json_escape(e.cause_ref)
+                << "\",\"actor_ref\":\"" << json_escape(e.actor_ref) << "\",\"checkpoint_ref\":";
+            if (e.checkpoint_ref) std::cout << "\"" << json_escape(*e.checkpoint_ref) << "\""; else std::cout << "null";
+            std::cout << ",\"failure_ref\":";
+            if (e.failure_ref) std::cout << "\"" << json_escape(*e.failure_ref) << "\""; else std::cout << "null";
+            std::cout << ",\"reconciliation_ref\":";
+            if (e.reconciliation_ref) std::cout << "\"" << json_escape(*e.reconciliation_ref) << "\""; else std::cout << "null";
+            std::cout << ",\"occurred_at_ms\":" << e.occurred_at_ms << "}";
+        }
+        std::cout << "]\n";
+        return EXIT_SUCCESS;
+    }
+    usage();
+    return EXIT_FAILURE;
+}
+
 int run_representation(int argc, char** argv) {
     if (argc < 4) { usage(); return EXIT_FAILURE; }
     aurions::RepresentationStore store(argv[3]);
@@ -734,6 +814,7 @@ int main(int argc, char** argv) {
         if (group == "experience") return run_experience(argc, argv);
         if (group == "belief") return run_belief(argc, argv);
         if (group == "representation") return run_representation(argc, argv);
+        if (group == "task") return run_task(argc, argv);
         if (group == "cognition") return run_cognition(argc, argv);
         if (group == "strategy") return run_strategy(argc, argv);
         if (group == "model") return run_model(argc, argv);
