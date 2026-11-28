@@ -26,6 +26,11 @@ struct ExperienceMatch {
     double relevance{};
 };
 
+struct ConversationTurn {
+    Experience user;
+    Experience assistant;
+};
+
 class ExperienceStore final {
 public:
     explicit ExperienceStore(const std::filesystem::path& database_path);
@@ -42,6 +47,13 @@ public:
         std::string provenance_ref,
         int sensitivity = 0,
         std::optional<std::int64_t> observed_at_ms = std::nullopt);
+
+    // Atomically persist a user/assistant conversation turn. Either both
+    // experiences are committed or neither is visible.
+    [[nodiscard]] ConversationTurn record_conversation_turn(
+        std::string user_content,
+        std::string assistant_content,
+        int sensitivity = 0);
 
     [[nodiscard]] std::optional<Experience> get(const std::string& id) const;
 
