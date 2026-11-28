@@ -53,7 +53,7 @@ def main() -> int:
         blocked_writer = subprocess.Popen(
             [executable, "experience", "record", database,
              "integration_test", "lock-contention", "0", "lock retry evidence"],
-            capture_output=True, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
         )
         try:
             time.sleep(0.25)
