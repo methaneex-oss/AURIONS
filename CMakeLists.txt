@@ -34,6 +34,14 @@ add_executable(aurions
 target_link_libraries(aurions PRIVATE aurions_core)
 
 if(BUILD_TESTING)
+    add_executable(aurions.persistence.path_creation
+        core/cpp/tests/store_path_creation.cpp
+    )
+    target_link_libraries(aurions.persistence.path_creation PRIVATE aurions_core)
+    add_test(
+        NAME aurions.persistence.path_creation
+        COMMAND $<TARGET_FILE:aurions.persistence.path_creation>
+    )
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
     add_test(
         NAME aurions.experience.process_restart

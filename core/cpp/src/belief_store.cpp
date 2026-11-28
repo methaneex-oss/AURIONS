@@ -247,6 +247,8 @@ BeliefSnapshot load_snapshot(sqlite3* db, const IdBytes& id) {
 }  // namespace
 
 BeliefStore::BeliefStore(const std::filesystem::path& database_path) {
+    const auto parent = database_path.parent_path();
+    if (!parent.empty()) std::filesystem::create_directories(parent);
     const int rc = sqlite3_open_v2(database_path.string().c_str(), &db_,
         SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, nullptr);
     if (rc != SQLITE_OK) {
