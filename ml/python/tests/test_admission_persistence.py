@@ -224,6 +224,11 @@ def test_actual_training_permission_is_independent_of_memory_retention(tmp_path:
 def test_successful_admission_is_persisted_append_only(tmp_path: Path):
     paths = build_canonical_stores(tmp_path)
     result = admit(paths)
+    with pytest.raises(AdmissionDenied, match="policy version does not match"):
+        record_admission_decision(
+            paths[1], result, policy_version_ref="policy:wrong",
+            worker_job_ref="worker-job:one", checked_at_ms=100,
+        )
     admission_id = record_admission_decision(
         paths[1], result, policy_version_ref=POLICY_REF,
         worker_job_ref="worker-job:one", checked_at_ms=100,
