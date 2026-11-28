@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import math
 from dataclasses import dataclass
 
 import torch
@@ -169,11 +170,14 @@ def train_admitted_dataset(
     initial_held_out_loss = _evaluate(model, held_out_x, held_out_y)
 
     model.train()
+    sample_count = len(train_x)
+    stride = 7
+    while math.gcd(stride, sample_count) != 1:
+        stride += 1
     for step in range(steps):
-        batch_size = 1
-        index = (step * 7) % max(1, len(train_x) - batch_size + 1)
-        batch_x = train_x[index : index + batch_size]
-        batch_y = train_y[index : index + batch_size]
+        index = (step * stride) % sample_count
+        batch_x = train_x[index : index + 1]
+        batch_y = train_y[index : index + 1]
         optimizer.zero_grad(set_to_none=True)
         logits = model(batch_x)
         loss = F.cross_entropy(logits.reshape(-1, config.vocab_size), batch_y.reshape(-1))
