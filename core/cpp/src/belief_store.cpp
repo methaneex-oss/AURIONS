@@ -490,8 +490,8 @@ BeliefSnapshot BeliefStore::get(const std::string& belief_id_text) const {
 
 std::vector<BeliefSnapshot> BeliefStore::search(
     const std::string& query_text, std::size_t limit) const {
-    if (query_text.size() > 512)
-        throw std::invalid_argument("belief search query must not exceed 512 bytes");
+    if (query_text.size() > 4096)
+        throw std::invalid_argument("belief search query must not exceed 4096 bytes");
     if (limit == 0 || limit > 50)
         throw std::invalid_argument("belief search limit must be between 1 and 50");
     const auto terms = belief_query_terms(query_text);
