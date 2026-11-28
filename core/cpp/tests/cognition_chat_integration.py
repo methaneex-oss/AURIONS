@@ -96,6 +96,12 @@ def main():
         assert no_partial_turn.returncode == 0, no_partial_turn.stderr
         assert json.loads(no_partial_turn.stdout) == []
 
+        long_query = invoke(
+            executable, database, fake_python, module_root, config,
+            "longquery " * 60,
+        )
+        assert long_query.returncode == 0, long_query.stderr
+
         oversized = invoke(
             executable, database, fake_python, module_root, config,
             "x" * 4097,
