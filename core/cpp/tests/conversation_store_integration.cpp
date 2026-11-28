@@ -37,7 +37,7 @@ int main() {
             rejected = true;
         }
         require(rejected, "empty assistant response was accepted");
-        const auto absent = store.search("second user", 10);
+        const auto absent = store.search("second", 10);
         require(absent.empty(), "invalid turn partially persisted");
 
         sqlite3* raw_db = nullptr;
