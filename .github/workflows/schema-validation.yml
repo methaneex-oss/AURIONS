@@ -21,13 +21,18 @@ on:
       - "README.md"
       - ".github/workflows/schema-validation.yml"
   push:
-    branches: [main, docs/complete-system-architecture]
+    branches: [main, docs/complete-system-architecture, "impl/**"]
     paths:
       - "schemas/**"
       - "scripts/validate_schemas.py"
       - "scripts/validate_sqlite_ddl.py"
       - "scripts/probe_android_termux.sh"
       - "scripts/validate_planning_traceability.py"
+      - "scripts/validate_governance.py"
+      - "docs/governance/**"
+      - "README.md"
+      - "docs/planning/README.md"
+      - "docs/planning/PLANNING-COMPLETION-REGISTER.md"
       - "docs/planning/CANONICAL-IMPLEMENTATION-ROADMAP.md"
       - "docs/planning/WORK-PACKAGE-TRACEABILITY-AND-EXIT-MATRIX.md"
       - "docs/platform/**"
