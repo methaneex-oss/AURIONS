@@ -263,6 +263,14 @@ def test_admitted_artifacts_train_and_emit_quarantined_checkpoint(tmp_path: Path
     assert trained_tokenizer.vocab_size == checkpoint["architecture"]["vocab_size"]
     assert checkpoint["architecture"]["context_length"] == 2048
 
+    # Missing policy lineage must prevent candidate loading.
+    checkpoint["dataset_lineage"].pop("policy_version_ref")
+    malformed_buffer = io.BytesIO()
+    torch.save(checkpoint, malformed_buffer)
+    from aurions_ml.inference import load_candidate_model_from_bytes
+    with pytest.raises(ValueError, match="policy_version_ref"):
+        load_candidate_model_from_bytes(malformed_buffer.getvalue())
+
     # The admitted-data checkpoint is now consumable by the local model path,
     # but remains quarantined and cannot enter the active-model path.
     from aurions_ml.inference import generate, load_candidate_model
