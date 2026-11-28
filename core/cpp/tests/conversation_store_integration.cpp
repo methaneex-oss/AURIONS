@@ -1,4 +1,5 @@
 #include "aurions/experience_store.hpp"
+#include <sqlite3.h>
 
 #include <chrono>
 #include <filesystem>
@@ -38,6 +39,34 @@ int main() {
         require(rejected, "empty assistant response was accepted");
         const auto absent = store.search("second user", 10);
         require(absent.empty(), "invalid turn partially persisted");
+
+        sqlite3* raw_db = nullptr;
+        require(sqlite3_open(database.string().c_str(), &raw_db) == SQLITE_OK,
+                "could not open test database for rollback fault injection");
+        char* sql_error = nullptr;
+        const int trigger_rc = sqlite3_exec(raw_db,
+            "CREATE TRIGGER reject_assistant_turn BEFORE INSERT ON experiences "
+            "WHEN NEW.source_type='conversation_assistant' "
+            "BEGIN SELECT RAISE(ABORT,'injected assistant insert failure'); END;",
+            nullptr, nullptr, &sql_error);
+        if (trigger_rc != SQLITE_OK) {
+            const std::string message = sql_error ? sql_error : "trigger creation failed";
+            sqlite3_free(sql_error);
+            sqlite3_close(raw_db);
+            throw std::runtime_error(message);
+        }
+        sqlite3_close(raw_db);
+
+        bool injected_failure = false;
+        try {
+            (void)store.record_conversation_turn(
+                "atomic rollback probe", "assistant response that must fail", 0);
+        } catch (const std::exception&) {
+            injected_failure = true;
+        }
+        require(injected_failure, "fault injection did not fail the assistant insert");
+        require(store.search("atomic rollback probe", 10).empty(),
+                "user experience leaked from a failed atomic turn");
     }
 
     std::filesystem::remove_all(root);
