@@ -21,7 +21,10 @@ from .model import ByteBPETokenizer, ByteTokenizer, DecoderConfig, DecoderOnlyTr
 def _validate_dataset_lineage(lineage: Any) -> None:
     if not isinstance(lineage, dict):
         raise ValueError("dataset-trained candidate is missing dataset lineage")
-    for field in ("manifest_id", "manifest_digest", "admission_id", "owner_ref", "model_family_ref"):
+    for field in (
+        "manifest_id", "manifest_digest", "admission_id", "owner_ref",
+        "model_family_ref", "training_purpose", "policy_version_ref",
+    ):
         if not isinstance(lineage.get(field), str) or not lineage[field]:
             raise ValueError(f"candidate dataset lineage is missing {field}")
     if re.fullmatch(r"[0-9a-f]{64}", lineage["manifest_digest"]) is None:
