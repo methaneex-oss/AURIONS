@@ -1,10 +1,11 @@
 #include "aurions/experience_store.hpp"
 
-#include <cassert>
 #include <chrono>
 #include <filesystem>
 #include <string>
 #include <stdexcept>
+
+void require(bool condition, const char* message) { if (!condition) throw std::runtime_error(message); }
 
 int main() {
     const auto root = std::filesystem::temp_directory_path() /
@@ -20,13 +21,13 @@ int main() {
 
         const auto user = store.get(turn.user.id);
         const auto assistant = store.get(turn.assistant.id);
-        assert(user.has_value());
-        assert(assistant.has_value());
-        assert(user->source_type == "conversation_user");
-        assert(assistant->source_type == "conversation_assistant");
-        assert(assistant->provenance_ref == "experience://" + user->id);
-        assert(user->content == "remember cobalt river");
-        assert(assistant->content == "I will remember cobalt river");
+        require(user.has_value(), "user experience was not persisted");
+        require(assistant.has_value(), "assistant experience was not persisted");
+        require(user->source_type == "conversation_user", "user source type mismatch");
+        require(assistant->source_type == "conversation_assistant", "assistant source type mismatch");
+        require(assistant->provenance_ref == "experience://" + user->id, "assistant provenance mismatch");
+        require(user->content == "remember cobalt river", "user content mismatch");
+        require(assistant->content == "I will remember cobalt river", "assistant content mismatch");
 
         bool rejected = false;
         try {
@@ -34,9 +35,9 @@ int main() {
         } catch (const std::invalid_argument&) {
             rejected = true;
         }
-        assert(rejected);
+        require(rejected, "empty assistant response was accepted");
         const auto absent = store.search("second user", 10);
-        assert(absent.empty());
+        require(absent.empty(), "invalid turn partially persisted");
     }
 
     std::filesystem::remove_all(root);
