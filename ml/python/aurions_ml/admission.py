@@ -55,6 +55,7 @@ class AdmissionResult:
     owner_ref: str
     model_family_ref: str
     training_purpose: str
+    policy_version_ref: str
     sources: tuple[AdmittedSource, ...]
     splits: tuple[DatasetSplit, ...]
     derived_artifact_refs: tuple[str, ...]
@@ -340,6 +341,7 @@ def admit_dataset(
             owner_ref=owner_ref,
             model_family_ref=model_family_ref,
             training_purpose=training_purpose,
+            policy_version_ref=policy_version_ref,
             sources=tuple(admitted),
             splits=tuple(sorted(admitted_splits, key=lambda split: split.split_type)),
             derived_artifact_refs=tuple(derived_artifact_refs),
@@ -370,6 +372,8 @@ def record_admission_decision(
         raise AdmissionDenied("memory database is unavailable for admission evidence")
     if not policy_version_ref:
         raise AdmissionDenied("policy_version_ref is required for admission evidence")
+    if policy_version_ref != result.policy_version_ref:
+        raise AdmissionDenied("admission evidence policy version does not match the admitted policy")
     if worker_job_ref is not None and not worker_job_ref:
         raise AdmissionDenied("worker_job_ref must be non-empty when supplied")
     checked_at = int(time.time() * 1000) if checked_at_ms is None else checked_at_ms
