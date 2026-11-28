@@ -23,7 +23,7 @@ def main():
   reject(exe,"task","transition",db,rid,"3","paused","control","cause:stale","actor:owner","-","-","-",expected="task-run revision conflict")
   lost=json.loads(run(exe,"task","create",db,"task:recovery","0.1","{}","cause:recover","actor:owner"))
   lost=json.loads(run(exe,"task","transition",db,lost["task_run_id"],"1","lost","heartbeat","cause:lost","actor:runtime","-","-","-"))
-  reject(exe,"task","transition",db,lost["task_run_id"],"2","running","recovery","cause:resume","actor:runtime","-","-","-",expected="lost task run requires reconciliation_ref")
+  reject(exe,"task","transition",db,lost["task_run_id"],"2","running","recovery","cause:resume","actor:runtime","-","-","-",expected="lost run requires reconciliation_ref")
   recovered=json.loads(run(exe,"task","transition",db,lost["task_run_id"],"2","running","recovery","cause:reconciled","actor:runtime","-","-","reconciliation:verified"));assert recovered["revision"]==3
  return 0
 if __name__=="__main__":raise SystemExit(main())
