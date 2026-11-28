@@ -77,7 +77,7 @@ These findings were not hidden or deferred into the Independent Review. They wer
 
 ### Current exact-head verification
 - Current C++ Core run: **46138857523**, revision `31b252cce567d4de603d74568f259629293d1021`. All four matrix configurations completed successfully: GCC Ubuntu 22.04, GCC Ubuntu 24.04, Clang Ubuntu 24.04, GCC ASan+UBSan Ubuntu 24.04. All 12 CTest tests passed on the Ubuntu 22.04 job.
-- Current AURIONS owned-model baseline run: **46138857482**, same revision, was still running when this report was prepared. Do not declare the model/provider/training tests complete until its final conclusion is checked.
+- Current AURIONS owned-model baseline run: **46138857482**, revision `31b252cce567d4de603d74568f259629293d1021`, completed **success**. The workflow exercised provider runtime tests, model/causal masking/training/inference/resume tests, C++ cognition and inference-adapter build, C++ preview of an admitted candidate, synthetic checkpoint creation, local checkpoint inference, and quarantined artifact publication.
 - Schema-contract validation run **46121343495** passed on revision `341cdc7fdb`; schema sources were not changed during this self-review.
 
 No local test run is claimed.
@@ -122,8 +122,8 @@ The current chat path is a bounded provider-inference loop, not AURIONS' complet
 
 **Defects identified in the bounded implementation slice: corrected.**  
 **C++ host matrix: passed at exact revision.**  
-**Python/model/provider/admission workflow: pending exact-head conclusion at report time.**  
+**Python/model/provider/admission workflow: passed at exact code revision.**  
 **Full product/codebase readiness: NOT established.**  
 **Independent Reviewer and Project Director gates: remain separate.**
 
-I will not state “there should be no errors” or guarantee the user's testing will be error-free. The corrected regression suite materially reduces the risk, but live-device, integration, adversarial and untested behavior can still expose defects. The proper next gate is to finish the exact-head model-baseline run, inspect any failure, correct it, and then hand the bounded self-review with its residuals to the Independent Reviewer—not to claim the whole AURIONS project is complete.
+I will not state “there should be no errors” or guarantee the user's testing will be error-free. The corrected regression suite materially reduces the risk, but live-device, integration, adversarial and untested behavior can still expose defects. The bounded self-review is ready for Independent Reviewer scrutiny with the residuals above—not as a claim that the whole AURIONS project is complete.
