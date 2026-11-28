@@ -44,6 +44,12 @@ if(BUILD_TESTING)
     )
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
     add_test(
+        NAME aurions.strategy.feedback_loop
+        COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/strategy_feedback_integration.py
+            $<TARGET_FILE:aurions>
+    )
+    add_test(
         NAME aurions.experience.process_restart
         COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/core/cpp/tests/experience_store_integration.py
