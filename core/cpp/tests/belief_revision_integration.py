@@ -51,7 +51,7 @@ def main() -> int:
             "supports", "0.8", "1.0",
         ))
         support_revision = supported["revisions"][-1]
-        assert support_revision["number"] == 2
+        assert support_revision["revision"] == 2
         assert support_revision["confidence"] > 0.5
         assert support_revision["evidence_count"] == 1
         assert support_revision["evidence_stance"] == "supports"
@@ -62,7 +62,7 @@ def main() -> int:
             "contradicts", "0.7", "0.8",
         ))
         counter_revision = revised["revisions"][-1]
-        assert counter_revision["number"] == 3
+        assert counter_revision["revision"] == 3
         assert counter_revision["confidence"] < support_revision["confidence"]
         assert counter_revision["evidence_count"] == 1
         assert counter_revision["evidence_stance"] == "contradicts"
@@ -100,7 +100,7 @@ def main() -> int:
 
         # A separate CLI process reads the complete revision history.
         reopened = json.loads(run(executable, "belief", "show", db, belief_id))
-        assert [revision["number"] for revision in reopened["revisions"]] == [1, 2, 3]
+        assert [revision["revision"] for revision in reopened["revisions"]] == [1, 2, 3]
         assert reopened["revisions"][-1]["evidence_sensitivity"] == 2
 
     return 0
